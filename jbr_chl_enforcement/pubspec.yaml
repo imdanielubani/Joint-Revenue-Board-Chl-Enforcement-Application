@@ -85,6 +85,7 @@ flutter:
     - assets/icons/
     - assets/animations/
     - assets/sounds/
+    - assets/fonts/poppins/OFL.txt
     - assets/splash/
 
   fonts:
