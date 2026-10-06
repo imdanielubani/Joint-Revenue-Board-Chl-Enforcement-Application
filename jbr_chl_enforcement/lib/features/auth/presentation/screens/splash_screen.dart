@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,23 +18,41 @@ import '../widgets/launch_tagline.dart';
 
 /// Launch screen (Figma "Launch", nodes 49:6252, 49:6360, 49:6321).
 ///
-/// Shows start-up progress, then moves on to sign-in once ready. The layout
-/// follows the 390 × 844 design frame, with vertical positions scaled to the
-/// screen height as in the design's constraints.
+/// Shows start-up progress, then moves on to sign-in once ready.
+///
+/// Layout: the design is laid out inside the safe area (clear of notches,
+/// status and navigation bars) and scaled uniformly to the screen width,
+/// up to [_SplashScreenState._maxScale] on tablets. Spare height is shared
+/// between the gaps in the same proportions as the design, so a 390 × 844
+/// screen matches the Figma frame exactly. On short screens, such as phones
+/// in landscape, the whole layout shrinks to fit instead of overflowing.
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   /// How long "Ready..." stays visible before leaving the launch screen.
-  static const Duration readyHoldDuration = Duration(milliseconds: 600);
+  static const Duration readyHoldDuration = Duration(milliseconds: 5000);
 
   @override
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
-  // Design frame the positions below are measured against.
-  static const double _frameWidth = 390;
-  static const double _frameHeight = 844;
+  /// Width of the design frame; content is scaled relative to it.
+  static const double _designWidth = 390;
+
+  /// Largest scale, so tablets get larger branding without it dominating.
+  static const double _maxScale = 1.35;
+
+  /// Height the content needs at scale 1: tagline, brand block and progress
+  /// (about 381) plus a minimum of 48 spread across the gaps.
+  static const double _minContentHeight = 429;
+
+  // Gaps between blocks inside the design's safe area (390 × 763 after the
+  // 47 status bar and 34 home indicator), used as flex weights.
+  static const int _gapTop = 22;
+  static const int _gapTaglineToBrand = 130;
+  static const int _gapBrandToProgress = 203;
+  static const int _gapBottom = 27;
 
   Timer? _exitTimer;
 
@@ -64,50 +83,86 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       ),
       child: Scaffold(
         backgroundColor: AppColors.surface,
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final w = constraints.maxWidth;
-            final h = constraints.maxHeight;
+        body: Stack(
+          children: [
+            // Faded road artwork fills the whole screen, behind system bars.
+            Positioned.fill(
+              child: Image.asset(
+                AssetPaths.launchBackground,
+                fit: BoxFit.cover,
+                opacity: const AlwaysStoppedAnimation(0.25),
+                excludeFromSemantics: true,
+              ),
+            ),
+            SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final scale = math.min(
+                    math.min(constraints.maxWidth / _designWidth, _maxScale),
+                    constraints.maxHeight / _minContentHeight,
+                  );
 
-            return Stack(
-              children: [
-                // Faded road artwork, bleeding slightly past the screen edges.
-                Positioned(
-                  left: -11 / _frameWidth * w,
-                  top: -26 / _frameHeight * h,
-                  width: 412 / _frameWidth * w,
-                  height: 897 / _frameHeight * h,
-                  child: Image.asset(
-                    AssetPaths.launchBackground,
-                    fit: BoxFit.cover,
-                    opacity: const AlwaysStoppedAnimation(0.25),
-                    excludeFromSemantics: true,
-                  ),
-                ),
-                Positioned(
-                  top: h * 0.0833 - 1.33,
-                  right: 16,
-                  child: const LaunchTagline(),
-                ),
-                Positioned(
-                  top: h * 0.25 + 41,
-                  left: 0,
-                  right: 0,
-                  child: const Center(child: LaunchBrandBlock()),
-                ),
-                Positioned(
-                  top: h * 0.8333 + 1.67,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: LaunchProgress(stage: stage, version: version),
-                  ),
-                ),
-              ],
-            );
-          },
+                  return Center(
+                    child: SizedBox(
+                      width: _designWidth * scale,
+                      height: constraints.maxHeight,
+                      child: FittedBox(
+                        child: SizedBox(
+                          width: _designWidth,
+                          height: constraints.maxHeight / scale,
+                          // The layout is scaled as a whole, so system text
+                          // scaling would only make it overflow.
+                          child: MediaQuery.withNoTextScaling(
+                            child: _LaunchContent(
+                              stage: stage,
+                              version: version,
+                              renderScale: scale,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+/// The launch layout in design units (390 wide).
+class _LaunchContent extends StatelessWidget {
+  const _LaunchContent({
+    required this.stage,
+    required this.version,
+    required this.renderScale,
+  });
+
+  final LaunchStage stage;
+  final String? version;
+  final double renderScale;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Spacer(flex: _SplashScreenState._gapTop),
+        const Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: LaunchTagline(),
+          ),
+        ),
+        const Spacer(flex: _SplashScreenState._gapTaglineToBrand),
+        LaunchBrandBlock(renderScale: renderScale),
+        const Spacer(flex: _SplashScreenState._gapBrandToProgress),
+        LaunchProgress(stage: stage, version: version),
+        const Spacer(flex: _SplashScreenState._gapBottom),
+      ],
     );
   }
 }

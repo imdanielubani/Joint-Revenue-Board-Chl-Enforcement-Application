@@ -7,7 +7,11 @@ import '../../../../shared/ui/widgets/brand_accent_bar.dart';
 /// Full JRB CHL logo, slogan and pillars shown in the centre of the launch
 /// screen.
 class LaunchBrandBlock extends StatelessWidget {
-  const LaunchBrandBlock({super.key});
+  const LaunchBrandBlock({super.key, this.renderScale = 1});
+
+  /// Scale the block is drawn at on screen, used to decode the logo at a
+  /// matching resolution.
+  final double renderScale;
 
   static const double width = 289;
   static const double _logoWidth = 276;
@@ -52,7 +56,7 @@ class LaunchBrandBlock extends StatelessWidget {
                 AssetPaths.logoFull,
                 fit: BoxFit.cover,
                 alignment: _logoAlignment,
-                cacheWidth: (_logoWidth * dpr).round(),
+                cacheWidth: (_logoWidth * dpr * renderScale).ceil(),
                 semanticLabel: 'JRB CHL Enforcement, Joint Revenue Board',
               ),
             ),
@@ -64,6 +68,7 @@ class LaunchBrandBlock extends StatelessWidget {
               Text(
                 'Compliant Roads\nProsperous Nigeria',
                 textAlign: TextAlign.center,
+                softWrap: false,
                 style: _sloganStyle,
               ),
               BrandAccentBar(width: 46),
