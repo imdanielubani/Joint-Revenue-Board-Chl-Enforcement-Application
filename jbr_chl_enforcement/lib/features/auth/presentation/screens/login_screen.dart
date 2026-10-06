@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,12 +13,12 @@ import '../providers/auth_controller.dart';
 import '../widgets/login_form.dart';
 import '../widgets/login_header.dart';
 
-/// Sign-in screen (Figma "Login Screen", nodes 52:9138 default, 52:9330
-/// filled, 52:9234 signing in, 52:9185 error and 52:9282 success).
+/// Sign-in screen.
 ///
-/// Green header with the form on a white sheet. The page scrolls when space
-/// is short (small phones, landscape, keyboard open, large text); otherwise
-/// the sheet fills the screen and the Sign in button sits near the bottom.
+/// The green header (logo, title, status pill) is fixed; only the white
+/// sheet with the form scrolls. When space is short (keyboard open, small
+/// phones, landscape) the sheet slides up over the lower part of the header
+/// so the form keeps room, and scrolls inside itself.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -65,66 +66,81 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         body: DecoratedBox(
           decoration: const BoxDecoration(gradient: AppGradients.brandHeader),
           child: LayoutBuilder(
-            builder: (context, viewport) {
-              // Side space that caps content at _maxContentWidth on tablets.
-              // Applied as padding: a max-width box would misreport its
-              // intrinsic height to the IntrinsicHeight below.
+            builder: (context, body) {
+              // Side space that caps content at _maxContentWidth on tablets,
+              // from the space this screen actually has. Applied as padding:
+              // a max-width box would misreport its intrinsic height to the
+              // sheet's IntrinsicHeight.
               final inset = EdgeInsets.symmetric(
-                horizontal: ((viewport.maxWidth - _maxContentWidth) / 2).clamp(
-                  0,
-                  double.infinity,
-                ),
+                horizontal: math.max(0, (body.maxWidth - _maxContentWidth) / 2),
               );
-              return SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: viewport.maxHeight),
-                  child: IntrinsicHeight(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SafeArea(
-                          bottom: false,
-                          child: Padding(
-                            padding: inset,
-                            child: const Padding(
-                              padding: EdgeInsets.fromLTRB(16, 39, 16, 71),
-                              child: LoginHeader(),
-                            ),
-                          ),
+              return CustomMultiChildLayout(
+                delegate: _HeaderSheetLayout(
+                  minSheetTop: MediaQuery.paddingOf(context).top,
+                ),
+                children: [
+                  LayoutId(
+                    id: _Slot.header,
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: inset,
+                        child: const Padding(
+                          padding: EdgeInsets.fromLTRB(16, 39, 16, 71),
+                          child: LoginHeader(),
                         ),
-                        Expanded(
-                          child: DecoratedBox(
-                            decoration: const BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(_sheetRadius),
-                              ),
-                            ),
-                            child: SafeArea(
-                              top: false,
-                              child: Padding(
-                                padding: inset,
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    17,
-                                    16,
-                                    20,
-                                  ),
-                                  child: LoginForm(
-                                    state: state,
-                                    onSubmit: (email, password) =>
-                                        controller.submit(
-                                          email: email,
-                                          password: password,
-                                        ),
-                                    onRememberChanged:
-                                        controller.setRememberSession,
-                                    onInputChanged: controller.onInputChanged,
-                                    onForgotPassword: () => context.pushNamed(
-                                      RouteNames.forgotPassword,
+                      ),
+                    ),
+                  ),
+                  LayoutId(
+                    id: _Slot.sheet,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(_sheetRadius),
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(_sheetRadius),
+                        ),
+                        child: SafeArea(
+                          top: false,
+                          child: LayoutBuilder(
+                            builder: (context, sheet) => SingleChildScrollView(
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: sheet.maxHeight,
+                                ),
+                                child: IntrinsicHeight(
+                                  child: Padding(
+                                    padding: inset,
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        16,
+                                        17,
+                                        16,
+                                        20,
+                                      ),
+                                      child: LoginForm(
+                                        state: state,
+                                        onSubmit: (email, password) =>
+                                            controller.submit(
+                                              email: email,
+                                              password: password,
+                                            ),
+                                        onRememberChanged:
+                                            controller.setRememberSession,
+                                        onInputChanged:
+                                            controller.onInputChanged,
+                                        onForgotPassword: () =>
+                                            context.pushNamed(
+                                              RouteNames.forgotPassword,
+                                            ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -132,10 +148,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               );
             },
           ),
@@ -143,4 +159,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
+}
+
+enum _Slot { header, sheet }
+
+/// Places the fixed header at the top and the sheet directly below it,
+/// moving the sheet up over the header only as far as needed to leave it
+/// [minSheetHeight] (never above the status bar).
+class _HeaderSheetLayout extends MultiChildLayoutDelegate {
+  _HeaderSheetLayout({required this.minSheetTop});
+
+  /// Room the form keeps before the sheet starts covering the header: the
+  /// email field and the start of the password field.
+  static const double minSheetHeight = 300;
+
+  /// The sheet never rises above this (the status bar).
+  final double minSheetTop;
+
+  @override
+  void performLayout(Size size) {
+    // The header takes its natural height; anything beyond the screen (very
+    // large text) simply sits under the sheet.
+    final headerHeight = layoutChild(
+      _Slot.header,
+      BoxConstraints.tightFor(width: size.width),
+    ).height;
+    final sheetTop = math.max(
+      math.min(headerHeight, size.height - minSheetHeight),
+      math.min(minSheetTop, size.height),
+    );
+    layoutChild(
+      _Slot.sheet,
+      BoxConstraints.tight(
+        Size(size.width, math.max(0, size.height - sheetTop)),
+      ),
+    );
+    positionChild(_Slot.header, Offset.zero);
+    positionChild(_Slot.sheet, Offset(0, sheetTop));
+  }
+
+  @override
+  bool shouldRelayout(_HeaderSheetLayout oldDelegate) =>
+      oldDelegate.minSheetTop != minSheetTop;
 }

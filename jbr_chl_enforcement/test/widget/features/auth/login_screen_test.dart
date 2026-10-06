@@ -255,6 +255,39 @@ void main() {
     expect(find.byType(ForgotPasswordScreen), findsOneWidget);
   });
 
+  testWidgets('the header stays fixed while the form scrolls', (tester) async {
+    // Small phone with the keyboard open, so the form has to scroll.
+    tester.view
+      ..physicalSize = const Size(360 * 3, 640 * 3)
+      ..devicePixelRatio = 3
+      ..padding = const FakeViewPadding(top: 24 * 3)
+      ..viewInsets = const FakeViewPadding(bottom: 280 * 3);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(_app(FakeAuthRepository()));
+    await tester.pumpAndSettle();
+
+    final logoBefore = tester.getRect(find.text('Sign In to Continue'));
+    final emailBefore = tester.getRect(_email);
+
+    await tester.drag(find.text('Email Address'), const Offset(0, -200));
+    await tester.pumpAndSettle();
+
+    expect(tester.getRect(find.text('Sign In to Continue')), logoBefore);
+    expect(tester.getRect(_email).top, lessThan(emailBefore.top));
+  });
+
+  testWidgets('the header does not scroll with the page on tall screens', (
+    tester,
+  ) async {
+    await _pumpOnPhone(tester, FakeAuthRepository());
+    final titleBefore = tester.getRect(find.text('Sign In to Continue'));
+
+    await tester.drag(find.text('Sign In to Continue'), const Offset(0, -200));
+    await tester.pumpAndSettle();
+
+    expect(tester.getRect(find.text('Sign In to Continue')), titleBefore);
+  });
+
   for (final device in _devices) {
     for (final withError in [false, true]) {
       final variant = withError ? 'error state' : 'default state';
