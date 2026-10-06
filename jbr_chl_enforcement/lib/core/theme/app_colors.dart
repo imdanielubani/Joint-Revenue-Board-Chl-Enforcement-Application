@@ -20,6 +20,8 @@ abstract final class AppColors {
   static const Color textPrimary = Color(0xFF111827);
   static const Color textSecondary = Color(0xFF4B5563);
   static const Color textDisabled = Color(0xFF9CA3AF);
+  static const Color textMuted = Color(0xFF525252);
+  static const Color progressTrack = Color(0xFFDADADA);
 
   // Neutrals (dark)
   static const Color backgroundDark = Color(0xFF0B1220);
