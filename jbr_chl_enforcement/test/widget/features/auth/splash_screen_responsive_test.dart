@@ -5,6 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:jbr_chl_enforcement/app/app_providers.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/features/auth/presentation/screens/splash_screen.dart';
+import 'package:jbr_chl_enforcement/shared/device/permissions/permission_adapter.dart';
+import 'package:jbr_chl_enforcement/shared/storage/preferences_service.dart';
+
+import '../../../helpers/fakes.dart';
 
 /// A device screen in logical pixels, with its system bar insets.
 class _Device {
@@ -87,7 +91,15 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [appVersionProvider.overrideWith((ref) async => '1.0.0')],
+          overrides: [
+            appVersionProvider.overrideWith((ref) async => '1.0.0'),
+            permissionAdapterProvider.overrideWithValue(
+              FakePermissionAdapter.allGranted(),
+            ),
+            preferencesServiceProvider.overrideWithValue(
+              FakePreferencesService(),
+            ),
+          ],
           child: MaterialApp(theme: AppTheme.light, home: const SplashScreen()),
         ),
       );

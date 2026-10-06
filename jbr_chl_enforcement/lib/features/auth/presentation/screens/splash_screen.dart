@@ -10,6 +10,7 @@ import '../../../../app/app_providers.dart';
 import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../permissions/presentation/providers/permission_flow_controller.dart';
 import '../../domain/entities/launch_stage.dart';
 import '../providers/launch_controller.dart';
 import '../widgets/launch_brand_block.dart';
@@ -30,7 +31,7 @@ class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   /// How long "Ready..." stays visible before leaving the launch screen.
-  static const Duration readyHoldDuration = Duration(milliseconds: 5000);
+  static const Duration readyHoldDuration = Duration(milliseconds: 10000);
 
   @override
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
@@ -64,8 +65,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   void _onStageChanged(LaunchStage? previous, LaunchStage next) {
     if (next != LaunchStage.ready || _exitTimer != null) return;
-    _exitTimer = Timer(SplashScreen.readyHoldDuration, () {
-      if (mounted) context.goNamed(RouteNames.login);
+    // Work out pending permission steps while "Ready..." is showing.
+    final permissions = ref.read(permissionFlowControllerProvider.future);
+    _exitTimer = Timer(SplashScreen.readyHoldDuration, () async {
+      var route = RouteNames.login;
+      try {
+        if (!(await permissions).isComplete) route = RouteNames.permissions;
+      } catch (error) {
+        debugPrint('Permission check failed, continuing to sign-in: $error');
+      }
+      if (mounted) context.goNamed(route);
     });
   }
 

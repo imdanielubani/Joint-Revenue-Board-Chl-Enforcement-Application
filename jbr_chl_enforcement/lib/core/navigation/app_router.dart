@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/permissions/presentation/screens/permission_screen.dart';
 import 'route_names.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -13,6 +14,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.launch,
         name: RouteNames.launch,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.permissions,
+        name: RouteNames.permissions,
+        builder: (context, state) => const PermissionScreen(),
       ),
       GoRoute(
         path: RoutePaths.login,

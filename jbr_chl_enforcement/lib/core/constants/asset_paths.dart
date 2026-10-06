@@ -8,4 +8,13 @@ abstract final class AssetPaths {
   // Backgrounds
   static const String launchBackground =
       'assets/images/backgrounds/launch_background.png';
+
+  // Permission icons
+  static const String permissionNotifications =
+      'assets/icons/permissions/notifications.svg';
+  static const String permissionCamera = 'assets/icons/permissions/camera.svg';
+  static const String permissionLocation =
+      'assets/icons/permissions/location.svg';
+  static const String permissionGpsDisabled =
+      'assets/icons/permissions/gps_disabled.svg';
 }

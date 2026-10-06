@@ -11,6 +11,14 @@ abstract final class AppColors {
   static const Color green = Color(0xFF137836);
   static const Color greenDark = Color(0xFF0B5A26);
   static const Color greenLight = Color(0xFF4CA36A);
+  static const Color greenTint = Color(0x1A137836); // green at 10%
+
+  /// Dark end of the green header gradient.
+  static const Color greenDeep = Color(0xFF13271A);
+
+  // Ink used for headings on white sheets, and its 50% tint for body copy.
+  static const Color ink = Color(0xFF1A0C21);
+  static const Color inkMuted = Color(0x801A0C21);
 
   // Neutrals (light)
   static const Color background = Color(0xFFF5F7FA);

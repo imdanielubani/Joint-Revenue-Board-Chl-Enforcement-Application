@@ -26,6 +26,10 @@
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>CHL Enforcement uses the camera for QR and plate scanning and to capture live evidence photos.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>CHL Enforcement stamps every verification and violation with your location for legal integrity.</string>
 		<key>UIApplicationSceneManifest</key>
 		<dict>
 			<key>UIApplicationSupportsMultipleScenes</key>
