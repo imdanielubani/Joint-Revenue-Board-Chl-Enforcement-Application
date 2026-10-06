@@ -133,6 +133,22 @@ void main() {
       expect(c.read(sessionProvider), isNull);
     });
 
+    test('a deactivated account is reported for the sheet, not as an '
+        'alert', () async {
+      repository.failure = AuthFailure.accountDisabled;
+      final c = createContainer();
+
+      await controller(c).submit(email: 'officer@jbr.com', password: 'x');
+
+      expect(state(c).status, LoginStatus.accountDisabled);
+      expect(state(c).message, isNull);
+      expect(state(c).emailError, isNull);
+      expect(c.read(sessionProvider), isNull);
+
+      controller(c).acknowledgeAccountDisabled();
+      expect(state(c).status, LoginStatus.idle);
+    });
+
     test('editing after a failed sign-in clears the alert', () async {
       repository.failure = AuthFailure.invalidCredentials;
       final c = createContainer();

@@ -3,6 +3,9 @@ enum AuthFailure {
   /// Wrong email or password.
   invalidCredentials,
 
+  /// The account exists but has been deactivated (HTTP 403).
+  accountDisabled,
+
   /// No connection, or the server could not be reached in time.
   network,
 

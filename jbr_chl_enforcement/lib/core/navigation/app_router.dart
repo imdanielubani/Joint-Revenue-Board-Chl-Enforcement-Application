@@ -25,7 +25,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.login,
         name: RouteNames.login,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => LoginScreen(
+          notice: state.extra is LoginNotice
+              ? state.extra! as LoginNotice
+              : null,
+        ),
         routes: [
           GoRoute(
             path: 'forgot-password',

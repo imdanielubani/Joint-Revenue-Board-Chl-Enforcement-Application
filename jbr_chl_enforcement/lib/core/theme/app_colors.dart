@@ -40,6 +40,17 @@ abstract final class AppColors {
   // Bottom sheets.
   static const Color scrim = Color(0xCC000000); // black at 80%
   static const Color sheetHandle = Color(0xFFD1D5DB);
+  static const Color sheetTitle = Color(0xFF272936);
+  static const Color sheetBody = Color(0xFF6B7280);
+  static const Color sheetBodyAlt = Color(0xFF5E626D);
+
+  // Status sheets: danger (account deactivated) and warning (session
+  // expired). Text on these colours uses the accessible variants.
+  static const Color dangerTint = Color(0x1AFF0000); // icon halo
+  static const Color amber = Color(0xFFF0B800);
+  static const Color warningTint = Color(0x1AF0B800); // icon halo
+  static const Color warningSurface = Color(0xFFFFFCF3);
+  static const Color warningText = Color(0xFFB54708); // AA on light fills
 
   // Invalid form fields: a calm, deep red (AA contrast on white).
   static const Color fieldError = Color(0xFFD92D20);

@@ -9,7 +9,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_gradients.dart';
+import '../../../offline_sync/presentation/providers/sync_controller.dart';
 import '../providers/auth_controller.dart';
+import '../widgets/auth_status_sheets.dart';
 import '../widgets/login_form.dart';
 import '../widgets/login_header.dart';
 
@@ -20,8 +22,15 @@ import '../widgets/login_header.dart';
 /// keyboard opens the sheet keeps its place below the header and the form
 /// scrolls inside it to keep the focused field in view. See
 /// [_HeaderSheetLayout] for how little space is handled.
+///
+/// Shows the "account deactivated" sheet when sign-in is refused for that
+/// reason, and the "session expired" sheet when opened with
+/// [LoginNotice.sessionExpired].
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.notice});
+
+  /// Why the officer was sent here, if something needs explaining.
+  final LoginNotice? notice;
 
   /// How long "Login Successful..." shows before moving on.
   static const Duration successHoldDuration = Duration(milliseconds: 1200);
@@ -41,12 +50,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Timer? _exitTimer;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.notice == LoginNotice.sessionExpired) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        showSessionExpiredSheet(
+          context,
+          pendingActions: ref.read(pendingSyncCountProvider),
+        );
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _exitTimer?.cancel();
     super.dispose();
   }
 
-  void _onStateChanged(LoginState? previous, LoginState next) {
+  Future<void> _onStateChanged(LoginState? previous, LoginState next) async {
+    if (next.status == LoginStatus.accountDisabled &&
+        previous?.status != LoginStatus.accountDisabled) {
+      await showAccountDeactivatedSheet(context);
+      if (mounted) {
+        ref.read(loginControllerProvider.notifier).acknowledgeAccountDisabled();
+      }
+      return;
+    }
     if (next.status != LoginStatus.success || _exitTimer != null) return;
     _exitTimer = Timer(LoginScreen.successHoldDuration, () {
       if (mounted) context.goNamed(RouteNames.dashboard);
@@ -172,6 +203,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
+}
+
+/// Something to tell the officer when the sign-in screen opens.
+enum LoginNotice {
+  /// Their session ended; they must sign in again.
+  sessionExpired,
 }
 
 enum _Slot { header, sheet }

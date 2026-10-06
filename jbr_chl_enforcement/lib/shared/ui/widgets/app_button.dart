@@ -4,6 +4,18 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'app_spinner.dart';
 
+/// Colour of a primary [AppButton].
+enum AppButtonTone {
+  /// Brand green with white text.
+  brand,
+
+  /// Red with white text, for account problems.
+  danger,
+
+  /// Amber with dark text (white on amber is unreadable), for warnings.
+  warning,
+}
+
 /// Full-width pill button from the design system.
 ///
 /// [AppButton.primary] is the filled green call to action; [AppButton.text]
@@ -19,6 +31,7 @@ class AppButton extends StatelessWidget {
     this.isBusy = false,
     this.isLoading = false,
     this.loadingLabel,
+    this.tone = AppButtonTone.brand,
   }) : _filled = true;
 
   const AppButton.text({
@@ -28,7 +41,8 @@ class AppButton extends StatelessWidget {
     this.isBusy = false,
   }) : _filled = false,
        isLoading = false,
-       loadingLabel = null;
+       loadingLabel = null,
+       tone = AppButtonTone.brand;
 
   static const double height = 54;
 
@@ -39,6 +53,9 @@ class AppButton extends StatelessWidget {
 
   /// Text shown beside the spinner while [isLoading], e.g. "Verifying...".
   final String? loadingLabel;
+
+  /// Fill colour of a primary button.
+  final AppButtonTone tone;
   final bool _filled;
 
   static const TextStyle _labelStyle = TextStyle(
@@ -75,19 +92,24 @@ class AppButton extends StatelessWidget {
             ],
           );
     final disabled = !busy && onPressed == null;
+    final (fill, onFill) = switch (tone) {
+      AppButtonTone.brand => (AppColors.green, Colors.white),
+      AppButtonTone.danger => (AppColors.fieldError, Colors.white),
+      AppButtonTone.warning => (AppColors.amber, AppColors.ink),
+    };
     final minimumSize = const Size(double.infinity, height);
 
     return _filled
         ? FilledButton(
             onPressed: callback,
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.green,
-              foregroundColor: Colors.white,
+              backgroundColor: fill,
+              foregroundColor: onFill,
               disabledBackgroundColor: busy
-                  ? AppColors.green
+                  ? fill
                   : AppColors.buttonDisabledFill,
               disabledForegroundColor: busy
-                  ? Colors.white
+                  ? onFill
                   : AppColors.buttonDisabledText,
               side: disabled
                   ? const BorderSide(

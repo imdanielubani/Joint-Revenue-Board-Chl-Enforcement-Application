@@ -22,6 +22,11 @@ abstract final class AssetPaths {
       'assets/icons/alerts/warning_circle.svg';
   static const String iconCheckCircle = 'assets/icons/alerts/check_circle.svg';
 
+  // Status sheets
+  static const String iconShieldOff = 'assets/icons/status/shield_off.svg';
+  static const String iconTimerOff = 'assets/icons/status/timer_off.svg';
+  static const String iconInfo = 'assets/icons/status/info.svg';
+
   // Backgrounds
   static const String launchBackground =
       'assets/images/backgrounds/launch_background.png';

@@ -12,7 +12,15 @@ final loginControllerProvider =
       LoginController.new,
     );
 
-enum LoginStatus { idle, submitting, success, failure }
+enum LoginStatus {
+  idle,
+  submitting,
+  success,
+  failure,
+
+  /// The server refused sign-in because the account is deactivated.
+  accountDisabled,
+}
 
 @immutable
 class LoginState {
@@ -102,6 +110,12 @@ class LoginController extends Notifier<LoginState> {
     }
   }
 
+  /// Call once the "account deactivated" sheet has been closed.
+  void acknowledgeAccountDisabled() {
+    if (state.status != LoginStatus.accountDisabled) return;
+    state = state.copyWith(status: LoginStatus.idle);
+  }
+
   void setRememberSession(bool value) {
     if (state.isLocked) return;
     state = state.copyWith(rememberSession: value);
@@ -173,6 +187,10 @@ class LoginController extends Notifier<LoginState> {
     } on AuthException catch (error) {
       debugPrint('Sign-in failed: $error');
       if (!ref.mounted) return;
+      if (error.failure == AuthFailure.accountDisabled) {
+        state = state.copyWith(status: LoginStatus.accountDisabled);
+        return;
+      }
       state = state.copyWith(
         status: LoginStatus.failure,
         message: () => _messageFor(error.failure),
@@ -189,6 +207,8 @@ class LoginController extends Notifier<LoginState> {
 
   static String _messageFor(AuthFailure failure) => switch (failure) {
     AuthFailure.invalidCredentials => LoginMessages.invalidCredentials,
+    // Shown as the "account deactivated" sheet instead (see submit).
+    AuthFailure.accountDisabled => LoginMessages.server,
     AuthFailure.network => LoginMessages.network,
     AuthFailure.server => LoginMessages.server,
     AuthFailure.notConfigured => LoginMessages.notConfigured,

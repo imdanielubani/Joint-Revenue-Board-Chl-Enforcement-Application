@@ -113,6 +113,10 @@ void main() {
         AuthFailure.invalidCredentials,
       ),
       (
+        _dioError(DioExceptionType.badResponse, status: 403),
+        AuthFailure.accountDisabled,
+      ),
+      (
         _dioError(DioExceptionType.badResponse, status: 500),
         AuthFailure.server,
       ),
@@ -175,6 +179,11 @@ void main() {
 
     test('treats an unknown email (404) as sent', () async {
       remote.error = _dioError(DioExceptionType.badResponse, status: 404);
+      await expectLater(reset(repository()), completes);
+    });
+
+    test('treats a deactivated account (403) as sent', () async {
+      remote.error = _dioError(DioExceptionType.badResponse, status: 403);
       await expectLater(reset(repository()), completes);
     });
 

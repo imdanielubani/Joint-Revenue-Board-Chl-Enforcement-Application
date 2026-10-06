@@ -79,9 +79,10 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _remote.requestPasswordReset(email);
     } on DioException catch (error) {
-      // An unknown email is reported as sent, so the response cannot be
-      // used to find out which emails have accounts.
-      if (error.response?.statusCode == 404) return;
+      // Unknown (404) and deactivated (403) accounts are reported as sent,
+      // so the response cannot be used to find out about accounts.
+      final status = error.response?.statusCode;
+      if (status == 404 || status == 403) return;
       throw AuthException(_failureFor(error), error.message);
     }
   }
@@ -95,10 +96,11 @@ class AuthRepositoryImpl implements AuthRepository {
       case DioExceptionType.connectionError:
         return AuthFailure.network;
       case DioExceptionType.badResponse:
-        final status = error.response?.statusCode ?? 0;
-        return status == 400 || status == 401 || status == 422
-            ? AuthFailure.invalidCredentials
-            : AuthFailure.server;
+        return switch (error.response?.statusCode) {
+          400 || 401 || 422 => AuthFailure.invalidCredentials,
+          403 => AuthFailure.accountDisabled,
+          _ => AuthFailure.server,
+        };
       case DioExceptionType.badCertificate:
       case DioExceptionType.cancel:
       case DioExceptionType.unknown:

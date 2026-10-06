@@ -161,13 +161,19 @@ Shared widgets in `lib/shared/ui/widgets/`:
 
 | Widget | Use |
 |---|---|
-| `AppButton.primary` / `AppButton.text` | 54 px pill buttons; `isBusy` locks, `isLoading` shows a spinner (plus `loadingLabel` when given); a primary button with no `onPressed` shows the grey disabled style |
+| `AppButton.primary` / `AppButton.text` | 54 px pill buttons; `isBusy` locks, `isLoading` shows a spinner (plus `loadingLabel` when given); a primary button with no `onPressed` shows the grey disabled style; `tone` picks brand green, danger red or warning amber (amber uses dark text for contrast) |
+| `showAppSheet` / `AppSheetCard` (`shared/ui/sheets/`) | Floating card over the dark scrim with a drag handle; content scrolls on short screens |
 | `AppTextField` | Labelled pill field with icon, optional suffix and `errorText` |
 | `AppCheckbox` | Checkbox with label and a 48 px touch target |
 | `AppAlertBanner` | Error or success alert above a form |
 | `AppSpinner` | Rotating loading symbol (still when reduced motion is on) |
 | `GreenHeaderScaffold` | Green header with title and a rounded white sheet; pass `onBack` for the round back button and a left-aligned title |
 | `BrandAccentBar` | Short green bar under brand headings |
+
+Accessibility adjustments to the design: dark text on amber buttons
+(white on `#F0B800` is 1.9 : 1), dark amber `#B54708` for amber text on
+light fills, and the calmer red `#D92D20` instead of pure `#FF0000` for red
+buttons.
 
 Errors follow one rule: **typing problems** show on the field concerned (red
 border `#D92D20` and a message under it); **failures not tied to one field**
@@ -181,6 +187,8 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Permissions | `features/permissions/` | Notifications, camera, location and a "GPS is disabled" step. Each permission is asked only once per install; blocked permissions open app settings and the flow continues when the user returns. |
 | Sign in | `features/auth/presentation/screens/login_screen.dart` | See below. |
 | Password recovery | `features/auth/presentation/screens/forgot_password_screen.dart` | Email (carried over from sign-in), Send Reset Link (disabled until an email is entered), "Verifying..." while sending, then the "link sent" sheet (`widgets/reset_link_sent_sheet.dart`) with Return to Login. Closing the sheet keeps the screen so another link can be sent. |
+| Account deactivated | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in when the server refuses sign-in because the account is deactivated (HTTP 403). |
+| Session expired | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in after a session expires. Shows "Queued work is safe" when offline actions are waiting (`pendingSyncCountProvider`). |
 | Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | Placeholder showing the signed-in officer. |
 
 All implemented screens are checked in widget tests across Android and iOS
@@ -213,6 +221,15 @@ phone sizes, tablets, a foldable, landscape and 200% text.
   shown as sent, so the screen never reveals which emails have accounts;
   400/422 mark the email as invalid. The debug demo repository always
   succeeds.
+- **Deactivated accounts:** HTTP 403 on sign-in becomes
+  `AuthFailure.accountDisabled` and shows the "Account Deactivated" sheet.
+  A 403 on password reset is reported as sent, like an unknown email.
+- **Session expiry:** `SessionNotifier` (`presentation/providers/
+  session_provider.dart`) ends the session when the access token's
+  `expiresAt` passes, clears the saved session and reports
+  `SessionEndReason.expired`. `ChlEnforcementApp` reacts by going to sign-in
+  with `LoginNotice.sessionExpired`, which shows the "session expired"
+  sheet.
 - **Email check:** `core/utils/validators.dart` (`Validators.isEmail`) is
   shared by sign-in and password recovery.
 
@@ -247,6 +264,8 @@ flutter test                                   # everything
 flutter test test/widget/features/auth         # one area
 ```
 
+- `fake_async` (dev dependency) drives timers in unit tests, such as
+  session expiry.
 - `test/helpers/fakes.dart` has in-memory fakes: `FakeAuthRepository`,
   `FakePermissionAdapter`, `FakePreferencesService`,
   `FakeSecureStorageService`. Override providers with them in
@@ -280,7 +299,8 @@ Sign-in and sessions:
 2. Restore a remembered session at launch (`launch_controller.dart` TODO).
 3. Sign-out, token expiry and refresh (`logout.dart`, `refresh_session.dart`).
 4. Attach the token to API requests and handle 401s
-   (`shared/networking/interceptors/`).
+   (`shared/networking/interceptors/`); a 401 should call
+   `SessionNotifier.expire()` so the "session expired" sheet appears.
 5. Route guards so signed-out users cannot reach signed-in screens
    (`core/navigation/route_guards.dart`).
 6. Messages for disabled accounts (403) and too many attempts (429).
@@ -295,6 +315,8 @@ Elsewhere:
 - Launch stages are timed placeholders; wire them to session restore and the
   offline vehicle cache.
 - The dashboard is a placeholder.
+- `pendingSyncCountProvider` always returns 0 until the offline sync queue
+  exists, so the "Queued work is safe" banner does not show yet.
 - The password reset link itself (opening it and choosing a new password)
   is handled outside the app for now.
 - Strings are English only.
@@ -304,6 +326,11 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Account deactivated and session expired sheets over sign-in; HTTP 403
+  mapped to a deactivated account; session expiry timer that returns the
+  officer to sign-in; shared `showAppSheet` / `AppSheetCard`; `AppButton`
+  tones; "link sent" sheet moved onto the shared card.
 
 - Password recovery screen: email carried over from sign-in, disabled
   button until an email is entered, sending state and "link sent" sheet;
