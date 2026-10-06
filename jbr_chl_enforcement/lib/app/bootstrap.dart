@@ -12,7 +12,9 @@ Future<void> bootstrap() async {
   // Start in a phone frame when previewing in a browser; real devices run
   // full screen. Switch device from the device_preview tab in DevTools.
   if (kIsWeb) {
-    await DevicePreview.maybeController?.applyPreset(DevicePresets.galaxyS24);
+    await DevicePreview.maybeController?.applyPreset(
+      DevicePresets.iPhone16ProMax,
+    );
   }
 
   LicenseRegistry.addLicense(() async* {
