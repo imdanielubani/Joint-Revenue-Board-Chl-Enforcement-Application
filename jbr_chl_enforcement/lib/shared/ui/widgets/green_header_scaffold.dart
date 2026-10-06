@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_typography.dart';
 
 /// Screen with a green gradient header and a rounded white sheet beneath it.
@@ -23,15 +24,6 @@ class GreenHeaderScaffold extends StatelessWidget {
 
   static const double _sheetRadius = 30;
 
-  // The design's 143.5° CSS gradient over the full screen, with stops at
-  // 1.8% and 70.5%, expressed as alignments.
-  static const LinearGradient _gradient = LinearGradient(
-    begin: Alignment(-1.389, -0.867),
-    end: Alignment(1.389, 0.867),
-    colors: [AppColors.greenDeep, AppColors.green],
-    stops: [0.018, 0.705],
-  );
-
   static const TextStyle _titleStyle = TextStyle(
     fontFamily: AppTypography.fontFamily,
     fontSize: 16,
@@ -50,7 +42,7 @@ class GreenHeaderScaffold extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.surface,
         body: DecoratedBox(
-          decoration: const BoxDecoration(gradient: _gradient),
+          decoration: const BoxDecoration(gradient: AppGradients.brandHeader),
           child: Column(
             children: [
               SafeArea(

@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import 'app_spinner.dart';
 
 /// Full-width pill button from the design system.
 ///
 /// [AppButton.primary] is the filled green call to action; [AppButton.text]
 /// is the quieter secondary action beneath it. While [isBusy] the button
-/// keeps its look but ignores taps.
+/// keeps its look but ignores taps; [isLoading] also swaps the label for a
+/// spinner (primary only).
 class AppButton extends StatelessWidget {
   const AppButton.primary({
     super.key,
     required this.label,
     required this.onPressed,
     this.isBusy = false,
+    this.isLoading = false,
   }) : _filled = true;
 
   const AppButton.text({
@@ -21,13 +24,15 @@ class AppButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.isBusy = false,
-  }) : _filled = false;
+  }) : _filled = false,
+       isLoading = false;
 
   static const double height = 54;
 
   final String label;
   final VoidCallback? onPressed;
   final bool isBusy;
+  final bool isLoading;
   final bool _filled;
 
   static const TextStyle _labelStyle = TextStyle(
@@ -48,8 +53,11 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final callback = isBusy ? null : onPressed;
-    final child = Text(label, textAlign: TextAlign.center);
+    final busy = isBusy || isLoading;
+    final callback = busy ? null : onPressed;
+    final Widget child = isLoading
+        ? AppSpinner(semanticLabel: label)
+        : Text(label, textAlign: TextAlign.center);
     final minimumSize = const Size(double.infinity, height);
 
     return _filled
@@ -58,7 +66,7 @@ class AppButton extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.green,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: isBusy
+              disabledBackgroundColor: busy
                   ? AppColors.green
                   : AppColors.green.withValues(alpha: 0.4),
               disabledForegroundColor: Colors.white,
@@ -74,7 +82,7 @@ class AppButton extends StatelessWidget {
             onPressed: callback,
             style: TextButton.styleFrom(
               foregroundColor: AppColors.green,
-              disabledForegroundColor: isBusy
+              disabledForegroundColor: busy
                   ? AppColors.green
                   : AppColors.green.withValues(alpha: 0.4),
               minimumSize: minimumSize,

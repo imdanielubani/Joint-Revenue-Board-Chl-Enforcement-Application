@@ -20,6 +20,29 @@ abstract final class AppColors {
   static const Color ink = Color(0xFF1A0C21);
   static const Color inkMuted = Color(0x801A0C21);
 
+  /// Text links on white, e.g. "Forgot Password!".
+  static const Color link = Color(0xFF266E43);
+
+  /// Secondary text on the green header.
+  static const Color onHeaderMuted = Color(0xFFE1E1E1);
+
+  // "Secure Enforcement Platform" pill on the green header.
+  static const Color statusPillFill = Color(0x8000DB50);
+  static const Color statusPillBorder = Color(0x8000FF5D);
+  static const Color statusDot = Color(0xFF00FF5D);
+  static const Color statusDotGlow = Color(0xFF02BE46);
+
+  // Invalid form fields.
+  static const Color fieldError = Color(0xFFFF0009);
+  static const Color fieldErrorFill = Color(0x1AFF0009);
+
+  // Inline alerts (toasts) above forms.
+  static const Color alertError = Color(0xFFF04349);
+  static const Color alertErrorFill = Color(0xFFFDECEC);
+  static const Color alertSuccess = Color(0xFF22C55E);
+  static const Color alertSuccessFill = Color(0x3322C55E);
+  static const Color alertSuccessText = Color(0xFF28292A);
+
   // Neutrals (light)
   static const Color background = Color(0xFFF5F7FA);
   static const Color surface = Color(0xFFFFFFFF);

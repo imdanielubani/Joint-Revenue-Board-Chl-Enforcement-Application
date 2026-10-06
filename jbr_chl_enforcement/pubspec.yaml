@@ -85,6 +85,8 @@ flutter:
     - assets/images/backgrounds/
     - assets/icons/
     - assets/icons/permissions/
+    - assets/icons/auth/
+    - assets/icons/alerts/
     - assets/animations/
     - assets/sounds/
     - assets/fonts/poppins/OFL.txt
