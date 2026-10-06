@@ -276,6 +276,72 @@ void main() {
     expect(tester.getRect(_email).top, lessThan(emailBefore.top));
   });
 
+  group('keyboard on a 360 x 806 phone', () {
+    // Top of the white sheet: the form starts 17 + 16 below it.
+    double sheetTop(WidgetTester tester) =>
+        tester.getRect(find.text('Email Address')).top - 33;
+
+    Future<void> pumpWithKeyboard(WidgetTester tester, double keyboard) async {
+      tester.view
+        ..physicalSize = const Size(360 * 2, 806 * 2)
+        ..devicePixelRatio = 2
+        ..padding = const FakeViewPadding(top: 24 * 2)
+        ..viewInsets = FakeViewPadding(bottom: keyboard * 2);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app(FakeAuthRepository()));
+      await tester.pumpAndSettle();
+    }
+
+    for (final keyboard in [0.0, 300.0]) {
+      testWidgets('sheet stays below the whole header (keyboard $keyboard)', (
+        tester,
+      ) async {
+        await pumpWithKeyboard(tester, keyboard);
+
+        final pill = tester.getRect(find.text('Secure Enforcement Platform'));
+        // Header: 24 status bar + 39 + content + 71 gap.
+        expect(sheetTop(tester), closeTo(pill.bottom + 6 + 71, 2));
+      });
+    }
+
+    testWidgets('a taller keyboard never covers the logo, text or pill', (
+      tester,
+    ) async {
+      await pumpWithKeyboard(tester, 340);
+
+      final top = sheetTop(tester);
+      for (final finder in [
+        find.text('Sign In to Continue'),
+        find.textContaining('Enter your authorized enforcement'),
+        find.text('Secure Enforcement Platform'),
+      ]) {
+        expect(tester.getRect(finder).bottom, lessThan(top));
+      }
+      // The badge ends well above the title.
+      expect(
+        tester.getRect(find.text('Sign In to Continue')).top,
+        greaterThan(24 + 39 + 64),
+      );
+      // The email field is usable above the keyboard.
+      expect(tester.getRect(_email).bottom, lessThanOrEqualTo(806 - 340));
+    });
+
+    testWidgets('the focused password field scrolls into view', (tester) async {
+      await pumpWithKeyboard(tester, 340);
+
+      await tester.showKeyboard(_password);
+      await tester.pumpAndSettle();
+
+      final password = tester.getRect(_password);
+      expect(password.bottom, lessThanOrEqualTo(806 - 340 + 0.5));
+      expect(password.top, greaterThanOrEqualTo(sheetTop(tester)));
+      expect(
+        tester.getRect(find.text('Secure Enforcement Platform')).bottom,
+        lessThan(tester.getRect(find.text('Password')).top),
+      );
+    });
+  });
+
   testWidgets('the header does not scroll with the page on tall screens', (
     tester,
   ) async {
