@@ -9,7 +9,8 @@ import 'app_spinner.dart';
 /// [AppButton.primary] is the filled green call to action; [AppButton.text]
 /// is the quieter secondary action beneath it. While [isBusy] the button
 /// keeps its look but ignores taps; [isLoading] also swaps the label for a
-/// spinner (primary only).
+/// spinner, followed by [loadingLabel] when given (primary only). A primary
+/// button with no [onPressed] (and not busy) shows the grey disabled style.
 class AppButton extends StatelessWidget {
   const AppButton.primary({
     super.key,
@@ -17,6 +18,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.isBusy = false,
     this.isLoading = false,
+    this.loadingLabel,
   }) : _filled = true;
 
   const AppButton.text({
@@ -25,7 +27,8 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.isBusy = false,
   }) : _filled = false,
-       isLoading = false;
+       isLoading = false,
+       loadingLabel = null;
 
   static const double height = 54;
 
@@ -33,6 +36,9 @@ class AppButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isBusy;
   final bool isLoading;
+
+  /// Text shown beside the spinner while [isLoading], e.g. "Verifying...".
+  final String? loadingLabel;
   final bool _filled;
 
   static const TextStyle _labelStyle = TextStyle(
@@ -55,9 +61,20 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final busy = isBusy || isLoading;
     final callback = busy ? null : onPressed;
-    final Widget child = isLoading
+    final loadingLabel = this.loadingLabel;
+    final Widget child = !isLoading
+        ? Text(label, textAlign: TextAlign.center)
+        : loadingLabel == null
         ? AppSpinner(semanticLabel: label)
-        : Text(label, textAlign: TextAlign.center);
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const AppSpinner(),
+              const SizedBox(width: 10),
+              Flexible(child: Text(loadingLabel)),
+            ],
+          );
+    final disabled = !busy && onPressed == null;
     final minimumSize = const Size(double.infinity, height);
 
     return _filled
@@ -68,8 +85,16 @@ class AppButton extends StatelessWidget {
               foregroundColor: Colors.white,
               disabledBackgroundColor: busy
                   ? AppColors.green
-                  : AppColors.green.withValues(alpha: 0.4),
-              disabledForegroundColor: Colors.white,
+                  : AppColors.buttonDisabledFill,
+              disabledForegroundColor: busy
+                  ? Colors.white
+                  : AppColors.buttonDisabledText,
+              side: disabled
+                  ? const BorderSide(
+                      color: AppColors.buttonDisabledBorder,
+                      width: 1.5,
+                    )
+                  : null,
               minimumSize: minimumSize,
               padding: _padding,
               shape: _shape,

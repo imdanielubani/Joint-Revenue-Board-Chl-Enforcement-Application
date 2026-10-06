@@ -32,6 +32,15 @@ abstract final class AppColors {
   static const Color statusDot = Color(0xFF00FF5D);
   static const Color statusDotGlow = Color(0xFF02BE46);
 
+  // Disabled primary button.
+  static const Color buttonDisabledFill = Color(0xFFF3F3F3);
+  static const Color buttonDisabledBorder = Color(0xFFD6D6D6);
+  static const Color buttonDisabledText = Color(0xFF8C929C);
+
+  // Bottom sheets.
+  static const Color scrim = Color(0xCC000000); // black at 80%
+  static const Color sheetHandle = Color(0xFFD1D5DB);
+
   // Invalid form fields: a calm, deep red (AA contrast on white).
   static const Color fieldError = Color(0xFFD92D20);
   static const Color fieldErrorText = Color(0xFFB42318);
@@ -44,6 +53,10 @@ abstract final class AppColors {
   static const Color alertSuccess = Color(0xFF22C55E);
   static const Color alertSuccessFill = Color(0x3322C55E);
   static const Color alertSuccessText = Color(0xFF28292A);
+
+  /// Lighter success alert used inside sheets, with a mint icon halo.
+  static const Color alertSuccessSubtleFill = Color(0x1A22C55E);
+  static const Color successIconHalo = Color(0x1A01E17B);
 
   // Neutrals (light)
   static const Color background = Color(0xFFF5F7FA);

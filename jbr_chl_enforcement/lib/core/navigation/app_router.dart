@@ -30,7 +30,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'forgot-password',
             name: RouteNames.forgotPassword,
-            builder: (context, state) => const ForgotPasswordScreen(),
+            builder: (context, state) => ForgotPasswordScreen(
+              initialEmail: state.extra is String
+                  ? state.extra! as String
+                  : null,
+            ),
           ),
         ],
       ),

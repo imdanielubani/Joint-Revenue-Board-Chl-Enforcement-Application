@@ -148,9 +148,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             controller.onEmailChanged,
                                         onPasswordChanged:
                                             controller.onPasswordChanged,
-                                        onForgotPassword: () =>
+                                        onForgotPassword: (email) =>
                                             context.pushNamed(
                                               RouteNames.forgotPassword,
+                                              extra: email,
                                             ),
                                       ),
                                     ),

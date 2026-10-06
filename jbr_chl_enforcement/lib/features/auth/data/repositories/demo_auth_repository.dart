@@ -46,4 +46,9 @@ class DemoAuthRepository implements AuthRepository {
     await storeSession(_local, session, rememberSession: rememberSession);
     return session;
   }
+
+  /// Always succeeds, as the real API does for unknown emails.
+  @override
+  Future<void> requestPasswordReset({required String email}) =>
+      Future<void>.delayed(latency);
 }

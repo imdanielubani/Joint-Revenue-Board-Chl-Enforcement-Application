@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/validators.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/auth_failure.dart';
 import '../../domain/usecases/login.dart';
@@ -82,8 +83,6 @@ abstract final class LoginMessages {
 /// that are not about one field (wrong credentials, no connection) are shown
 /// once, as an alert above the form.
 class LoginController extends Notifier<LoginState> {
-  static final RegExp _emailPattern = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-
   @override
   LoginState build() {
     _restoreRememberChoice();
@@ -136,7 +135,7 @@ class LoginController extends Notifier<LoginState> {
     final trimmedEmail = email.trim();
     final emailError = trimmedEmail.isEmpty
         ? LoginMessages.emailRequired
-        : _emailPattern.hasMatch(trimmedEmail)
+        : Validators.isEmail(trimmedEmail)
         ? null
         : LoginMessages.emailInvalid;
     final passwordError = password.isEmpty

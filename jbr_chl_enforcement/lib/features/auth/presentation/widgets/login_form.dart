@@ -31,7 +31,9 @@ class LoginForm extends StatefulWidget {
   final ValueChanged<bool> onRememberChanged;
   final VoidCallback onEmailChanged;
   final VoidCallback onPasswordChanged;
-  final VoidCallback onForgotPassword;
+
+  /// Receives the email typed so far, to carry over to password recovery.
+  final ValueChanged<String> onForgotPassword;
 
   @override
   State<LoginForm> createState() => _LoginFormState();
@@ -137,7 +139,9 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               ),
               _ForgotPasswordLink(
-                onPressed: locked ? null : widget.onForgotPassword,
+                onPressed: locked
+                    ? null
+                    : () => widget.onForgotPassword(_email.text.trim()),
               ),
             ],
           ),

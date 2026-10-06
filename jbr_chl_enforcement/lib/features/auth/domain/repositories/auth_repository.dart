@@ -13,4 +13,11 @@ abstract interface class AuthRepository {
     required String password,
     required bool rememberSession,
   });
+
+  /// Asks the server to email a password reset link to [email].
+  ///
+  /// Completes normally whether or not an account uses that email, so the
+  /// app never reveals which emails are registered. Throws an
+  /// `AuthException` when the request cannot be made or is rejected.
+  Future<void> requestPasswordReset({required String email});
 }

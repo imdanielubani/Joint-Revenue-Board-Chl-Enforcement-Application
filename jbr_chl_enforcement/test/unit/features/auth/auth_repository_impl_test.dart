@@ -28,6 +28,15 @@ class _FakeRemote implements AuthRemoteDataSource {
     if (error != null) throw error;
     return session;
   }
+
+  String? lastResetEmail;
+
+  @override
+  Future<void> requestPasswordReset(String email) async {
+    lastResetEmail = email;
+    final error = this.error;
+    if (error != null) throw error;
+  }
 }
 
 DioException _dioError(DioExceptionType type, {int? status}) {
@@ -153,6 +162,47 @@ void main() {
 
       expect(secureStorage.values, isEmpty);
     });
+  });
+
+  group('requestPasswordReset', () {
+    Future<void> reset(AuthRepositoryImpl repo) =>
+        repo.requestPasswordReset(email: 'ada@jbr.com');
+
+    test('sends the email', () async {
+      await reset(repository());
+      expect(remote.lastResetEmail, 'ada@jbr.com');
+    });
+
+    test('treats an unknown email (404) as sent', () async {
+      remote.error = _dioError(DioExceptionType.badResponse, status: 404);
+      await expectLater(reset(repository()), completes);
+    });
+
+    test('fails as not configured without an API address', () async {
+      await expectLater(
+        reset(repository(configured: false)),
+        failsWith(AuthFailure.notConfigured),
+      );
+      expect(remote.lastResetEmail, isNull);
+    });
+
+    for (final (error, failure) in [
+      (
+        _dioError(DioExceptionType.badResponse, status: 422),
+        AuthFailure.invalidCredentials,
+      ),
+      (
+        _dioError(DioExceptionType.badResponse, status: 500),
+        AuthFailure.server,
+      ),
+      (_dioError(DioExceptionType.connectionError), AuthFailure.network),
+    ]) {
+      test('maps ${error.response?.statusCode ?? error.type.name} to '
+          '${failure.name}', () async {
+        remote.error = error;
+        await expectLater(reset(repository()), failsWith(failure));
+      });
+    }
   });
 
   group('AuthTokenModel', () {

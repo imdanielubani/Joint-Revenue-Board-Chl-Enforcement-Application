@@ -68,6 +68,24 @@ class AuthRepositoryImpl implements AuthRepository {
     return session;
   }
 
+  @override
+  Future<void> requestPasswordReset({required String email}) async {
+    if (!_isConfigured) {
+      throw const AuthException(
+        AuthFailure.notConfigured,
+        'API_BASE_URL is not set',
+      );
+    }
+    try {
+      await _remote.requestPasswordReset(email);
+    } on DioException catch (error) {
+      // An unknown email is reported as sent, so the response cannot be
+      // used to find out which emails have accounts.
+      if (error.response?.statusCode == 404) return;
+      throw AuthException(_failureFor(error), error.message);
+    }
+  }
+
   static AuthFailure _failureFor(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:

@@ -79,7 +79,7 @@ flutter run --dart-define=AUTH_DEMO=true
 
 - **In the browser** (`flutter run -d chrome`) the app starts inside a phone
   frame. The starting device is set in `bootstrap.dart`
-  (`DevicePresets.iPhone16ProMax` at the moment). Change it there and press
+  (`DevicePresets.iPhone17Pro` at the moment). Change it there and press
   `R` (full restart) to apply.
 - **To switch device while running**, open Flutter DevTools (press `v` in the
   `flutter run` terminal, or open the DevTools link it prints, or use
@@ -161,12 +161,12 @@ Shared widgets in `lib/shared/ui/widgets/`:
 
 | Widget | Use |
 |---|---|
-| `AppButton.primary` / `AppButton.text` | 54 px pill buttons; `isBusy` locks, `isLoading` shows a spinner |
+| `AppButton.primary` / `AppButton.text` | 54 px pill buttons; `isBusy` locks, `isLoading` shows a spinner (plus `loadingLabel` when given); a primary button with no `onPressed` shows the grey disabled style |
 | `AppTextField` | Labelled pill field with icon, optional suffix and `errorText` |
 | `AppCheckbox` | Checkbox with label and a 48 px touch target |
 | `AppAlertBanner` | Error or success alert above a form |
 | `AppSpinner` | Rotating loading symbol (still when reduced motion is on) |
-| `GreenHeaderScaffold` | Green header with title and a rounded white sheet |
+| `GreenHeaderScaffold` | Green header with title and a rounded white sheet; pass `onBack` for the round back button and a left-aligned title |
 | `BrandAccentBar` | Short green bar under brand headings |
 
 Errors follow one rule: **typing problems** show on the field concerned (red
@@ -180,7 +180,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Launch | `features/auth/presentation/screens/splash_screen.dart` | Three stages with a progress bar, then routes to permissions or sign-in. Stages are timed placeholders (see TODOs in `launch_controller.dart`). Scales to the screen, works in landscape and on tablets. |
 | Permissions | `features/permissions/` | Notifications, camera, location and a "GPS is disabled" step. Each permission is asked only once per install; blocked permissions open app settings and the flow continues when the user returns. |
 | Sign in | `features/auth/presentation/screens/login_screen.dart` | See below. |
-| Forgot password | `features/auth/presentation/screens/forgot_password_screen.dart` | Placeholder. |
+| Password recovery | `features/auth/presentation/screens/forgot_password_screen.dart` | Email (carried over from sign-in), Send Reset Link (disabled until an email is entered), "Verifying..." while sending, then the "link sent" sheet (`widgets/reset_link_sent_sheet.dart`) with Return to Login. Closing the sheet keeps the screen so another link can be sent. |
 | Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | Placeholder showing the signed-in officer. |
 
 All implemented screens are checked in widget tests across Android and iOS
@@ -208,6 +208,13 @@ phone sizes, tablets, a foldable, landscape and 200% text.
   HTTP 400/401/422 mean wrong credentials; timeouts and connection errors
   mean no connection; anything else is a server error
   (`auth_repository_impl.dart`).
+- **Password reset (assumed contract):** `POST /auth/forgot-password` with
+  `{ "email" }`; the response body is not used. A 404 (unknown email) is
+  shown as sent, so the screen never reveals which emails have accounts;
+  400/422 mark the email as invalid. The debug demo repository always
+  succeeds.
+- **Email check:** `core/utils/validators.dart` (`Validators.isEmail`) is
+  shared by sign-in and password recovery.
 
 ## Permissions and platform setup
 
@@ -287,7 +294,9 @@ Elsewhere:
 
 - Launch stages are timed placeholders; wire them to session restore and the
   offline vehicle cache.
-- Forgot password and dashboard screens are placeholders.
+- The dashboard is a placeholder.
+- The password reset link itself (opening it and choosing a new password)
+  is handled outside the app for now.
 - Strings are English only.
 - `nfc_manager` and `workmanager_android` still apply the Kotlin Gradle
   Plugin; future Flutter versions will require updated plugin releases.
@@ -295,6 +304,12 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Password recovery screen: email carried over from sign-in, disabled
+  button until an email is entered, sending state and "link sent" sheet;
+  reset request in the auth repository (unknown emails reported as sent);
+  back button on `GreenHeaderScaffold`; grey disabled `AppButton` style;
+  shared email validator. Web preview starts on iPhone 17 Pro.
 
 - Sign-in errors: typing problems shown under the field, other failures as
   one calm alert ("Incorrect email or password."); softer red palette.

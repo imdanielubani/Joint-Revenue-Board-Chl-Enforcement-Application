@@ -22,4 +22,10 @@ class AuthRemoteDataSource {
     if (body == null) throw const FormatException('Empty sign-in response');
     return AuthTokenModel.fromLoginResponse(body, receivedAt: DateTime.now());
   }
+
+  /// Requests a reset link. Throws [DioException] on transport or HTTP
+  /// errors; the response body is not used.
+  Future<void> requestPasswordReset(String email) async {
+    await _dio.post<void>(ApiEndpoints.forgotPassword, data: {'email': email});
+  }
 }

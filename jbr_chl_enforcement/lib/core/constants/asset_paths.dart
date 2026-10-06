@@ -14,6 +14,10 @@ abstract final class AssetPaths {
   static const String iconLock = 'assets/icons/auth/lock.svg';
   static const String iconCheck = 'assets/icons/auth/check.svg';
   static const String iconLoading = 'assets/icons/auth/loading.svg';
+  static const String iconMailBadge = 'assets/icons/auth/mail_badge.svg';
+  static const String iconBack = 'assets/icons/navigation/back.svg';
+  static const String iconCheckCircleFilled =
+      'assets/icons/alerts/check_circle_filled.svg';
   static const String iconWarningCircle =
       'assets/icons/alerts/warning_circle.svg';
   static const String iconCheckCircle = 'assets/icons/alerts/check_circle.svg';

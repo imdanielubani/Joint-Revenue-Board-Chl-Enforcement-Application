@@ -85,11 +85,21 @@ class FakeSecureStorageService implements SecureStorageService {
 
 /// Scriptable [AuthRepository].
 class FakeAuthRepository implements AuthRepository {
-  FakeAuthRepository({this.failure, this.delay = Duration.zero});
+  FakeAuthRepository({
+    this.failure,
+    this.delay = Duration.zero,
+    this.resetFailure,
+    this.resetDelay = Duration.zero,
+  });
 
   /// Fails with this when set; otherwise signs in as [officer].
   AuthFailure? failure;
   Duration delay;
+
+  /// Password reset fails with this when set; otherwise succeeds.
+  AuthFailure? resetFailure;
+  Duration resetDelay;
+  final List<String> resetRequests = [];
 
   static const Officer officer = Officer(
     id: 'o-1',
@@ -110,5 +120,13 @@ class FakeAuthRepository implements AuthRepository {
     final failure = this.failure;
     if (failure != null) throw AuthException(failure);
     return const AuthSession(accessToken: 'token', officer: officer);
+  }
+
+  @override
+  Future<void> requestPasswordReset({required String email}) async {
+    resetRequests.add(email);
+    if (resetDelay > Duration.zero) await Future<void>.delayed(resetDelay);
+    final failure = resetFailure;
+    if (failure != null) throw AuthException(failure);
   }
 }
