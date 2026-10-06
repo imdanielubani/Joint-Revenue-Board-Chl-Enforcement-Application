@@ -32,13 +32,15 @@ abstract final class AppColors {
   static const Color statusDot = Color(0xFF00FF5D);
   static const Color statusDotGlow = Color(0xFF02BE46);
 
-  // Invalid form fields.
-  static const Color fieldError = Color(0xFFFF0009);
-  static const Color fieldErrorFill = Color(0x1AFF0009);
+  // Invalid form fields: a calm, deep red (AA contrast on white).
+  static const Color fieldError = Color(0xFFD92D20);
+  static const Color fieldErrorText = Color(0xFFB42318);
 
   // Inline alerts (toasts) above forms.
-  static const Color alertError = Color(0xFFF04349);
-  static const Color alertErrorFill = Color(0xFFFDECEC);
+  static const Color alertError = Color(0xFFD92D20); // icon
+  static const Color alertErrorText = Color(0xFFB42318);
+  static const Color alertErrorFill = Color(0xFFFEF3F2);
+  static const Color alertErrorBorder = Color(0xFFFECDCA);
   static const Color alertSuccess = Color(0xFF22C55E);
   static const Color alertSuccessFill = Color(0x3322C55E);
   static const Color alertSuccessText = Color(0xFF28292A);

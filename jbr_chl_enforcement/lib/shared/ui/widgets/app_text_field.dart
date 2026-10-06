@@ -7,9 +7,9 @@ import '../../../core/theme/app_typography.dart';
 
 /// Labelled pill text field from the design system.
 ///
-/// Ink border at rest, green when focused, red with a red tint when
-/// [hasError]. Text scales with the system setting; the field grows rather
-/// than clipping.
+/// Ink border at rest, green when focused. With an [errorText] the border
+/// turns red and the message shows under the field. Text scales with the
+/// system setting; the field grows rather than clipping.
 class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
@@ -17,7 +17,7 @@ class AppTextField extends StatelessWidget {
     required this.controller,
     required this.iconAsset,
     this.hint,
-    this.hasError = false,
+    this.errorText,
     this.enabled = true,
     this.obscureText = false,
     this.keyboardType,
@@ -33,7 +33,9 @@ class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final String iconAsset;
   final String? hint;
-  final bool hasError;
+
+  /// Shown under the field in red; null when the field is fine.
+  final String? errorText;
   final bool enabled;
   final bool obscureText;
   final TextInputType? keyboardType;
@@ -66,6 +68,14 @@ class AppTextField extends StatelessWidget {
     color: AppColors.ink,
   );
 
+  static const TextStyle _errorStyle = TextStyle(
+    fontFamily: AppTypography.fontFamily,
+    fontSize: 12,
+    fontWeight: AppTypography.regular,
+    height: 16 / 12,
+    color: AppColors.fieldErrorText,
+  );
+
   static OutlineInputBorder _border(Color color) => OutlineInputBorder(
     borderRadius: const BorderRadius.all(Radius.circular(_radius)),
     borderSide: BorderSide(color: color, width: _borderWidth),
@@ -73,6 +83,8 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final errorText = this.errorText;
+    final hasError = errorText != null;
     final restColor = hasError ? AppColors.fieldError : AppColors.ink;
     final focusColor = hasError ? AppColors.fieldError : AppColors.green;
 
@@ -103,7 +115,7 @@ class AppTextField extends StatelessWidget {
           decoration: InputDecoration(
             isDense: true,
             filled: true,
-            fillColor: hasError ? AppColors.fieldErrorFill : AppColors.surface,
+            fillColor: AppColors.surface,
             hintText: hint,
             hintStyle: _inputStyle.copyWith(color: AppColors.inkMuted),
             constraints: const BoxConstraints(minHeight: minHeight),
@@ -131,6 +143,14 @@ class AppTextField extends StatelessWidget {
             focusedBorder: _border(focusColor),
           ),
         ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+            child: Semantics(
+              liveRegion: true,
+              child: Text(errorText, style: _errorStyle),
+            ),
+          ),
       ],
     );
   }

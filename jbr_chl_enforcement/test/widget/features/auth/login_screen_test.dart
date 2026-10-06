@@ -165,7 +165,7 @@ void main() {
     expect(find.byType(AppAlertBanner), findsNothing);
   });
 
-  testWidgets('empty submit flags both fields; typing clears it', (
+  testWidgets('empty submit shows a message on each field, no alert', (
     tester,
   ) async {
     final repository = FakeAuthRepository();
@@ -174,16 +174,35 @@ void main() {
     await tester.tap(_signIn);
     await tester.pumpAndSettle();
 
-    expect(find.text(LoginMessages.invalid), findsOneWidget);
+    expect(find.text(LoginMessages.emailRequired), findsOneWidget);
+    expect(find.text(LoginMessages.passwordRequired), findsOneWidget);
+    expect(find.byType(AppAlertBanner), findsNothing);
     expect(_borderColor(tester, _email), AppColors.fieldError);
     expect(_borderColor(tester, _password), AppColors.fieldError);
     expect(repository.calls, isEmpty);
 
+    // Typing in the email clears only the email's error.
     await tester.enterText(_email, 'o');
     await tester.pumpAndSettle();
 
-    expect(find.byType(AppAlertBanner), findsNothing);
+    expect(find.text(LoginMessages.emailRequired), findsNothing);
     expect(_borderColor(tester, _email), AppColors.ink);
+    expect(find.text(LoginMessages.passwordRequired), findsOneWidget);
+    expect(_borderColor(tester, _password), AppColors.fieldError);
+  });
+
+  testWidgets('a malformed email marks only the email field', (tester) async {
+    await _pumpOnPhone(tester, FakeAuthRepository());
+
+    await tester.enterText(_email, 'officer@jbr');
+    await tester.enterText(_password, 'secret');
+    await tester.tap(_signIn);
+    await tester.pumpAndSettle();
+
+    expect(find.text(LoginMessages.emailInvalid), findsOneWidget);
+    expect(_borderColor(tester, _email), AppColors.fieldError);
+    expect(_borderColor(tester, _password), AppColors.ink);
+    expect(find.byType(AppAlertBanner), findsNothing);
   });
 
   testWidgets('Show/Hide toggles password visibility', (tester) async {
@@ -202,7 +221,9 @@ void main() {
     expect(obscured(), isTrue);
   });
 
-  testWidgets('wrong credentials show the error state', (tester) async {
+  testWidgets('wrong credentials show one alert; fields stay normal', (
+    tester,
+  ) async {
     await _pumpOnPhone(
       tester,
       FakeAuthRepository(failure: AuthFailure.invalidCredentials),
@@ -213,9 +234,14 @@ void main() {
     await tester.tap(_signIn);
     await tester.pumpAndSettle();
 
-    expect(find.text(LoginMessages.invalid), findsOneWidget);
-    expect(_borderColor(tester, _email), AppColors.fieldError);
+    expect(find.text(LoginMessages.invalidCredentials), findsOneWidget);
+    expect(_borderColor(tester, _email), AppColors.ink);
+    expect(_borderColor(tester, _password), AppColors.ink);
     expect(find.byType(LoginScreen), findsOneWidget);
+
+    await tester.enterText(_password, 'wrong2');
+    await tester.pumpAndSettle();
+    expect(find.byType(AppAlertBanner), findsNothing);
   });
 
   testWidgets('signs in: spinner, success alert, then the dashboard', (

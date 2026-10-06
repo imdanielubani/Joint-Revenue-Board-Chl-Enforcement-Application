@@ -38,38 +38,43 @@ void main() {
   });
 
   group('validation', () {
-    test('flags an invalid email without calling the API', () async {
+    test('shows a malformed email on the email field only', () async {
       final c = createContainer();
 
       await controller(c).submit(email: 'not-an-email', password: 'secret');
 
       expect(state(c).status, LoginStatus.failure);
-      expect(state(c).message, LoginMessages.invalid);
-      expect(state(c).emailInvalid, isTrue);
-      expect(state(c).passwordInvalid, isFalse);
+      expect(state(c).emailError, LoginMessages.emailInvalid);
+      expect(state(c).passwordError, isNull);
+      expect(state(c).message, isNull, reason: 'no alert for field errors');
       expect(repository.calls, isEmpty);
     });
 
-    test('flags both fields when both are empty', () async {
+    test('asks for both fields when both are empty', () async {
       final c = createContainer();
 
       await controller(c).submit(email: '  ', password: '');
 
-      expect(state(c).emailInvalid, isTrue);
-      expect(state(c).passwordInvalid, isTrue);
+      expect(state(c).emailError, LoginMessages.emailRequired);
+      expect(state(c).passwordError, LoginMessages.passwordRequired);
+      expect(state(c).message, isNull);
       expect(repository.calls, isEmpty);
     });
 
-    test('editing a field clears the error', () async {
+    test("editing a field clears only that field's error", () async {
       final c = createContainer();
       await controller(c).submit(email: '', password: '');
 
-      controller(c).onInputChanged();
+      controller(c).onEmailChanged();
 
+      expect(state(c).emailError, isNull);
+      expect(state(c).passwordError, LoginMessages.passwordRequired);
+      expect(state(c).status, LoginStatus.failure);
+
+      controller(c).onPasswordChanged();
+
+      expect(state(c).passwordError, isNull);
       expect(state(c).status, LoginStatus.idle);
-      expect(state(c).message, isNull);
-      expect(state(c).emailInvalid, isFalse);
-      expect(state(c).passwordInvalid, isFalse);
     });
   });
 
@@ -115,17 +120,28 @@ void main() {
       expect(repository.calls, hasLength(1));
     });
 
-    test('wrong credentials flag both fields', () async {
+    test('wrong credentials show one alert and leave the fields', () async {
       repository.failure = AuthFailure.invalidCredentials;
       final c = createContainer();
 
       await controller(c).submit(email: 'officer@jbr.com', password: 'wrong');
 
       expect(state(c).status, LoginStatus.failure);
-      expect(state(c).message, LoginMessages.invalid);
-      expect(state(c).emailInvalid, isTrue);
-      expect(state(c).passwordInvalid, isTrue);
+      expect(state(c).message, LoginMessages.invalidCredentials);
+      expect(state(c).emailError, isNull);
+      expect(state(c).passwordError, isNull);
       expect(c.read(sessionProvider), isNull);
+    });
+
+    test('editing after a failed sign-in clears the alert', () async {
+      repository.failure = AuthFailure.invalidCredentials;
+      final c = createContainer();
+      await controller(c).submit(email: 'officer@jbr.com', password: 'wrong');
+
+      controller(c).onPasswordChanged();
+
+      expect(state(c).message, isNull);
+      expect(state(c).status, LoginStatus.idle);
     });
 
     for (final (failure, message) in [
@@ -141,8 +157,8 @@ void main() {
         await controller(c).submit(email: 'officer@jbr.com', password: 'x');
 
         expect(state(c).message, message);
-        expect(state(c).emailInvalid, isFalse);
-        expect(state(c).passwordInvalid, isFalse);
+        expect(state(c).emailError, isNull);
+        expect(state(c).passwordError, isNull);
       });
     }
   });

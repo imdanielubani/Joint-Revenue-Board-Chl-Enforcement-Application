@@ -9,6 +9,9 @@ enum AppAlertKind { error, success }
 
 /// Inline alert ("toast") shown above a form. Announced to screen readers
 /// when it appears.
+///
+/// Errors are kept calm: a barely tinted background, a soft border, an
+/// outlined warning icon and deep red text.
 class AppAlertBanner extends StatelessWidget {
   const AppAlertBanner({super.key, required this.kind, required this.message});
 
@@ -18,7 +21,6 @@ class AppAlertBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isError = kind == AppAlertKind.error;
-    final accent = isError ? AppColors.alertError : AppColors.alertSuccess;
 
     return Semantics(
       liveRegion: true,
@@ -32,7 +34,11 @@ class AppAlertBanner extends StatelessWidget {
           color: isError
               ? AppColors.alertErrorFill
               : AppColors.alertSuccessFill,
-          border: Border.all(color: accent),
+          border: Border.all(
+            color: isError
+                ? AppColors.alertErrorBorder
+                : AppColors.alertSuccess,
+          ),
           borderRadius: const BorderRadius.all(Radius.circular(24)),
         ),
         child: Row(
@@ -41,20 +47,7 @@ class AppAlertBanner extends StatelessWidget {
               width: 32,
               height: 32,
               child: Center(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: accent,
-                    borderRadius: const BorderRadius.all(Radius.circular(6)),
-                  ),
-                  child: SvgPicture.asset(
-                    isError
-                        ? AssetPaths.iconWarningCircle
-                        : AssetPaths.iconCheckCircle,
-                    width: 24,
-                    height: 24,
-                    excludeFromSemantics: true,
-                  ),
-                ),
+                child: isError ? const _ErrorIcon() : const _SuccessIcon(),
               ),
             ),
             const SizedBox(width: 12),
@@ -67,13 +60,62 @@ class AppAlertBanner extends StatelessWidget {
                   fontWeight: AppTypography.medium,
                   height: 22 / 13,
                   color: isError
-                      ? AppColors.alertError
+                      ? AppColors.alertErrorText
                       : AppColors.alertSuccessText,
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Red outlined circle with an exclamation mark.
+class _ErrorIcon extends StatelessWidget {
+  const _ErrorIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.alertError, width: 1.5),
+      ),
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        AssetPaths.iconWarningCircle,
+        width: 22,
+        height: 22,
+        colorFilter: const ColorFilter.mode(
+          AppColors.alertError,
+          BlendMode.srcIn,
+        ),
+        excludeFromSemantics: true,
+      ),
+    );
+  }
+}
+
+/// White tick on a green rounded square.
+class _SuccessIcon extends StatelessWidget {
+  const _SuccessIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: AppColors.alertSuccess,
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+      ),
+      child: SvgPicture.asset(
+        AssetPaths.iconCheckCircle,
+        width: 24,
+        height: 24,
+        excludeFromSemantics: true,
       ),
     );
   }

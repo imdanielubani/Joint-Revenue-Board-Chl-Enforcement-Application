@@ -21,14 +21,16 @@ class LoginForm extends StatefulWidget {
     required this.state,
     required this.onSubmit,
     required this.onRememberChanged,
-    required this.onInputChanged,
+    required this.onEmailChanged,
+    required this.onPasswordChanged,
     required this.onForgotPassword,
   });
 
   final LoginState state;
   final void Function(String email, String password) onSubmit;
   final ValueChanged<bool> onRememberChanged;
-  final VoidCallback onInputChanged;
+  final VoidCallback onEmailChanged;
+  final VoidCallback onPasswordChanged;
   final VoidCallback onForgotPassword;
 
   @override
@@ -92,12 +94,12 @@ class _LoginFormState extends State<LoginForm> {
             hint: 'example@jbr.com',
             controller: _email,
             iconAsset: AssetPaths.iconEmail,
-            hasError: state.emailInvalid,
+            errorText: state.emailError,
             enabled: !locked,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.email, AutofillHints.username],
-            onChanged: (_) => widget.onInputChanged(),
+            onChanged: (_) => widget.onEmailChanged(),
             onSubmitted: (_) => _passwordFocus.requestFocus(),
           ),
           const SizedBox(height: 19),
@@ -107,13 +109,13 @@ class _LoginFormState extends State<LoginForm> {
             controller: _password,
             focusNode: _passwordFocus,
             iconAsset: AssetPaths.iconLock,
-            hasError: state.passwordInvalid,
+            errorText: state.passwordError,
             enabled: !locked,
             obscureText: _obscurePassword,
             keyboardType: TextInputType.visiblePassword,
             textInputAction: TextInputAction.done,
             autofillHints: const [AutofillHints.password],
-            onChanged: (_) => widget.onInputChanged(),
+            onChanged: (_) => widget.onPasswordChanged(),
             onSubmitted: (_) => _submit(),
             suffix: _VisibilityToggle(
               obscured: _obscurePassword,
