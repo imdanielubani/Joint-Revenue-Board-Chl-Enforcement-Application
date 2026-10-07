@@ -125,7 +125,7 @@ class _StatusTile extends StatelessWidget {
                 status.label,
                 style: const TextStyle(
                   fontFamily: AppTypography.fontFamily,
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: AppTypography.semiBold,
                   height: 15.4 / 11,
                   color: AppColors.forest,
@@ -148,7 +148,7 @@ class _StatusTile extends StatelessWidget {
                     status.value,
                     style: TextStyle(
                       fontFamily: AppTypography.fontFamily,
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: AppTypography.regular,
                       height: 16.5 / 10,
                       color: text,

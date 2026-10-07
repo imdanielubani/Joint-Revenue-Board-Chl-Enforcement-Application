@@ -439,6 +439,10 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Dashboard text sizes reduced: page title 20, section headings 16,
+  "View all" 12, officer name 18 and region/role 10, status tile label 10
+  and status 9, activity card titles 12, action buttons 14, E-Tag icon 17.
+
 - Plate field adds the 3-3-2 spaces as soon as each group is typed.
 
 - Plate field shows a `--- --- --` guide for the standard 8-character

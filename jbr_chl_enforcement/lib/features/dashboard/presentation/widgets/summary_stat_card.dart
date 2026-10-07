@@ -112,7 +112,7 @@ class SummaryStatCard extends StatelessWidget {
                       title,
                       style: const TextStyle(
                         fontFamily: AppTypography.fontFamily,
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: AppTypography.semiBold,
                         height: 18.85 / 13,
                         color: AppColors.forest,

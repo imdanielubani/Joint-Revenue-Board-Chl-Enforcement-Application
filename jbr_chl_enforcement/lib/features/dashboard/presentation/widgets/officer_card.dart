@@ -22,7 +22,7 @@ class OfficerCard extends StatelessWidget {
 
   static const TextStyle _nameStyle = TextStyle(
     fontFamily: AppTypography.fontFamily,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: AppTypography.bold,
     height: 26 / 20,
     color: AppColors.forest,
@@ -30,7 +30,7 @@ class OfficerCard extends StatelessWidget {
 
   static const TextStyle _postStyle = TextStyle(
     fontFamily: AppTypography.fontFamily,
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: AppTypography.regular,
     height: 18 / 12,
     color: AppColors.green,

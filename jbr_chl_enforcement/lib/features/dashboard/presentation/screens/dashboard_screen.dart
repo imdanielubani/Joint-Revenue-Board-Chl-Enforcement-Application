@@ -161,7 +161,7 @@ class _DashboardContent extends StatelessWidget {
 
   static const TextStyle _sectionStyle = TextStyle(
     fontFamily: AppTypography.fontFamily,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: AppTypography.semiBold,
     height: 23.4 / 18,
     letterSpacing: -0.27,
@@ -193,7 +193,7 @@ class _DashboardContent extends StatelessWidget {
               'Dashboard',
               style: TextStyle(
                 fontFamily: AppTypography.fontFamily,
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: AppTypography.bold,
                 height: 25.96 / 22,
                 letterSpacing: -0.77,
@@ -250,7 +250,7 @@ class _DashboardContent extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 textStyle: const TextStyle(
                   fontFamily: AppTypography.fontFamily,
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: AppTypography.semiBold,
                 ),
               ),

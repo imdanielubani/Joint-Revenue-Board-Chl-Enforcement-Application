@@ -38,7 +38,7 @@ class QuickActions extends StatelessWidget {
             child: _ActionButton(
               label: 'Verify E-Tag',
               iconAsset: AssetPaths.iconTag,
-              iconSize: 24,
+              iconSize: 17,
               filled: false,
               onPressed: onVerifyETag,
             ),
@@ -86,7 +86,7 @@ class _ActionButton extends StatelessWidget {
             label,
             style: TextStyle(
               fontFamily: AppTypography.fontFamily,
-              fontSize: filled ? 15 : 14,
+              fontSize: filled ? 14 : 14,
               fontWeight: AppTypography.semiBold,
               color: filled ? Colors.white : AppColors.ink,
             ),
