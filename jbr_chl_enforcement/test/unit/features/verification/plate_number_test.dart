@@ -32,6 +32,35 @@ void main() {
       expect(PlateNumber.tryParse('ABCDE12345'), isNotNull);
       expect(PlateNumber.tryParse('ABCDE123456'), isNull);
     });
+
+    test('recognises the start of a standard plate (ABC 123 AA)', () {
+      for (final standard in ['', 'A', 'ABC', 'ABC1', 'ABC123', 'ABC123A']) {
+        expect(PlateNumber.isStandardSoFar(standard), isTrue, reason: standard);
+      }
+      expect(PlateNumber.isStandardSoFar('ABC123AA'), isTrue);
+      for (final other in [
+        '1',
+        'AB1',
+        'ABCD',
+        'ABC1A',
+        'ABC123AAA',
+        'LA123ABC',
+      ]) {
+        expect(PlateNumber.isStandardSoFar(other), isFalse, reason: other);
+      }
+    });
+
+    test('remaining dashes follow what is typed', () {
+      expect(PlateNumber.remainingMask(''), '--- --- --');
+      expect(PlateNumber.remainingMask('AB'), '- --- --');
+      expect(PlateNumber.remainingMask('ABC'), ' --- --');
+      expect(PlateNumber.remainingMask('ABC12'), '- --');
+      expect(PlateNumber.remainingMask('ABC123'), ' --');
+      expect(PlateNumber.remainingMask('ABC123A'), '-');
+      expect(PlateNumber.remainingMask('ABC123AA'), '');
+      // Older and special plates get no guide.
+      expect(PlateNumber.remainingMask('LA123'), '');
+    });
   });
 
   group('PlateNumberFormatter', () {

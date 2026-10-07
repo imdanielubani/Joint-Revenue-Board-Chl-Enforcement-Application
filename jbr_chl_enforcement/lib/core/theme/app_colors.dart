@@ -43,6 +43,9 @@ abstract final class AppColors {
   static const Color headerButton = Color(0x4DFFFFFF); // white at 30%
   static const Color mint = Color(0xFFE8F3E4); // behind green icons
   static const Color inkHalf = Color(0x801A0C21); // ink at 50%, card details
+  static const Color plateGuide = Color(
+    0xFFB4B8BF,
+  ); // --- --- -- in the plate field
 
   // Status dots on the dashboard tiles, and their (readable) labels.
   static const Color statusOk = Color(0xFF00FF5D);

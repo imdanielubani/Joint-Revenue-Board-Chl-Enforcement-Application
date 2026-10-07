@@ -271,6 +271,14 @@ icon, title, description and route.
   beside the same character, and backspacing over a space deletes the
   character before it. Border is ink while empty, green when focused or
   filled.
+- Grey dashes inside the field (`--- --- --`) show the slots of a standard
+  Nigerian plate (3 letters, 3 digits, 2 letters) still to be typed, and
+  are replaced as the officer types (`AB- --- --`). They are only a guide:
+  once the input stops matching the standard pattern (older or special
+  plates such as `LA 123 ABC`) they disappear and the plate is still
+  accepted. Screen readers ignore them, and they are hidden if they would
+  not fit (very large text). Pattern: `PlateNumber.standardMask`,
+  `isStandardSoFar`, `remainingMask`.
 - "Verify Plate" is disabled (grey) until the plate has 3 characters; the
   keyboard's Done key does the same. It opens the verification result page
   with the `PlateNumber`.
@@ -426,6 +434,9 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Plate field shows a `--- --- --` guide for the standard 8-character
+  plate, filled in as the officer types.
 
 - Manual plate entry: plate formatted as it is typed (uppercase, separators
   removed, groups spaced), Verify Plate enabled once the plate is long

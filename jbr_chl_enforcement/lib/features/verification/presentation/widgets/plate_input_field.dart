@@ -7,7 +7,8 @@ import '../../domain/entities/plate_number.dart';
 
 /// "Vehicle plate" label and a large pill field that formats the plate as
 /// it is typed: uppercase, separators removed, letter and digit groups
-/// spaced ("abc-123aa" → "ABC 123 AA").
+/// spaced ("abc-123aa" → "ABC 123 AA"). Grey dashes show the characters of
+/// a standard plate still to type (`--- --- --`).
 ///
 /// The border is ink while empty and unfocused, green otherwise.
 class PlateInputField extends StatefulWidget {
@@ -40,6 +41,9 @@ class _PlateInputFieldState extends State<PlateInputField> {
 
   static const double _radius = 24;
   static const double _borderWidth = 2;
+
+  /// Text starts 16 px inside the 2 px border.
+  static const double _textInset = 16 + _borderWidth;
 
   static const TextStyle _labelStyle = TextStyle(
     fontFamily: AppTypography.fontFamily,
@@ -108,36 +112,126 @@ class _PlateInputFieldState extends State<PlateInputField> {
         children: [
           const Text(PlateInputField.label, style: _labelStyle),
           const SizedBox(height: 8),
-          TextField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            autofocus: widget.autofocus,
-            keyboardType: TextInputType.text,
-            textCapitalization: TextCapitalization.characters,
-            textInputAction: TextInputAction.done,
-            autocorrect: false,
-            enableSuggestions: false,
-            inputFormatters: const [PlateNumberFormatter()],
-            onSubmitted: (_) => widget.onSubmitted?.call(),
-            style: _plateStyle,
-            cursorColor: AppColors.green,
-            textAlignVertical: TextAlignVertical.center,
-            decoration: InputDecoration(
-              isDense: true,
-              filled: true,
-              fillColor: AppColors.surface,
-              constraints: const BoxConstraints(minHeight: 54),
-              // Text starts 16 px inside the 2 px border.
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16 + _borderWidth,
-                vertical: 13,
+          Stack(
+            children: [
+              TextField(
+                controller: widget.controller,
+                focusNode: _focusNode,
+                autofocus: widget.autofocus,
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.characters,
+                textInputAction: TextInputAction.done,
+                autocorrect: false,
+                enableSuggestions: false,
+                inputFormatters: const [PlateNumberFormatter()],
+                onSubmitted: (_) => widget.onSubmitted?.call(),
+                style: _plateStyle,
+                cursorColor: AppColors.green,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  constraints: const BoxConstraints(minHeight: 54),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: _textInset,
+                    vertical: 13,
+                  ),
+                  border: border,
+                  enabledBorder: border,
+                  focusedBorder: border,
+                ),
               ),
-              border: border,
-              enabledBorder: border,
-              focusedBorder: border,
-            ),
+              Positioned.fill(
+                left: _textInset,
+                right: _textInset,
+                child: _SlotGuide(
+                  text: widget.controller.text,
+                  style: _plateStyle,
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Dashes for the characters of a standard plate still to be typed, drawn
+/// in grey right after the typed text: `AB` shows `AB- --- --`.
+///
+/// Each dash is a short bar centred in a slot one character wide, so the
+/// gaps are even and the finished guide is as long as a real plate.
+/// Visual only: it ignores taps and screen readers. Hidden for plates that
+/// do not follow the standard pattern, and when the whole guide would not
+/// fit (very large text), so it never misaligns with the field's text.
+class _SlotGuide extends StatelessWidget {
+  const _SlotGuide({required this.text, required this.style});
+
+  final String text;
+  final TextStyle style;
+
+  double _measure(String sample, TextScaler textScaler) {
+    final painter = TextPainter(
+      text: TextSpan(text: sample, style: style),
+      textDirection: TextDirection.ltr,
+      textScaler: textScaler,
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = PlateNumber.remainingMask(PlateNumber.compact(text));
+    if (remaining.isEmpty) return const SizedBox.shrink();
+
+    final textScaler = MediaQuery.textScalerOf(context);
+    // Average character of a standard plate, and the gap between groups,
+    // as the field draws them (letter spacing included).
+    final slotWidth = _measure('ABC123AA', textScaler) / 8;
+    final spaceWidth = _measure(' ', textScaler);
+    final fontSize = textScaler.scale(style.fontSize!);
+    final typedWidth = text.isEmpty ? 0.0 : _measure(text, textScaler);
+
+    var guideWidth = typedWidth;
+    for (final char in remaining.split('')) {
+      guideWidth += char == ' ' ? spaceWidth : slotWidth;
+    }
+
+    final bar = Container(
+      width: slotWidth * 0.5,
+      height: (fontSize * 0.11).clamp(2.0, 6.0),
+      decoration: const BoxDecoration(
+        color: AppColors.plateGuide,
+        borderRadius: BorderRadius.all(Radius.circular(2)),
+      ),
+    );
+
+    return IgnorePointer(
+      child: ExcludeSemantics(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (guideWidth > constraints.maxWidth) {
+              return const SizedBox.shrink();
+            }
+            return Row(
+              children: [
+                SizedBox(width: typedWidth),
+                for (final char in remaining.split(''))
+                  char == ' '
+                      ? SizedBox(width: spaceWidth)
+                      : SizedBox(
+                          width: slotWidth,
+                          child: Center(child: bar),
+                        ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

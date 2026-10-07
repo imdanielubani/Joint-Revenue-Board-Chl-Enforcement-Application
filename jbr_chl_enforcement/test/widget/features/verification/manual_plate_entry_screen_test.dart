@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jbr_chl_enforcement/core/theme/app_colors.dart';
 import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/presentation/screens/verification_result_screen.dart';
@@ -77,6 +78,14 @@ Future<void> _pump(
 
 Finder get _field => find.byType(TextField);
 
+/// The grey dashes of the plate guide.
+Finder get _dashes => find.byWidgetPredicate(
+  (widget) =>
+      widget is Container &&
+      widget.decoration is BoxDecoration &&
+      (widget.decoration! as BoxDecoration).color == AppColors.plateGuide,
+);
+
 String _text(WidgetTester tester) =>
     tester.widget<TextField>(_field).controller!.text;
 
@@ -124,6 +133,57 @@ void main() {
     final node = tester.getSemantics(find.byType(EditableText));
     expect(node.label, 'Vehicle plate');
     expect(node.value, 'ABC 123 AA');
+  });
+
+  testWidgets('dashes show the standard plate slots still to type', (
+    tester,
+  ) async {
+    await _pump(tester);
+    expect(_dashes, findsNWidgets(8));
+
+    for (final (typed, left) in [
+      ('ab', 6),
+      ('abc12', 3),
+      ('abc123a', 1),
+      ('abc123aa', 0),
+    ]) {
+      await _type(tester, typed);
+      expect(_dashes, findsNWidgets(left), reason: typed);
+    }
+
+    // Older and special plates are accepted without a guide.
+    await _type(tester, 'la123abc');
+    expect(_text(tester), 'LA 123 ABC');
+    expect(_dashes, findsNothing);
+    expect(_verifyAction(tester), isNotNull);
+  });
+
+  testWidgets('the first dash starts just after the typed text', (
+    tester,
+  ) async {
+    await _pump(tester);
+    await _type(tester, 'abc12');
+
+    final editable = tester
+        .state<EditableTextState>(find.byType(EditableText))
+        .renderEditable;
+    final caret = editable.localToGlobal(
+      editable.getLocalRectForCaret(const TextPosition(offset: 6)).centerLeft,
+    );
+    final firstDash = tester.getRect(_dashes.first);
+    expect(firstDash.left, greaterThan(caret.dx));
+    expect(firstDash.left - caret.dx, lessThan(10));
+    // Level with the text.
+    expect(firstDash.center.dy, moreOrLessEquals(caret.dy, epsilon: 4));
+  });
+
+  testWidgets('screen readers do not hear the dashes', (tester) async {
+    await _pump(tester);
+    await _type(tester, 'ab');
+
+    final node = tester.getSemantics(find.byType(EditableText));
+    expect(node.label, 'Vehicle plate');
+    expect(node.value, 'AB');
   });
 
   testWidgets('formats the plate and enables Verify Plate', (tester) async {
