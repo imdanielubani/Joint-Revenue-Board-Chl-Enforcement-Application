@@ -53,6 +53,15 @@ abstract final class AssetPaths {
   static const String iconRecentEscalated =
       'assets/icons/dashboard/recent_escalated.svg';
 
+  // Verification methods
+  static const String iconMethodRfid = 'assets/icons/verification/rfid.svg';
+  static const String iconMethodQr = 'assets/icons/verification/qr_code.svg';
+  static const String iconMethodKeyboard =
+      'assets/icons/verification/keyboard.svg';
+  static const String iconMethodCamera = 'assets/icons/verification/camera.svg';
+  static const String iconChevronRight =
+      'assets/icons/verification/chevron_right.svg';
+
   // Status sheets
   static const String iconShieldOff = 'assets/icons/status/shield_off.svg';
   static const String iconTimerOff = 'assets/icons/status/timer_off.svg';

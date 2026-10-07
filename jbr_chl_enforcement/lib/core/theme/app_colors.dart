@@ -41,6 +41,8 @@ abstract final class AppColors {
   static const Color navActive = Color(0xFF00CE47);
   static const Color badgeRing = Color(0xFF00B53F);
   static const Color headerButton = Color(0x4DFFFFFF); // white at 30%
+  static const Color mint = Color(0xFFE8F3E4); // behind green icons
+  static const Color inkHalf = Color(0x801A0C21); // ink at 50%, card details
 
   // Status dots on the dashboard tiles, and their (readable) labels.
   static const Color statusOk = Color(0xFF00FF5D);
@@ -56,7 +58,7 @@ abstract final class AppColors {
   static const Color activityRing = Color(0xFFEEF1E8);
 
   // Recent verification icon backgrounds.
-  static const Color recentActive = Color(0xFFE8F3E4);
+  static const Color recentActive = mint;
   static const Color recentNoActive = Color(0xFFFFF3D9);
   static const Color recentEscalated = Color(0xFFFFDCD9);
 

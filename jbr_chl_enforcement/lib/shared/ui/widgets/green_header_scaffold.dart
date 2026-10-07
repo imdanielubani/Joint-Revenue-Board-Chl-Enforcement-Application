@@ -19,6 +19,8 @@ class GreenHeaderScaffold extends StatelessWidget {
     required this.title,
     required this.body,
     this.onBack,
+    this.headerHeight = defaultHeaderHeight,
+    this.sheetColor = AppColors.surface,
   });
 
   final String title;
@@ -27,8 +29,12 @@ class GreenHeaderScaffold extends StatelessWidget {
   /// Shows the back button when set.
   final VoidCallback? onBack;
 
-  /// Header height below the status bar.
-  static const double headerHeight = 69;
+  /// Header height below the status bar, i.e. where the sheet starts.
+  final double headerHeight;
+
+  final Color sheetColor;
+
+  static const double defaultHeaderHeight = 69;
 
   static const double _sheetRadius = 30;
 
@@ -46,11 +52,11 @@ class GreenHeaderScaffold extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: Colors.transparent,
-        systemNavigationBarColor: AppColors.surface,
+        systemNavigationBarColor: sheetColor,
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: sheetColor,
         body: DecoratedBox(
           decoration: const BoxDecoration(gradient: AppGradients.brandHeader),
           child: Column(
@@ -100,9 +106,9 @@ class GreenHeaderScaffold extends StatelessWidget {
               ),
               Expanded(
                 child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.vertical(
+                  decoration: BoxDecoration(
+                    color: sheetColor,
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(_sheetRadius),
                     ),
                   ),

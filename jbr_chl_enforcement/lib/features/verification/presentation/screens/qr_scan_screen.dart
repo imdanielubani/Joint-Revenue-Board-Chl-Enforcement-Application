@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../core/navigation/route_names.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../shared/ui/widgets/empty_state.dart';
 import '../../../../shared/ui/widgets/green_header_scaffold.dart';
 
-/// Verify E-Tag. Placeholder until its design is implemented.
+/// Scan E-Tag QR code. Placeholder until its design is implemented.
 class QrScanScreen extends StatelessWidget {
   const QrScanScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GreenHeaderScaffold(
-      title: 'Verify E-Tag',
-      onBack: () => context.canPop()
-          ? context.pop()
-          : context.goNamed(RouteNames.dashboard),
+      title: 'Verification',
+      onBack: context.popOrGoHome,
       body: const EmptyState(
-        title: 'Verify E-Tag',
+        title: 'Scan E-Tag QR code',
         message: notBuiltYetMessage,
       ),
     );

@@ -91,6 +91,7 @@ flutter:
     - assets/icons/navigation/
     - assets/icons/status/
     - assets/icons/dashboard/
+    - assets/icons/verification/
     - assets/animations/
     - assets/sounds/
     - assets/fonts/poppins/OFL.txt

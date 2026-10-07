@@ -92,8 +92,8 @@ flutter run --dart-define=AUTH_DEMO=true
 ```
 Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                     (skipped when      │         ├─ Dashboard ──► SOS
-                     nothing pending)  │         │             ├─► Verify CHL Trip
-                                       │         │             └─► Verify E-Tag
+                     nothing pending)  │         │             ├─► Verify CHL Trip ──► RFID, QR, manual plate, OCR
+                                       │         │             └─► Verify E-Tag ─────► RFID, QR
                                        │         ├─ History
                                        │         ├─ Notifications
                                        │         └─ Profile
@@ -103,8 +103,11 @@ Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
 Routes are in `lib/core/navigation/` (`app_router.dart`, `route_names.dart`),
 using `go_router`. The four signed-in tabs are a `StatefulShellRoute`, so
 each tab keeps its own state and scroll position; `MainShellScaffold`
-draws the floating green navigation bar over them. SOS and the two verify
-pages open full screen above the tabs.
+draws the floating green navigation bar over them. SOS, the two verify
+pages and the four verification method pages (`/verify/rfid`, `/verify/qr`,
+`/verify/plate`, `/verify/ocr`) open full screen above the tabs. Back from
+any of them uses `context.popOrGoHome()` (`core/extensions/`), which returns
+to the dashboard when the page was opened directly.
 
 ## Project structure
 
@@ -179,7 +182,7 @@ Shared widgets in `lib/shared/ui/widgets/`:
 | `AppCheckbox` | Checkbox with label and a 48 px touch target |
 | `AppAlertBanner` | Error or success alert above a form |
 | `AppSpinner` | Rotating loading symbol (still when reduced motion is on) |
-| `GreenHeaderScaffold` | Green header with title and a rounded white sheet; pass `onBack` for the round back button and a left-aligned title |
+| `GreenHeaderScaffold` | Green header with title and a rounded white sheet; pass `onBack` for the round back button and a left-aligned title; `headerHeight` (default 69) sets where the sheet starts and `sheetColor` its colour |
 | `BrandAccentBar` | Short green bar under brand headings |
 | `EmptyState` | Centred title and message for screens with nothing to show; `notBuiltYetMessage` for placeholder screens |
 
@@ -203,7 +206,9 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Account deactivated | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in when the server refuses sign-in because the account is deactivated (HTTP 403). |
 | Session expired | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in after a session expires. Shows "Queued work is safe" when offline actions are waiting (`pendingSyncCountProvider`). |
 | Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | See below. |
-| History, Notifications, Profile, SOS, Verify CHL Trip, Verify E-Tag | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." Profile has a temporary Sign out button. |
+| Verify CHL Trip | `features/verification/presentation/screens/verification_hub_screen.dart` | "Choose verification method": Read RFID tag, Scan E-Tag QR code, Enter plate manually, Scan plate with OCR. |
+| Verify E-Tag | `features/verification/presentation/screens/verify_e_tag_screen.dart` | Read RFID tag or Scan E-Tag QR code. |
+| History, Notifications, Profile, SOS, and the four verification methods | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." Profile has a temporary Sign out button. |
 
 ### Dashboard
 
@@ -228,6 +233,23 @@ border `#D92D20` and a message under it); **failures not tied to one field**
   labels shrink rather than clip on very narrow phones. The list ends above
   the floating bar.
 - The design's Segoe UI text is set in Poppins like the rest of the app.
+
+### Verification method pages
+
+Both verify pages are a `VerificationMethodPage`
+(`verification/presentation/widgets/verification_method_tile.dart`) with a
+list of `VerificationOption`s, each drawn as a `VerificationMethodTile`
+card that opens its method page. To add a method, add an option with its
+icon, title, description and route.
+
+- The cards' text column is 241 px on a 390 px phone, as designed; the
+  chevron's artwork supplies the gap before it.
+- Hyphenated words in card descriptions ("E-Tag") never split across lines
+  (a word joiner is inserted after each hyphen).
+- The design's "Capture, review, and confirm the plate." runs past its text
+  box on one line; here it wraps, so it never clips.
+- Content is capped at 560 px wide on tablets and scrolls on short screens
+  and with large text.
 
 All implemented screens are checked in widget tests across Android and iOS
 phone sizes, tablets, a foldable, landscape and 200% text.
@@ -360,8 +382,8 @@ Elsewhere:
   (`TODO(rfid)` in `rfid_reader_adapter.dart`).
 - Unread notification count is always 0 until notifications are stored
   (`TODO(notifications)`).
-- History, Notifications, Profile, SOS, Verify CHL Trip and Verify E-Tag are
-  placeholders.
+- History, Notifications, Profile, SOS and the four verification method
+  pages (RFID, QR, manual plate, OCR) are placeholders.
 - `pendingSyncCountProvider` always returns 0 until the offline sync queue
   exists, so the "Queued work is safe" banner does not show yet.
 - The password reset link itself (opening it and choosing a new password)
@@ -373,6 +395,11 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Verify CHL Trip (RFID, QR, manual plate, OCR) and Verify E-Tag (RFID, QR)
+  method pages with routes to placeholder method screens;
+  `GreenHeaderScaffold` header height and sheet colour options;
+  `popOrGoHome` back helper.
 
 - Dashboard: header with SOS and notifications badge, officer card, verify
   actions, live Internet / GPS / RFID / sync status tiles (offline state),
