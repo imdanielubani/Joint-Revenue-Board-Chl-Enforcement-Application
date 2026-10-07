@@ -50,12 +50,24 @@ void main() {
       }
     });
 
+    test('a standard plate is spaced 3-3-2 as each group completes', () {
+      expect(PlateNumber.formatForInput(''), '');
+      expect(PlateNumber.formatForInput('AB'), 'AB');
+      expect(PlateNumber.formatForInput('ABC'), 'ABC ');
+      expect(PlateNumber.formatForInput('ABC12'), 'ABC 12');
+      expect(PlateNumber.formatForInput('ABC123'), 'ABC 123 ');
+      expect(PlateNumber.formatForInput('ABC123AA'), 'ABC 123 AA');
+      // Other plates keep their letter and digit groups.
+      expect(PlateNumber.formatForInput('LA123ABC'), 'LA 123 ABC');
+      expect(PlateNumber.formatForInput('ABCD'), 'ABCD');
+    });
+
     test('remaining dashes follow what is typed', () {
       expect(PlateNumber.remainingMask(''), '--- --- --');
       expect(PlateNumber.remainingMask('AB'), '- --- --');
-      expect(PlateNumber.remainingMask('ABC'), ' --- --');
+      expect(PlateNumber.remainingMask('ABC'), '--- --');
       expect(PlateNumber.remainingMask('ABC12'), '- --');
-      expect(PlateNumber.remainingMask('ABC123'), ' --');
+      expect(PlateNumber.remainingMask('ABC123'), '--');
       expect(PlateNumber.remainingMask('ABC123A'), '-');
       expect(PlateNumber.remainingMask('ABC123AA'), '');
       // Older and special plates get no guide.
@@ -91,9 +103,21 @@ void main() {
       expectEdit(('ABC', 3), ('ABC1', 4), ('ABC 1', 5));
     });
 
-    test('typed spaces and hyphens are dropped', () {
-      expectEdit(('ABC', 3), ('ABC ', 4), ('ABC', 3));
-      expectEdit(('ABC', 3), ('ABC-', 4), ('ABC', 3));
+    test('a space is added as soon as a group of 3 is complete', () {
+      expectEdit(('AB', 2), ('ABC', 3), ('ABC ', 4));
+      expectEdit(('ABC 12', 6), ('ABC 123', 7), ('ABC 123 ', 8));
+      expectEdit(('ABC 123 A', 9), ('ABC 123 AA', 10), ('ABC 123 AA', 10));
+    });
+
+    test('typed spaces and hyphens are not doubled', () {
+      expectEdit(('ABC ', 4), ('ABC  ', 5), ('ABC ', 4));
+      expectEdit(('ABC ', 4), ('ABC -', 5), ('ABC ', 4));
+      expectEdit(('AB', 2), ('AB-', 3), ('AB', 2));
+    });
+
+    test('backspace over the added space deletes the character before it', () {
+      expectEdit(('ABC ', 4), ('ABC', 3), ('AB', 2));
+      expectEdit(('ABC 123 ', 8), ('ABC 123', 7), ('ABC 12', 6));
     });
 
     test('pasted text is normalised', () {
@@ -105,7 +129,7 @@ void main() {
     });
 
     test('typing in the middle keeps the cursor after the new character', () {
-      expectEdit(('AB 123', 2), ('ABC 123', 3), ('ABC 123', 3));
+      expectEdit(('AB 123', 2), ('ABC 123', 3), ('ABC 123 ', 3));
       expectEdit(('ABC', 1), ('A9BC', 2), ('A 9 BC', 3));
     });
 

@@ -186,6 +186,31 @@ void main() {
     expect(node.value, 'AB');
   });
 
+  testWidgets('typing key by key spaces the plate 3-3-2 straight away', (
+    tester,
+  ) async {
+    await _pump(tester);
+
+    // Each key is added to what the field currently shows, as a keyboard
+    // would, and the cursor must follow.
+    for (final (key, shown) in [
+      ('a', 'A'),
+      ('b', 'AB'),
+      ('c', 'ABC '),
+      ('1', 'ABC 1'),
+      ('2', 'ABC 12'),
+      ('3', 'ABC 123 '),
+      ('a', 'ABC 123 A'),
+      ('a', 'ABC 123 AA'),
+    ]) {
+      await _type(tester, _text(tester) + key);
+      expect(_text(tester), shown);
+      final controller = tester.widget<TextField>(_field).controller!;
+      expect(controller.selection.baseOffset, shown.length, reason: shown);
+    }
+    expect(_dashes, findsNothing);
+  });
+
   testWidgets('formats the plate and enables Verify Plate', (tester) async {
     await _pump(tester);
 

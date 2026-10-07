@@ -50,12 +50,26 @@ class PlateNumber {
     '^([A-Z]{0,3}|[A-Z]{3}[0-9]{1,3}|[A-Z]{3}[0-9]{3}[A-Z]{1,2})\$',
   );
 
+  /// [canonical] as shown while it is typed. A standard plate is spaced 3-3-2
+  /// as soon as each group is complete, so the space appears before the next
+  /// character is typed: `ABC` → `ABC `, `ABC123` → `ABC 123 `,
+  /// `ABC123AA` → `ABC 123 AA`. Other plates are spaced by [group].
+  static String formatForInput(String canonical) {
+    if (!isStandardSoFar(canonical)) return group(canonical);
+    final buffer = StringBuffer();
+    for (var i = 0; i < canonical.length; i++) {
+      buffer.write(canonical[i]);
+      if (i == 2 || i == 5) buffer.write(' ');
+    }
+    return buffer.toString();
+  }
+
   /// The part of [standardMask] still to be typed after [canonical], e.g.
   /// `AB` → `- --- --`, `ABC12` → `- --`. Empty when [canonical] is complete
   /// or does not follow the standard pattern (older and special plates).
   static String remainingMask(String canonical) {
     if (!isStandardSoFar(canonical)) return '';
-    return standardMask.substring(group(canonical).length);
+    return standardMask.substring(formatForInput(canonical).length);
   }
 
   /// For display, e.g. `ABC 123 AA`.

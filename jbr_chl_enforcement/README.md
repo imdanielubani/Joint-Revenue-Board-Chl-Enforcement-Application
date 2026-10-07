@@ -266,8 +266,12 @@ icon, title, description and route.
   space between each letter and digit run (`ABC 123 AA`, `LA 123 ABC`).
   3 to 10 characters.
 - `PlateInputField` (`widgets/plate_input_field.dart`) formats as the
-  officer types via `PlateNumberFormatter`: lowercase becomes uppercase,
-  typed spaces and hyphens are dropped, groups are spaced, the cursor stays
+  officer types via `PlateNumberFormatter` (`PlateNumber.formatForInput`):
+  lowercase becomes uppercase, typed spaces and hyphens are dropped, and a
+  standard plate is spaced 3-3-2 the moment each group is complete
+  (`ABC` → `ABC `, `ABC123` → `ABC 123 `), so the cursor waits at the start
+  of the next group. Other plates are spaced by their letter and digit
+  groups (`LA 123 ABC`). The cursor stays
   beside the same character, and backspacing over a space deletes the
   character before it. Border is ink while empty, green when focused or
   filled.
@@ -434,6 +438,8 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Plate field adds the 3-3-2 spaces as soon as each group is typed.
 
 - Plate field shows a `--- --- --` guide for the standard 8-character
   plate, filled in as the officer types.

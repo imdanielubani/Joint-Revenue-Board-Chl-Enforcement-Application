@@ -6,8 +6,9 @@ import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/plate_number.dart';
 
 /// "Vehicle plate" label and a large pill field that formats the plate as
-/// it is typed: uppercase, separators removed, letter and digit groups
-/// spaced ("abc-123aa" → "ABC 123 AA"). Grey dashes show the characters of
+/// it is typed: uppercase, separators removed, and spaced 3-3-2 as each
+/// group is completed ("abc" → "ABC ", "abc-123aa" → "ABC 123 AA").
+/// Grey dashes show the characters of
 /// a standard plate still to type (`--- --- --`).
 ///
 /// The border is ink while empty and unfocused, green otherwise.
@@ -237,8 +238,9 @@ class _SlotGuide extends StatelessWidget {
   }
 }
 
-/// Formats plate input as it is typed (see [PlateNumber]): uppercase,
-/// separators dropped, letter and digit runs spaced, and at most
+/// Formats plate input as it is typed (see [PlateNumber.formatForInput]):
+/// uppercase, separators dropped, a standard plate spaced 3-3-2 as each
+/// group is completed (other plates by letter and digit runs), and at most
 /// [PlateNumber.maxLength] characters. The cursor stays beside the same
 /// character, and backspacing over a space deletes the character before it.
 class PlateNumberFormatter extends TextInputFormatter {
@@ -268,11 +270,13 @@ class PlateNumberFormatter extends TextInputFormatter {
 
     if (canonical.length > PlateNumber.maxLength) return oldValue;
 
-    final text = PlateNumber.group(canonical);
+    final text = PlateNumber.formatForInput(canonical);
     var offset = 0;
     for (var seen = 0; seen < before; offset++) {
       if (text[offset] != ' ') seen++;
     }
+    // Typing at the end: step past the space that opens the next group.
+    if (before == canonical.length) offset = text.length;
     return TextEditingValue(
       text: text,
       selection: TextSelection.collapsed(offset: offset),
