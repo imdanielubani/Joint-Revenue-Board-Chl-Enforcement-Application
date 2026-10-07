@@ -269,7 +269,7 @@ void main() {
     await tester.pump(LoginScreen.successHoldDuration);
     await tester.pumpAndSettle();
     expect(find.byType(DashboardScreen), findsOneWidget);
-    expect(find.text('Signed in as Test Officer'), findsOneWidget);
+    expect(find.text('Test Officer'), findsOneWidget);
   });
 
   testWidgets('Forgot Password! opens password reset', (tester) async {

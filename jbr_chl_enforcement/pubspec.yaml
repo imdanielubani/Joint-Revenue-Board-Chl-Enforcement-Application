@@ -90,6 +90,7 @@ flutter:
     - assets/icons/alerts/
     - assets/icons/navigation/
     - assets/icons/status/
+    - assets/icons/dashboard/
     - assets/animations/
     - assets/sounds/
     - assets/fonts/poppins/OFL.txt

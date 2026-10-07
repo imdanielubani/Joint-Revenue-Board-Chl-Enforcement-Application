@@ -249,7 +249,7 @@ void main() {
             ),
           );
       await tester.pumpAndSettle();
-      expect(find.text('Signed in as Test Officer'), findsOneWidget);
+      expect(find.text('Test Officer'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 31));
       await tester.pumpAndSettle();

@@ -32,6 +32,34 @@ abstract final class AppColors {
   static const Color statusDot = Color(0xFF00FF5D);
   static const Color statusDotGlow = Color(0xFF02BE46);
 
+  // Dashboard and signed-in screens.
+  static const Color canvas = Color(0xFFF7F7F8); // sheet behind cards
+  static const Color cardBorder = Color(0xFFD6D6D6);
+  static const Color forest = Color(0xFF173E20); // headings and values
+  static const Color moss = Color(0xFF536952); // captions on cards
+  static const Color forestLink = Color(0xFF18491F); // "View all"
+  static const Color navActive = Color(0xFF00CE47);
+  static const Color badgeRing = Color(0xFF00B53F);
+  static const Color headerButton = Color(0x4DFFFFFF); // white at 30%
+
+  // Status dots on the dashboard tiles, and their (readable) labels.
+  static const Color statusOk = Color(0xFF00FF5D);
+  static const Color statusPending = Color(0xFFFCC20A);
+  static const Color statusDown = Color(0xFFEE4031);
+  static const Color statusDownText = Color(0xFFB42318);
+
+  // Daily activity icon badges.
+  static const Color activityScans = Color(0xFFFFF0C0);
+  static const Color activityActive = Color(0xFFFFE2CC);
+  static const Color activityNoActive = Color(0xFFE6E1FF);
+  static const Color activityViolations = Color(0xFFEDF4E8);
+  static const Color activityRing = Color(0xFFEEF1E8);
+
+  // Recent verification icon backgrounds.
+  static const Color recentActive = Color(0xFFE8F3E4);
+  static const Color recentNoActive = Color(0xFFFFF3D9);
+  static const Color recentEscalated = Color(0xFFFFDCD9);
+
   // Disabled primary button.
   static const Color buttonDisabledFill = Color(0xFFF3F3F3);
   static const Color buttonDisabledBorder = Color(0xFFD6D6D6);
@@ -99,5 +127,5 @@ abstract final class AppColors {
   static const Color infoContainer = Color(0xFFDBEAFE);
 
   // SOS
-  static const Color sos = Color(0xFFDC2626);
+  static const Color sos = Color(0xFFEE4031);
 }

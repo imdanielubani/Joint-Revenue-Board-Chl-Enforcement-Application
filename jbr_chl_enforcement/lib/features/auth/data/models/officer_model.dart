@@ -7,6 +7,8 @@ abstract final class OfficerModel {
       id: json['id'].toString(),
       name: json['name'] as String? ?? '',
       email: json['email'] as String? ?? '',
+      region: json['region'] as String?,
+      role: json['role'] as String?,
     );
   }
 
@@ -14,5 +16,7 @@ abstract final class OfficerModel {
     'id': officer.id,
     'name': officer.name,
     'email': officer.email,
+    'region': officer.region,
+    'role': officer.role,
   };
 }

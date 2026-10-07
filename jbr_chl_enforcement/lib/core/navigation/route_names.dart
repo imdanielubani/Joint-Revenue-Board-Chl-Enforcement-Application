@@ -3,7 +3,17 @@ abstract final class RouteNames {
   static const String permissions = 'permissions';
   static const String login = 'login';
   static const String forgotPassword = 'forgot-password';
+
+  // Signed-in tabs.
   static const String dashboard = 'dashboard';
+  static const String history = 'history';
+  static const String notifications = 'notifications';
+  static const String profile = 'profile';
+
+  // Full-screen pages opened from the tabs.
+  static const String sos = 'sos';
+  static const String verifyTrip = 'verify-trip';
+  static const String verifyETag = 'verify-e-tag';
 }
 
 abstract final class RoutePaths {
@@ -12,4 +22,10 @@ abstract final class RoutePaths {
   static const String login = '/login';
   static const String forgotPassword = '/login/forgot-password';
   static const String dashboard = '/dashboard';
+  static const String history = '/history';
+  static const String notifications = '/notifications';
+  static const String profile = '/profile';
+  static const String sos = '/sos';
+  static const String verifyTrip = '/verify';
+  static const String verifyETag = '/verify-e-tag';
 }

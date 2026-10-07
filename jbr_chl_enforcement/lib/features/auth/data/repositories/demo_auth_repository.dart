@@ -41,6 +41,8 @@ class DemoAuthRepository implements AuthRepository {
         id: 'demo',
         name: 'Demo Officer',
         email: demoEmail,
+        region: 'Lagos State',
+        role: 'Enforcement Agent',
       ),
     );
     await storeSession(_local, session, rememberSession: rememberSession);

@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. The demo account is defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. The demo account is defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -90,13 +90,21 @@ flutter run --dart-define=AUTH_DEMO=true
 ## App flow
 
 ```
-Launch (splash) ──► Permissions ──► Sign in ──► Dashboard
-                    (skipped when                │
-                     nothing pending)            └─► Forgot password
+Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
+                    (skipped when      │         ├─ Dashboard ──► SOS
+                     nothing pending)  │         │             ├─► Verify CHL Trip
+                                       │         │             └─► Verify E-Tag
+                                       │         ├─ History
+                                       │         ├─ Notifications
+                                       │         └─ Profile
+                                       └─► Forgot password
 ```
 
 Routes are in `lib/core/navigation/` (`app_router.dart`, `route_names.dart`),
-using `go_router`.
+using `go_router`. The four signed-in tabs are a `StatefulShellRoute`, so
+each tab keeps its own state and scroll position; `MainShellScaffold`
+draws the floating green navigation bar over them. SOS and the two verify
+pages open full screen above the tabs.
 
 ## Project structure
 
@@ -140,8 +148,12 @@ will live. Leave them empty until the feature is built (see
 - **Navigation:** `go_router`, provided by `appRouterProvider`.
 - **Dependency seams:** anything touching a plugin or the network sits behind
   a class with a provider (`PermissionAdapter`, `PreferencesService`,
-  `SecureStorageService`, `AuthRepository`, `dioProvider`). Tests override
-  these providers with fakes.
+  `SecureStorageService`, `AuthRepository`, `DashboardRepository`,
+  `dioProvider`). Tests override these providers with fakes.
+- **Device status** (used by the dashboard tiles), in `shared/device/`:
+  `internetStatusProvider` (connectivity_plus, live),
+  `gpsStatusProvider` (location service on and permission granted, live),
+  `rfidReaderConnectedProvider` (always `false` until the reader exists).
 - **Startup:** `bootstrap()` enables device preview (debug), registers the
   Poppins licence and runs the app inside a `ProviderScope`.
 
@@ -169,6 +181,7 @@ Shared widgets in `lib/shared/ui/widgets/`:
 | `AppSpinner` | Rotating loading symbol (still when reduced motion is on) |
 | `GreenHeaderScaffold` | Green header with title and a rounded white sheet; pass `onBack` for the round back button and a left-aligned title |
 | `BrandAccentBar` | Short green bar under brand headings |
+| `EmptyState` | Centred title and message for screens with nothing to show; `notBuiltYetMessage` for placeholder screens |
 
 Accessibility adjustments to the design: dark text on amber buttons
 (white on `#F0B800` is 1.9 : 1), dark amber `#B54708` for amber text on
@@ -189,7 +202,32 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Password recovery | `features/auth/presentation/screens/forgot_password_screen.dart` | Email (carried over from sign-in), Send Reset Link (disabled until an email is entered), "Verifying..." while sending, then the "link sent" sheet (`widgets/reset_link_sent_sheet.dart`) with Return to Login. Closing the sheet keeps the screen so another link can be sent. |
 | Account deactivated | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in when the server refuses sign-in because the account is deactivated (HTTP 403). |
 | Session expired | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in after a session expires. Shows "Queued work is safe" when offline actions are waiting (`pendingSyncCountProvider`). |
-| Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | Placeholder showing the signed-in officer. |
+| Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | See below. |
+| History, Notifications, Profile, SOS, Verify CHL Trip, Verify E-Tag | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." Profile has a temporary Sign out button. |
+
+### Dashboard
+
+- **Header:** logo, red SOS button and the notifications bell. The bell's
+  badge shows `unreadNotificationCountProvider` (hidden at 0, "99+" above 99).
+- **Officer card:** initials (`Officer.initials`), name, and region · role
+  from the signed-in officer.
+- **Actions:** Verify CHL Trip and Verify E-Tag.
+- **Status tiles:** Internet, GPS, RFID reader and Sync. Green "Online" /
+  "Connected" / "Up to date", red "Offline", amber "n queued" when
+  `pendingSyncCountProvider` is above 0. The sync tile is labelled
+  "Offline sync" while there is no connection.
+- **Daily activity** and **Recent verifications** come from
+  `dashboardSummaryProvider` → `DashboardRepository`. Release builds use
+  `LocalDashboardRepository`, which returns zeros and an empty list until
+  verifications are stored ("No verifications yet today."). A failed load
+  shows a Retry card. Pull down to refresh.
+- **View all** opens the History tab. The record row
+  (`verification_history/presentation/widgets/history_list_item.dart`) is
+  shared with the History screen.
+- Wider screens cap the content at 560 px and centre it. The tile and button
+  labels shrink rather than clip on very narrow phones. The list ends above
+  the floating bar.
+- The design's Segoe UI text is set in Poppins like the rest of the app.
 
 All implemented screens are checked in widget tests across Android and iOS
 phone sizes, tablets, a foldable, landscape and 200% text.
@@ -297,7 +335,9 @@ Sign-in and sessions:
 
 1. Real sign-in API address and contract (needs the backend team).
 2. Restore a remembered session at launch (`launch_controller.dart` TODO).
-3. Sign-out, token expiry and refresh (`logout.dart`, `refresh_session.dart`).
+3. Proper sign-out (the Profile placeholder ends the session and clears
+   the saved copy, but nothing is sent to the server), token refresh
+   (`logout.dart`, `refresh_session.dart`).
 4. Attach the token to API requests and handle 401s
    (`shared/networking/interceptors/`); a 401 should call
    `SessionNotifier.expire()` so the "session expired" sheet appears.
@@ -314,7 +354,14 @@ Elsewhere:
 
 - Launch stages are timed placeholders; wire them to session restore and the
   offline vehicle cache.
-- The dashboard is a placeholder.
+- Dashboard figures: `LocalDashboardRepository` returns zeros until
+  verifications are stored locally (`TODO(verification_history)`).
+- RFID reader status is always "Offline" until the reader integration exists
+  (`TODO(rfid)` in `rfid_reader_adapter.dart`).
+- Unread notification count is always 0 until notifications are stored
+  (`TODO(notifications)`).
+- History, Notifications, Profile, SOS, Verify CHL Trip and Verify E-Tag are
+  placeholders.
 - `pendingSyncCountProvider` always returns 0 until the offline sync queue
   exists, so the "Queued work is safe" banner does not show yet.
 - The password reset link itself (opening it and choosing a new password)
@@ -326,6 +373,13 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Dashboard: header with SOS and notifications badge, officer card, verify
+  actions, live Internet / GPS / RFID / sync status tiles (offline state),
+  daily activity cards and recent verifications with pull to refresh.
+  Signed-in tabs with a floating navigation bar; placeholder History,
+  Notifications, Profile (with sign-out), SOS and verify pages. Officer
+  region and role; verification record, trip status and method entities.
 
 - Account deactivated and session expired sheets over sign-in; HTTP 403
   mapped to a deactivated account; session expiry timer that returns the
