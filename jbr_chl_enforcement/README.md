@@ -208,7 +208,8 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | See below. |
 | Verify CHL Trip | `features/verification/presentation/screens/verification_hub_screen.dart` | "Choose verification method": Read RFID tag, Scan E-Tag QR code, Enter plate manually, Scan plate with OCR. |
 | Verify E-Tag | `features/verification/presentation/screens/verify_e_tag_screen.dart` | Read RFID tag or Scan E-Tag QR code. |
-| History, Notifications, Profile, SOS, and the four verification methods | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." Profile has a temporary Sign out button. |
+| Manual plate entry | `features/verification/presentation/screens/manual_plate_entry_screen.dart` | See below. |
+| History, Notifications, Profile, SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." Profile has a temporary Sign out button; the result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -236,6 +237,12 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 
 ### Verification method pages
 
+Shared pieces for every verification page are in
+`verification/presentation/widgets/verification_page.dart`:
+`VerificationPageScaffold` (green header, back button, grey sheet 73 px
+below the status bar), `VerificationHeading` and `VerificationContentWidth`
+(560 px cap on tablets).
+
 Both verify pages are a `VerificationMethodPage`
 (`verification/presentation/widgets/verification_method_tile.dart`) with a
 list of `VerificationOption`s, each drawn as a `VerificationMethodTile`
@@ -250,6 +257,27 @@ icon, title, description and route.
   box on one line; here it wraps, so it never clips.
 - Content is capped at 560 px wide on tablets and scrolls on short screens
   and with large text.
+
+### Manual plate entry
+
+- The plate rules live in `PlateNumber`
+  (`verification/domain/entities/plate_number.dart`): uppercase letters and
+  digits only (`ABC123AA`, the value to send to the server), shown with a
+  space between each letter and digit run (`ABC 123 AA`, `LA 123 ABC`).
+  3 to 10 characters.
+- `PlateInputField` (`widgets/plate_input_field.dart`) formats as the
+  officer types via `PlateNumberFormatter`: lowercase becomes uppercase,
+  typed spaces and hyphens are dropped, groups are spaced, the cursor stays
+  beside the same character, and backspacing over a space deletes the
+  character before it. Border is ink while empty, green when focused or
+  filled.
+- "Verify Plate" is disabled (grey) until the plate has 3 characters; the
+  keyboard's Done key does the same. It opens the verification result page
+  with the `PlateNumber`.
+- The field is not focused on open, matching the design; the officer taps
+  it to bring up the keyboard. The button sits 10 px above the bottom inset
+  and rises with the keyboard; on very short screens (landscape with the
+  keyboard open) it scrolls with the form instead.
 
 All implemented screens are checked in widget tests across Android and iOS
 phone sizes, tablets, a foldable, landscape and 200% text.
@@ -382,8 +410,11 @@ Elsewhere:
   (`TODO(rfid)` in `rfid_reader_adapter.dart`).
 - Unread notification count is always 0 until notifications are stored
   (`TODO(notifications)`).
-- History, Notifications, Profile, SOS and the four verification method
-  pages (RFID, QR, manual plate, OCR) are placeholders.
+- History, Notifications, Profile, SOS, the RFID, QR and OCR method pages
+  and the verification result page are placeholders.
+- Verifying a plate does not call the server yet: the result page only
+  shows the plate. Plate length limits (3–10) should be confirmed against
+  the registry's rules.
 - `pendingSyncCountProvider` always returns 0 until the offline sync queue
   exists, so the "Queued work is safe" banner does not show yet.
 - The password reset link itself (opening it and choosing a new password)
@@ -395,6 +426,11 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Manual plate entry: plate formatted as it is typed (uppercase, separators
+  removed, groups spaced), Verify Plate enabled once the plate is long
+  enough, keyboard Done verifies, result page placeholder. `PlateNumber`
+  value; shared verification page frame and heading.
 
 - Verify CHL Trip (RFID, QR, manual plate, OCR) and Verify E-Tag (RFID, QR)
   method pages with routes to placeholder method screens;

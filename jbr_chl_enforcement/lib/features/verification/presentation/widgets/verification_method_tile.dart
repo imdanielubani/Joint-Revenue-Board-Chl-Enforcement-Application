@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/constants/asset_paths.dart';
-import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../shared/ui/widgets/green_header_scaffold.dart';
+import 'verification_page.dart';
 
 /// One way of identifying a vehicle, shown as a tappable card.
 @immutable
@@ -36,63 +35,25 @@ class VerificationMethodPage extends StatelessWidget {
   final String description;
   final List<VerificationOption> options;
 
-  /// Widest the content grows on tablets.
-  static const double _maxContentWidth = 560;
-
   @override
   Widget build(BuildContext context) {
-    return GreenHeaderScaffold(
+    return VerificationPageScaffold(
       title: 'Verification',
-      headerHeight: 73,
-      sheetColor: AppColors.canvas,
-      onBack: context.popOrGoHome,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          VerificationContentWidth(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                VerificationHeading(heading: heading, description: description),
+                const SizedBox(height: 14),
+                for (final option in options)
                   Padding(
-                    // The heading sits 4 px further in than the cards.
-                    padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
-                    child: Semantics(
-                      header: true,
-                      child: Text(
-                        heading,
-                        style: const TextStyle(
-                          fontFamily: AppTypography.fontFamily,
-                          fontSize: 22,
-                          fontWeight: AppTypography.bold,
-                          height: 25.96 / 22,
-                          letterSpacing: -0.77,
-                          color: AppColors.forest,
-                        ),
-                      ),
-                    ),
+                    padding: const EdgeInsets.only(top: 16),
+                    child: VerificationMethodTile(option: option),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 3, 4, 14),
-                    child: Text(
-                      description,
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontFamily,
-                        fontSize: 12,
-                        fontWeight: AppTypography.regular,
-                        height: 18 / 12,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                  ),
-                  for (final option in options)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: VerificationMethodTile(option: option),
-                    ),
-                ],
-              ),
+              ],
             ),
           ),
         ],

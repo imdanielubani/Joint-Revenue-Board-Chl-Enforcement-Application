@@ -10,6 +10,8 @@ import '../../features/notifications/presentation/screens/notifications_screen.d
 import '../../features/permissions/presentation/screens/permission_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/sos/presentation/screens/sos_screen.dart';
+import '../../features/vehicle/presentation/screens/verification_result_screen.dart';
+import '../../features/verification/domain/entities/plate_number.dart';
 import '../../features/verification/presentation/screens/manual_plate_entry_screen.dart';
 import '../../features/verification/presentation/screens/ocr_capture_screen.dart';
 import '../../features/verification/presentation/screens/qr_scan_screen.dart';
@@ -109,6 +111,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.ocrCapture,
         name: RouteNames.ocrCapture,
         builder: (context, state) => const OcrCaptureScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.verificationResult,
+        name: RouteNames.verificationResult,
+        builder: (context, state) => VerificationResultScreen(
+          plate: state.extra is PlateNumber
+              ? state.extra! as PlateNumber
+              : null,
+        ),
       ),
     ],
   );
