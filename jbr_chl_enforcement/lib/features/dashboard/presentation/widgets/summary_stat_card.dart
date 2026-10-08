@@ -114,7 +114,7 @@ class SummaryStatCard extends StatelessWidget {
                         fontFamily: AppTypography.fontFamily,
                         fontSize: 12,
                         fontWeight: AppTypography.semiBold,
-                        height: 18.85 / 13,
+                        height: 1.45,
                         color: AppColors.forest,
                       ),
                     ),

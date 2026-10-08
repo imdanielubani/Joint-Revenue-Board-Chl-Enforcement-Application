@@ -439,6 +439,10 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Dashboard line heights written as plain multipliers (e.g. `1.3`) where the
+  font size had changed; no visual change. Verify E-Tag button label size
+  simplified to `14`.
+
 - Dashboard text sizes reduced: page title 20, section headings 16,
   "View all" 12, officer name 18 and region/role 10, status tile label 10
   and status 9, activity card titles 12, action buttons 14, E-Tag icon 17.

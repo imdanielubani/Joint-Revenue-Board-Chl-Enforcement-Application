@@ -24,7 +24,7 @@ class OfficerCard extends StatelessWidget {
     fontFamily: AppTypography.fontFamily,
     fontSize: 18,
     fontWeight: AppTypography.bold,
-    height: 26 / 20,
+    height: 1.3,
     color: AppColors.forest,
   );
 
@@ -32,7 +32,7 @@ class OfficerCard extends StatelessWidget {
     fontFamily: AppTypography.fontFamily,
     fontSize: 10,
     fontWeight: AppTypography.regular,
-    height: 18 / 12,
+    height: 1.5,
     color: AppColors.green,
   );
 

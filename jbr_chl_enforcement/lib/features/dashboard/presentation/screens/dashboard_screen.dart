@@ -163,7 +163,7 @@ class _DashboardContent extends StatelessWidget {
     fontFamily: AppTypography.fontFamily,
     fontSize: 16,
     fontWeight: AppTypography.semiBold,
-    height: 23.4 / 18,
+    height: 1.3,
     letterSpacing: -0.27,
     color: AppColors.forest,
   );
@@ -195,7 +195,7 @@ class _DashboardContent extends StatelessWidget {
                 fontFamily: AppTypography.fontFamily,
                 fontSize: 20,
                 fontWeight: AppTypography.bold,
-                height: 25.96 / 22,
+                height: 1.18,
                 letterSpacing: -0.77,
                 color: AppColors.forest,
               ),

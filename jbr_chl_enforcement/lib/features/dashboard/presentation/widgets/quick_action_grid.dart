@@ -86,7 +86,7 @@ class _ActionButton extends StatelessWidget {
             label,
             style: TextStyle(
               fontFamily: AppTypography.fontFamily,
-              fontSize: filled ? 14 : 14,
+              fontSize: 14,
               fontWeight: AppTypography.semiBold,
               color: filled ? Colors.white : AppColors.ink,
             ),
