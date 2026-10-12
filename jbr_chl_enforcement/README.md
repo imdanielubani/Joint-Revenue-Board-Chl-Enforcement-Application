@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. The demo account is defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts (password `Demo@2026`): `officer@jbr.com` is an enforcement agent; `clerk@jbr.com` is not, to see "Agent access not authorized". Any other email or password shows "Unable to sign in". Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -303,15 +303,49 @@ phone sizes, tablets, a foldable, landscape and 200% text.
   rises just enough to keep one field usable.
 - **Validation:** email format and empty fields are checked before any
   network call.
-- **Flow:** Sign in → spinner and locked form → success alert → dashboard
-  after 1.2 s.
-- **Remember Session:** when ticked, the session is saved in secure storage
-  (Keychain / Android Keystore) and the choice is remembered; otherwise any
-  saved session is removed. *Restoring it on the next launch is not built
-  yet.*
+- **Flow:** Sign in → progress dialog over the screen
+  (`widgets/sign_in_dialog.dart`), with "Authenticating..." on the button:
+  1. **Signing you in** (Authentication): the email and password are
+     checked. The badge's outer ring has a turning green arc (still when
+     reduced motion is on).
+  2. **Checking agent access** (Agent Authentication): Authentication shows
+     Completed; the account's role is checked.
+  3. Both steps Completed for 0.7 s, then the dialog closes, "Login
+     Successful..." shows, and the dashboard opens after 1.2 s.
+
+  Each step shows for at least 0.6 s (`LoginController.minStepDuration`) so
+  its result can be seen. The close button (and system back) abandons
+  sign-in until access is confirmed; a late server answer is then ignored.
+- **Outcomes** (all in the same dialog):
+  - **Unable to sign in** (Sign-In Unsuccessful): wrong credentials, no
+    connection, server error or no API configured, each with its own
+    explanation (`LoginMessages.rejectionFor`). *Try again* repeats with the
+    same credentials; *Edit credentials* closes the dialog with the form as
+    it was.
+  - **Agent access not authorized** (Access Restricted): signed in, but the
+    account is not an enforcement agent. *Use Another Account* closes the
+    dialog and empties the form; *Recheck Access* signs in again in the
+    background to fetch the current role, so a role just fixed by an
+    administrator is picked up without retyping.
+  - **Account deactivated** (HTTP 403) still shows its own sheet.
+- **Agent role rule:** `AgentAccessPolicy`
+  (`domain/entities/agent_access.dart`) allows only the role
+  `enforcement_agent`, compared case- and separator-insensitively ("Enforcement
+  Agent", "ENFORCEMENT_AGENT"). An officer with no role, or any other role,
+  is refused.
+- **Nothing is saved until access is confirmed:** `AuthRepository.signIn`
+  only returns the session. `LoginController` keeps it in memory while it
+  checks agent access, and only then calls `keepSession` and starts it. A
+  refused or abandoned sign-in leaves nothing on the device.
+- **Remember Session:** when ticked, the confirmed session is saved in
+  secure storage (Keychain / Android Keystore) and the choice is remembered;
+  otherwise any saved session is removed. *Restoring it on the next launch
+  is not built yet.*
 - **API contract (assumed, confirm with the backend):** `POST /auth/login`
   with `{ "email", "password" }`, answering
-  `{ "accessToken", "refreshToken"?, "expiresIn"?, "officer": { "id", "name", "email" } }`.
+  `{ "accessToken", "refreshToken"?, "expiresIn"?, "officer": { "id", "name", "email", "region"?, "role" } }`.
+  **`officer.role` is required for agent access**: without it every sign-in
+  is refused as "Agent access not authorized".
   Parsing is in `features/auth/data/models/auth_token_model.dart`.
   HTTP 400/401/422 mean wrong credentials; timeouts and connection errors
   mean no connection; anything else is a server error
@@ -411,6 +445,14 @@ Sign-in and sessions:
 8. Certificate pinning and rooted/jailbroken device detection
    (`shared/security/`).
 9. Decide whether remembered officers can sign in offline.
+10. Confirm the role names the API returns (and whether supervisors may use
+    the app); update `AgentAccessPolicy.agentRoles`. The API must include
+    `officer.role` in the sign-in response.
+11. When session restore at launch is built, check the restored officer
+    with `AgentAccessPolicy` too, so a role removed since the last sign-in
+    takes effect.
+12. "Recheck Access" re-signs in to fetch the role. If the backend adds a
+    profile endpoint (e.g. `GET /auth/me`), use it instead.
 
 Elsewhere:
 
@@ -438,6 +480,13 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Sign-in progress and agent role authorization: progress dialog ("Signing
+  you in", "Checking agent access") with a turning ring around the badge;
+  "Unable to sign in" (Try again / Edit credentials) and "Agent access not
+  authorized" (Use Another Account / Recheck Access) dialogs; only the
+  enforcement-agent role may sign in; the session is saved only after
+  access is confirmed; sign-in can be abandoned; demo clerk account.
 
 - Dashboard line heights written as plain multipliers (e.g. `1.3`) where the
   font size had changed; no visual change. Verify E-Tag button label size

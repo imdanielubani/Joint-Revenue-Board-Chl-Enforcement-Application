@@ -44,7 +44,6 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthSession> signIn({
     required String email,
     required String password,
-    required bool rememberSession,
   }) async {
     if (!_isConfigured) {
       throw const AuthException(
@@ -53,9 +52,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
     }
 
-    final AuthSession session;
     try {
-      session = await _remote.login(
+      return await _remote.login(
         LoginRequestModel(email: email, password: password),
       );
     } on DioException catch (error) {
@@ -63,10 +61,13 @@ class AuthRepositoryImpl implements AuthRepository {
     } on FormatException catch (error) {
       throw AuthException(AuthFailure.server, error.message);
     }
-
-    await storeSession(_local, session, rememberSession: rememberSession);
-    return session;
   }
+
+  @override
+  Future<void> keepSession(
+    AuthSession session, {
+    required bool rememberSession,
+  }) => storeSession(_local, session, rememberSession: rememberSession);
 
   @override
   Future<void> requestPasswordReset({required String email}) async {

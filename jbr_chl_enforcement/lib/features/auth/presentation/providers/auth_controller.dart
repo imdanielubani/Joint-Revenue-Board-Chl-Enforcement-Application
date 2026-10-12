@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/validators.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/auth_failure.dart';
+import '../../domain/entities/auth_session.dart';
 import '../../domain/usecases/login.dart';
 import 'session_provider.dart';
 
@@ -12,11 +13,36 @@ final loginControllerProvider =
       LoginController.new,
     );
 
+/// Where sign-in has got to.
+///
+/// A successful sign-in goes [authenticating] → [checkingAccess] →
+/// [accessConfirmed] → [success]. It can stop at [rejected] (not signed in),
+/// [notAuthorized] (signed in, but not as an enforcement agent) or
+/// [accountDisabled].
 enum LoginStatus {
   idle,
-  submitting,
+
+  /// What was typed cannot be right; shown under the fields.
+  invalidInput,
+
+  /// Checking the email and password with the server.
+  authenticating,
+
+  /// Signed in; checking the account may work as an enforcement agent.
+  checkingAccess,
+
+  /// Agent access confirmed; shown briefly before finishing.
+  accessConfirmed,
+
+  /// Signed in and the session started.
   success,
-  failure,
+
+  /// Sign-in was not confirmed (wrong credentials, no connection, server
+  /// error). See [LoginState.rejection].
+  rejected,
+
+  /// The account is not an enforcement agent. Nothing has been kept.
+  notAuthorized,
 
   /// The server refused sign-in because the account is deactivated.
   accountDisabled,
@@ -29,32 +55,60 @@ class LoginState {
     this.message,
     this.emailError,
     this.passwordError,
+    this.rejection,
     this.rememberSession = false,
+    this.clearFormRequests = 0,
   });
 
   final LoginStatus status;
 
-  /// Alert shown above the form: sign-in success, or a failure that is not
-  /// about one particular field (wrong credentials, no connection).
+  /// Alert shown above the form: "Login Successful...".
   final String? message;
 
   /// Shown under the field when what was typed cannot be right.
   final String? emailError;
   final String? passwordError;
+
+  /// Why sign-in was [LoginStatus.rejected].
+  final AuthFailure? rejection;
+
   final bool rememberSession;
 
-  bool get isSubmitting => status == LoginStatus.submitting;
+  /// Goes up each time the form should be emptied ("Use Another Account").
+  final int clearFormRequests;
 
-  /// Inputs are locked while signing in and after success.
-  bool get isLocked =>
-      status == LoginStatus.submitting || status == LoginStatus.success;
+  /// Sign-in is in progress (the progress dialog's steps).
+  bool get isSigningIn =>
+      status == LoginStatus.authenticating ||
+      status == LoginStatus.checkingAccess ||
+      status == LoginStatus.accessConfirmed;
+
+  /// The sign-in dialog is showing: progress, or a result to act on.
+  bool get showsSignInDialog =>
+      isSigningIn ||
+      status == LoginStatus.rejected ||
+      status == LoginStatus.notAuthorized;
+
+  /// The sign-in button shows "Authenticating..." while sign-in runs.
+  bool get isSubmitting => isSigningIn;
+
+  /// Inputs are locked while the dialog is open and after success.
+  bool get isLocked => showsSignInDialog || status == LoginStatus.success;
+
+  /// The progress can still be abandoned (not once access is confirmed,
+  /// when the session is about to be kept).
+  bool get canCancel =>
+      status == LoginStatus.authenticating ||
+      status == LoginStatus.checkingAccess;
 
   LoginState copyWith({
     LoginStatus? status,
     String? Function()? message,
     String? Function()? emailError,
     String? Function()? passwordError,
+    AuthFailure? Function()? rejection,
     bool? rememberSession,
+    int? clearFormRequests,
   }) {
     return LoginState(
       status: status ?? this.status,
@@ -63,16 +117,31 @@ class LoginState {
       passwordError: passwordError != null
           ? passwordError()
           : this.passwordError,
+      rejection: rejection != null ? rejection() : this.rejection,
       rememberSession: rememberSession ?? this.rememberSession,
+      clearFormRequests: clearFormRequests ?? this.clearFormRequests,
     );
   }
 }
 
 /// User-facing wording for sign-in outcomes.
 abstract final class LoginMessages {
-  // Alerts above the form.
-  static const String invalidCredentials = 'Incorrect email or password.';
+  // Alert above the form.
   static const String success = 'Login Successful...';
+
+  // Why sign-in was not confirmed ("Unable to sign in").
+  static const String rejectedCredentials =
+      'Your sign-in was not confirmed. Check your credentials, or try again '
+      'when CHL is available.';
+  static const String rejectedNetwork =
+      'CHL could not be reached. Check your network connection and try '
+      'again.';
+  static const String rejectedServer =
+      'CHL could not confirm your sign-in right now. Please try again.';
+  static const String rejectedNotConfigured =
+      'Sign-in is unavailable on this device. Contact your administrator.';
+
+  // Also used by password recovery.
   static const String network =
       'Unable to connect. Check your network and try again.';
   static const String server = 'Sign-in failed. Please try again.';
@@ -83,16 +152,46 @@ abstract final class LoginMessages {
   static const String emailRequired = 'Enter your email address.';
   static const String emailInvalid = 'Enter a valid email address.';
   static const String passwordRequired = 'Enter your password.';
+
+  /// The "Unable to sign in" explanation for [failure].
+  static String rejectionFor(AuthFailure? failure) => switch (failure) {
+    AuthFailure.network => rejectedNetwork,
+    AuthFailure.server => rejectedServer,
+    AuthFailure.notConfigured => rejectedNotConfigured,
+    AuthFailure.invalidCredentials ||
+    AuthFailure.accountDisabled ||
+    null => rejectedCredentials,
+  };
 }
 
-/// Validates the form and signs the officer in.
+/// Validates the form, signs the officer in and confirms they may work as
+/// an enforcement agent before keeping the session.
 ///
-/// Problems with what was typed are shown on the field concerned; failures
-/// that are not about one field (wrong credentials, no connection) are shown
-/// once, as an alert above the form.
+/// Problems with what was typed are shown on the field concerned. Sign-in
+/// itself runs in a dialog that shows each step and, if it stops, why and
+/// what to do next. Nothing is saved on the device until agent access is
+/// confirmed.
 class LoginController extends Notifier<LoginState> {
+  /// Each step shows for at least this long, so its result can be seen.
+  static const Duration minStepDuration = Duration(milliseconds: 600);
+
+  /// How long "Completed" shows for both steps before finishing.
+  static const Duration confirmedHold = Duration(milliseconds: 700);
+
+  /// Numbers each attempt; a step whose attempt is no longer current (the
+  /// officer cancelled, or started again) is ignored when it completes.
+  int _attempt = 0;
+
+  /// Kept in memory only while an attempt is open, for "Try again" and
+  /// "Recheck Access".
+  ({String email, String password})? _credentials;
+
+  /// Signed in, but agent access not yet confirmed. Never saved.
+  AuthSession? _pendingSession;
+
   @override
   LoginState build() {
+    ref.onDispose(_forgetAttempt);
     _restoreRememberChoice();
     return const LoginState();
   }
@@ -121,23 +220,22 @@ class LoginController extends Notifier<LoginState> {
     state = state.copyWith(rememberSession: value);
   }
 
-  /// Clears the email's error, and any alert, once the officer edits it.
+  /// Clears the email's error once the officer edits it.
   void onEmailChanged() =>
       _clearErrors(email: true, password: state.passwordError == null);
 
-  /// Clears the password's error, and any alert, once the officer edits it.
+  /// Clears the password's error once the officer edits it.
   void onPasswordChanged() =>
       _clearErrors(email: state.emailError == null, password: true);
 
   void _clearErrors({required bool email, required bool password}) {
-    if (state.status != LoginStatus.failure) return;
+    if (state.status != LoginStatus.invalidInput) return;
     final emailError = email ? null : state.emailError;
     final passwordError = password ? null : state.passwordError;
     state = state.copyWith(
       status: emailError == null && passwordError == null
           ? LoginStatus.idle
-          : LoginStatus.failure,
-      message: () => null,
+          : LoginStatus.invalidInput,
       emailError: () => emailError,
       passwordError: () => passwordError,
     );
@@ -157,7 +255,7 @@ class LoginController extends Notifier<LoginState> {
         : null;
     if (emailError != null || passwordError != null) {
       state = state.copyWith(
-        status: LoginStatus.failure,
+        status: LoginStatus.invalidInput,
         message: () => null,
         emailError: () => emailError,
         passwordError: () => passwordError,
@@ -166,51 +264,155 @@ class LoginController extends Notifier<LoginState> {
     }
 
     state = state.copyWith(
-      status: LoginStatus.submitting,
       message: () => null,
       emailError: () => null,
       passwordError: () => null,
     );
+    _credentials = (email: trimmedEmail, password: password);
+    _pendingSession = null;
+    await _signIn(++_attempt);
+  }
 
+  /// "Try again" after sign-in was not confirmed.
+  Future<void> retry() async {
+    if (state.status != LoginStatus.rejected || _credentials == null) return;
+    final attempt = ++_attempt;
+    final pending = _pendingSession;
+    // A failed "Recheck Access" retries just that step.
+    if (pending != null) {
+      await _checkAccess(pending, attempt, refresh: true);
+    } else {
+      await _signIn(attempt);
+    }
+  }
+
+  /// "Recheck Access": asks the server again for the account's role, in
+  /// case an administrator has just changed it.
+  Future<void> recheckAccess() async {
+    final pending = _pendingSession;
+    if (state.status != LoginStatus.notAuthorized || pending == null) return;
+    await _checkAccess(pending, ++_attempt, refresh: true);
+  }
+
+  /// Closes the dialog and returns to the form as it was ("Edit
+  /// credentials", the close button, or back). Sign-in in progress is
+  /// abandoned; once access is confirmed it can no longer be.
+  void dismiss() {
+    if (!state.showsSignInDialog ||
+        state.status == LoginStatus.accessConfirmed) {
+      return;
+    }
+    _forgetAttempt();
+    state = state.copyWith(status: LoginStatus.idle, rejection: () => null);
+  }
+
+  /// "Use Another Account": closes the dialog and empties the form.
+  void useAnotherAccount() {
+    if (state.status != LoginStatus.notAuthorized) return;
+    _forgetAttempt();
+    state = state.copyWith(
+      status: LoginStatus.idle,
+      clearFormRequests: state.clearFormRequests + 1,
+    );
+  }
+
+  void _forgetAttempt() {
+    _attempt++;
+    _credentials = null;
+    _pendingSession = null;
+  }
+
+  bool _isCurrent(int attempt) => ref.mounted && attempt == _attempt;
+
+  Future<void> _signIn(int attempt) async {
+    final credentials = _credentials!;
+    state = state.copyWith(
+      status: LoginStatus.authenticating,
+      rejection: () => null,
+    );
     try {
-      final session = await Login(ref.read(authRepositoryProvider))(
-        email: trimmedEmail,
-        password: password,
+      final session = await _atLeastOneStep(
+        Login(ref.read(authRepositoryProvider))(
+          email: credentials.email,
+          password: credentials.password,
+        ),
+      );
+      if (!_isCurrent(attempt)) return;
+      await _checkAccess(session, attempt, refresh: false);
+    } catch (error, stackTrace) {
+      _onFailure(error, stackTrace, attempt);
+    }
+  }
+
+  Future<void> _checkAccess(
+    AuthSession session,
+    int attempt, {
+    required bool refresh,
+  }) async {
+    state = state.copyWith(
+      status: LoginStatus.checkingAccess,
+      rejection: () => null,
+    );
+    try {
+      final granted = await _atLeastOneStep(
+        CheckAgentAccess(ref.read(authRepositoryProvider))(
+          session,
+          refreshFrom: refresh ? _credentials : null,
+        ),
+      );
+      if (!_isCurrent(attempt)) return;
+      if (granted == null) {
+        _pendingSession = session;
+        state = state.copyWith(status: LoginStatus.notAuthorized);
+        return;
+      }
+
+      state = state.copyWith(status: LoginStatus.accessConfirmed);
+      await Future<void>.delayed(confirmedHold);
+      if (!_isCurrent(attempt)) return;
+      await KeepSession(ref.read(authRepositoryProvider))(
+        granted,
         rememberSession: state.rememberSession,
       );
-      if (!ref.mounted) return;
-      ref.read(sessionProvider.notifier).start(session);
+      if (!_isCurrent(attempt)) return;
+      ref.read(sessionProvider.notifier).start(granted);
+      _forgetAttempt();
       state = state.copyWith(
         status: LoginStatus.success,
         message: () => LoginMessages.success,
       );
-    } on AuthException catch (error) {
-      debugPrint('Sign-in failed: $error');
-      if (!ref.mounted) return;
-      if (error.failure == AuthFailure.accountDisabled) {
-        state = state.copyWith(status: LoginStatus.accountDisabled);
-        return;
-      }
-      state = state.copyWith(
-        status: LoginStatus.failure,
-        message: () => _messageFor(error.failure),
-      );
     } catch (error, stackTrace) {
-      debugPrint('Sign-in failed unexpectedly: $error\n$stackTrace');
-      if (!ref.mounted) return;
-      state = state.copyWith(
-        status: LoginStatus.failure,
-        message: () => LoginMessages.server,
-      );
+      // Keep the session so "Try again" can repeat just this step.
+      if (_isCurrent(attempt)) _pendingSession = session;
+      _onFailure(error, stackTrace, attempt);
     }
   }
 
-  static String _messageFor(AuthFailure failure) => switch (failure) {
-    AuthFailure.invalidCredentials => LoginMessages.invalidCredentials,
-    // Shown as the "account deactivated" sheet instead (see submit).
-    AuthFailure.accountDisabled => LoginMessages.server,
-    AuthFailure.network => LoginMessages.network,
-    AuthFailure.server => LoginMessages.server,
-    AuthFailure.notConfigured => LoginMessages.notConfigured,
-  };
+  void _onFailure(Object error, StackTrace stackTrace, int attempt) {
+    if (!_isCurrent(attempt)) return;
+    final failure = error is AuthException ? error.failure : AuthFailure.server;
+    if (error is AuthException) {
+      debugPrint('Sign-in failed: $error');
+    } else {
+      debugPrint('Sign-in failed unexpectedly: $error\n$stackTrace');
+    }
+    if (failure == AuthFailure.accountDisabled) {
+      _forgetAttempt();
+      state = state.copyWith(status: LoginStatus.accountDisabled);
+      return;
+    }
+    state = state.copyWith(
+      status: LoginStatus.rejected,
+      rejection: () => failure,
+    );
+  }
+
+  /// [work]'s result, once at least [minStepDuration] has passed.
+  static Future<T> _atLeastOneStep<T>(Future<T> work) async {
+    final results = await Future.wait<Object?>([
+      work,
+      Future<void>.delayed(minStepDuration),
+    ]);
+    return results.first as T;
+  }
 }

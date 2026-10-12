@@ -72,6 +72,10 @@ abstract final class AppColors {
 
   // Bottom sheets.
   static const Color scrim = Color(0xCC000000); // black at 80%
+
+  // Centred dialogs (sign-in progress and results).
+  static const Color dialogBorder = Color(0xFFDCE4D7);
+  static const Color dialogShadow = Color(0x30102A1C); // 19%
   static const Color sheetHandle = Color(0xFFD1D5DB);
   static const Color sheetTitle = Color(0xFF272936);
   static const Color sheetBody = Color(0xFF6B7280);
@@ -127,6 +131,7 @@ abstract final class AppColors {
   static const Color warning = Color(0xFFB45309); // expiring / needs attention
   static const Color warningContainer = Color(0xFFFEF3C7);
   static const Color error = Color(0xFFB91C1C); // violation / invalid
+  static const Color errorTint = Color(0x1AB91C1C); // error at 10%, icon halo
   static const Color errorContainer = Color(0xFFFEE2E2);
   static const Color info = Color(0xFF1D4ED8); // pending / informational
   static const Color infoContainer = Color(0xFFDBEAFE);

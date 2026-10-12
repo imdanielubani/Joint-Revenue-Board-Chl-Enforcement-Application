@@ -11,12 +11,15 @@ import 'auth_repository_impl.dart';
 /// is available. Only used in debug builds started with
 /// `--dart-define=AUTH_DEMO=true` (see `AppEnvironment.authDemoMode`).
 ///
-/// Accepts [demoEmail] / [demoPassword]; anything else fails as invalid
-/// credentials, so the error state can be seen too.
+/// [demoEmail] signs in as an enforcement agent and [clerkEmail] as an
+/// officer without agent access (to see "Agent access not authorized"), both
+/// with [demoPassword]. Anything else fails as invalid credentials, so
+/// "Unable to sign in" can be seen too.
 class DemoAuthRepository implements AuthRepository {
   DemoAuthRepository(this._local) : assert(!kReleaseMode);
 
   static const String demoEmail = 'officer@jbr.com';
+  static const String clerkEmail = 'clerk@jbr.com';
   static const String demoPassword = 'Demo@2026';
 
   /// Simulated network round trip.
@@ -28,26 +31,40 @@ class DemoAuthRepository implements AuthRepository {
   Future<AuthSession> signIn({
     required String email,
     required String password,
-    required bool rememberSession,
   }) async {
     await Future<void>.delayed(latency);
-    if (email.toLowerCase() != demoEmail || password != demoPassword) {
-      throw const AuthException(AuthFailure.invalidCredentials, 'demo');
-    }
-    final session = AuthSession(
-      accessToken: 'demo-token',
-      expiresAt: DateTime.now().add(const Duration(hours: 8)),
-      officer: const Officer(
+    final officer = switch (email.toLowerCase()) {
+      demoEmail => const Officer(
         id: 'demo',
         name: 'Demo Officer',
         email: demoEmail,
         region: 'Lagos State',
         role: 'Enforcement Agent',
       ),
+      clerkEmail => const Officer(
+        id: 'demo-clerk',
+        name: 'Demo Clerk',
+        email: clerkEmail,
+        region: 'Lagos State',
+        role: 'Revenue Clerk',
+      ),
+      _ => null,
+    };
+    if (officer == null || password != demoPassword) {
+      throw const AuthException(AuthFailure.invalidCredentials, 'demo');
+    }
+    return AuthSession(
+      accessToken: 'demo-token',
+      expiresAt: DateTime.now().add(const Duration(hours: 8)),
+      officer: officer,
     );
-    await storeSession(_local, session, rememberSession: rememberSession);
-    return session;
   }
+
+  @override
+  Future<void> keepSession(
+    AuthSession session, {
+    required bool rememberSession,
+  }) => storeSession(_local, session, rememberSession: rememberSession);
 
   /// Always succeeds, as the real API does for unknown emails.
   @override

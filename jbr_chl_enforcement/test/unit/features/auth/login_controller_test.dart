@@ -1,3 +1,4 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jbr_chl_enforcement/core/constants/storage_keys.dart';
@@ -8,6 +9,9 @@ import 'package:jbr_chl_enforcement/features/auth/presentation/providers/auth_co
 import 'package:jbr_chl_enforcement/features/auth/presentation/providers/session_provider.dart';
 
 import '../../../helpers/fakes.dart';
+
+/// Long enough for every step of a sign-in to finish.
+const _allSteps = Duration(seconds: 5);
 
 void main() {
   late FakeAuthRepository repository;
@@ -32,6 +36,31 @@ void main() {
       c.read(loginControllerProvider.notifier);
   LoginState state(ProviderContainer c) => c.read(loginControllerProvider);
 
+  /// Runs [body] with controllable time; the container is created inside.
+  void withTime(void Function(FakeAsync async, ProviderContainer c) body) {
+    fakeAsync((async) {
+      final c = createContainer();
+      async.flushMicrotasks();
+      body(async, c);
+    });
+  }
+
+  /// Every status the controller changes to from now on.
+  List<LoginStatus> record(ProviderContainer c) {
+    final statuses = <LoginStatus>[];
+    var last = state(c).status;
+    c.listen(loginControllerProvider, (_, next) {
+      if (next.status == last) return;
+      last = next.status;
+      statuses.add(next.status);
+    });
+    return statuses;
+  }
+
+  void submit(ProviderContainer c, {String password = 'secret'}) {
+    controller(c).submit(email: 'officer@jbr.com', password: password);
+  }
+
   setUp(() {
     repository = FakeAuthRepository();
     preferences = FakePreferencesService();
@@ -43,10 +72,10 @@ void main() {
 
       await controller(c).submit(email: 'not-an-email', password: 'secret');
 
-      expect(state(c).status, LoginStatus.failure);
+      expect(state(c).status, LoginStatus.invalidInput);
       expect(state(c).emailError, LoginMessages.emailInvalid);
       expect(state(c).passwordError, isNull);
-      expect(state(c).message, isNull, reason: 'no alert for field errors');
+      expect(state(c).showsSignInDialog, isFalse);
       expect(repository.calls, isEmpty);
     });
 
@@ -57,7 +86,6 @@ void main() {
 
       expect(state(c).emailError, LoginMessages.emailRequired);
       expect(state(c).passwordError, LoginMessages.passwordRequired);
-      expect(state(c).message, isNull);
       expect(repository.calls, isEmpty);
     });
 
@@ -69,7 +97,7 @@ void main() {
 
       expect(state(c).emailError, isNull);
       expect(state(c).passwordError, LoginMessages.passwordRequired);
-      expect(state(c).status, LoginStatus.failure);
+      expect(state(c).status, LoginStatus.invalidInput);
 
       controller(c).onPasswordChanged();
 
@@ -78,105 +106,328 @@ void main() {
     });
   });
 
-  group('sign-in', () {
-    test('signs in with the trimmed email and starts the session', () async {
-      final c = createContainer();
-      controller(c).setRememberSession(true);
+  group('signing in as an enforcement agent', () {
+    test('goes through each step, then keeps and starts the session', () {
+      withTime((async, c) {
+        controller(c).setRememberSession(true);
+        final statuses = record(c);
 
-      await controller(c)
-          .submit(email: '  officer@jbr.com ', password: ' pass with spaces ');
+        controller(
+          c,
+        ).submit(email: '  officer@jbr.com ', password: ' pass with spaces ');
+        async.elapse(_allSteps);
 
-      expect(repository.calls.single.email, 'officer@jbr.com');
-      expect(repository.calls.single.password, ' pass with spaces ');
-      expect(repository.calls.single.remember, isTrue);
-      expect(state(c).status, LoginStatus.success);
-      expect(state(c).message, LoginMessages.success);
-      expect(c.read(sessionProvider)?.officer, FakeAuthRepository.officer);
+        expect(statuses, [
+          LoginStatus.authenticating,
+          LoginStatus.checkingAccess,
+          LoginStatus.accessConfirmed,
+          LoginStatus.success,
+        ]);
+        expect(repository.calls.single.email, 'officer@jbr.com');
+        expect(repository.calls.single.password, ' pass with spaces ');
+        expect(state(c).message, LoginMessages.success);
+        expect(c.read(sessionProvider)?.officer.name, 'Test Officer');
+        expect(repository.kept.single.remember, isTrue);
+        expect(state(c).showsSignInDialog, isFalse);
+      });
     });
 
-    test('shows the submitting state while waiting', () async {
-      repository.delay = const Duration(milliseconds: 50);
-      final c = createContainer();
+    test('shows each step for at least the minimum time', () {
+      withTime((async, c) {
+        submit(c);
 
-      final pending = controller(c)
-          .submit(email: 'officer@jbr.com', password: 'secret');
+        async.elapse(
+          LoginController.minStepDuration - const Duration(milliseconds: 1),
+        );
+        expect(state(c).status, LoginStatus.authenticating);
 
-      expect(state(c).isSubmitting, isTrue);
-      expect(state(c).isLocked, isTrue);
-      await pending;
-      expect(state(c).status, LoginStatus.success);
+        async.elapse(const Duration(milliseconds: 1));
+        expect(state(c).status, LoginStatus.checkingAccess);
+
+        async.elapse(LoginController.minStepDuration);
+        expect(state(c).status, LoginStatus.accessConfirmed);
+
+        async.elapse(LoginController.confirmedHold);
+        expect(state(c).status, LoginStatus.success);
+      });
     });
 
-    test('ignores a second submit while the first is in progress', () async {
-      repository.delay = const Duration(milliseconds: 50);
-      final c = createContainer();
+    test('keeps nothing until agent access is confirmed', () {
+      withTime((async, c) {
+        submit(c);
 
-      final first = controller(c)
-          .submit(email: 'officer@jbr.com', password: 'secret');
-      final second = controller(c)
-          .submit(email: 'officer@jbr.com', password: 'secret');
-      await Future.wait([first, second]);
+        async.elapse(LoginController.minStepDuration);
+        expect(state(c).status, LoginStatus.checkingAccess);
+        expect(repository.kept, isEmpty);
+        expect(c.read(sessionProvider), isNull);
 
-      expect(repository.calls, hasLength(1));
+        async.elapse(LoginController.minStepDuration);
+        expect(state(c).status, LoginStatus.accessConfirmed);
+        expect(repository.kept, isEmpty);
+        expect(c.read(sessionProvider), isNull);
+      });
     });
 
-    test('wrong credentials show one alert and leave the fields', () async {
-      repository.failure = AuthFailure.invalidCredentials;
-      final c = createContainer();
+    test('locks the form and shows the dialog while signing in', () {
+      withTime((async, c) {
+        submit(c);
 
-      await controller(c).submit(email: 'officer@jbr.com', password: 'wrong');
-
-      expect(state(c).status, LoginStatus.failure);
-      expect(state(c).message, LoginMessages.invalidCredentials);
-      expect(state(c).emailError, isNull);
-      expect(state(c).passwordError, isNull);
-      expect(c.read(sessionProvider), isNull);
+        expect(state(c).isSubmitting, isTrue);
+        expect(state(c).isLocked, isTrue);
+        expect(state(c).showsSignInDialog, isTrue);
+        async.elapse(_allSteps);
+      });
     });
 
-    test('a deactivated account is reported for the sheet, not as an '
-        'alert', () async {
-      repository.failure = AuthFailure.accountDisabled;
-      final c = createContainer();
+    test('ignores a second submit while the first is in progress', () {
+      withTime((async, c) {
+        submit(c);
+        submit(c);
+        async.elapse(_allSteps);
 
-      await controller(c).submit(email: 'officer@jbr.com', password: 'x');
-
-      expect(state(c).status, LoginStatus.accountDisabled);
-      expect(state(c).message, isNull);
-      expect(state(c).emailError, isNull);
-      expect(c.read(sessionProvider), isNull);
-
-      controller(c).acknowledgeAccountDisabled();
-      expect(state(c).status, LoginStatus.idle);
+        expect(repository.calls, hasLength(1));
+      });
     });
+  });
 
-    test('editing after a failed sign-in clears the alert', () async {
-      repository.failure = AuthFailure.invalidCredentials;
-      final c = createContainer();
-      await controller(c).submit(email: 'officer@jbr.com', password: 'wrong');
+  group('agent access', () {
+    for (final role in ['Revenue Clerk', null]) {
+      test('${role ?? 'no role'} is not authorized and nothing is kept', () {
+        withTime((async, c) {
+          repository.role = role;
+          submit(c);
+          async.elapse(_allSteps);
 
-      controller(c).onPasswordChanged();
-
-      expect(state(c).message, isNull);
-      expect(state(c).status, LoginStatus.idle);
-    });
-
-    for (final (failure, message) in [
-      (AuthFailure.network, LoginMessages.network),
-      (AuthFailure.server, LoginMessages.server),
-      (AuthFailure.notConfigured, LoginMessages.notConfigured),
-    ]) {
-      test('${failure.name} failure shows its message without flagging '
-          'fields', () async {
-        repository.failure = failure;
-        final c = createContainer();
-
-        await controller(c).submit(email: 'officer@jbr.com', password: 'x');
-
-        expect(state(c).message, message);
-        expect(state(c).emailError, isNull);
-        expect(state(c).passwordError, isNull);
+          expect(state(c).status, LoginStatus.notAuthorized);
+          expect(state(c).showsSignInDialog, isTrue);
+          expect(repository.kept, isEmpty);
+          expect(c.read(sessionProvider), isNull);
+        });
       });
     }
+
+    test('Recheck Access signs in again and picks up a new role', () {
+      withTime((async, c) {
+        repository.role = 'Revenue Clerk';
+        submit(c);
+        async.elapse(_allSteps);
+
+        // An administrator grants the role.
+        repository.role = 'ENFORCEMENT_AGENT';
+        final statuses = record(c);
+        controller(c).recheckAccess();
+        async.elapse(_allSteps);
+
+        expect(statuses, [
+          LoginStatus.checkingAccess,
+          LoginStatus.accessConfirmed,
+          LoginStatus.success,
+        ]);
+        expect(repository.calls, hasLength(2));
+        expect(c.read(sessionProvider)?.officer.role, 'ENFORCEMENT_AGENT');
+        expect(repository.kept, hasLength(1));
+      });
+    });
+
+    test('Recheck Access with the role unchanged stays not authorized', () {
+      withTime((async, c) {
+        repository.role = 'Revenue Clerk';
+        submit(c);
+        async.elapse(_allSteps);
+
+        controller(c).recheckAccess();
+        async.elapse(_allSteps);
+
+        expect(state(c).status, LoginStatus.notAuthorized);
+        expect(repository.kept, isEmpty);
+      });
+    });
+
+    test('Use Another Account closes the dialog and empties the form', () {
+      withTime((async, c) {
+        repository.role = 'Revenue Clerk';
+        submit(c);
+        async.elapse(_allSteps);
+        final requests = state(c).clearFormRequests;
+
+        controller(c).useAnotherAccount();
+
+        expect(state(c).status, LoginStatus.idle);
+        expect(state(c).showsSignInDialog, isFalse);
+        expect(state(c).clearFormRequests, requests + 1);
+      });
+    });
+
+    test('a failed recheck can be tried again', () {
+      withTime((async, c) {
+        repository.role = 'Revenue Clerk';
+        submit(c);
+        async.elapse(_allSteps);
+
+        repository.failure = AuthFailure.network;
+        controller(c).recheckAccess();
+        async.elapse(_allSteps);
+        expect(state(c).status, LoginStatus.rejected);
+        expect(state(c).rejection, AuthFailure.network);
+
+        repository
+          ..failure = null
+          ..role = FakeAuthRepository.agentRole;
+        controller(c).retry();
+        async.elapse(_allSteps);
+        expect(state(c).status, LoginStatus.success);
+      });
+    });
+  });
+
+  group('sign-in not confirmed', () {
+    for (final failure in [
+      AuthFailure.invalidCredentials,
+      AuthFailure.network,
+      AuthFailure.server,
+      AuthFailure.notConfigured,
+    ]) {
+      test('${failure.name} is shown in the dialog, not on the fields', () {
+        withTime((async, c) {
+          repository.failure = failure;
+          submit(c);
+          async.elapse(_allSteps);
+
+          expect(state(c).status, LoginStatus.rejected);
+          expect(state(c).rejection, failure);
+          expect(state(c).showsSignInDialog, isTrue);
+          expect(state(c).emailError, isNull);
+          expect(state(c).passwordError, isNull);
+          expect(c.read(sessionProvider), isNull);
+        });
+      });
+    }
+
+    test('Try again signs in again with the same credentials', () {
+      withTime((async, c) {
+        repository.failure = AuthFailure.network;
+        submit(c, password: 'pass');
+        async.elapse(_allSteps);
+
+        repository.failure = null;
+        controller(c).retry();
+        async.elapse(_allSteps);
+
+        expect(repository.calls, hasLength(2));
+        expect(repository.calls.last.password, 'pass');
+        expect(state(c).status, LoginStatus.success);
+      });
+    });
+
+    test('Edit credentials closes the dialog and keeps the form', () {
+      withTime((async, c) {
+        repository.failure = AuthFailure.invalidCredentials;
+        submit(c);
+        async.elapse(_allSteps);
+        final requests = state(c).clearFormRequests;
+
+        controller(c).dismiss();
+
+        expect(state(c).status, LoginStatus.idle);
+        expect(state(c).isLocked, isFalse);
+        expect(state(c).clearFormRequests, requests);
+      });
+    });
+
+    test('a deactivated account closes the dialog for its own sheet', () {
+      withTime((async, c) {
+        repository.failure = AuthFailure.accountDisabled;
+        submit(c);
+        async.elapse(_allSteps);
+
+        expect(state(c).status, LoginStatus.accountDisabled);
+        expect(state(c).showsSignInDialog, isFalse);
+        expect(c.read(sessionProvider), isNull);
+
+        controller(c).acknowledgeAccountDisabled();
+        expect(state(c).status, LoginStatus.idle);
+      });
+    });
+
+    test('rejection wording follows the failure', () {
+      expect(
+        LoginMessages.rejectionFor(AuthFailure.invalidCredentials),
+        LoginMessages.rejectedCredentials,
+      );
+      expect(
+        LoginMessages.rejectionFor(AuthFailure.network),
+        LoginMessages.rejectedNetwork,
+      );
+      expect(
+        LoginMessages.rejectionFor(AuthFailure.server),
+        LoginMessages.rejectedServer,
+      );
+      expect(
+        LoginMessages.rejectionFor(AuthFailure.notConfigured),
+        LoginMessages.rejectedNotConfigured,
+      );
+    });
+  });
+
+  group('cancelling', () {
+    test('closing during sign-in abandons it, even if it then succeeds', () {
+      withTime((async, c) {
+        repository.delay = const Duration(seconds: 1);
+        submit(c);
+        async.elapse(const Duration(milliseconds: 200));
+
+        controller(c).dismiss();
+        expect(state(c).status, LoginStatus.idle);
+
+        async.elapse(_allSteps);
+        expect(state(c).status, LoginStatus.idle);
+        expect(c.read(sessionProvider), isNull);
+        expect(repository.kept, isEmpty);
+      });
+    });
+
+    test('closing while checking access abandons it', () {
+      withTime((async, c) {
+        submit(c);
+        async.elapse(LoginController.minStepDuration);
+        expect(state(c).status, LoginStatus.checkingAccess);
+
+        controller(c).dismiss();
+        async.elapse(_allSteps);
+
+        expect(state(c).status, LoginStatus.idle);
+        expect(c.read(sessionProvider), isNull);
+        expect(repository.kept, isEmpty);
+      });
+    });
+
+    test('cannot be abandoned once access is confirmed', () {
+      withTime((async, c) {
+        submit(c);
+        async.elapse(LoginController.minStepDuration * 2);
+        expect(state(c).status, LoginStatus.accessConfirmed);
+        expect(state(c).canCancel, isFalse);
+
+        controller(c).dismiss();
+        async.elapse(_allSteps);
+
+        expect(state(c).status, LoginStatus.success);
+      });
+    });
+
+    test('a new sign-in after cancelling works normally', () {
+      withTime((async, c) {
+        submit(c);
+        async.elapse(const Duration(milliseconds: 100));
+        controller(c).dismiss();
+
+        submit(c);
+        async.elapse(_allSteps);
+
+        expect(state(c).status, LoginStatus.success);
+        expect(repository.kept, hasLength(1));
+      });
+    });
   });
 
   test('restores the saved Remember Session choice', () async {

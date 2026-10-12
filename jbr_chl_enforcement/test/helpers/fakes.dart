@@ -88,13 +88,19 @@ class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository({
     this.failure,
     this.delay = Duration.zero,
+    this.role = agentRole,
     this.resetFailure,
     this.resetDelay = Duration.zero,
   });
 
-  /// Fails with this when set; otherwise signs in as [officer].
+  static const String agentRole = 'Enforcement Agent';
+
+  /// Fails with this when set; otherwise signs in as [officer] with [role].
   AuthFailure? failure;
   Duration delay;
+
+  /// The signed-in officer's role; change it to test agent access.
+  String? role;
 
   /// Password reset fails with this when set; otherwise succeeds.
   AuthFailure? resetFailure;
@@ -105,22 +111,39 @@ class FakeAuthRepository implements AuthRepository {
     id: 'o-1',
     name: 'Test Officer',
     email: 'officer@jbr.com',
+    role: agentRole,
   );
 
-  final List<({String email, String password, bool remember})> calls = [];
+  final List<({String email, String password})> calls = [];
+
+  /// Sessions kept on the device, with the Remember Session choice.
+  final List<({AuthSession session, bool remember})> kept = [];
 
   @override
   Future<AuthSession> signIn({
     required String email,
     required String password,
-    required bool rememberSession,
   }) async {
-    calls.add((email: email, password: password, remember: rememberSession));
+    calls.add((email: email, password: password));
     if (delay > Duration.zero) await Future<void>.delayed(delay);
     final failure = this.failure;
     if (failure != null) throw AuthException(failure);
-    return const AuthSession(accessToken: 'token', officer: officer);
+    return AuthSession(
+      accessToken: 'token',
+      officer: Officer(
+        id: officer.id,
+        name: officer.name,
+        email: officer.email,
+        role: role,
+      ),
+    );
   }
+
+  @override
+  Future<void> keepSession(
+    AuthSession session, {
+    required bool rememberSession,
+  }) async => kept.add((session: session, remember: rememberSession));
 
   @override
   Future<void> requestPasswordReset({required String email}) async {

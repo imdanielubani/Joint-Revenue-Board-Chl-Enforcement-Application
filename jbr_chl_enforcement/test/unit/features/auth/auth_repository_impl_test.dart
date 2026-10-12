@@ -61,14 +61,8 @@ void main() {
     configured,
   );
 
-  Future<AuthSession> signIn(
-    AuthRepositoryImpl repo, {
-    bool remember = false,
-  }) => repo.signIn(
-    email: 'ada@jbr.com',
-    password: 'secret',
-    rememberSession: remember,
-  );
+  Future<AuthSession> signIn(AuthRepositoryImpl repo) =>
+      repo.signIn(email: 'ada@jbr.com', password: 'secret');
 
   Matcher failsWith(AuthFailure failure) => throwsA(
     isA<AuthException>().having((e) => e.failure, 'failure', failure),
@@ -134,8 +128,20 @@ void main() {
   });
 
   group('session storage', () {
+    test('signing in saves nothing until the session is kept', () async {
+      secureStorage.values[StorageKeys.authSession] = 'old';
+
+      await signIn(repository());
+
+      expect(secureStorage.values[StorageKeys.authSession], 'old');
+      expect(preferences.values, isEmpty);
+    });
+
     test('keeps the session when remembered', () async {
-      await signIn(repository(), remember: true);
+      final repo = repository();
+      final session = await signIn(repo);
+
+      await repo.keepSession(session, rememberSession: true);
 
       expect(secureStorage.values[StorageKeys.authSession], isNotNull);
       expect(preferences.values[StorageKeys.rememberSession], isTrue);
@@ -149,8 +155,10 @@ void main() {
 
     test('removes any saved session when not remembered', () async {
       secureStorage.values[StorageKeys.authSession] = 'old';
+      final repo = repository();
+      final session = await signIn(repo);
 
-      await signIn(repository());
+      await repo.keepSession(session, rememberSession: false);
 
       expect(secureStorage.values.containsKey(StorageKeys.authSession), false);
       expect(preferences.values[StorageKeys.rememberSession], isFalse);
@@ -159,10 +167,7 @@ void main() {
     test('does not store anything when sign-in fails', () async {
       remote.error = _dioError(DioExceptionType.badResponse, status: 401);
 
-      await expectLater(
-        signIn(repository(), remember: true),
-        throwsA(anything),
-      );
+      await expectLater(signIn(repository()), throwsA(anything));
 
       expect(secureStorage.values, isEmpty);
     });

@@ -62,6 +62,23 @@ abstract final class AssetPaths {
   static const String iconChevronRight =
       'assets/icons/verification/chevron_right.svg';
 
+  // Sign-in progress and result dialogs
+  static const String iconSignInLock = 'assets/icons/sign_in/status_lock.svg';
+  static const String iconSignInShieldCheck =
+      'assets/icons/sign_in/status_shield_check.svg';
+  static const String iconSignInAlert = 'assets/icons/sign_in/status_alert.svg';
+  static const String iconSignInShieldX =
+      'assets/icons/sign_in/status_shield_x.svg';
+  static const String iconStepClockPending =
+      'assets/icons/sign_in/step_clock_pending.svg';
+  static const String iconStepClockDone =
+      'assets/icons/sign_in/step_clock_done.svg';
+  static const String iconStepShieldPending =
+      'assets/icons/sign_in/step_shield_pending.svg';
+  static const String iconStepShieldDone =
+      'assets/icons/sign_in/step_shield_done.svg';
+  static const String iconDialogClose = 'assets/icons/sign_in/close.svg';
+
   // Status sheets
   static const String iconShieldOff = 'assets/icons/status/shield_off.svg';
   static const String iconTimerOff = 'assets/icons/status/timer_off.svg';

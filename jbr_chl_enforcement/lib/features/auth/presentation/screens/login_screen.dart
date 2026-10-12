@@ -14,6 +14,7 @@ import '../providers/auth_controller.dart';
 import '../widgets/auth_status_sheets.dart';
 import '../widgets/login_form.dart';
 import '../widgets/login_header.dart';
+import '../widgets/sign_in_dialog.dart';
 
 /// Sign-in screen.
 ///
@@ -23,8 +24,10 @@ import '../widgets/login_header.dart';
 /// scrolls inside it to keep the focused field in view. See
 /// [_HeaderSheetLayout] for how little space is handled.
 ///
-/// Shows the "account deactivated" sheet when sign-in is refused for that
-/// reason, and the "session expired" sheet when opened with
+/// Signing in runs in [SignInDialog], opened over the screen while sign-in
+/// is in progress or needs a decision, and closed when it finishes. Shows the
+/// "account deactivated" sheet when sign-in is refused for that reason, and
+/// the "session expired" sheet when opened with
 /// [LoginNotice.sessionExpired].
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key, this.notice});
@@ -49,6 +52,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Timer? _exitTimer;
 
+  /// The open sign-in dialog, if any.
+  RawDialogRoute<void>? _signInDialog;
+
   @override
   void initState() {
     super.initState();
@@ -69,7 +75,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  void _syncSignInDialog(LoginState state) {
+    final dialog = _signInDialog;
+    if (state.showsSignInDialog) {
+      if (dialog == null) _signInDialog = pushSignInDialog(context);
+      return;
+    }
+    if (dialog == null) return;
+    _signInDialog = null;
+    if (!dialog.isActive) return;
+    if (dialog.isCurrent) {
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).removeRoute(dialog);
+    }
+  }
+
   Future<void> _onStateChanged(LoginState? previous, LoginState next) async {
+    _syncSignInDialog(next);
     if (next.status == LoginStatus.accountDisabled &&
         previous?.status != LoginStatus.accountDisabled) {
       await showAccountDeactivatedSheet(context);

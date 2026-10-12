@@ -51,6 +51,16 @@ class _LoginFormState extends State<LoginForm> {
   static const double _minGapToButton = 29 - 14;
 
   @override
+  void didUpdateWidget(LoginForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // "Use Another Account": start again with an empty form.
+    if (widget.state.clearFormRequests != oldWidget.state.clearFormRequests) {
+      _email.clear();
+      _password.clear();
+    }
+  }
+
+  @override
   void dispose() {
     _email.dispose();
     _password.dispose();
@@ -151,6 +161,7 @@ class _LoginFormState extends State<LoginForm> {
             label: 'Sign in',
             onPressed: _submit,
             isLoading: state.isSubmitting,
+            loadingLabel: 'Authenticating...',
             isBusy: locked,
           ),
           const SizedBox(height: 15),

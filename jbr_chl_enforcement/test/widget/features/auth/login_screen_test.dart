@@ -221,9 +221,8 @@ void main() {
     expect(obscured(), isTrue);
   });
 
-  testWidgets('wrong credentials show one alert; fields stay normal', (
-    tester,
-  ) async {
+  testWidgets('wrong credentials open "Unable to sign in"; fields stay '
+      'normal', (tester) async {
     await _pumpOnPhone(
       tester,
       FakeAuthRepository(failure: AuthFailure.invalidCredentials),
@@ -232,19 +231,25 @@ void main() {
     await tester.enterText(_email, 'officer@jbr.com');
     await tester.enterText(_password, 'wrong');
     await tester.tap(_signIn);
+    await tester.pump();
+    await tester.pump(LoginController.minStepDuration);
     await tester.pumpAndSettle();
 
-    expect(find.text(LoginMessages.invalidCredentials), findsOneWidget);
+    expect(find.text('Unable to sign in'), findsOneWidget);
+    expect(find.text(LoginMessages.rejectedCredentials), findsOneWidget);
+    expect(find.byType(AppAlertBanner), findsNothing);
+
+    await tester.tap(find.text('Edit credentials'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unable to sign in'), findsNothing);
     expect(_borderColor(tester, _email), AppColors.ink);
     expect(_borderColor(tester, _password), AppColors.ink);
-    expect(find.byType(LoginScreen), findsOneWidget);
-
-    await tester.enterText(_password, 'wrong2');
-    await tester.pumpAndSettle();
-    expect(find.byType(AppAlertBanner), findsNothing);
+    expect(tester.widget<TextField>(_password).controller!.text, 'wrong');
+    expect(tester.widget<TextField>(_email).enabled, isTrue);
   });
 
-  testWidgets('signs in: spinner, success alert, then the dashboard', (
+  testWidgets('signs in: progress dialog, success alert, then the dashboard', (
     tester,
   ) async {
     final repository = FakeAuthRepository(
@@ -257,14 +262,24 @@ void main() {
     await tester.enterText(_password, 'secret');
     await tester.tap(_signIn);
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
 
+    expect(find.text('Signing you in'), findsOneWidget);
+    expect(find.text('Authenticating...'), findsOneWidget);
     expect(find.byType(AppSpinner), findsOneWidget);
     expect(tester.widget<TextField>(_email).enabled, isFalse);
 
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump();
+    await tester.pump(LoginController.minStepDuration);
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.text('Checking agent access'), findsOneWidget);
+    expect(find.bySemanticsLabel('Authentication: Completed'), findsOneWidget);
+
+    await tester.pump(LoginController.minStepDuration);
+    await tester.pump(LoginController.confirmedHold);
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.text('Checking agent access'), findsNothing);
     expect(find.text(LoginMessages.success), findsOneWidget);
-    expect(repository.calls.single.remember, isTrue);
+    expect(repository.kept.single.remember, isTrue);
 
     await tester.pump(LoginScreen.successHoldDuration);
     await tester.pumpAndSettle();
