@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -8,9 +8,14 @@ import '../permissions/permission_adapter.dart';
 
 /// Whether a location can be stamped on records: the location service is on
 /// and the app is allowed to use it. Updates when the service is switched
-/// on or off.
+/// on or off, and is checked again whenever the app returns to the
+/// foreground (permission may have been changed in the phone's settings).
 final gpsStatusProvider = StreamProvider<bool>((ref) async* {
   final permissions = ref.watch(permissionAdapterProvider);
+
+  // Recheck on return to the app; the last answer shows until then.
+  final lifecycle = AppLifecycleListener(onResume: ref.invalidateSelf);
+  ref.onDispose(lifecycle.dispose);
 
   Future<bool> ready(bool serviceOn) async =>
       serviceOn &&

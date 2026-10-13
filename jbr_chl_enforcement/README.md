@@ -159,7 +159,10 @@ will live. Leave them empty until the feature is built (see
   `dioProvider`). Tests override these providers with fakes.
 - **Device status** (used by the dashboard tiles), in `shared/device/`:
   `internetStatusProvider` (connectivity_plus, live),
-  `gpsStatusProvider` (location service on and permission granted, live),
+  `gpsStatusProvider` (location service on and permission granted; live
+  for the service, and checked again whenever the app returns to the
+  foreground, so allowing location in the phone's settings turns the GPS
+  tile Online without restarting the app),
   `rfidReaderConnectedProvider` (always `false` until the reader exists).
 - **Startup:** `bootstrap()` enables device preview (debug), registers the
   Poppins licence and runs the app inside a `ProviderScope`.
@@ -575,6 +578,10 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- The dashboard's GPS tile is checked again when the app returns to the
+  foreground, so it turns Online after location is allowed in the phone's
+  settings (it used to stay Offline until the app restarted).
 
 - Sign out now asks first: "Sign out of JRB CHL?" card with Sign out and
   Keep working, over the whole screen. `showAppSheet` takes
