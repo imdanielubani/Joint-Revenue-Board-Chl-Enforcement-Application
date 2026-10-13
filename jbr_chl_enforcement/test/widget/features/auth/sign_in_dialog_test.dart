@@ -333,6 +333,130 @@ void main() {
     expect(find.text('Account Deactivated'), findsOneWidget);
   });
 
+  group('never leaves the form locked', () {
+    /// Removes the dialog the way navigation would, without its buttons.
+    Future<void> removeDialogExternally(WidgetTester tester) async {
+      final route = ModalRoute.of(tester.element(find.byType(SignInDialog)))!;
+      route.navigator!.removeRoute(route);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the form behind a result dialog stays enabled', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        FakeAuthRepository(failure: AuthFailure.invalidCredentials),
+      );
+      await _signIn(tester);
+      await _toResult(tester);
+
+      expect(find.text('Unable to sign in'), findsOneWidget);
+      expect(tester.widget<TextField>(_email).enabled, isTrue);
+      expect(tester.widget<TextField>(_password).enabled, isTrue);
+    });
+
+    for (final (outcome, repository) in [
+      (
+        'Unable to sign in',
+        () => FakeAuthRepository(failure: AuthFailure.invalidCredentials),
+      ),
+      (
+        'Agent access not authorized',
+        () => FakeAuthRepository(role: 'Revenue Clerk'),
+      ),
+    ]) {
+      testWidgets('"$outcome" removed by navigation unlocks the form', (
+        tester,
+      ) async {
+        final repo = repository();
+        await _pump(tester, repo);
+        await _signIn(tester);
+        await _toResult(tester);
+        expect(find.text(outcome), findsOneWidget);
+
+        await removeDialogExternally(tester);
+
+        expect(find.byType(SignInDialog), findsNothing);
+        expect(
+          _container.read(loginControllerProvider).status,
+          LoginStatus.idle,
+        );
+
+        // The form works: edit with real taps, and sign in again.
+        WidgetController.hitTestWarningShouldBeFatal = true;
+        addTearDown(() => WidgetController.hitTestWarningShouldBeFatal = false);
+        await tester.tap(_password);
+        await tester.pump();
+        tester.testTextInput.enterText('Demo@2026');
+        await tester.pump();
+        expect(
+          tester.widget<TextField>(_password).controller!.text,
+          'Demo@2026',
+        );
+
+        repo
+          ..failure = null
+          ..role = FakeAuthRepository.agentRole;
+        await _signIn(tester);
+        expect(find.text('Signing you in'), findsOneWidget);
+        await _toDashboard(tester);
+        expect(find.text(_dashboard), findsOneWidget);
+      });
+    }
+
+    testWidgets('progress removed by navigation abandons sign-in', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        FakeAuthRepository(delay: const Duration(seconds: 1)),
+      );
+      await _signIn(tester);
+
+      await removeDialogExternally(tester);
+      expect(tester.widget<TextField>(_email).enabled, isTrue);
+
+      // The late answer is ignored.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      expect(find.byType(SignInDialog), findsNothing);
+      expect(_container.read(sessionProvider), isNull);
+    });
+
+    testWidgets('Use Another Account ends the browser autofill session', (
+      tester,
+    ) async {
+      final calls = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.textInput,
+        (call) async {
+          calls.add(call);
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.textInput,
+          null,
+        ),
+      );
+      await _pump(tester, FakeAuthRepository(role: 'Revenue Clerk'));
+      await _signIn(tester);
+      await _toResult(tester);
+      calls.clear();
+
+      await tester.tap(find.text('Use Another Account'));
+      await tester.pumpAndSettle();
+
+      final finish = calls.where(
+        (call) => call.method == 'TextInput.finishAutofillContext',
+      );
+      expect(finish, hasLength(1));
+      expect(finish.single.arguments, isFalse, reason: 'nothing is saved');
+    });
+  });
+
   group('fits', () {
     final devices = <(String, Size, EdgeInsets, double)>[
       (

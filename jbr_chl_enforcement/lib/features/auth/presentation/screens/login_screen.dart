@@ -58,6 +58,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Opened while an earlier sign-in is still open (e.g. the page was
+      // rebuilt): drop it so the form is usable, unless it is about to
+      // finish, in which case show its progress.
+      final state = ref.read(loginControllerProvider);
+      if (state.status == LoginStatus.accessConfirmed) {
+        _syncSignInDialog(state);
+      } else if (state.showsSignInDialog) {
+        ref.read(loginControllerProvider.notifier).dismiss();
+      }
+    });
     if (widget.notice == LoginNotice.sessionExpired) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -76,7 +88,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _syncSignInDialog(LoginState state) {
-    final dialog = _signInDialog;
+    var dialog = _signInDialog;
+    // A dialog removed by someone else (navigation, browser Back) is gone.
+    if (dialog != null && !dialog.isActive) dialog = _signInDialog = null;
     if (state.showsSignInDialog) {
       if (dialog == null) _signInDialog = pushSignInDialog(context);
       return;

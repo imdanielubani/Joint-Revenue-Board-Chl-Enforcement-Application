@@ -369,6 +369,56 @@ void main() {
     });
   });
 
+  group('the form is never left locked', () {
+    test('the form stays unlocked behind a result dialog', () {
+      withTime((async, c) {
+        repository.failure = AuthFailure.invalidCredentials;
+        submit(c);
+        async.elapse(_allSteps);
+
+        expect(state(c).showsSignInDialog, isTrue);
+        expect(state(c).isLocked, isFalse);
+      });
+    });
+
+    test('editing a field after the dialog went dismisses the result', () {
+      withTime((async, c) {
+        repository.role = 'Revenue Clerk';
+        submit(c);
+        async.elapse(_allSteps);
+        expect(state(c).status, LoginStatus.notAuthorized);
+
+        controller(c).onPasswordChanged();
+
+        expect(state(c).status, LoginStatus.idle);
+        expect(state(c).showsSignInDialog, isFalse);
+      });
+    });
+
+    test('the dialog closing on its own dismisses sign-in', () {
+      withTime((async, c) {
+        repository.failure = AuthFailure.network;
+        submit(c);
+        async.elapse(_allSteps);
+
+        controller(c).onDialogClosed();
+
+        expect(state(c).status, LoginStatus.idle);
+      });
+    });
+
+    test('the dialog closing after success changes nothing', () {
+      withTime((async, c) {
+        submit(c);
+        async.elapse(_allSteps);
+
+        controller(c).onDialogClosed();
+
+        expect(state(c).status, LoginStatus.success);
+      });
+    });
+  });
+
   group('cancelling', () {
     test('closing during sign-in abandons it, even if it then succeeds', () {
       withTime((async, c) {

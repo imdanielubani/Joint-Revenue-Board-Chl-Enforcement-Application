@@ -314,7 +314,12 @@ phone sizes, tablets, a foldable, landscape and 200% text.
      Successful..." shows, and the dashboard opens after 1.2 s.
 
   Each step shows for at least 0.6 s (`LoginController.minStepDuration`) so
-  its result can be seen. The close button (and system back) abandons
+  its result can be seen. The form is locked only while sign-in runs;
+  behind a result dialog it stays enabled (the dialog's barrier blocks it).
+  If the dialog goes any other way than its own buttons (navigation,
+  browser Back, a rebuild), `SignInDialog` tells the controller
+  (`onDialogClosed`) and the form is unlocked, so it can never be left
+  locked. The close button (and system back) abandons
   sign-in until access is confirmed; a late server answer is then ignored.
 - **Outcomes** (all in the same dialog):
   - **Unable to sign in** (Sign-In Unsuccessful): wrong credentials, no
@@ -324,7 +329,8 @@ phone sizes, tablets, a foldable, landscape and 200% text.
     it was.
   - **Agent access not authorized** (Access Restricted): signed in, but the
     account is not an enforcement agent. *Use Another Account* closes the
-    dialog and empties the form; *Recheck Access* signs in again in the
+    dialog and empties the form (and ends the browser's autofill session,
+    which on the web would otherwise put the old password back); *Recheck Access* signs in again in the
     background to fetch the current role, so a role just fixed by an
     administrator is picked up without retyping.
   - **Account deactivated** (HTTP 403) still shows its own sheet.
@@ -480,6 +486,12 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Sign-in fixes: the form is never left locked after a sign-in dialog
+  (only locked while sign-in runs; a dialog closed by navigation or browser
+  Back unlocks it); "Use Another Account" no longer gets the old password
+  back on the web (browser autofill copy); editing a field dismisses a
+  result that is no longer showing.
 
 - Sign-in progress and agent role authorization: progress dialog ("Signing
   you in", "Checking agent access") with a turning ring around the badge;

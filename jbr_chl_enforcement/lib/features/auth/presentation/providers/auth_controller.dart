@@ -92,8 +92,10 @@ class LoginState {
   /// The sign-in button shows "Authenticating..." while sign-in runs.
   bool get isSubmitting => isSigningIn;
 
-  /// Inputs are locked while the dialog is open and after success.
-  bool get isLocked => showsSignInDialog || status == LoginStatus.success;
+  /// Inputs are locked only while sign-in runs and after success. Behind a
+  /// result dialog they stay enabled (the dialog's barrier already blocks
+  /// them), so the form can never be left locked if the dialog goes away.
+  bool get isLocked => isSigningIn || status == LoginStatus.success;
 
   /// The progress can still be abandoned (not once access is confirmed,
   /// when the session is about to be kept).
@@ -229,6 +231,12 @@ class LoginController extends Notifier<LoginState> {
       _clearErrors(email: state.emailError == null, password: true);
 
   void _clearErrors({required bool email, required bool password}) {
+    // Editing means the result dialog is no longer showing.
+    if (state.status == LoginStatus.rejected ||
+        state.status == LoginStatus.notAuthorized) {
+      dismiss();
+      return;
+    }
     if (state.status != LoginStatus.invalidInput) return;
     final emailError = email ? null : state.emailError;
     final passwordError = password ? null : state.passwordError;
@@ -304,6 +312,14 @@ class LoginController extends Notifier<LoginState> {
     }
     _forgetAttempt();
     state = state.copyWith(status: LoginStatus.idle, rejection: () => null);
+  }
+
+  /// Called when the sign-in dialog has gone, however it went. If it went
+  /// without the controller closing it (removed by navigation, a browser
+  /// Back, a rebuild), the form is unlocked as if it had been dismissed.
+  void onDialogClosed() {
+    if (!ref.mounted) return;
+    dismiss();
   }
 
   /// "Use Another Account": closes the dialog and empties the form.

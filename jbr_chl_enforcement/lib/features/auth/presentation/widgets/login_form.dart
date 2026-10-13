@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -57,6 +58,10 @@ class _LoginFormState extends State<LoginForm> {
     if (widget.state.clearFormRequests != oldWidget.state.clearFormRequests) {
       _email.clear();
       _password.clear();
+      // On the web the browser keeps its own copy of autofill fields and
+      // would put the old values back when a field is next focused. Ending
+      // the autofill session (without saving) drops that copy.
+      TextInput.finishAutofillContext(shouldSave: false);
     }
   }
 

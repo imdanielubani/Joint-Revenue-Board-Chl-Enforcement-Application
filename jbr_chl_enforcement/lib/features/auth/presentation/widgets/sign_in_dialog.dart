@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -39,16 +40,39 @@ RawDialogRoute<void> pushSignInDialog(BuildContext context) {
 /// Sign-in progress ("Signing you in", "Checking agent access") and its
 /// outcomes ("Unable to sign in", "Agent access not authorized"), following
 /// [loginControllerProvider].
-class SignInDialog extends ConsumerWidget {
+class SignInDialog extends ConsumerStatefulWidget {
   const SignInDialog({super.key});
 
   /// Widest the card grows; 19 px either side on a 390 px phone.
   static const double maxWidth = 352;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SignInDialog> createState() => _SignInDialogState();
+}
+
+class _SignInDialogState extends ConsumerState<SignInDialog> {
+  // Kept from the start: ref cannot be used once disposed.
+  late final LoginController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ref.read(loginControllerProvider.notifier);
+  }
+
+  @override
+  void dispose() {
+    // However the dialog went (its buttons, navigation, a browser Back),
+    // make sure the form is not left locked. After the widget tree has
+    // settled, as providers cannot change during it.
+    scheduleMicrotask(_controller.onDialogClosed);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(loginControllerProvider);
-    final controller = ref.read(loginControllerProvider.notifier);
+    final controller = _controller;
 
     final Widget content = switch (state.status) {
       LoginStatus.rejected => _ResultContent(
@@ -92,7 +116,9 @@ class SignInDialog extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 16),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: maxWidth),
+              constraints: const BoxConstraints(
+                maxWidth: SignInDialog.maxWidth,
+              ),
               // The shadow sits outside the clipped card.
               child: DecoratedBox(
                 decoration: const BoxDecoration(
