@@ -10,20 +10,10 @@ import '../../../verification/domain/entities/plate_number.dart';
 
 /// Parts shared by the verification result and the last CHL trip pages.
 
-/// "05 Oct 2026, 16:28 GMT+1", in the phone's time zone.
+/// "October 12, 2026 12:49 PM", in the phone's time zone, as CHL receipts
+/// write it.
 String tripDateTime(DateTime at) =>
-    '${DateFormat('dd MMM yyyy, HH:mm').format(at)} '
-    '${tripTimeZone(at.timeZoneOffset)}';
-
-/// "GMT", "GMT+1", "GMT-3:30".
-String tripTimeZone(Duration offset) {
-  if (offset == Duration.zero) return 'GMT';
-  final minutes = offset.inMinutes.abs();
-  final hours = minutes ~/ 60;
-  final rest = minutes % 60;
-  return 'GMT${offset.isNegative ? '-' : '+'}$hours'
-      '${rest == 0 ? '' : ':${rest.toString().padLeft(2, '0')}'}';
-}
+    DateFormat('MMMM d, yyyy h:mm a').format(at);
 
 abstract final class ResultTextStyles {
   static const TextStyle button = TextStyle(
@@ -202,23 +192,30 @@ class TripDetailsCard extends StatelessWidget {
           ),
           _DefinitionPair(
             ('Trip start date/time', tripDateTime(trip.startedAt)),
-            ('Payment date/time', tripDateTime(trip.paidAt)),
+            ('Transaction date', tripDateTime(trip.paidAt)),
           ),
           _DefinitionPair(
-            ('Vehicle plate number', plate.display),
+            ('Vehicle license number', plate.display),
             ('Vehicle type', vehicleType),
           ),
           _DefinitionPair(
-            ('Transaction type', trip.transactionType),
+            ('Transaction type (trip type)', trip.transactionType),
+            ('Transaction status', trip.transactionStatus),
+          ),
+          _DefinitionPair(
             ('Originating state', trip.originState),
-          ),
-          _DefinitionPair(
             ('Originating LGA', trip.originLga),
-            ('Destination state', trip.destinationState),
           ),
           _DefinitionPair(
+            ('Destination state', trip.destinationState),
             ('Destination LGA', trip.destinationLga),
+          ),
+          _DefinitionPair(
             ('Trip status', trip.state.label),
+            (
+              historical ? 'Trip closed on' : 'Trip will close on',
+              tripDateTime(trip.validUntil),
+            ),
           ),
           validity,
           _MoreTripInformation(trip: trip, historical: historical),
@@ -564,9 +561,15 @@ class _MoreTripInformationState extends State<_MoreTripInformation> {
 
   @override
   Widget build(BuildContext context) {
+    final trip = widget.trip;
+    const notRecorded = 'Not recorded';
     final rows = [
-      ('Cargo', widget.trip.cargo ?? 'Not declared'),
-      ('Payment reference', widget.trip.paymentReference ?? 'Not recorded'),
+      ('Cargo', trip.cargo ?? 'Not declared'),
+      ('Payment reference', trip.paymentReference ?? notRecorded),
+      ('Terminal ID', trip.terminalId ?? notRecorded),
+      ('Contact number', trip.contactNumber ?? notRecorded),
+      ('Channel', trip.channel ?? notRecorded),
+      ('Channel type', trip.channelType ?? notRecorded),
     ];
     void toggle() => setState(() => _open = !_open);
 

@@ -20,23 +20,14 @@ PlateNumber _plate(String text) => PlateNumber.tryParse(text)!;
 
 void main() {
   group('wording', () {
-    test('time zones', () {
-      expect(VerificationResultScreen.zone(Duration.zero), 'GMT');
-      expect(VerificationResultScreen.zone(const Duration(hours: 1)), 'GMT+1');
-      expect(
-        VerificationResultScreen.zone(const Duration(hours: -3, minutes: -30)),
-        'GMT-3:30',
-      );
-      expect(
-        VerificationResultScreen.zone(const Duration(hours: 5, minutes: 45)),
-        'GMT+5:45',
-      );
-    });
-
     test('date and time', () {
       expect(
-        VerificationResultScreen.dateTime(DateTime.utc(2026, 10, 5, 16, 28)),
-        '05 Oct 2026, 16:28 GMT',
+        VerificationResultScreen.dateTime(DateTime(2026, 10, 12, 12, 49)),
+        'October 12, 2026 12:49 PM',
+      );
+      expect(
+        VerificationResultScreen.dateTime(DateTime(2026, 10, 19, 23, 59)),
+        'October 19, 2026 11:59 PM',
       );
     });
 
@@ -181,7 +172,7 @@ void main() {
 
     test('records the location as received', () async {
       final recorded = await repository.recordDestinationLocation(
-        'CHL-2026-08142',
+        '564031956608',
         DeviceLocation(
           latitude: 8.97,
           longitude: 7.45,

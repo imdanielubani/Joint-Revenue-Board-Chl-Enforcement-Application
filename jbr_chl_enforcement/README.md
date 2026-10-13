@@ -388,7 +388,7 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   the processing page with Vehicle Not Found or Verification Unavailable.
 - **Vehicle Not Found** (`/verify/result`, with a `VehicleNotFound`): the
   brown search icon, "Vehicle Not Found", "Checked just now" (then "Checked
-  5 min ago", then the time), the plate as entered, vehicle identity "Not
+  5 min ago", then the time), the plate as entered (spaced, "ABC 123 AA"), vehicle identity "Not
   resolved", E-Tag "Not verified", trip "Not resolved"; **Verification
   details** opens on a tap (as designed, without a chevron) to show the
   method, check time, GPS ("6.6018° N, 3.3515° E", or "Not recorded") and
@@ -408,13 +408,18 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   the green tick, "Active CHL trip"; vehicle identity, E-Tag validity
   ("No E-Tag", "Valid JRB E-Tag", "Invalid JRB E-Tag") and CHL trip status;
   **Current trip**: origin → destination, the illustrative route (A → B;
-  not road geometry), transaction reference, trip start and payment times
-  ("05 Oct 2026, 16:28 GMT+1", in the phone's time zone), plate, vehicle
-  type, transaction type, origin and destination state and LGA, trip
-  status, and the **trip validity countdown**, ticking every second
-  (`secondTickerProvider`) and stopping at "00 h 00 min 00 sec";
-  **Additional trip information** opens to show cargo and payment
-  reference. **Destination check**: destination LGA, enforcement point,
+  not road geometry), then the trip as on the CHL receipt: transaction
+  reference; trip start date/time and transaction date; vehicle license
+  number and vehicle type; transaction type (trip type, e.g. "Complete
+  Leg") and transaction status (e.g. "Successful"); originating and
+  destination state and LGA; trip status and "Trip will close on" (an
+  earlier trip: "Trip closed on"). Dates read as on the receipt, "October
+  12, 2026 12:49 PM", in the phone's time zone. Then the **trip validity
+  countdown**, ticking every second (`secondTickerProvider`) and stopping
+  at "00 h 00 min 00 sec"; **Additional trip information** opens to show
+  cargo, payment reference, terminal ID, contact number, channel (e.g.
+  "Fortis") and channel type (e.g. "POS"), each "Not recorded" when CHL
+  did not send it. **Destination check**: destination LGA, enforcement point,
   completion decision and centrally defined delay; Record location for
   destination check reads the GPS (`LocationReader`, asking for location
   permission if needed), shows "Recording Location...", then "Location
@@ -474,7 +479,7 @@ change (TODO in `features/verification/domain/entities/scanned_qr.dart`).
 There is no separate Verify E-Tag page.
 
 - **Scanning:** the live camera in a rounded frame with white corner
-  guides and the amber scan line, the hint under it, the white shutter
+  guides (no scan line), the hint under it, the white shutter
   button and Enter plate instead. The frame grows with the screen
   (230–440 px); short screens and large text scroll.
 - **Shutter:** takes the code the camera saw in the last 1.5 s
@@ -907,6 +912,13 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- The trip card (Active trip and Last CHL trip) shows the CHL receipt's
+  fields: transaction date (was "Payment date/time"), vehicle license
+  number, transaction type (trip type), transaction status, and when the
+  trip closes; Additional trip information adds terminal ID, contact
+  number, channel and channel type. Trip dates read "October 12, 2026
+  12:49 PM". The plate pill on Vehicle Not Found and Verification
+  Unavailable is spaced ("ABC 123 AA"). The QR scanner has no scan line.
 - A scanned QR code is verified like a typed plate and shows the usual
   results ("QR code" until the vehicle is identified); a scanned E-Tag
   opens the E-Tag receipt page (not designed yet) instead of being

@@ -36,11 +36,8 @@ class VerificationResultScreen extends ConsumerStatefulWidget {
   /// Null when the page is opened without a verification.
   final VerificationResult? result;
 
-  /// "05 Oct 2026, 16:28 GMT+1", in the phone's time zone.
+  /// "October 12, 2026 12:49 PM", in the phone's time zone.
   static String dateTime(DateTime at) => tripDateTime(at);
-
-  /// "GMT", "GMT+1", "GMT-3:30".
-  static String zone(Duration offset) => tripTimeZone(offset);
 
   /// "04 h 21 min 02 sec".
   static String countdown(Duration left) {

@@ -110,9 +110,6 @@ Future<void> _tapShutter(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-bool _scanLine(WidgetTester tester) =>
-    tester.widget<QrScanFrame>(find.byType(QrScanFrame)).scanning;
-
 void main() {
   setUpAll(() async {
     final loader = FontLoader('Poppins');
@@ -140,7 +137,6 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const Key('camera preview')), findsOneWidget);
-    expect(_scanLine(tester), isTrue);
     expect(find.text('Scan receipt'), findsOneWidget);
     expect(
       find.bySemanticsLabel('Scan receipt QR and continue to verification'),
@@ -194,7 +190,6 @@ void main() {
     expect(find.text('Enter Plate Instead'), findsOneWidget);
     expect(_shutter, findsNothing);
     // The camera keeps running behind the message.
-    expect(_scanLine(tester), isTrue);
 
     await tester.tap(find.text('Retry Scanning'));
     await tester.pumpAndSettle();
@@ -269,7 +264,6 @@ void main() {
         findsOneWidget,
       );
       expect(find.byKey(const Key('camera preview')), findsNothing);
-      expect(_scanLine(tester), isFalse);
       expect(_shutter, findsNothing);
 
       await tester.tap(find.text('Retry Camera Access'));
@@ -332,8 +326,6 @@ void main() {
         tester,
         scanner: FakeQrScanner(status: QrCameraStatus.starting),
       );
-
-      expect(_scanLine(tester), isFalse);
       expect(_shutter, findsOneWidget);
     });
   });

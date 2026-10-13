@@ -96,8 +96,6 @@ abstract final class AppColors {
   static const Color scannerControl = Color(0x14FFFFFF); // white at 8%
   static const Color scannerOutline = Color(0xFFBECFC0); // Enter plate
   static const Color scannerOutlineFill = Color(0x0DFFFFFF); // white at 5%
-  static const Color scannerLine = Color(0xFFFFC21A); // scan line
-  static const Color scannerLineGlow = Color(0x30FFC21A); // 19%
   static const Color scannerAlertFill = Color(0xFF382715);
   static const Color scannerAlertBorder = Color(0xFFBB8A3E);
   static const Color scannerAlertText = Color(0xFFFFE0A5);

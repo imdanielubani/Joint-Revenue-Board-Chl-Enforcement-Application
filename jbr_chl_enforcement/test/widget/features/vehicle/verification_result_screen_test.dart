@@ -167,25 +167,22 @@ void main() {
       findsOneWidget,
     );
     for (final row in [
-      'Transaction reference: CHL-2026-08142',
-      'Vehicle plate number: ABC 123 AA',
-      'Vehicle type: Heavy goods vehicle',
-      'Transaction type: CHL levy',
+      'Transaction reference: 564031956608',
+      'Trip start date/time: October 5, 2026 4:28 PM',
+      'Transaction date: October 5, 2026 4:22 PM',
+      'Vehicle license number: ABC 123 AA',
+      'Vehicle type: 12/14 tyres and its equivalent',
+      'Transaction type (trip type): Complete Leg',
+      'Transaction status: Successful',
       'Originating state: Ogun',
       'Originating LGA: Abeokuta South',
       'Destination state: Lagos',
       'Trip status: Active',
+      'Trip will close on: October 6, 2026 4:51 AM',
       'Trip validity countdown: 04 h 21 min 02 sec',
     ]) {
       expect(_row(row), findsOneWidget, reason: row);
     }
-    expect(
-      _row(
-        'Trip start date/time: '
-        '${VerificationResultScreen.dateTime(DateTime(2026, 10, 5, 16, 28))}',
-      ),
-      findsOneWidget,
-    );
 
     await _reveal(tester, find.text('Refresh Trip Status'));
     // In the trip details and in the destination check.
@@ -234,8 +231,16 @@ void main() {
 
     await tester.tap(find.text('Additional trip information'));
     await tester.pumpAndSettle();
-    expect(_row('Cargo: General haulage'), findsOneWidget);
-    expect(_row('Payment reference: PAY-2026-08142'), findsOneWidget);
+    for (final row in [
+      'Cargo: General haulage',
+      'Payment reference: PAY-2026-08142',
+      'Terminal ID: 2070MJHU',
+      'Contact number: 8139751699',
+      'Channel: Fortis',
+      'Channel type: POS',
+    ]) {
+      expect(_row(row), findsOneWidget, reason: row);
+    }
 
     tester.semantics.tap(find.semantics.byLabel('Additional trip information'));
     await tester.pumpAndSettle();
@@ -482,15 +487,18 @@ void main() {
 
       await _reveal(tester, find.text('Additional trip information'));
       for (final row in [
-        'Transaction reference: CHL-2026-07960',
-        'Vehicle plate number: LND 482 XK',
+        'Transaction reference: 564031950271',
+        'Transaction date: October 5, 2026 4:22 PM',
+        'Vehicle license number: LND 482 XK',
         'Vehicle type: Heavy goods vehicle',
-        'Transaction type: CHL levy',
+        'Transaction type (trip type): Complete Leg',
+        'Transaction status: Successful',
         'Originating state: Ogun',
         'Originating LGA: Abeokuta South',
         'Destination state: Lagos',
         'Destination LGA: Ikeja',
         'Trip status: Completed',
+        'Trip closed on: October 6, 2026 4:28 AM',
         'Trip validity countdown: Historical · no running countdown. '
             'Historical status is retained from the response; elapsed time '
             'does not reclassify this trip.',
@@ -511,6 +519,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(_row('Cargo: General haulage'), findsOneWidget);
       expect(_row('Payment reference: PAY-2026-07960'), findsOneWidget);
+      // Not recorded for this trip.
+      expect(_row('Terminal ID: Not recorded'), findsOneWidget);
+      expect(_row('Channel type: Not recorded'), findsOneWidget);
 
       await _reveal(tester, find.text('Return to Dashboard'));
       expect(find.text('Return To Result'), findsOneWidget);

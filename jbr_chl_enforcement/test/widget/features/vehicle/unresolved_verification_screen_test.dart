@@ -227,7 +227,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Checked just now'), findsOneWidget);
-      expect(find.text('ABC123AA'), findsOneWidget);
+      expect(find.text('ABC 123 AA'), findsOneWidget);
       expect(_row('Plate ABC 123 AA'), findsOneWidget);
       for (final row in [
         'Vehicle identity: Not resolved',
@@ -330,7 +330,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Checked just now'), findsOneWidget);
-      expect(find.text('ABC123AA'), findsOneWidget);
+      expect(find.text('ABC 123 AA'), findsOneWidget);
       expect(
         find.text(
           'No trip conclusion has been made. This is not a No Active Trip or '

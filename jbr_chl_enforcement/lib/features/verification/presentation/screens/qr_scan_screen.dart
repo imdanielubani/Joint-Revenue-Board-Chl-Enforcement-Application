@@ -335,7 +335,6 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
               child: SizedBox(
                 height: double.infinity,
                 child: QrScanFrame(
-                  scanning: status == QrCameraStatus.running,
                   child: switch (status) {
                     QrCameraStatus.permissionDenied => const _BlockedPanel(
                       title: 'Camera permission denied',

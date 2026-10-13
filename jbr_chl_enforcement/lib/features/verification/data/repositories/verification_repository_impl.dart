@@ -103,7 +103,7 @@ class DemoVerificationRepository implements VerificationRepository {
     if (plate == _noTripPlate) {
       return VerificationResult(
         plate: plate,
-        vehicleType: 'Heavy goods vehicle',
+        vehicleType: '12/14 tyres and its equivalent',
         eTagStatus: eTag,
         tripStatus: TripStatus.noActive,
         checkedAt: at,
@@ -113,15 +113,16 @@ class DemoVerificationRepository implements VerificationRepository {
     final started = at.subtract(const Duration(hours: 2, minutes: 8));
     return VerificationResult(
       plate: plate,
-      vehicleType: 'Heavy goods vehicle',
+      vehicleType: '12/14 tyres and its equivalent',
       eTagStatus: eTag,
       tripStatus: TripStatus.active,
       checkedAt: at,
       trip: ChlTrip(
-        transactionReference: 'CHL-2026-08142',
+        transactionReference: '564031956608',
         startedAt: started,
         paidAt: started.subtract(const Duration(minutes: 6)),
-        transactionType: 'CHL levy',
+        transactionType: 'Complete Leg',
+        transactionStatus: 'Successful',
         originState: 'Ogun',
         originLga: 'Abeokuta South',
         destinationState: 'Lagos',
@@ -129,6 +130,10 @@ class DemoVerificationRepository implements VerificationRepository {
         validUntil: at.add(const Duration(hours: 4, minutes: 21, seconds: 2)),
         cargo: 'General haulage',
         paymentReference: 'PAY-2026-08142',
+        terminalId: '2070MJHU',
+        contactNumber: '8139751699',
+        channel: 'Fortis',
+        channelType: 'POS',
       ),
       destinationCheck: const DestinationCheck(
         enforcementPoint: 'Ikeja enforcement point',
@@ -143,10 +148,11 @@ class DemoVerificationRepository implements VerificationRepository {
   ChlTrip _lastTrip(DateTime at) {
     final started = at.subtract(const Duration(days: 1, hours: 8));
     return ChlTrip(
-      transactionReference: 'CHL-2026-07960',
+      transactionReference: '564031950271',
       startedAt: started,
       paidAt: started.subtract(const Duration(minutes: 6)),
-      transactionType: 'CHL levy',
+      transactionType: 'Complete Leg',
+      transactionStatus: 'Successful',
       originState: 'Ogun',
       originLga: 'Abeokuta South',
       destinationState: 'Lagos',
@@ -154,6 +160,10 @@ class DemoVerificationRepository implements VerificationRepository {
       validUntil: started.add(const Duration(hours: 12)),
       cargo: 'General haulage',
       paymentReference: 'PAY-2026-07960',
+      terminalId: '2070MJHU',
+      contactNumber: '8139751699',
+      channel: 'Fortis',
+      channelType: 'POS',
       state: ChlTripState.completed,
       completedAt: started.add(const Duration(hours: 5, minutes: 17)),
     );

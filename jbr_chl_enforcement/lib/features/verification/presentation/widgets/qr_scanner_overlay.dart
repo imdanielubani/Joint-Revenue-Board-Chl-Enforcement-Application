@@ -3,20 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// The camera window of the QR scanner: [child] (the live picture, or a
-/// message) in a rounded frame with white corner guides, and the amber scan
-/// line while [scanning].
+/// message) in a rounded frame with white corner guides.
 class QrScanFrame extends StatelessWidget {
-  const QrScanFrame({super.key, required this.child, this.scanning = false});
+  const QrScanFrame({super.key, required this.child});
 
   final Widget child;
 
-  /// Whether to draw the scan line.
-  final bool scanning;
-
   static const double radius = 18;
-
-  /// Where the scan line sits, as a share of the frame's height.
-  static const double scanLinePosition = 0.77;
 
   @override
   Widget build(BuildContext context) {
@@ -42,31 +35,6 @@ class QrScanFrame extends StatelessWidget {
             ),
           ),
           child,
-          if (scanning)
-            LayoutBuilder(
-              builder: (context, box) => Stack(
-                children: [
-                  Positioned(
-                    left: 5,
-                    right: 5,
-                    top: box.maxHeight * scanLinePosition,
-                    height: 2,
-                    child: const DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: AppColors.scannerLine,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.scannerLineGlow,
-                            blurRadius: 18,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           const IgnorePointer(child: CustomPaint(painter: _CornerGuides())),
         ],
       ),

@@ -257,7 +257,7 @@ class _RequestPill extends StatelessWidget {
     final request = this.request;
     final (String text, String semantics) = switch (request) {
       PlateVerification(:final plate) => (
-        plate.value,
+        plate.display,
         'Plate ${plate.display}',
       ),
       QrVerification() => ('QR code', 'Scanned QR code'),
