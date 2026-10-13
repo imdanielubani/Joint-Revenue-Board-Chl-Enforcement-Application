@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -97,7 +97,7 @@ Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                                        │         ├─ History
                                        │         ├─ Notifications
                                        │         └─ Profile ──► Account details
-                                       │                     └─► App settings ──► Security, Offline sync, Sync queue
+                                       │                     └─► App settings ──► Security, Offline sync (card), Sync queue
                                        └─► Forgot password
 ```
 
@@ -108,8 +108,7 @@ draws the floating green navigation bar over them. SOS, the two verify
 pages and the four verification method pages (`/verify/rfid`, `/verify/qr`,
 `/verify/plate`, `/verify/ocr`) open full screen above the tabs, as do
 Account details (`/account`), App settings (`/settings`) and the pages
-opened from settings (`/settings/password`, `/settings/sync`,
-`/settings/sync-queue`). Back from
+opened from settings (`/settings/password`, `/settings/sync-queue`). Back from
 any of them uses `context.popOrGoHome()` (`core/extensions/`), which returns
 to the dashboard when the page was opened directly.
 
@@ -223,7 +222,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Profile ("My Account") | `features/profile/presentation/screens/profile_screen.dart` | See below. |
 | Account details | `features/profile/presentation/screens/account_details_screen.dart` | See below. |
 | App settings ("My Preferences") | `features/settings/presentation/screens/settings_screen.dart` | See below. |
-| History, Notifications, SOS, RFID, QR and OCR verification, Verification result, Change password, Offline sync, Sync queue | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
+| History, Notifications, SOS, RFID, QR and OCR verification, Verification result, Change password, Sync queue | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -303,9 +302,10 @@ border `#D92D20` and a message under it); **failures not tied to one field**
     (or opens the phone's settings for anything refused for good). An app
     cannot take its own permissions back, so turning it off opens the
     phone's settings. **Review access details** also opens them.
-  - **Security**, **Offline sync** and **Sync queue** open placeholder
-    pages. The Sync queue line counts `pendingSyncCountProvider` ("2 local
-    records awaiting synchronization").
+  - **Offline sync** opens the offline sync card (see below).
+  - **Security** and **Sync queue** open placeholder pages. The Sync queue
+    line counts `pendingSyncCountProvider` ("2 local records awaiting
+    synchronization").
 - **Fonts:** a few rows in the designs (Account details values, the
   region · agent ID line) are drawn in Segoe UI, a Windows font that
   cannot be shipped on Android or iOS; the app uses Poppins everywhere.
@@ -314,6 +314,45 @@ border `#D92D20` and a message under it); **failures not tied to one field**
   card leaves out the design's prototype notes ("This local walkthrough
   does not revoke a real CHL session." and "Local response walkthrough
   only.").
+
+### Offline sync card
+
+Opened from App settings → Offline sync (`showOfflineSyncSheet`,
+`features/offline_sync/presentation/widgets/offline_sync_sheet.dart`). One
+card over the whole screen that changes with the sync:
+
+| State | Shown when | Buttons |
+|---|---|---|
+| Offline synchronization | Nothing running, online | **Sync now** (disabled with nothing queued or while the connection is being checked), View queue |
+| Synchronizing records | Waiting for CHL's acknowledgement; a ring turns round the icon | **Continue** (closes the card, the sync carries on), Stop waiting |
+| Records acknowledged | CHL acknowledged the records; the queue is empty | **View queue**, Return to settings |
+| Synchronization interrupted | Failure, no acknowledgement within 60 s, or Stop waiting; records stay queued | **Retry sync**, View queue |
+| No internet connection | Nothing running and offline; turns into the overview by itself when the connection returns | **Return to settings** |
+
+Each card lists Connection (Online / Offline) and Saved work (the live
+queue count). View queue closes the card and opens the sync queue page.
+Closing the card never stops a sync. A finished sync is forgotten when the
+card opens again; an interruption stays until retried.
+
+- **State:** `syncControllerProvider` (`SyncController`, phases in
+  `domain/entities/sync_status.dart`) lives as long as the app. It sends at
+  most one sync at a time and ignores the answer to a sync the officer
+  stopped waiting for.
+- **Queue and upload:** `SyncRepository` (`watchPendingCount`,
+  `synchronize`). `LocalSyncRepository` is used outside demo mode and is
+  empty until the local queue and the upload API exist (TODO in
+  `data/repositories/sync_repository_impl.dart`). `pendingSyncCountProvider`
+  (dashboard Sync tile, settings, session-expired sheet) follows it.
+- **For the backend:** retrying must never create a second copy of a
+  record, so uploads need an idempotency key per record. `synchronize`
+  must complete only once CHL has acknowledged the records.
+- **Shared card:** `StatusModal` (`shared/ui/sheets/status_modal.dart`)
+  draws these cards and the sign-out card: handle, close button, icon disc
+  (with `RingSpinner` while busy), eyebrow, title, message,
+  `StatusDetailList` / `StatusNote` panels and `StatusModalButton`s.
+- The designs' prototype wording ("local snapshot", "no upload is sent to
+  CHL", "Local response walkthrough only.") is replaced with what the app
+  really does.
 
 ### Verification method pages
 
@@ -580,6 +619,13 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Offline sync card in App settings: overview, synchronizing (with a
+  spinner), acknowledged, interrupted and no internet connection. New sync
+  queue repository (demo: two sample records) and `SyncController`. New
+  shared `StatusModal` (the sign-out card now uses it) and `RingSpinner`
+  (moved from the sign-in dialog). The placeholder Offline sync page is
+  removed.
 
 - After signing out, sign-in shows a "Sign out successful" toast. New
   shared `showAppToast`.

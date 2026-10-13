@@ -67,6 +67,12 @@ abstract final class AppColors {
   static const Color switchOffBorder = Color(0xFF657966);
   static const Color destructive = Color(0xFFBD2013); // Sign out
 
+  // Offline sync modal.
+  static const Color syncRing = Color(0xFFDCE9D6); // spinner track
+  static const Color syncDivider = Color(0xFFDCE4D7); // between detail rows
+  static const Color destructiveTint = Color(0x1ABD2013); // 10%
+  static const Color destructiveDivider = Color(0x33BD2013); // 20%
+
   // Sign-out confirmation sheet.
   static const Color signOutHalo = Color(0xFFFFF0E7); // behind the lock
   static const Color signOutHandle = Color(0xFFD1D5D2);

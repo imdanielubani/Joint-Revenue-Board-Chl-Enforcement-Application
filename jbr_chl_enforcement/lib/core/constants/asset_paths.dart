@@ -78,6 +78,13 @@ abstract final class AssetPaths {
   static const String iconSignOutLock =
       'assets/icons/account/sign_out_lock.svg';
 
+  // Offline sync modal
+  static const String iconSyncModal = 'assets/icons/sync/sync.svg';
+  static const String iconSyncAcknowledged =
+      'assets/icons/sync/acknowledged.svg';
+  static const String iconSyncInterrupted = 'assets/icons/sync/interrupted.svg';
+  static const String iconSyncOffline = 'assets/icons/sync/offline.svg';
+
   // Sign-in progress and result dialogs
   static const String iconSignInLock = 'assets/icons/sign_in/status_lock.svg';
   static const String iconSignInShieldCheck =

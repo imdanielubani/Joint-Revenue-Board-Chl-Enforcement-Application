@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/ui/widgets/ring_spinner.dart';
 import '../providers/auth_controller.dart';
 
 /// Shows [SignInDialog] over the sign-in screen and returns its route, so
@@ -251,7 +251,7 @@ class _Intro extends StatelessWidget {
             alignment: Alignment.topCenter,
             children: [
               if (spinning)
-                const Positioned(top: 15, child: _RingSpinner(diameter: 86)),
+                const Positioned(top: 15, child: RingSpinner(diameter: 86)),
               Positioned(
                 top: 20,
                 child: Container(
@@ -575,91 +575,4 @@ class _CloseButton extends StatelessWidget {
       ),
     );
   }
-}
-
-/// The badge's outer ring with a green arc turning round it. The arc holds
-/// still when the system asks for reduced motion.
-class _RingSpinner extends StatefulWidget {
-  const _RingSpinner({required this.diameter});
-
-  final double diameter;
-
-  @override
-  State<_RingSpinner> createState() => _RingSpinnerState();
-}
-
-class _RingSpinnerState extends State<_RingSpinner>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1100),
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _controller.stop();
-    } else if (!_controller.isAnimating) {
-      _controller.repeat();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: RepaintBoundary(
-        child: CustomPaint(
-          size: Size.square(widget.diameter),
-          painter: _RingPainter(turns: _controller),
-        ),
-      ),
-    );
-  }
-}
-
-class _RingPainter extends CustomPainter {
-  _RingPainter({required this.turns}) : super(repaint: turns);
-
-  final Animation<double> turns;
-
-  static const double _trackWidth = 1.5;
-  static const double _arcWidth = 2.5;
-
-  /// A quarter of the ring.
-  static const double _sweep = math.pi / 2;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final ring = rect.deflate(_arcWidth / 2);
-
-    canvas.drawOval(
-      ring,
-      Paint()
-        ..color = AppColors.greenTint
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _trackWidth,
-    );
-    canvas.drawArc(
-      ring,
-      turns.value * 2 * math.pi - math.pi / 2,
-      _sweep,
-      false,
-      Paint()
-        ..color = AppColors.green
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _arcWidth
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_RingPainter oldDelegate) => oldDelegate.turns != turns;
 }

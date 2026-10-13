@@ -10,6 +10,7 @@ import '../../../../shared/ui/widgets/header_icon_button.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../notifications/presentation/providers/notifications_controller.dart';
 import '../../../offline_sync/presentation/providers/sync_controller.dart';
+import '../../../offline_sync/presentation/widgets/offline_sync_sheet.dart';
 import '../providers/settings_controller.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
@@ -107,7 +108,7 @@ class SettingsScreen extends ConsumerWidget {
                         iconAsset: AssetPaths.iconRowSync,
                         title: 'Offline sync',
                         subtitle: 'Review connection and sync status',
-                        onTap: () => context.pushNamed(RouteNames.syncStatus),
+                        onTap: () => showOfflineSyncSheet(context),
                       ),
                       SettingsTile(
                         iconAsset: AssetPaths.iconRowDatabase,

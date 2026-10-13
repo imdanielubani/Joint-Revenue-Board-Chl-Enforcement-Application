@@ -14,11 +14,13 @@ import 'package:jbr_chl_enforcement/features/auth/presentation/providers/session
 import 'package:jbr_chl_enforcement/features/auth/presentation/screens/login_screen.dart';
 import 'package:jbr_chl_enforcement/features/notifications/presentation/providers/notifications_controller.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/presentation/providers/sync_controller.dart';
+import 'package:jbr_chl_enforcement/features/offline_sync/presentation/widgets/offline_sync_sheet.dart';
 import 'package:jbr_chl_enforcement/features/profile/presentation/screens/account_details_screen.dart';
 import 'package:jbr_chl_enforcement/features/profile/presentation/screens/profile_screen.dart';
 import 'package:jbr_chl_enforcement/features/profile/presentation/widgets/assignment_card.dart';
 import 'package:jbr_chl_enforcement/features/profile/presentation/widgets/sign_out_sheet.dart';
 import 'package:jbr_chl_enforcement/features/settings/presentation/screens/settings_screen.dart';
+import 'package:jbr_chl_enforcement/shared/device/connectivity/connectivity_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/device/permissions/permission_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/storage/preferences_service.dart';
 import 'package:jbr_chl_enforcement/shared/storage/secure_storage_service.dart';
@@ -91,7 +93,6 @@ GoRouter _router(String initialLocation) => GoRouter(
     ),
     for (final (path, name) in [
       (RoutePaths.changePassword, RouteNames.changePassword),
-      (RoutePaths.syncStatus, RouteNames.syncStatus),
       (RoutePaths.syncQueue, RouteNames.syncQueue),
     ])
       GoRoute(
@@ -145,6 +146,7 @@ Future<_Harness> _pump(
       ),
       pendingSyncCountProvider.overrideWithValue(pending),
       unreadNotificationCountProvider.overrideWithValue(unread),
+      internetStatusProvider.overrideWith((ref) => Stream.value(true)),
     ],
   );
   addTearDown(container.dispose);
@@ -733,7 +735,6 @@ void main() {
 
     for (final (row, page) in [
       ('Security', 'change-password page'),
-      ('Offline sync', 'sync-status page'),
       ('Sync queue', 'sync-queue page'),
     ]) {
       testWidgets('$row opens its page', (tester) async {
@@ -750,6 +751,25 @@ void main() {
         expect(find.text(page), findsOneWidget);
       });
     }
+
+    testWidgets('Offline sync opens the sync card over the page', (
+      tester,
+    ) async {
+      await _pump(tester, at: RoutePaths.settings);
+
+      await tester.scrollUntilVisible(
+        find.text('Offline sync'),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Offline sync'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(OfflineSyncSheet), findsOneWidget);
+      expect(find.text('Offline synchronization'), findsOneWidget);
+      // The settings page stays underneath.
+      expect(find.byType(SettingsScreen), findsOneWidget);
+    });
 
     testWidgets('back from settings returns to Profile', (tester) async {
       await _pump(tester);
