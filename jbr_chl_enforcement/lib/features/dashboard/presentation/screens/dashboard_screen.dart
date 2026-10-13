@@ -61,7 +61,6 @@ class DashboardScreen extends ConsumerWidget {
                       unreadNotifications: ref.watch(
                         unreadNotificationCountProvider,
                       ),
-                      onSos: () => context.pushNamed(RouteNames.sos),
                       onNotifications: () =>
                           context.goNamed(RouteNames.notifications),
                     ),
@@ -111,12 +110,13 @@ class DashboardScreen extends ConsumerWidget {
                                   pendingSync: ref.watch(
                                     pendingSyncCountProvider,
                                   ),
+                                  syncAvailable: ref.watch(
+                                    syncAvailableProvider,
+                                  ),
                                 ),
                                 summary: summary,
                                 onVerifyTrip: () =>
                                     context.pushNamed(RouteNames.verifyTrip),
-                                onVerifyETag: () =>
-                                    context.pushNamed(RouteNames.verifyETag),
                                 onViewAll: () =>
                                     context.goNamed(RouteNames.history),
                                 onRetry: () =>
@@ -145,7 +145,6 @@ class _DashboardContent extends StatelessWidget {
     required this.statusRow,
     required this.summary,
     required this.onVerifyTrip,
-    required this.onVerifyETag,
     required this.onViewAll,
     required this.onRetry,
   });
@@ -155,7 +154,6 @@ class _DashboardContent extends StatelessWidget {
   final Widget statusRow;
   final AsyncValue<DashboardSummary> summary;
   final VoidCallback onVerifyTrip;
-  final VoidCallback onVerifyETag;
   final VoidCallback onViewAll;
   final VoidCallback onRetry;
 
@@ -205,7 +203,7 @@ class _DashboardContent extends StatelessWidget {
         const SizedBox(height: 11),
         officerCard,
         const SizedBox(height: 15),
-        QuickActions(onVerifyTrip: onVerifyTrip, onVerifyETag: onVerifyETag),
+        QuickActions(onVerifyTrip: onVerifyTrip),
         const SizedBox(height: 17),
         statusRow,
         const SizedBox(height: 16),
@@ -245,7 +243,7 @@ class _DashboardContent extends StatelessWidget {
             TextButton(
               onPressed: onViewAll,
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.forestLink,
+                foregroundColor: AppColors.ink,
                 minimumSize: const Size(48, 48),
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 textStyle: const TextStyle(

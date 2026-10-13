@@ -213,20 +213,35 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 
 ### Dashboard
 
-- **Header:** logo, red SOS button and the notifications bell. The bell's
-  badge shows `unreadNotificationCountProvider` (hidden at 0, "99+" above 99).
+- **Header:** logo and the notifications bell. The bell's badge shows
+  `unreadNotificationCountProvider` (hidden at 0, "99+" above 99). There is
+  no SOS button on the dashboard any more (the SOS page and route remain).
 - **Officer card:** initials (`Officer.initials`), name, and region · role
   from the signed-in officer.
-- **Actions:** Verify CHL Trip and Verify E-Tag.
+- **Action:** one full-width Verify CHL Trip button. E-Tags are verified
+  from the page it opens ("Scan E-Tag QR code"); the separate Verify E-Tag
+  page has no button on the dashboard any more.
 - **Status tiles:** Internet, GPS, RFID reader and Sync. Green "Online" /
-  "Connected" / "Up to date", red "Offline", amber "n queued" when
-  `pendingSyncCountProvider` is above 0. The sync tile is labelled
-  "Offline sync" while there is no connection.
+  "Connected", red "Offline". Sync is amber: "Synced", or "n queued" when
+  `pendingSyncCountProvider` is above 0; red "Offline" when the sync service
+  cannot be reached (`syncAvailableProvider`, always true until the sync
+  service exists). The sync tile is labelled "Offline sync" while there is
+  no connection.
+- **Daily activity:** Total Verifications across the full width, then
+  Active Trips and No Active Trips. The violations count is still in
+  `DashboardSummary` but not shown.
 - **Daily activity** and **Recent verifications** come from
   `dashboardSummaryProvider` → `DashboardRepository`. Release builds use
   `LocalDashboardRepository`, which returns zeros and an empty list until
   verifications are stored ("No verifications yet today."). A failed load
   shows a Retry card. Pull down to refresh.
+- **Recent verifications:** each row shows what was found and how the
+  vehicle was identified — a CHL trip ("Active trip · RFID") or an E-Tag
+  ("E-Tag valid · Tag QR", `VerificationRecord.eTagStatus`) — with the time
+  and outcome (Verified, Checked, Validated, Case created, Escalated) in
+  dark text.
+- **Bottom bar:** the selected tab's label and icon are dark ink on the
+  bright green pill (icons are tinted, so no second copy of each is needed).
 - **View all** opens the History tab. The record row
   (`verification_history/presentation/widgets/history_list_item.dart`) is
   shared with the History screen.
@@ -234,6 +249,9 @@ border `#D92D20` and a message under it); **failures not tied to one field**
   labels shrink rather than clip on very narrow phones. The list ends above
   the floating bar.
 - The design's Segoe UI text is set in Poppins like the rest of the app.
+- Accessibility: amber and red status text uses the darker `warningText`
+  (#B54708) and `statusDownText` (#B42318) rather than the design's #CF9D00
+  and #EE4031, which are too faint for 10 px text on white.
 
 ### Verification method pages
 
@@ -498,6 +516,13 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Dashboard update: SOS button and Verify E-Tag button removed (one
+  full-width Verify CHL Trip), Sync tile shows "Synced" and a red "Offline"
+  when the sync service is down, Daily activity shows three cards (Total
+  full width; Violations removed), recent verifications support E-Tag rows
+  and the Checked / Validated outcomes with dark time and status, dark label
+  on the selected bottom-bar tab, sample data updated.
 
 - "Agent access not authorized" is now shown for anyone who may not sign
   in at all (not an enforcement agent, or no such account), whatever the

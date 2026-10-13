@@ -6,7 +6,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/dashboard_summary.dart';
 
-/// The four "Daily activity" cards in a 2 × 2 grid.
+/// The "Daily activity" cards: Total Verifications across the full width,
+/// then Active Trips and No Active Trips side by side.
 class DailyActivityGrid extends StatelessWidget {
   const DailyActivityGrid({super.key, required this.summary});
 
@@ -14,14 +15,14 @@ class DailyActivityGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cards = [
-      SummaryStatCard(
-        title: 'Total Verifications',
-        value: summary.totalVerifications,
-        caption: 'Recorded attempts',
-        iconAsset: AssetPaths.iconScans,
-        iconBackground: AppColors.activityScans,
-      ),
+    final total = SummaryStatCard(
+      title: 'Total Verifications',
+      value: summary.totalVerifications,
+      caption: 'Recorded attempts',
+      iconAsset: AssetPaths.iconScans,
+      iconBackground: AppColors.activityScans,
+    );
+    final trips = [
       SummaryStatCard(
         title: 'Active Trips',
         value: summary.activeTrips,
@@ -35,13 +36,6 @@ class DailyActivityGrid extends StatelessWidget {
         caption: 'No-active-trip results',
         iconAsset: AssetPaths.iconClock,
         iconBackground: AppColors.activityNoActive,
-      ),
-      SummaryStatCard(
-        title: 'Violations Issued',
-        value: summary.violationsIssued,
-        caption: 'Acknowledged cases',
-        iconAsset: AssetPaths.iconIssues,
-        iconBackground: AppColors.activityViolations,
       ),
     ];
 
@@ -57,11 +51,8 @@ class DailyActivityGrid extends StatelessWidget {
     );
 
     return Column(
-      children: [
-        row(cards[0], cards[1]),
-        const SizedBox(height: 7),
-        row(cards[2], cards[3]),
-      ],
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [total, const SizedBox(height: 7), row(trips[0], trips[1])],
     );
   }
 }
@@ -113,7 +104,7 @@ class SummaryStatCard extends StatelessWidget {
                       style: const TextStyle(
                         fontFamily: AppTypography.fontFamily,
                         fontSize: 12,
-                        fontWeight: AppTypography.semiBold,
+                        fontWeight: AppTypography.medium,
                         height: 1.45,
                         color: AppColors.forest,
                       ),

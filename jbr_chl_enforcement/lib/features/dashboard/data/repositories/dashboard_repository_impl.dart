@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/environment/app_environment.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
+import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../verification/domain/entities/verification_method.dart';
 import '../../../verification_history/domain/entities/verification_record.dart';
 import '../../domain/entities/dashboard_summary.dart';
@@ -55,7 +56,7 @@ class DemoDashboardRepository implements DashboardRepository {
           plateNumber: 'LND 482 XK',
           tripStatus: TripStatus.noActive,
           method: VerificationMethod.manualPlate,
-          outcome: VerificationOutcome.caseCreated,
+          outcome: VerificationOutcome.checked,
           recordedAt: at(9, 21),
         ),
         VerificationRecord(
@@ -70,16 +71,16 @@ class DemoDashboardRepository implements DashboardRepository {
           id: 'demo-4',
           plateNumber: 'AKD 308 TY',
           tripStatus: TripStatus.active,
-          method: VerificationMethod.ocr,
+          method: VerificationMethod.manualPlate,
           outcome: VerificationOutcome.verified,
           recordedAt: at(8, 56),
         ),
         VerificationRecord(
           id: 'demo-5',
           plateNumber: 'GGE 651 PL',
-          tripStatus: TripStatus.previous,
-          method: VerificationMethod.rfid,
-          outcome: VerificationOutcome.escalated,
+          eTagStatus: ETagStatus.valid,
+          method: VerificationMethod.qrCode,
+          outcome: VerificationOutcome.validated,
           recordedAt: at(8, 42),
         ),
       ],

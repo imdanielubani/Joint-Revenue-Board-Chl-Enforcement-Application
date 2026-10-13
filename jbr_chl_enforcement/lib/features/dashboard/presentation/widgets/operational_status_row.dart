@@ -32,12 +32,16 @@ class OperationalStatusRow extends StatelessWidget {
     required this.gpsReady,
     required this.rfidConnected,
     required this.pendingSync,
+    this.syncAvailable = true,
   });
 
   final bool internetOnline;
   final bool gpsReady;
   final bool rfidConnected;
   final int pendingSync;
+
+  /// Whether the sync service can be reached.
+  final bool syncAvailable;
 
   List<OperationalStatus> get statuses => [
     OperationalStatus(
@@ -61,8 +65,13 @@ class OperationalStatusRow extends StatelessWidget {
     OperationalStatus(
       label: internetOnline ? 'Sync' : 'Offline sync',
       iconAsset: AssetPaths.iconSync,
-      level: pendingSync > 0 ? StatusLevel.pending : StatusLevel.ok,
-      value: pendingSync > 0 ? '$pendingSync queued' : 'Up to date',
+      // Amber as designed, both when synced and when work is queued.
+      level: syncAvailable ? StatusLevel.pending : StatusLevel.down,
+      value: !syncAvailable
+          ? 'Offline'
+          : pendingSync > 0
+          ? '$pendingSync queued'
+          : 'Synced',
     ),
   ];
 

@@ -105,6 +105,7 @@ Future<void> _pump(
   bool gps = true,
   bool rfid = true,
   int pending = 0,
+  bool syncAvailable = true,
   int unread = 0,
 }) async {
   final padding = FakeViewPadding(
@@ -132,6 +133,7 @@ Future<void> _pump(
       gpsStatusProvider.overrideWith((ref) => Stream.value(gps)),
       rfidReaderConnectedProvider.overrideWithValue(rfid),
       pendingSyncCountProvider.overrideWithValue(pending),
+      syncAvailableProvider.overrideWithValue(syncAvailable),
       unreadNotificationCountProvider.overrideWithValue(unread),
     ],
   );
@@ -160,12 +162,14 @@ void main() {
     expect(find.text('Daniel John'), findsOneWidget);
     expect(find.text('Lagos State · Enforcement Agent'), findsOneWidget);
     expect(find.text('Verify CHL Trip'), findsOneWidget);
-    expect(find.text('Verify E-Tag'), findsOneWidget);
+    // One action only; no SOS button in the header.
+    expect(find.text('Verify E-Tag'), findsNothing);
+    expect(find.bySemanticsLabel('SOS emergency'), findsNothing);
 
     expect(find.bySemanticsLabel('Internet: Online'), findsOneWidget);
     expect(find.bySemanticsLabel('GPS: Online'), findsOneWidget);
     expect(find.bySemanticsLabel('RFID reader: Connected'), findsOneWidget);
-    expect(find.bySemanticsLabel('Sync: Up to date'), findsOneWidget);
+    expect(find.bySemanticsLabel('Sync: Synced'), findsOneWidget);
 
     expect(
       find.bySemanticsLabel('Total Verifications: 5. Recorded attempts'),
@@ -179,10 +183,7 @@ void main() {
       find.bySemanticsLabel('No Active Trips: 1. No-active-trip results'),
       findsOneWidget,
     );
-    expect(
-      find.bySemanticsLabel('Violations Issued: 1. Acknowledged cases'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Violations'), findsNothing);
 
     await tester.ensureVisible(find.text('GGE 651 PL'));
     for (final plate in [
@@ -195,9 +196,11 @@ void main() {
       expect(find.text(plate), findsOneWidget);
     }
     expect(find.text('No active trip · Manual plate'), findsOneWidget);
-    expect(find.text('Previous trip · RFID'), findsOneWidget);
-    expect(find.text('Case created'), findsOneWidget);
-    expect(find.text('Escalated'), findsOneWidget);
+    expect(find.text('Active trip · Manual plate'), findsOneWidget);
+    expect(find.text('E-Tag valid · Tag QR'), findsOneWidget);
+    expect(find.text('Checked'), findsOneWidget);
+    expect(find.text('Validated'), findsOneWidget);
+    expect(find.text('Verified'), findsNWidgets(3));
     expect(find.text('09:34 AM'), findsOneWidget);
   });
 
@@ -210,6 +213,23 @@ void main() {
     expect(find.bySemanticsLabel('GPS: Offline'), findsOneWidget);
     expect(find.bySemanticsLabel('RFID reader: Offline'), findsOneWidget);
     expect(find.bySemanticsLabel('Offline sync: 2 queued'), findsOneWidget);
+  });
+
+  testWidgets('a sync service that cannot be reached shows Offline', (
+    tester,
+  ) async {
+    await _pump(tester, syncAvailable: false);
+
+    expect(find.bySemanticsLabel('Internet: Online'), findsOneWidget);
+    expect(find.bySemanticsLabel('Sync: Offline'), findsOneWidget);
+  });
+
+  testWidgets('offline with nothing queued shows Offline sync, Synced', (
+    tester,
+  ) async {
+    await _pump(tester, online: false, gps: false, rfid: false);
+
+    expect(find.bySemanticsLabel('Offline sync: Synced'), findsOneWidget);
   });
 
   testWidgets('online with queued actions shows Sync with the count', (
@@ -275,7 +295,6 @@ void main() {
 
   group('navigation', () {
     final cases = <(String, Finder Function(), String)>[
-      ('SOS', () => find.bySemanticsLabel('SOS emergency'), 'sos page'),
       (
         'the bell',
         () => find.bySemanticsLabel('Notifications').first,
@@ -286,7 +305,6 @@ void main() {
         () => find.text('Verify CHL Trip'),
         'verify-trip page',
       ),
-      ('Verify E-Tag', () => find.text('Verify E-Tag'), 'verify-e-tag page'),
     ];
     for (final (label, finder, destination) in cases) {
       testWidgets('$label opens its page', (tester) async {

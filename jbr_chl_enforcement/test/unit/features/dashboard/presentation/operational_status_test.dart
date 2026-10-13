@@ -7,12 +7,14 @@ void main() {
     bool gps = true,
     bool rfid = true,
     int pending = 0,
+    bool syncAvailable = true,
   }) =>
       OperationalStatusRow(
             internetOnline: online,
             gpsReady: gps,
             rfidConnected: rfid,
             pendingSync: pending,
+            syncAvailable: syncAvailable,
           ).statuses
           .map((status) => (status.label, status.level, status.value))
           .toList();
@@ -22,12 +24,21 @@ void main() {
       ('Internet', StatusLevel.ok, 'Online'),
       ('GPS', StatusLevel.ok, 'Online'),
       ('RFID reader', StatusLevel.ok, 'Connected'),
-      ('Sync', StatusLevel.ok, 'Up to date'),
+      ('Sync', StatusLevel.pending, 'Synced'),
     ]);
   });
 
   test('queued actions while online', () {
     expect(tiles(pending: 2).last, ('Sync', StatusLevel.pending, '2 queued'));
+  });
+
+  test('sync service unreachable', () {
+    expect(tiles(syncAvailable: false).last, (
+      'Sync',
+      StatusLevel.down,
+      'Offline',
+    ));
+    expect(tiles(syncAvailable: false, pending: 3).last.$3, 'Offline');
   });
 
   test('offline', () {
@@ -42,8 +53,8 @@ void main() {
   test('offline with nothing queued', () {
     expect(tiles(online: false).last, (
       'Offline sync',
-      StatusLevel.ok,
-      'Up to date',
+      StatusLevel.pending,
+      'Synced',
     ));
   });
 }

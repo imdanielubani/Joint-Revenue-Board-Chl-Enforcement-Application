@@ -6,10 +6,12 @@ import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
+import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../verification/domain/entities/verification_method.dart';
 import '../../domain/entities/verification_record.dart';
 
-/// One verification: status icon, plate, trip status · method, time and
+/// One verification: status icon, plate, what was found · how the vehicle
+/// was identified ("Active trip · RFID", "E-Tag valid · Tag QR"), time and
 /// outcome.
 class VerificationRecordTile extends StatelessWidget {
   const VerificationRecordTile({super.key, required this.record, this.onTap});
@@ -27,18 +29,27 @@ class VerificationRecordTile extends StatelessWidget {
     color: AppColors.forest,
   );
 
-  static const TextStyle _captionStyle = TextStyle(
+  static const TextStyle _detailStyle = TextStyle(
     fontFamily: AppTypography.fontFamily,
     fontSize: 12,
     fontWeight: AppTypography.regular,
-    height: 16.8 / 12,
+    height: 1.4,
     color: AppColors.moss,
+  );
+
+  /// Time and outcome, on the right.
+  static const TextStyle _resultStyle = TextStyle(
+    fontFamily: AppTypography.fontFamily,
+    fontSize: 12,
+    fontWeight: AppTypography.regular,
+    height: 1.4,
+    color: AppColors.ink,
   );
 
   @override
   Widget build(BuildContext context) {
     final (iconAsset, iconBackground) = _icon(record);
-    final detail = '${record.tripStatus.label} · ${record.method.label}';
+    final detail = record.detail;
     final time = _time.format(record.recordedAt);
 
     return Semantics(
@@ -87,7 +98,7 @@ class VerificationRecordTile extends StatelessWidget {
                           detail,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: _captionStyle,
+                          style: _detailStyle,
                         ),
                       ),
                     ],
@@ -100,17 +111,13 @@ class VerificationRecordTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        time,
-                        textAlign: TextAlign.end,
-                        style: _captionStyle,
-                      ),
+                      Text(time, textAlign: TextAlign.end, style: _resultStyle),
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           record.outcome.label,
                           textAlign: TextAlign.end,
-                          style: _captionStyle.copyWith(height: 15.6 / 12),
+                          style: _resultStyle.copyWith(height: 1.3),
                         ),
                       ),
                     ],
@@ -128,10 +135,33 @@ class VerificationRecordTile extends StatelessWidget {
     if (record.outcome == VerificationOutcome.escalated) {
       return (AssetPaths.iconRecentEscalated, AppColors.recentEscalated);
     }
-    return record.tripStatus == TripStatus.active
-        ? (AssetPaths.iconRecentActive, AppColors.recentActive)
-        : (AssetPaths.iconRecentNoActive, AppColors.recentNoActive);
+    final good = record.isETagCheck
+        ? record.eTagStatus == ETagStatus.valid
+        : record.tripStatus == TripStatus.active;
+    if (!good) {
+      return (AssetPaths.iconRecentNoActive, AppColors.recentNoActive);
+    }
+    return record.isETagCheck
+        ? (AssetPaths.iconRecentETag, AppColors.recentActive)
+        : (AssetPaths.iconRecentActive, AppColors.recentActive);
   }
+}
+
+extension VerificationRecordDetail on VerificationRecord {
+  /// What was found · how the vehicle was identified.
+  String get detail {
+    final eTag = eTagStatus;
+    if (eTag != null) return '${eTag.label} · ${method.eTagLabel}';
+    return '${tripStatus!.label} · ${method.label}';
+  }
+}
+
+extension ETagStatusLabel on ETagStatus {
+  String get label => switch (this) {
+    ETagStatus.valid => 'E-Tag valid',
+    ETagStatus.invalid => 'E-Tag invalid',
+    ETagStatus.expired => 'E-Tag expired',
+  };
 }
 
 extension TripStatusLabel on TripStatus {
@@ -149,11 +179,21 @@ extension VerificationMethodLabel on VerificationMethod {
     VerificationMethod.manualPlate => 'Manual plate',
     VerificationMethod.ocr => 'OCR',
   };
+
+  /// How an E-Tag was read ("Tag RFID", "Tag QR").
+  String get eTagLabel => switch (this) {
+    VerificationMethod.rfid => 'Tag RFID',
+    VerificationMethod.qrCode => 'Tag QR',
+    VerificationMethod.manualPlate => 'Manual plate',
+    VerificationMethod.ocr => 'OCR',
+  };
 }
 
 extension VerificationOutcomeLabel on VerificationOutcome {
   String get label => switch (this) {
     VerificationOutcome.verified => 'Verified',
+    VerificationOutcome.checked => 'Checked',
+    VerificationOutcome.validated => 'Validated',
     VerificationOutcome.caseCreated => 'Case created',
     VerificationOutcome.escalated => 'Escalated',
   };

@@ -175,6 +175,13 @@ class _NavButton extends StatelessWidget {
                       item.iconAsset,
                       width: 20,
                       height: 20,
+                      // White line icons, drawn in ink on the bright pill.
+                      colorFilter: selected
+                          ? const ColorFilter.mode(
+                              AppColors.ink,
+                              BlendMode.srcIn,
+                            )
+                          : null,
                       excludeFromSemantics: true,
                     ),
                     if (selected) ...[
@@ -185,7 +192,7 @@ class _NavButton extends StatelessWidget {
                           fontFamily: AppTypography.fontFamily,
                           fontSize: 11,
                           fontWeight: AppTypography.semiBold,
-                          color: Colors.white,
+                          color: AppColors.ink,
                         ),
                       ),
                     ],

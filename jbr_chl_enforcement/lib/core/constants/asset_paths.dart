@@ -52,6 +52,7 @@ abstract final class AssetPaths {
       'assets/icons/dashboard/recent_no_active.svg';
   static const String iconRecentEscalated =
       'assets/icons/dashboard/recent_escalated.svg';
+  static const String iconRecentETag = 'assets/icons/dashboard/recent_etag.svg';
 
   // Verification methods
   static const String iconMethodRfid = 'assets/icons/verification/rfid.svg';

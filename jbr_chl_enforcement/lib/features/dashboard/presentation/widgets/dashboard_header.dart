@@ -5,18 +5,15 @@ import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 
-/// Logo on the left; SOS and notifications on the right, over the green
-/// header.
+/// Logo on the left and notifications on the right, over the green header.
 class DashboardHeader extends StatelessWidget {
   const DashboardHeader({
     super.key,
     required this.unreadNotifications,
-    required this.onSos,
     required this.onNotifications,
   });
 
   final int unreadNotifications;
-  final VoidCallback onSos;
   final VoidCallback onNotifications;
 
   @override
@@ -44,13 +41,6 @@ class DashboardHeader extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        _RoundIconButton(
-          iconAsset: AssetPaths.iconSos,
-          background: AppColors.sos,
-          semanticLabel: 'SOS emergency',
-          onPressed: onSos,
-        ),
-        const SizedBox(width: 5),
         _RoundIconButton(
           iconAsset: AssetPaths.iconBell,
           background: AppColors.headerButton,
