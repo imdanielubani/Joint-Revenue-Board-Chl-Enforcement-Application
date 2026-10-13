@@ -4,6 +4,8 @@ import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_failure.d
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_session.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/officer.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/repositories/auth_repository.dart';
+import 'package:jbr_chl_enforcement/features/notifications/domain/entities/app_notification.dart';
+import 'package:jbr_chl_enforcement/features/notifications/domain/repositories/notifications_repository.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/entities/sync_queue_item.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/repositories/sync_repository.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_method.dart';
@@ -206,4 +208,52 @@ class FakeSyncRepository implements SyncRepository {
   void fail() => calls.last.completeError(StateError('server error'));
 
   void dispose() => _changes.close();
+}
+
+/// Notification inbox whose answers the test decides.
+class FakeNotificationsRepository implements NotificationsRepository {
+  FakeNotificationsRepository(List<AppNotification> inbox) : inbox = [...inbox];
+
+  final List<AppNotification> inbox;
+
+  /// Set to make loading fail.
+  Object? fetchError;
+
+  /// Set to make read receipts fail.
+  Object? markError;
+
+  /// Set to hold loading until it completes.
+  Completer<void>? gate;
+
+  int fetchCount = 0;
+  final List<String> markedRead = [];
+  int markAllCount = 0;
+
+  @override
+  Future<List<AppNotification>> fetchNotifications() async {
+    fetchCount++;
+    await gate?.future;
+    final error = fetchError;
+    if (error != null) throw error;
+    return List.unmodifiable(inbox);
+  }
+
+  @override
+  Future<void> markRead(String id) async {
+    markedRead.add(id);
+    final error = markError;
+    if (error != null) throw error;
+    final index = inbox.indexWhere((notification) => notification.id == id);
+    if (index >= 0) inbox[index] = inbox[index].copyWith(isRead: true);
+  }
+
+  @override
+  Future<void> markAllRead() async {
+    markAllCount++;
+    final error = markError;
+    if (error != null) throw error;
+    for (var i = 0; i < inbox.length; i++) {
+      inbox[i] = inbox[i].copyWith(isRead: true);
+    }
+  }
 }

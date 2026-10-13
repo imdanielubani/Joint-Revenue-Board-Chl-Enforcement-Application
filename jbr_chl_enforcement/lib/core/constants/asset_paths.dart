@@ -78,6 +78,15 @@ abstract final class AssetPaths {
   static const String iconSignOutLock =
       'assets/icons/account/sign_out_lock.svg';
 
+  // Notifications
+  static const String notificationsDir = 'assets/icons/notifications';
+  static const String iconNotificationChevron = '$notificationsDir/chevron.svg';
+  static const String iconNotificationsCaughtUp =
+      '$notificationsDir/caught_up.svg';
+  static const String iconNotificationsUnavailable =
+      '$notificationsDir/unavailable.svg';
+  static const String iconNotificationsEmpty = '$notificationsDir/empty.svg';
+
   // Offline sync modal
   static const String iconSyncModal = 'assets/icons/sync/sync.svg';
   static const String iconSyncAcknowledged =

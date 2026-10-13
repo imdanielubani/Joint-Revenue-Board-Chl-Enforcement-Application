@@ -28,6 +28,14 @@ class MainShellScaffold extends StatelessWidget {
   static double contentBottomInset(BuildContext context) =>
       _navBottom(context) + _navHeight + 16;
 
+  /// Bottom padding for content in a green-header sheet on a tab, so its
+  /// end can scroll 16 px above the navigation bar. The sheet already ends
+  /// above the system inset, so the phone's own inset is read here.
+  static double sheetBottomInset(BuildContext context) {
+    final inset = MediaQueryData.fromView(View.of(context)).viewPadding.bottom;
+    return math.max(8, inset) + _navHeight + 16 - inset;
+  }
+
   static const _items = [
     _NavItem('Dashboard', AssetPaths.navDashboard),
     _NavItem('History', AssetPaths.navHistory),

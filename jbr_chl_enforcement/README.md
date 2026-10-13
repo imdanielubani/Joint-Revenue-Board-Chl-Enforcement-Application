@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -95,7 +95,7 @@ Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                      nothing pending)  │         │             ├─► Verify CHL Trip ──► RFID, QR, manual plate, OCR
                                        │         │             └─► Verify E-Tag ─────► RFID, QR
                                        │         ├─ History
-                                       │         ├─ Notifications
+                                       │         ├─ Notifications ──► Notification details
                                        │         └─ Profile ──► Account details
                                        │                     └─► App settings ──► Security, Offline sync (card), Sync queue
                                        └─► Forgot password
@@ -194,6 +194,7 @@ Shared widgets in `lib/shared/ui/widgets/`:
 | `ScreenHeading` | 22 px page heading with a short description under it |
 | `BrandAccentBar` | Short green bar under brand headings |
 | `showAppToast` (`shared/ui/widgets/app_toast.dart`) | Short white confirmation ("Sign out successful") near the top of the screen, clear of bottom buttons; goes after 3 s or when tapped, never blocks the screen, read out by screen readers, replaces any toast already showing |
+| `ScreenHeading` description | Optional (Notification details has none) |
 | `EmptyState` | Centred title and message for screens with nothing to show; `notBuiltYetMessage` for placeholder screens |
 
 Accessibility adjustments to the design: dark text on amber buttons
@@ -223,7 +224,9 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Profile ("My Account") | `features/profile/presentation/screens/profile_screen.dart` | See below. |
 | Account details | `features/profile/presentation/screens/account_details_screen.dart` | See below. |
 | App settings ("My Preferences") | `features/settings/presentation/screens/settings_screen.dart` | See below. |
-| History, Notifications, SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
+| Notifications | `features/notifications/presentation/screens/notifications_screen.dart` | See below. |
+| Notification details | `features/notifications/presentation/screens/notification_details_screen.dart` | See below. |
+| History, SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -360,6 +363,50 @@ card opens again; an interruption stays until retried.
 - The designs' prototype wording ("local snapshot", "no upload is sent to
   CHL", "Local response walkthrough only.") is replaced with what the app
   really does.
+
+### Notifications
+
+Notifications tab (`/notifications`) and details (`/notifications/:id`,
+inside the tab so the bottom bar stays).
+
+- **Inbox:** "Notifications" / "Stay informed while you're in the field",
+  the **All / Unread (n)** switch, "n unread notifications" with **Mark all
+  as read** (greyed out when nothing is unread), then the notifications
+  grouped by day ("Today", "Yesterday", "10 Oct 2026") in cards
+  (`SettingsSection`). Each row (`widgets/notification_tile.dart`) shows
+  the icon on an amber (act on it), green (working again) or pale green
+  (account, app) disc, the title with a green dot while unread, the
+  summary and "Category · 09:40 AM · Unread". Tapping a row marks it read
+  and opens it. Pull down to refresh.
+- **States:** while loading, "Loading your notifications…" with four
+  pulsing skeleton cards (`widgets/notifications_skeleton.dart`, built
+  with `skeletonizer`; the bars hold still with reduced motion). No
+  notifications: "No notifications yet" with Back to dashboard. Load
+  failure: "Notifications unavailable" with Try again (a failure is never
+  shown as an empty inbox). Unread with nothing unread: "You're all caught
+  up" with View all notifications. A refresh keeps the list on screen,
+  and keeps it if the refresh fails.
+- **Details:** icon, category, title, the full message, Received ("Today ·
+  09:40 AM") and Read status. Opening it marks it read (once; a refused
+  read receipt shows it unread rather than retrying in a loop). A
+  verification notification has **View Verification Record**, which opens
+  the History tab until the history has a record page.
+- **State:** `notificationsProvider` (`NotificationsController`: load,
+  `retry`, `markRead`, `markAllRead`; read changes show at once and are
+  undone if the server refuses; no automatic retries).
+  `unreadNotificationCountProvider` (the bells' badges) follows it.
+- **Data:** `NotificationsRepository`. `RemoteNotificationsRepository` is
+  empty until the API exists (TODO in
+  `data/repositories/notifications_repository_impl.dart`).
+  `AppNotification` has a `NotificationType` that decides the category,
+  icon and colours (`widgets/notification_style.dart`).
+- **Wording:** the design's typos are fixed ("while you're n the field",
+  "Loading your notification..."), and prototype wording in the sample
+  messages ("This local response…", "in the full application") is left
+  out. The second details design shows the "connected" message under a
+  "disconnected" title; the app shows each notification's own title.
+- Account and app notifications have no large icon in the designs, so the
+  details page draws their inbox icon at 28 px.
 
 ### Sync queue
 
@@ -648,6 +695,13 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Notifications: inbox with All / Unread, Mark all as read, grouping by
+  day, loading skeleton, empty, unavailable and all-caught-up states, and
+  the details page. Added `skeletonizer` 3.0.0. `clockProvider` moved to
+  `core/utils/clock.dart` (still exported from the dashboard). Tabs can
+  have child routes; `MainShellScaffold.sheetBottomInset` keeps sheet
+  content clear of the bottom bar.
 
 - Account Security (App settings → Security): request a password reset
   link while signed in, reusing the Password recovery screen with its own

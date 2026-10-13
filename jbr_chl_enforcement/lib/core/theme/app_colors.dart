@@ -67,6 +67,14 @@ abstract final class AppColors {
   static const Color switchOffBorder = Color(0xFF657966);
   static const Color destructive = Color(0xFFBD2013); // Sign out
 
+  // Notifications.
+  static const Color noticeWarningTint = Color(0xFFFFF1D9); // icon disc
+  static const Color noticePositiveTint = Color(0xFFE4F3E5); // icon disc
+  static const Color mutedText = Color(0x80000000); // black at 50%
+  static const Color segmentTrack = Color(0xFFE9EEE7); // All / Unread
+  static const Color skeletonBone = Color(0xFFDCE6D1);
+  static const Color skeletonBoneLight = Color(0xFFEDF2E8); // pulse
+
   // Offline sync modal.
   static const Color syncRing = Color(0xFFDCE9D6); // spinner track
   static const Color syncDivider = Color(0xFFDCE4D7); // between detail rows

@@ -6,6 +6,7 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/notifications/presentation/screens/notification_details_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/offline_sync/presentation/screens/sync_queue_screen.dart';
 import '../../features/permissions/presentation/screens/permission_screen.dart';
@@ -75,6 +76,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             RoutePaths.notifications,
             RouteNames.notifications,
             NotificationsScreen(),
+            routes: [
+              // Inside the tab, so the navigation bar stays.
+              GoRoute(
+                path: ':id',
+                name: RouteNames.notificationDetails,
+                builder: (context, state) =>
+                    NotificationDetailsScreen(id: state.pathParameters['id']!),
+              ),
+            ],
           ),
           _tab(RoutePaths.profile, RouteNames.profile, ProfileScreen()),
         ],
@@ -151,9 +161,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return router;
 });
 
-StatefulShellBranch _tab(String path, String name, Widget screen) =>
-    StatefulShellBranch(
-      routes: [
-        GoRoute(path: path, name: name, builder: (context, state) => screen),
-      ],
-    );
+StatefulShellBranch _tab(
+  String path,
+  String name,
+  Widget screen, {
+  List<RouteBase> routes = const [],
+}) => StatefulShellBranch(
+  routes: [
+    GoRoute(
+      path: path,
+      name: name,
+      builder: (context, state) => screen,
+      routes: routes,
+    ),
+  ],
+);

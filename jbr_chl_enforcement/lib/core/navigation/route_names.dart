@@ -8,6 +8,7 @@ abstract final class RouteNames {
   static const String dashboard = 'dashboard';
   static const String history = 'history';
   static const String notifications = 'notifications';
+  static const String notificationDetails = 'notification-details';
   static const String profile = 'profile';
 
   // Full-screen pages opened from the tabs.

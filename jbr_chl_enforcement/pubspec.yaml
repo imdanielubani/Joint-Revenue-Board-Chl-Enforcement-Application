@@ -50,6 +50,7 @@ dependencies:
   flutter_svg: ^2.3.0
   flutter_local_notifications: ^22.3.1
   logger: ^2.8.0
+  skeletonizer: 3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -95,6 +96,7 @@ flutter:
     - assets/icons/sign_in/
     - assets/icons/account/
     - assets/icons/sync/
+    - assets/icons/notifications/
     - assets/animations/
     - assets/sounds/
     - assets/fonts/poppins/OFL.txt
