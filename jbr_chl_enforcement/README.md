@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a haulage tag read by RFID is the same trip with a valid JRB E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page. |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a haulage tag read by RFID is that tag's vehicle (ABC 123 AA unless resolved otherwise) with a valid JRB E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page; any scanned code ending "-404" is Vehicle Not Found and one ending "-503" is Verification Unavailable. |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -231,7 +231,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Verification result | `features/vehicle/presentation/screens/verification_result_screen.dart` | See "Verification processing and result" below. |
 | Last CHL trip | `features/vehicle/presentation/screens/last_chl_trip_screen.dart` | See "Verification processing and result" below. |
 | Vehicle Not Found, Verification Unavailable | `features/vehicle/presentation/screens/unresolved_verification_screen.dart` | See "Verification processing and result" below. |
-| E-Tag receipt | `features/vehicle/presentation/screens/e_tag_receipt_screen.dart` | Opened by scanning an E-Tag; "not available yet" until its design arrives. |
+| E-Tag receipt | `features/vehicle/presentation/screens/e_tag_receipt_screen.dart` | Opened when a scanned E-Tag is found (after Verification processing); "not available yet" until its design arrives. |
 | RFID verification | `features/verification/presentation/screens/rfid_scan_screen.dart` | See "RFID verification" below. |
 | SOS and OCR verification | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." |
 
@@ -485,6 +485,11 @@ and verifies it like a plate, ending in the usual verification result.
   "E2"; `TODO(api)` to confirm the format). It is decided on the device
   and nothing is sent to CHL. Scan Another Tag, Enter Plate Instead,
   Choose Another Method.
+- **Multiple tags detected:** the reader read several JRB tags (the same
+  tag read twice counts once). Each shows as a vehicle with the plate
+  resolved on the device from its tag ("Resolved vehicle plate"; a tag
+  without one shows "Plate not resolved"); picking one verifies that tag
+  (Stop returns to the choice). Scan Again and Choose Another Method.
 - **Haulage tag detected:** a green tick and the note that a detected tag
   is not yet a verified vehicle; the raw tag reference is never shown
   (`HaulageTag.toString` hides it too). Verify Detected Tag.
@@ -504,7 +509,8 @@ and verifies it like a plate, ending in the usual verification result.
   large text scroll. Enter Plate Instead replaces the page with plate
   entry; Choose Another Method returns to Verify CHL Trip.
 - **Reader:** `RfidReader` (`shared/device/rfid/rfid_reader_adapter.dart`):
-  `detect` and `readTag` (which throws `RfidReaderLost` when the reader
+  `detect` and `readTags` (every tag in range, each with the plate stored
+  on it if any, as `RfidTagRead`; throws `RfidReaderLost` when the reader
   stops answering). Each detection's result is kept in
   `rfidReaderStatusProvider`, so the dashboard's RFID status reads
   Connected once a reader is found. `DeviceRfidReader` finds no reader
@@ -512,7 +518,9 @@ and verifies it like a plate, ending in the usual verification result.
   `DemoRfidReader` takes 2 seconds per step; the first detection finds
   nothing (Disconnected) and every later one finds the reader; the first
   read finds a tag that is not JRB's, the second loses the reader
-  (communication unavailable), and every later one finds ABC 123 AA's
+  (communication unavailable), the third finds two vehicles' tags (ABC 123
+  AA and LND 482 XK: Multiple tags detected), and every later one finds
+  ABC 123 AA's
   tag, which verifies as the active trip with a valid JRB E-Tag.
 
 ### QR scanner
@@ -522,12 +530,16 @@ One full-screen scanner (Verify CHL Trip → Scan E-Tag QR code,
 JRB E-Tag. Its wording is as designed. What was scanned decides where it
 goes: `ScannedQr.read` takes a code starting "ETAG", "E-TAG" or
 "JRB-ETAG" (any case) as an E-Tag and any other code as a CHL QR code.
-- **A QR code** is verified like a typed plate (Verification processing,
-  then Active Trip, No Active Trip, Vehicle Not Found or Verification
-  Unavailable).
-- **An E-Tag** opens the **E-Tag receipt** (`/verify/e-tag-receipt`,
+- Both go through Verification processing, so either can end in
+  **Vehicle Not Found** or **Verification Unavailable**, as a typed plate
+  and a haulage tag can.
+- **A QR code** ends in the verification result (Active Trip or No Active
+  Trip).
+- **An E-Tag** ends in the **E-Tag receipt** (`/verify/e-tag-receipt`,
   `features/vehicle/presentation/screens/e_tag_receipt_screen.dart`),
   which says it is not available yet until its design arrives (TODO).
+  Processing shows "E-Tag" until the vehicle is identified, and Vehicle
+  Not Found / Verification Unavailable name it "E-Tag".
 
 The real formats are not published yet; that rule is the one place to
 change (TODO in `features/verification/domain/entities/scanned_qr.dart`).
@@ -967,6 +979,15 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- RFID Multiple tags detected: several JRB tags in range show as vehicles
+  (plates resolved on the device); picking one verifies its tag. The
+  reader now returns every tag in range (`readTags`, `RfidTagRead`), and a
+  haulage tag can carry its resolved plate. A scanned E-Tag now goes
+  through Verification processing too, so every method (plate, QR code,
+  E-Tag, haulage tag) can end in Vehicle Not Found or Verification
+  Unavailable; a found E-Tag opens its receipt. Demo: the third RFID read
+  finds ABC 123 AA and LND 482 XK; scanned codes ending -404 / -503 are
+  not found / unavailable.
 - RFID Reader communication unavailable (the reader stops answering during
   a scan) and Tag Not Part of JRB CHL Architecture (a tag that is not
   JRB's, decided on the device and never sent to CHL; Scan Another Tag).

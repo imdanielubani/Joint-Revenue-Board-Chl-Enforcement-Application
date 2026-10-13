@@ -115,6 +115,9 @@ abstract final class AssetPaths {
   static const String iconRfidCommunicationError =
       '$rfidDir/communication_error.svg';
   static const String iconRfidUnknownTag = '$rfidDir/unknown_tag.svg';
+  static const String iconRfidVehicles = '$rfidDir/vehicles.svg';
+  static const String iconRfidVehicle = '$rfidDir/vehicle_row.svg';
+  static const String iconRfidChevron = '$rfidDir/chevron.svg';
 
   // Verification history
   static const String historyDir = 'assets/icons/history';

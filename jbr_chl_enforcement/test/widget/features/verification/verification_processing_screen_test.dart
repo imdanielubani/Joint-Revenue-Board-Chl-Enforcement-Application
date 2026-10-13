@@ -72,6 +72,12 @@ Future<FakeVerificationRepository> _pump(
         ),
       ),
       GoRoute(
+        path: RoutePaths.eTagReceipt,
+        name: RouteNames.eTagReceipt,
+        builder: (context, state) =>
+            _page('receipt ${(state.extra! as ScannedQr).value}'),
+      ),
+      GoRoute(
         path: RoutePaths.verificationResult,
         name: RouteNames.verificationResult,
         builder: (context, state) => _page(switch (state.extra) {
@@ -194,6 +200,30 @@ void main() {
     repository.emit(VehicleIdentified(_plate));
     await tester.pump();
     expect(find.text('ABC 123 AA'), findsOneWidget);
+  });
+
+  testWidgets('a scanned E-Tag ends in its receipt', (tester) async {
+    final repository = await _pump(
+      tester,
+      QrVerification(ScannedQr.read('ETAG-7781')),
+    );
+    expect(find.text('E-Tag'), findsOneWidget);
+
+    repository.emit(VerificationCompleted(sampleActiveResult(_now)));
+    await tester.pump();
+    await tester.pump(VerificationProcessingScreen.finishedPause);
+    await _settle(tester);
+    expect(find.text('receipt ETAG-7781'), findsOneWidget);
+  });
+
+  testWidgets('a scanned E-Tag can be Vehicle Not Found too', (tester) async {
+    final repository = await _pump(
+      tester,
+      QrVerification(ScannedQr.read('ETAG-7781')),
+    );
+    repository.emit(const NoVehicleFound());
+    await _settle(tester);
+    expect(find.text('not found at null'), findsOneWidget);
   });
 
   testWidgets('no such vehicle opens Vehicle Not Found', (tester) async {

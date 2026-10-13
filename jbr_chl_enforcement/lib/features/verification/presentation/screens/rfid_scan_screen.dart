@@ -15,6 +15,7 @@ import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../data/repositories/verification_repository_impl.dart';
 import '../../domain/entities/haulage_tag.dart';
+import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/unresolved_verification.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
@@ -43,6 +44,9 @@ enum RfidReaderPhase {
   /// A JRB tag was read; not yet a verified vehicle.
   tagDetected,
 
+  /// Several JRB tags were read; the officer picks the vehicle.
+  multipleTags,
+
   /// The tag read is not a JRB haulage tag.
   unknownTag,
 
@@ -69,8 +73,11 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
   /// Counts reader requests, so the answer to a stopped one is ignored.
   int _request = 0;
 
-  /// The tag read, until it is verified.
+  /// The tag read (or picked), until it is verified.
   HaulageTag? _tag;
+
+  /// The JRB tags read, when there were several.
+  List<HaulageTag> _candidates = const [];
 
   StreamSubscription<VerificationProgress>? _verification;
 
@@ -98,18 +105,36 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
     final request = ++_request;
     _show(RfidReaderPhase.scanning);
     try {
-      final tag = HaulageTag(await ref.read(rfidReaderProvider).readTag());
+      final reads = await ref.read(rfidReaderProvider).readTags();
       if (!mounted || request != _request) return;
-      // A tag that is not JRB's is never sent to CHL.
-      _tag = tag.isJrb ? tag : null;
-      _show(
-        tag.isJrb ? RfidReaderPhase.tagDetected : RfidReaderPhase.unknownTag,
-      );
+      // Tags that are not JRB's are never sent to CHL.
+      final tags = [
+        for (final read in reads)
+          HaulageTag(
+            read.reference,
+            plate: read.plate == null
+                ? null
+                : PlateNumber.tryParse(read.plate!),
+          ),
+      ].where((tag) => tag.isJrb).toSet().toList();
+      _candidates = tags.length > 1 ? tags : const [];
+      _tag = tags.length == 1 ? tags.single : null;
+      _show(switch (tags.length) {
+        0 => RfidReaderPhase.unknownTag,
+        1 => RfidReaderPhase.tagDetected,
+        _ => RfidReaderPhase.multipleTags,
+      });
     } on RfidReaderLost {
       if (!mounted || request != _request) return;
       _reportReader(connected: false);
       _show(RfidReaderPhase.communicationError);
     }
+  }
+
+  /// Verifies the vehicle the officer picked from several tags.
+  void _pick(HaulageTag tag) {
+    _tag = tag;
+    _verify();
   }
 
   void _verify() {
@@ -157,10 +182,23 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
     _verification = null;
     _show(switch (_phase) {
       RfidReaderPhase.scanning => RfidReaderPhase.connected,
-      RfidReaderPhase.verifying => RfidReaderPhase.tagDetected,
+      // Back to the choice when the tag was picked from several.
+      RfidReaderPhase.verifying =>
+        _candidates.isEmpty
+            ? RfidReaderPhase.tagDetected
+            : RfidReaderPhase.multipleTags,
       _ => RfidReaderPhase.notChecked,
     });
   }
+
+  /// "two", "three"… for the description.
+  static String _count(int count) => switch (count) {
+    2 => 'two',
+    3 => 'three',
+    4 => 'four',
+    5 => 'five',
+    _ => '$count',
+  };
 
   void _enterPlate() => context.pushReplacementNamed(RouteNames.manualPlate);
 
@@ -191,6 +229,12 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
         'Reader communication unavailable',
         'The reader could not complete the scan. Reconnect and retry, or '
             'verify by plate. No tag or trip finding has been made.',
+      ),
+      RfidReaderPhase.multipleTags => (
+        'Multiple tags detected',
+        'The local resolved response identifies '
+            '${_count(_candidates.length)} vehicles. Select the physical '
+            'vehicle you are inspecting.',
       ),
       RfidReaderPhase.unknownTag => (
         'Tag Not Part of JRB CHL Architecture',
@@ -251,6 +295,10 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
         enterPlate,
         chooseAnotherMethod,
       ],
+      RfidReaderPhase.multipleTags => [
+        _RfidButton.filled('Scan Again', onPressed: _scan),
+        chooseAnotherMethod,
+      ],
       RfidReaderPhase.unknownTag => [
         _RfidButton.filled('Scan Another Tag', onPressed: _scan),
         enterPlate,
@@ -288,7 +336,13 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
                       const SizedBox(height: 24),
                       // The reader sits in the middle of the free space.
                       Expanded(
-                        child: Center(child: _ReaderPanel(phase: _phase)),
+                        child: Center(
+                          child: _ReaderPanel(
+                            phase: _phase,
+                            candidates: _candidates,
+                            onPick: _pick,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 24),
                       for (var i = 0; i < actions.length; i++) ...[
@@ -310,9 +364,17 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
 /// The reader: its icon, "RFID reader" and its status; and a note under it
 /// when it is disconnected or has read a tag.
 class _ReaderPanel extends StatelessWidget {
-  const _ReaderPanel({required this.phase});
+  const _ReaderPanel({
+    required this.phase,
+    required this.candidates,
+    required this.onPick,
+  });
 
   final RfidReaderPhase phase;
+
+  /// The vehicles to pick from, when several tags were read.
+  final List<HaulageTag> candidates;
+  final ValueChanged<HaulageTag> onPick;
 
   @override
   Widget build(BuildContext context) {
@@ -387,6 +449,10 @@ class _ReaderPanel extends StatelessWidget {
       ),
       RfidReaderPhase.unknownTag => (
         AssetPaths.iconRfidUnknownTag,
+        AppColors.greenTint,
+      ),
+      RfidReaderPhase.multipleTags => (
+        AssetPaths.iconRfidVehicles,
         AppColors.greenTint,
       ),
       RfidReaderPhase.scanning => (
@@ -486,7 +552,101 @@ class _ReaderPanel extends StatelessWidget {
                 'references are hidden.',
           ),
         ],
+        if (phase == RfidReaderPhase.multipleTags)
+          for (final tag in candidates) ...[
+            const SizedBox(height: 16),
+            _VehicleChoice(tag: tag, onTap: () => onPick(tag)),
+          ],
       ],
+    );
+  }
+}
+
+/// One vehicle read: its plate as resolved from its tag. Picking it
+/// verifies that tag.
+class _VehicleChoice extends StatelessWidget {
+  const _VehicleChoice({required this.tag, required this.onTap});
+
+  final HaulageTag tag;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final plate = tag.plate;
+    return Semantics(
+      container: true,
+      button: true,
+      label: plate == null
+          ? 'Select vehicle, plate not resolved'
+          : 'Select vehicle ${plate.display}',
+      onTap: onTap,
+      excludeSemantics: true,
+      child: Material(
+        color: AppColors.surface,
+        shape: const RoundedRectangleBorder(
+          side: BorderSide(color: AppColors.rfidCardBorder, width: 1.5),
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 76),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    AssetPaths.iconRfidVehicle,
+                    width: 24,
+                    height: 24,
+                    excludeFromSemantics: true,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plate?.display ?? 'Plate not resolved',
+                          style: const TextStyle(
+                            fontFamily: AppTypography.fontFamily,
+                            fontSize: 14,
+                            fontWeight: AppTypography.bold,
+                            letterSpacing: 0,
+                            color: AppColors.rfidTitle,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          plate == null
+                              ? 'Unresolved haulage tag'
+                              : 'Resolved vehicle plate',
+                          style: const TextStyle(
+                            fontFamily: AppTypography.fontFamily,
+                            fontSize: 12,
+                            fontWeight: AppTypography.regular,
+                            letterSpacing: 0,
+                            height: 19.2 / 12,
+                            color: AppColors.rfidStatusText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SvgPicture.asset(
+                    AssetPaths.iconRfidChevron,
+                    width: 24,
+                    height: 24,
+                    excludeFromSemantics: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

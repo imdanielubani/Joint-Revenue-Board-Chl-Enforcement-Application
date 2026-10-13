@@ -72,8 +72,8 @@ class QrScanCopy {
 /// Full-screen QR scanner, opened by Scan E-Tag QR code on Verify CHL
 /// Trip. It reads both a CHL QR code and a JRB E-Tag: the live camera in a
 /// framed guide, and a shutter button that takes the code in view on
-/// ([ScannedQr.read] tells the two apart): a QR code to verification, an
-/// E-Tag to its receipt. Scan with no code in view says "No QR
+/// to verification ([ScannedQr.read] tells the two apart): a QR code ends
+/// in the verification result, an E-Tag in its receipt. Scan with no code in view says "No QR
 /// code detected"; a code that cannot be decoded says it is unreadable;
 /// both offer Retry Scanning. Without camera access it explains how to
 /// restore it. Enter plate instead is always offered.
@@ -142,16 +142,13 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
 
     if (inView && latest.isReadable) {
       _done = true;
-      final code = ScannedQr.read(latest.value!);
-      switch (code.kind) {
-        case ScannedQrKind.qrCode:
-          context.pushReplacementNamed(
-            RouteNames.verificationProcessing,
-            extra: QrVerification(code),
-          );
-        case ScannedQrKind.eTag:
-          context.pushReplacementNamed(RouteNames.eTagReceipt, extra: code);
-      }
+      // Both are looked up with CHL: a QR code ends in the verification
+      // result, an E-Tag in its receipt; either can be Vehicle Not Found
+      // or Verification Unavailable.
+      context.pushReplacementNamed(
+        RouteNames.verificationProcessing,
+        extra: QrVerification(ScannedQr.read(latest.value!)),
+      );
       return;
     }
     setState(

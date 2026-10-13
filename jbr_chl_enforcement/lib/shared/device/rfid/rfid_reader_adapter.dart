@@ -8,9 +8,20 @@ abstract class RfidReader {
   /// be reached is not connected.
   Future<bool> detect();
 
-  /// Waits for a tag to come into range and returns what was read from it.
-  /// Throws [RfidReaderLost] when the reader stops answering.
-  Future<String> readTag();
+  /// Waits for tags to come into range and returns every one read (at
+  /// least one). Throws [RfidReaderLost] when the reader stops answering.
+  Future<List<RfidTagRead>> readTags();
+}
+
+/// A tag the reader read: its reference and, when the tag carries one, the
+/// vehicle plate stored on it.
+class RfidTagRead {
+  const RfidTagRead(this.reference, {this.plate});
+
+  final String reference;
+
+  /// The plate as stored on the tag, unchecked.
+  final String? plate;
 }
 
 /// The reader stopped answering while reading.
@@ -37,14 +48,15 @@ class DeviceRfidReader implements RfidReader {
   Future<bool> detect() async => false;
 
   @override
-  Future<String> readTag() async => throw const RfidReaderLost();
+  Future<List<RfidTagRead>> readTags() async => throw const RfidReaderLost();
 }
 
 /// A sample reader that takes a moment to answer, as a real one would, and
 /// shows every outcome in turn: the first detection finds nothing (as if
 /// the cable were loose) and every later one finds the reader; the first
-/// read finds a tag that is not JRB's, the second loses the reader, and
-/// every later one finds ABC 123 AA's tag.
+/// read finds a tag that is not JRB's, the second loses the reader, the
+/// third finds two vehicles' tags (ABC 123 AA and LND 482 XK), and every
+/// later one finds ABC 123 AA's tag.
 class DemoRfidReader implements RfidReader {
   DemoRfidReader({this.delay = const Duration(seconds: 2)});
 
@@ -53,6 +65,9 @@ class DemoRfidReader implements RfidReader {
 
   /// ABC 123 AA's JRB tag.
   static const String tag = 'E2000017221101441890ABC1';
+
+  /// LND 482 XK's JRB tag.
+  static const String otherTag = 'E2000017221101441890D482';
 
   /// A tag that is not JRB's (a retail EPC).
   static const String foreignTag = '3034257BF7194E4000000001';
@@ -67,12 +82,14 @@ class DemoRfidReader implements RfidReader {
   }
 
   @override
-  Future<String> readTag() async {
+  Future<List<RfidTagRead>> readTags() async {
     await Future<void>.delayed(delay);
+    const abc = RfidTagRead(tag, plate: 'ABC123AA');
     return switch (_reads++) {
-      0 => foreignTag,
+      0 => const [RfidTagRead(foreignTag)],
       1 => throw const RfidReaderLost(),
-      _ => tag,
+      2 => const [abc, RfidTagRead(otherTag, plate: 'LND482XK')],
+      _ => const [abc],
     };
   }
 }

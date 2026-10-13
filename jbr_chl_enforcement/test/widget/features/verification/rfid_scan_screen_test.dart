@@ -29,7 +29,7 @@ Widget _page(String label) => Scaffold(body: Center(child: Text(label)));
 /// A reader whose every detection and read waits to be answered.
 class _FakeReader implements RfidReader {
   final List<Completer<bool>> detections = [];
-  final List<Completer<String>> reads = [];
+  final List<Completer<List<RfidTagRead>>> reads = [];
 
   @override
   Future<bool> detect() {
@@ -39,15 +39,18 @@ class _FakeReader implements RfidReader {
   }
 
   @override
-  Future<String> readTag() {
-    final read = Completer<String>();
+  Future<List<RfidTagRead>> readTags() {
+    final read = Completer<List<RfidTagRead>>();
     reads.add(read);
     return read.future;
   }
 
   void answer({required bool connected}) => detections.last.complete(connected);
 
-  void read(String reference) => reads.last.complete(reference);
+  void read(String reference, {String? plate}) =>
+      reads.last.complete([RfidTagRead(reference, plate: plate)]);
+
+  void readMany(List<RfidTagRead> tags) => reads.last.complete(tags);
 
   void lose() => reads.last.completeError(const RfidReaderLost());
 }
@@ -410,6 +413,122 @@ void main() {
     });
   });
 
+  group('multiple tags', () {
+    Future<void> readTwo(WidgetTester tester, _Harness harness) async {
+      await _connect(tester, harness);
+      await tester.tap(find.text('Start Scanning'));
+      await tester.pump();
+      harness.reader.readMany(const [
+        RfidTagRead('E2000017221101441890ABC1', plate: 'ABC123AA'),
+        RfidTagRead('E2000017221101441890D482', plate: 'LND482XK'),
+        // Not JRB's: left out.
+        RfidTagRead('3034257BF7194E4000000001'),
+      ]);
+      await _settle(tester);
+    }
+
+    testWidgets('as designed', (tester) async {
+      final harness = await _pump(tester);
+      await readTwo(tester, harness);
+
+      expect(find.text('Multiple tags detected'), findsOneWidget);
+      expect(
+        find.text(
+          'The local resolved response identifies two vehicles. Select the '
+          'physical vehicle you are inspecting.',
+        ),
+        findsOneWidget,
+      );
+      expect(_reader('Connected'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Select vehicle ABC 123 AA'),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel('Select vehicle LND 482 XK'),
+        findsOneWidget,
+      );
+      expect(find.text('Resolved vehicle plate'), findsNWidgets(2));
+      await tester.ensureVisible(find.text('Choose Another Method'));
+      await tester.pumpAndSettle();
+      expect(_button('Scan Again'), findsOneWidget);
+      expect(_button('Choose Another Method'), findsOneWidget);
+      expect(harness.verifications.requests, isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('picking a vehicle verifies its tag', (tester) async {
+      final harness = await _pump(tester);
+      await readTwo(tester, harness);
+
+      await tester.tap(find.text('LND 482 XK'));
+      await tester.pump();
+      expect(_reader('Connected'), findsOneWidget);
+      expect(_button('Stop'), findsOneWidget);
+      final request = harness.verifications.requests.single as TagVerification;
+      expect(request.tag.reference, 'E2000017221101441890D482');
+      expect(request.plate, PlateNumber.tryParse('LND482XK'));
+
+      // Stop goes back to the choice.
+      await tester.tap(find.text('Stop'));
+      await tester.pump();
+      expect(find.text('Multiple tags detected'), findsOneWidget);
+
+      tester.semantics.tap(find.semantics.byLabel('Select vehicle ABC 123 AA'));
+      await tester.pump();
+      harness.verifications.emit(
+        VerificationCompleted(sampleActiveResult(_now)),
+      );
+      await _settle(tester);
+      expect(find.text('result for ABC 123 AA'), findsOneWidget);
+    });
+
+    testWidgets('Scan Again reads again', (tester) async {
+      final harness = await _pump(tester);
+      await readTwo(tester, harness);
+
+      await tester.ensureVisible(find.text('Scan Again'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Scan Again'));
+      await tester.pump();
+      expect(find.text('Scanning for haulage tag'), findsOneWidget);
+      harness.reader.read('E2000017221101441890ABC1', plate: 'ABC123AA');
+      await _settle(tester);
+      expect(find.text('Haulage tag detected'), findsOneWidget);
+    });
+
+    testWidgets('a tag without a plate still shows', (tester) async {
+      final harness = await _pump(tester);
+      await _connect(tester, harness);
+      await tester.tap(find.text('Start Scanning'));
+      await tester.pump();
+      harness.reader.readMany(const [
+        RfidTagRead('E2000017221101441890ABC1', plate: 'ABC123AA'),
+        RfidTagRead('E2000017221101441890D482'),
+      ]);
+      await _settle(tester);
+
+      expect(
+        find.bySemanticsLabel('Select vehicle, plate not resolved'),
+        findsOneWidget,
+      );
+      expect(find.text('Unresolved haulage tag'), findsOneWidget);
+    });
+
+    testWidgets('the same tag read twice is one vehicle', (tester) async {
+      final harness = await _pump(tester);
+      await _connect(tester, harness);
+      await tester.tap(find.text('Start Scanning'));
+      await tester.pump();
+      harness.reader.readMany(const [
+        RfidTagRead('E2000017221101441890ABC1', plate: 'ABC123AA'),
+        RfidTagRead('E2000017221101441890ABC1', plate: 'ABC123AA'),
+      ]);
+      await _settle(tester);
+      expect(find.text('Haulage tag detected'), findsOneWidget);
+    });
+  });
+
   group('verifying the tag', () {
     testWidgets('verifying, then the verification result', (tester) async {
       final harness = await _pump(tester);
@@ -531,19 +650,31 @@ void main() {
       expect(await demo.detect(), isTrue);
     });
 
-    test('reads a foreign tag, then loses the reader, then ABC 123 AA’s '
-        'tag', () async {
+    test('reads a foreign tag, loses the reader, two vehicles, then ABC 123 '
+        'AA’s tag', () async {
       final demo = DemoRfidReader(delay: Duration.zero);
-      expect(await demo.readTag(), DemoRfidReader.foreignTag);
-      await expectLater(demo.readTag(), throwsA(isA<RfidReaderLost>()));
-      expect(await demo.readTag(), DemoRfidReader.tag);
-      expect(await demo.readTag(), DemoRfidReader.tag);
+      List<String> references(List<RfidTagRead> reads) => [
+        for (final read in reads) read.reference,
+      ];
+      expect(references(await demo.readTags()), [DemoRfidReader.foreignTag]);
+      await expectLater(demo.readTags(), throwsA(isA<RfidReaderLost>()));
+      final several = await demo.readTags();
+      expect(references(several), [
+        DemoRfidReader.tag,
+        DemoRfidReader.otherTag,
+      ]);
+      expect(
+        [for (final read in several) read.plate],
+        ['ABC123AA', 'LND482XK'],
+      );
+      expect(references(await demo.readTags()), [DemoRfidReader.tag]);
+      expect(references(await demo.readTags()), [DemoRfidReader.tag]);
     });
 
     test('without the reader SDK, no reader is found', () async {
       const device = DeviceRfidReader();
       expect(await device.detect(), isFalse);
-      await expectLater(device.readTag(), throwsA(isA<RfidReaderLost>()));
+      await expectLater(device.readTags(), throwsA(isA<RfidReaderLost>()));
     });
 
     test('a read tag never shows its reference', () {

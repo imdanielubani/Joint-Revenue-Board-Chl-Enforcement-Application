@@ -4,9 +4,9 @@ import 'haulage_tag.dart';
 import 'plate_number.dart';
 import 'scanned_qr.dart';
 
-/// What the officer asked to verify: a plate they entered, a CHL QR code
-/// they scanned, or a haulage tag the RFID reader read. (A scanned E-Tag
-/// QR opens its receipt instead.)
+/// What the officer asked to verify: a plate they entered, a QR code they
+/// scanned (a CHL QR code, or an E-Tag whose receipt then opens), or a
+/// haulage tag the RFID reader read.
 @immutable
 sealed class VerificationRequest {
   const VerificationRequest();
@@ -30,7 +30,7 @@ final class PlateVerification extends VerificationRequest {
   int get hashCode => plate.hashCode;
 }
 
-/// Verify the vehicle a scanned CHL QR code belongs to.
+/// Verify the vehicle a scanned CHL QR code or E-Tag belongs to.
 final class QrVerification extends VerificationRequest {
   const QrVerification(this.code);
 
@@ -54,9 +54,9 @@ final class TagVerification extends VerificationRequest {
 
   final HaulageTag tag;
 
-  /// Not known until the tag is looked up.
+  /// As resolved on the device from the tag, if it was.
   @override
-  PlateNumber? get plate => null;
+  PlateNumber? get plate => tag.plate;
 
   @override
   bool operator ==(Object other) =>

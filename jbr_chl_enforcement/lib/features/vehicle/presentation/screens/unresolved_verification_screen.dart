@@ -13,6 +13,7 @@ import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../../verification/domain/entities/unresolved_verification.dart';
+import '../../../verification/domain/entities/scanned_qr.dart';
 import '../../../verification/domain/entities/verification_request.dart';
 import '../../../verification/presentation/widgets/verification_page.dart';
 import '../../../verification_history/domain/entities/verification_record_details.dart';
@@ -53,6 +54,7 @@ class UnresolvedVerificationScreen extends ConsumerWidget {
   /// How the request was made.
   static String method(VerificationRequest request) => switch (request) {
     PlateVerification() => 'Manual plate',
+    QrVerification(:final code) when code.kind == ScannedQrKind.eTag => 'E-Tag',
     QrVerification() => 'QR code',
     TagVerification() => 'Haulage tag',
   };
@@ -267,6 +269,10 @@ class _RequestPill extends StatelessWidget {
       PlateVerification(:final plate) => (
         plate.display,
         'Plate ${plate.display}',
+      ),
+      QrVerification(:final code) when code.kind == ScannedQrKind.eTag => (
+        'E-Tag',
+        'Scanned E-Tag',
       ),
       QrVerification() => ('QR code', 'Scanned QR code'),
       TagVerification() => ('Haulage tag', 'Haulage tag read by RFID'),

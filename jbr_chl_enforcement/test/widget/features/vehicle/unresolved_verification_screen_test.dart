@@ -207,6 +207,12 @@ void main() {
         ),
         'Haulage tag',
       );
+      expect(
+        UnresolvedVerificationScreen.method(
+          QrVerification(ScannedQr.read('ETAG-7781')),
+        ),
+        'E-Tag',
+      );
     });
   });
 
@@ -315,6 +321,17 @@ void main() {
       await tester.tap(find.text('Enter Plate Instead'));
       await tester.pumpAndSettle();
       expect(find.text('plate page'), findsOneWidget);
+    });
+
+    testWidgets('a scanned E-Tag says so', (tester) async {
+      await _pump(
+        tester,
+        notFound(request: QrVerification(ScannedQr.read('ETAG-7781'))),
+      );
+
+      expect(find.text('E-Tag'), findsOneWidget);
+      expect(_row('Scanned E-Tag'), findsOneWidget);
+      expect(find.text('Enter Plate Instead'), findsOneWidget);
     });
 
     testWidgets('a read haulage tag offers to enter the plate', (tester) async {

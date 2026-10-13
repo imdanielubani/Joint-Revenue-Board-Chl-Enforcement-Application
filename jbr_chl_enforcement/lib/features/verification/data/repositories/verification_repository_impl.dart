@@ -47,8 +47,9 @@ class RemoteVerificationRepository implements VerificationRepository {
 
 /// Sample verifications, each check taking a moment as it would over a
 /// network:
-/// - AAA 000 AA is not a known vehicle;
-/// - AAA 503 AA cannot be verified (CHL does not respond);
+/// - AAA 000 AA, and a scanned code ending "-404", is not a known vehicle;
+/// - AAA 503 AA, and a scanned code ending "-503", cannot be verified (CHL
+///   does not respond);
 /// - LND 482 XK has no active trip (and an invalid E-Tag), and a
 ///   completed last trip;
 /// - any other plate, and a scanned QR code (ABC 123 AA), has an active
@@ -77,13 +78,17 @@ class DemoVerificationRepository implements VerificationRepository {
   Stream<VerificationProgress> verify(VerificationRequest request) async* {
     yield const StageStarted(VerificationStage.identifyingVehicle);
     await Future<void>.delayed(stepDelay);
-    if (request.plate == _unknownPlate) {
+    final code = switch (request) {
+      QrVerification(:final code) => code.value,
+      _ => '',
+    };
+    if (request.plate == _unknownPlate || code.endsWith('-404')) {
       yield const NoVehicleFound(
         location: RecordLocation(latitude: 6.6018, longitude: 3.3515),
       );
       return;
     }
-    if (request.plate == _unavailablePlate) {
+    if (request.plate == _unavailablePlate || code.endsWith('-503')) {
       throw const VerificationFailure('CHL is not responding.');
     }
     final plate = request.plate ?? _qrCodePlate;

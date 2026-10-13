@@ -15,6 +15,7 @@ import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../data/repositories/verification_repository_impl.dart';
 import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/unresolved_verification.dart';
+import '../../domain/entities/scanned_qr.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
 import '../widgets/verification_page.dart';
@@ -110,10 +111,17 @@ class _VerificationProcessingScreenState
         });
         _openResult = Timer(VerificationProcessingScreen.finishedPause, () {
           if (!mounted) return;
-          context.pushReplacementNamed(
-            RouteNames.verificationResult,
-            extra: result,
-          );
+          switch (widget.request) {
+            // A scanned E-Tag opens its receipt rather than the result.
+            case QrVerification(:final code)
+                when code.kind == ScannedQrKind.eTag:
+              context.pushReplacementNamed(RouteNames.eTagReceipt, extra: code);
+            default:
+              context.pushReplacementNamed(
+                RouteNames.verificationResult,
+                extra: result,
+              );
+          }
         });
     }
   }
@@ -130,6 +138,8 @@ class _VerificationProcessingScreenState
       _plate?.display ??
       switch (widget.request) {
         TagVerification() => 'Haulage tag',
+        QrVerification(:final code) when code.kind == ScannedQrKind.eTag =>
+          'E-Tag',
         _ => 'QR code',
       };
 

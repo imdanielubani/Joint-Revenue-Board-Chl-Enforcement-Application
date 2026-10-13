@@ -171,6 +171,36 @@ void main() {
       expect(result.eTagStatus, ETagStatus.missing);
     });
 
+    test('a scanned code ending -404 is not a known vehicle', () async {
+      for (final code in ['JRB-CHL-404', 'ETAG-7781-404']) {
+        final progress = await repository
+            .verify(QrVerification(ScannedQr.read(code)))
+            .toList();
+        expect(progress.last, isA<NoVehicleFound>(), reason: code);
+      }
+    });
+
+    test('a scanned code ending -503 cannot be verified', () {
+      expect(
+        repository.verify(QrVerification(ScannedQr.read('ETAG-7781-503'))),
+        emitsInOrder([
+          isA<StageStarted>(),
+          emitsError(isA<VerificationFailure>()),
+        ]),
+      );
+    });
+
+    test('a tag resolved to LND 482 XK is that vehicle', () async {
+      final progress = await repository
+          .verify(
+            TagVerification(HaulageTag('E2000017', plate: _plate('LND482XK'))),
+          )
+          .toList();
+      final result = (progress.last as VerificationCompleted).result;
+      expect(result.plate, _plate('LND482XK'));
+      expect(result.tripStatus, TripStatus.noActive);
+    });
+
     test('a haulage tag is ABC 123 AA with a valid JRB E-Tag', () async {
       final progress = await repository
           .verify(const TagVerification(HaulageTag('E2000017')))
