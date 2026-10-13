@@ -40,20 +40,25 @@ class DeviceRfidReader implements RfidReader {
   Future<String> readTag() async => throw const RfidReaderLost();
 }
 
-/// A sample reader that takes a moment to answer, as a real one would. The
-/// first detection finds nothing (as if the cable were loose) and every
-/// later one finds the reader, so both outcomes can be tried. Every read
-/// finds ABC 123 AA's tag.
+/// A sample reader that takes a moment to answer, as a real one would, and
+/// shows every outcome in turn: the first detection finds nothing (as if
+/// the cable were loose) and every later one finds the reader; the first
+/// read finds a tag that is not JRB's, the second loses the reader, and
+/// every later one finds ABC 123 AA's tag.
 class DemoRfidReader implements RfidReader {
   DemoRfidReader({this.delay = const Duration(seconds: 2)});
 
   /// How long each detection and read takes.
   final Duration delay;
 
-  /// What a read returns.
+  /// ABC 123 AA's JRB tag.
   static const String tag = 'E2000017221101441890ABC1';
 
+  /// A tag that is not JRB's (a retail EPC).
+  static const String foreignTag = '3034257BF7194E4000000001';
+
   int _detections = 0;
+  int _reads = 0;
 
   @override
   Future<bool> detect() async {
@@ -64,7 +69,11 @@ class DemoRfidReader implements RfidReader {
   @override
   Future<String> readTag() async {
     await Future<void>.delayed(delay);
-    return tag;
+    return switch (_reads++) {
+      0 => foreignTag,
+      1 => throw const RfidReaderLost(),
+      _ => tag,
+    };
   }
 }
 

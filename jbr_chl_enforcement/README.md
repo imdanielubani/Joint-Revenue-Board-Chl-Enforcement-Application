@@ -476,8 +476,15 @@ and verifies it like a plate, ending in the usual verification result.
 - **Reader detected:** green "Connected"; Start Scanning and Choose
   Another Method.
 - **Scanning for haulage tag:** the ring turns round the reader while it
-  waits for a tag; Stop returns to Reader detected. A reader that stops
-  answering reads as RFID Reader Disconnected.
+  waits for a tag; Stop returns to Reader detected.
+- **Reader communication unavailable:** the reader stopped answering during
+  the scan ("Communication error", red); no tag or trip finding is made.
+  Detect Reader Again (red), Enter Plate Instead, Choose Another Method.
+- **Tag Not Part of JRB CHL Architecture:** the tag read is not a JRB
+  haulage tag (`HaulageTag.isJrb`: 24 hexadecimal characters starting
+  "E2"; `TODO(api)` to confirm the format). It is decided on the device
+  and nothing is sent to CHL. Scan Another Tag, Enter Plate Instead,
+  Choose Another Method.
 - **Haulage tag detected:** a green tick and the note that a detected tag
   is not yet a verified vehicle; the raw tag reference is never shown
   (`HaulageTag.toString` hides it too). Verify Detected Tag.
@@ -503,9 +510,10 @@ and verifies it like a plate, ending in the usual verification result.
   Connected once a reader is found. `DeviceRfidReader` finds no reader
   until the approved reader's SDK is chosen (`TODO(rfid)`). In demo mode
   `DemoRfidReader` takes 2 seconds per step; the first detection finds
-  nothing (Disconnected) and every later one finds the reader, and every
-  read finds ABC 123 AA's tag, which verifies as the active trip with a
-  valid JRB E-Tag.
+  nothing (Disconnected) and every later one finds the reader; the first
+  read finds a tag that is not JRB's, the second loses the reader
+  (communication unavailable), and every later one finds ABC 123 AA's
+  tag, which verifies as the active trip with a valid JRB E-Tag.
 
 ### QR scanner
 
@@ -959,6 +967,10 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- RFID Reader communication unavailable (the reader stops answering during
+  a scan) and Tag Not Part of JRB CHL Architecture (a tag that is not
+  JRB's, decided on the device and never sent to CHL; Scan Another Tag).
+  Demo: the first read is a foreign tag, the second loses the reader.
 - RFID haulage tag reading and verification: Scanning for haulage tag
   (Stop), Haulage tag detected (Verify Detected Tag; the raw tag reference
   is hidden) and verifying, then the usual verification result. A read tag

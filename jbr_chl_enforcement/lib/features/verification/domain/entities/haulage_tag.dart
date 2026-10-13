@@ -10,6 +10,15 @@ class HaulageTag {
   /// What the reader read from the tag.
   final String reference;
 
+  /// A JRB haulage tag's reference: 24 hexadecimal characters starting
+  /// "E2" (an EPC-96 code). Any other tag is not part of the JRB CHL
+  /// architecture, which is decided here, before anything is sent to CHL.
+  // TODO(api): confirm the JRB tag format once JRB publishes it.
+  static final RegExp _jrb = RegExp(r'^E2[0-9A-F]{22}$', caseSensitive: false);
+
+  /// Whether this is a JRB haulage tag.
+  bool get isJrb => _jrb.hasMatch(reference.trim());
+
   @override
   bool operator ==(Object other) =>
       other is HaulageTag && other.reference == reference;

@@ -112,6 +112,9 @@ abstract final class AssetPaths {
   static const String iconRfidTagDetected = '$rfidDir/tag_detected.svg';
   static const String iconRfidInfo = '$rfidDir/info.svg';
   static const String iconRfidVerifying = '$rfidDir/verifying.svg';
+  static const String iconRfidCommunicationError =
+      '$rfidDir/communication_error.svg';
+  static const String iconRfidUnknownTag = '$rfidDir/unknown_tag.svg';
 
   // Verification history
   static const String historyDir = 'assets/icons/history';

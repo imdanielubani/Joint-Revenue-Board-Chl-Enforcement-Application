@@ -31,14 +31,20 @@ enum RfidReaderPhase {
   /// Found: the haulage tag can be read.
   connected,
 
-  /// Not found, or lost.
+  /// Not found.
   disconnected,
+
+  /// The reader stopped answering during a scan; nothing was concluded.
+  communicationError,
 
   /// Waiting for a haulage tag to come into range.
   scanning,
 
-  /// A tag was read; not yet a verified vehicle.
+  /// A JRB tag was read; not yet a verified vehicle.
   tagDetected,
+
+  /// The tag read is not a JRB haulage tag.
+  unknownTag,
 
   /// Verifying the tag with CHL.
   verifying,
@@ -47,8 +53,9 @@ enum RfidReaderPhase {
 /// "RFID verification" (Haulage tag on Verify CHL Trip): detects the RFID
 /// reader connected to the device, reads a haulage tag, and verifies it
 /// like a plate, ending in the verification result. Stop abandons a
-/// detection, scan or verification. When no reader is found, or it is
-/// lost, it says so and offers to detect again or continue by plate.
+/// detection, scan or verification. When no reader is found, or it stops
+/// answering, it says so and offers to detect again or continue by plate;
+/// a tag that is not JRB's is not verified at all.
 class RfidScanScreen extends ConsumerStatefulWidget {
   const RfidScanScreen({super.key});
 
@@ -91,14 +98,17 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
     final request = ++_request;
     _show(RfidReaderPhase.scanning);
     try {
-      final reference = await ref.read(rfidReaderProvider).readTag();
+      final tag = HaulageTag(await ref.read(rfidReaderProvider).readTag());
       if (!mounted || request != _request) return;
-      _tag = HaulageTag(reference);
-      _show(RfidReaderPhase.tagDetected);
+      // A tag that is not JRB's is never sent to CHL.
+      _tag = tag.isJrb ? tag : null;
+      _show(
+        tag.isJrb ? RfidReaderPhase.tagDetected : RfidReaderPhase.unknownTag,
+      );
     } on RfidReaderLost {
       if (!mounted || request != _request) return;
       _reportReader(connected: false);
-      _show(RfidReaderPhase.disconnected);
+      _show(RfidReaderPhase.communicationError);
     }
   }
 
@@ -177,6 +187,16 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
         'Check the cable or approved reader connection, then detect the '
             'reader again. You can continue by plate number.',
       ),
+      RfidReaderPhase.communicationError => (
+        'Reader communication unavailable',
+        'The reader could not complete the scan. Reconnect and retry, or '
+            'verify by plate. No tag or trip finding has been made.',
+      ),
+      RfidReaderPhase.unknownTag => (
+        'Tag Not Part of JRB CHL Architecture',
+        'This local confirmed response identifies an unknown tag. Vehicle '
+            'identity and CHL trip status remain unconfirmed.',
+      ),
       RfidReaderPhase.scanning => (
         'Scanning for haulage tag',
         'Hold the reader near the physical E-Tag. Keep other vehicle tags '
@@ -222,12 +242,17 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
         _RfidButton.filled('Verify Detected Tag', onPressed: _verify),
         chooseAnotherMethod,
       ],
-      RfidReaderPhase.disconnected => [
+      RfidReaderPhase.disconnected || RfidReaderPhase.communicationError => [
         _RfidButton.filled(
           'Detect Reader Again',
           color: AppColors.rfidDanger,
           onPressed: _detect,
         ),
+        enterPlate,
+        chooseAnotherMethod,
+      ],
+      RfidReaderPhase.unknownTag => [
+        _RfidButton.filled('Scan Another Tag', onPressed: _scan),
         enterPlate,
         chooseAnotherMethod,
       ],
@@ -345,12 +370,24 @@ class _ReaderPanel extends StatelessWidget {
         AppColors.rfidDisconnected,
         'Disconnected',
       ),
+      RfidReaderPhase.communicationError => (
+        AppColors.rfidDisconnected,
+        'Communication error',
+      ),
       _ => (AppColors.rfidConnected, 'Connected'),
     };
     final (String icon, Color disc) = switch (phase) {
       RfidReaderPhase.disconnected => (
         AssetPaths.iconRfidReaderDisconnected,
         AppColors.rfidDangerTint,
+      ),
+      RfidReaderPhase.communicationError => (
+        AssetPaths.iconRfidCommunicationError,
+        AppColors.rfidDangerTint,
+      ),
+      RfidReaderPhase.unknownTag => (
+        AssetPaths.iconRfidUnknownTag,
+        AppColors.greenTint,
       ),
       RfidReaderPhase.scanning => (
         AssetPaths.iconRfidReader,

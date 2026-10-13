@@ -345,7 +345,7 @@ void main() {
       expect(find.text('Reader detected'), findsOneWidget);
     });
 
-    testWidgets('a reader lost while scanning reads as disconnected', (
+    testWidgets('a reader lost while scanning: communication unavailable', (
       tester,
     ) async {
       final harness = await _pump(tester);
@@ -355,8 +355,58 @@ void main() {
 
       harness.reader.lose();
       await _settle(tester);
-      expect(find.text('RFID Reader Disconnected'), findsOneWidget);
+      expect(find.text('Reader communication unavailable'), findsOneWidget);
+      expect(
+        find.text(
+          'The reader could not complete the scan. Reconnect and retry, or '
+          'verify by plate. No tag or trip finding has been made.',
+        ),
+        findsOneWidget,
+      );
+      expect(_reader('Communication error'), findsOneWidget);
+      expect(_button('Detect Reader Again'), findsOneWidget);
+      expect(_button('Enter Plate Instead'), findsOneWidget);
+      expect(_button('Choose Another Method'), findsOneWidget);
       expect(harness.connected, isFalse);
+
+      await tester.tap(find.text('Detect Reader Again'));
+      await tester.pump();
+      expect(_reader('Detecting'), findsOneWidget);
+      harness.reader.answer(connected: true);
+      await _settle(tester);
+      expect(find.text('Reader detected'), findsOneWidget);
+    });
+
+    testWidgets('a tag that is not JRB’s is not verified', (tester) async {
+      final harness = await _pump(tester);
+      await _connect(tester, harness);
+      await tester.tap(find.text('Start Scanning'));
+      await tester.pump();
+
+      harness.reader.read('3034257BF7194E4000000001');
+      await _settle(tester);
+      expect(find.text('Tag Not Part of JRB CHL Architecture'), findsOneWidget);
+      expect(
+        find.text(
+          'This local confirmed response identifies an unknown tag. Vehicle '
+          'identity and CHL trip status remain unconfirmed.',
+        ),
+        findsOneWidget,
+      );
+      expect(_reader('Connected'), findsOneWidget);
+      expect(_button('Scan Another Tag'), findsOneWidget);
+      expect(_button('Enter Plate Instead'), findsOneWidget);
+      expect(_button('Choose Another Method'), findsOneWidget);
+      // Nothing is sent to CHL, and the raw reference stays hidden.
+      expect(harness.verifications.requests, isEmpty);
+      expect(find.textContaining('3034257B'), findsNothing);
+
+      await tester.tap(find.text('Scan Another Tag'));
+      await tester.pump();
+      expect(find.text('Scanning for haulage tag'), findsOneWidget);
+      harness.reader.read('E2000017221101441890ABC1');
+      await _settle(tester);
+      expect(_button('Verify Detected Tag'), findsOneWidget);
     });
   });
 
@@ -481,8 +531,12 @@ void main() {
       expect(await demo.detect(), isTrue);
     });
 
-    test('reads ABC 123 AA’s tag', () async {
+    test('reads a foreign tag, then loses the reader, then ABC 123 AA’s '
+        'tag', () async {
       final demo = DemoRfidReader(delay: Duration.zero);
+      expect(await demo.readTag(), DemoRfidReader.foreignTag);
+      await expectLater(demo.readTag(), throwsA(isA<RfidReaderLost>()));
+      expect(await demo.readTag(), DemoRfidReader.tag);
       expect(await demo.readTag(), DemoRfidReader.tag);
     });
 
@@ -494,6 +548,24 @@ void main() {
 
     test('a read tag never shows its reference', () {
       expect(const HaulageTag('E2000017').toString(), 'HaulageTag');
+    });
+
+    test('JRB tags', () {
+      for (final reference in [
+        DemoRfidReader.tag,
+        'e2000017221101441890abc1',
+        ' E2000017221101441890ABC1 ',
+      ]) {
+        expect(HaulageTag(reference).isJrb, isTrue, reason: reference);
+      }
+      for (final reference in [
+        DemoRfidReader.foreignTag,
+        'E2000017',
+        'E2000017221101441890ABCG',
+        '',
+      ]) {
+        expect(HaulageTag(reference).isJrb, isFalse, reason: reference);
+      }
     });
   });
 
@@ -541,6 +613,38 @@ void main() {
 
         await tap('Verify Detected Tag');
         await visible('Stop');
+      });
+
+      testWidgets('the scan errors on a $name', (tester) async {
+        final harness = await _pump(tester, size: size, textScale: scale);
+        await tester.ensureVisible(find.text('Detect Reader'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Detect Reader'));
+        await tester.pump();
+        harness.reader.answer(connected: true);
+        await _settle(tester);
+
+        await tester.ensureVisible(find.text('Start Scanning'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Start Scanning'));
+        await tester.pump();
+        harness.reader.read('3034257BF7194E4000000001');
+        await _settle(tester);
+        expect(tester.takeException(), isNull);
+        await tester.ensureVisible(find.text('Choose Another Method'));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(_button('Choose Another Method'), findsOneWidget);
+
+        await tester.ensureVisible(find.text('Scan Another Tag'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Scan Another Tag'));
+        await tester.pump();
+        harness.reader.lose();
+        await _settle(tester);
+        expect(tester.takeException(), isNull);
+        await tester.ensureVisible(find.text('Choose Another Method'));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(_button('Choose Another Method'), findsOneWidget);
       });
     }
   });
