@@ -15,7 +15,6 @@ abstract final class RouteNames {
   // Full-screen pages opened from the tabs.
   static const String sos = 'sos';
   static const String verifyTrip = 'verify-trip';
-  static const String verifyETag = 'verify-e-tag';
   static const String accountDetails = 'account-details';
   static const String settings = 'settings';
   static const String changePassword = 'change-password';
@@ -41,7 +40,6 @@ abstract final class RoutePaths {
   static const String profile = '/profile';
   static const String sos = '/sos';
   static const String verifyTrip = '/verify';
-  static const String verifyETag = '/verify-e-tag';
   static const String accountDetails = '/account';
   static const String settings = '/settings';
   static const String changePassword = '/settings/password';

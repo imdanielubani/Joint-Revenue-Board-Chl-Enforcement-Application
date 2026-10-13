@@ -92,8 +92,7 @@ flutter run --dart-define=AUTH_DEMO=true
 ```
 Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                     (skipped when      │         ├─ Dashboard ──► SOS
-                     nothing pending)  │         │             ├─► Verify CHL Trip ──► manual plate, E-Tag QR, haulage tag
-                                       │         │             └─► Verify E-Tag ─────► RFID, QR
+                     nothing pending)  │         │             └─► Verify CHL Trip ──► manual plate, QR scanner (receipt or E-Tag), haulage tag
                                        │         ├─ History ──► Verification record
                                        │         ├─ Notifications ──► Notification details
                                        │         └─ Profile ──► Account details
@@ -219,7 +218,6 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Session expired | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in after a session expires. Shows "Queued work is safe" when offline actions are waiting (`pendingSyncCountProvider`). |
 | Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | See below. |
 | Verify CHL Trip | `features/verification/presentation/screens/verification_hub_screen.dart` | "Choose verification method": Enter plate manually, Scan E-Tag QR code, Haulage tag (RFID reader). The header bell shows unread notifications and opens the Notification tab. The design has no OCR option, so nothing opens the OCR page now (its route is kept). |
-| Verify E-Tag | `features/verification/presentation/screens/verify_e_tag_screen.dart` | Read RFID tag or Scan E-Tag QR code. |
 | Manual plate entry | `features/verification/presentation/screens/manual_plate_entry_screen.dart` | See below. |
 | Profile ("My Account") | `features/profile/presentation/screens/profile_screen.dart` | See below. |
 | Account details | `features/profile/presentation/screens/account_details_screen.dart` | See below. |
@@ -238,8 +236,8 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 - **Officer card:** initials (`Officer.initials`), name, and region · role
   from the signed-in officer.
 - **Action:** one full-width Verify CHL Trip button. E-Tags are verified
-  from the page it opens ("Scan E-Tag QR code"); the separate Verify E-Tag
-  page has no button on the dashboard any more.
+  from the page it opens ("Scan E-Tag QR code"); there is no separate
+  Verify E-Tag page.
 - **Status tiles:** Internet, GPS, RFID reader and Sync. Green "Online" /
   "Connected", red "Offline". Sync is amber: "Synced", or "n queued" when
   `pendingSyncCountProvider` is above 0; red "Offline" when the sync service
@@ -368,11 +366,15 @@ card opens again; an interruption stays until retried.
 
 ### QR scanner
 
-One full-screen scanner for both QR codes the officer reads: the CHL
-haulage receipt (Verify CHL Trip → Scan E-Tag QR code, `/verify/qr`) and
-the JRB E-Tag (Verify E-Tag → Scan E-Tag QR code, `/verify/qr?for=e-tag`).
-The wording follows the target ("Scan CHL receipt QR" / "Scan E-Tag QR",
-"Scan receipt" / "Scan E-Tag"); the layout is the same.
+One full-screen scanner (Verify CHL Trip → Scan E-Tag QR code,
+`/verify/qr`) reads both QR codes the officer meets: the CHL haulage
+receipt and the JRB E-Tag. Its wording is as designed. What was scanned
+decides the result: `ScannedQr.read` takes a code starting "ETAG",
+"E-TAG" or "JRB-ETAG" (any case) as an E-Tag and any other code as a CHL
+receipt, and the result page receives which it is. The real QR formats
+are not published yet; that rule is the one place to change (TODO in
+`features/verification/domain/entities/scanned_qr.dart`). There is no
+separate Verify E-Tag page.
 
 - **Scanning:** the live camera in a rounded frame with white corner
   guides and the amber scan line, the hint under it, the white shutter
@@ -397,7 +399,7 @@ The wording follows the target ("Scan CHL receipt QR" / "Scan E-Tag QR",
   wraps `mobile_scanner` (QR codes only); the page never uses the plugin
   directly, and tests use `FakeQrScanner`. The page shows "Not built yet"
   for the result until its design arrives; it receives the code and
-  whether it is a receipt or an E-Tag.
+  whether it is a receipt or an E-Tag (each will have its own result).
 
 ### Verification history
 
@@ -809,6 +811,10 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- One QR scanner for both CHL receipts and E-Tags: it tells them apart
+  from the code, so each gets its own result. The separate Verify E-Tag
+  page and its route are removed; only Verify CHL Trip exists.
 
 - QR scanner for CHL receipts and E-Tags: live camera with frame and
   guides, shutter that continues to verification, "No QR code detected",

@@ -21,7 +21,7 @@ import '../widgets/qr_scanner_overlay.dart';
 /// Why a scan did not go through.
 enum _ScanProblem { notDetected, unreadable }
 
-/// The words for each [QrScanTarget].
+/// The scanner's words, as designed.
 class QrScanCopy {
   const QrScanCopy._({
     required this.context,
@@ -35,35 +35,19 @@ class QrScanCopy {
     required this.unreadable,
   });
 
-  static QrScanCopy of(QrScanTarget target) => switch (target) {
-    QrScanTarget.receipt => const QrScanCopy._(
-      context: 'CHL receipt verification',
-      title: 'Scan CHL receipt QR',
-      instruction: 'Point your camera at the QR code on the CHL receipt.',
-      hint: 'Keep the receipt steady and fit the entire QR inside the guide.',
-      scanLabel: 'Scan receipt',
-      scanSemantics: 'Scan receipt QR and continue to verification',
-      closeSemantics: 'Close receipt QR scanner',
-      notDetected:
-          'No QR code detected. Keep the complete receipt QR inside the '
-          'frame.',
-      unreadable:
-          'Unable to read this receipt QR. Improve lighting and try again.',
-    ),
-    QrScanTarget.eTag => const QrScanCopy._(
-      context: 'E-Tag verification',
-      title: 'Scan E-Tag QR',
-      instruction: 'Point your camera at the QR code on the JRB E-Tag.',
-      hint: 'Keep the E-Tag steady and fit the entire QR inside the guide.',
-      scanLabel: 'Scan E-Tag',
-      scanSemantics: 'Scan E-Tag QR and continue to verification',
-      closeSemantics: 'Close E-Tag QR scanner',
-      notDetected:
-          'No QR code detected. Keep the complete E-Tag QR inside the frame.',
-      unreadable:
-          'Unable to read this E-Tag QR. Improve lighting and try again.',
-    ),
-  };
+  static const QrScanCopy scanner = QrScanCopy._(
+    context: 'CHL receipt verification',
+    title: 'Scan CHL receipt QR',
+    instruction: 'Point your camera at the QR code on the CHL receipt.',
+    hint: 'Keep the receipt steady and fit the entire QR inside the guide.',
+    scanLabel: 'Scan receipt',
+    scanSemantics: 'Scan receipt QR and continue to verification',
+    closeSemantics: 'Close receipt QR scanner',
+    notDetected:
+        'No QR code detected. Keep the complete receipt QR inside the frame.',
+    unreadable:
+        'Unable to read this receipt QR. Improve lighting and try again.',
+  );
 
   /// Small line in the header.
   final String context;
@@ -84,16 +68,15 @@ class QrScanCopy {
   final String unreadable;
 }
 
-/// Full-screen QR scanner for a CHL receipt or a JRB E-Tag ([target]):
-/// the live camera in a framed guide, and a shutter button that takes the
-/// code in view on to verification. Scan with no code in view says "No QR
+/// Full-screen QR scanner, opened by Scan E-Tag QR code on Verify CHL
+/// Trip. It reads both a CHL receipt QR and a JRB E-Tag QR: the live camera
+/// in a framed guide, and a shutter button that takes the code in view on
+/// to its result ([ScannedQr.read] tells the two apart). Scan with no code in view says "No QR
 /// code detected"; a code that cannot be decoded says it is unreadable;
 /// both offer Retry Scanning. Without camera access it explains how to
 /// restore it. Enter plate instead is always offered.
 class QrScanScreen extends ConsumerStatefulWidget {
-  const QrScanScreen({super.key, this.target = QrScanTarget.receipt});
-
-  final QrScanTarget target;
+  const QrScanScreen({super.key});
 
   /// How long a code stays "in view" after the camera last saw it.
   static const Duration recentReading = Duration(milliseconds: 1500);
@@ -114,7 +97,7 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
   /// Set once the page hands the code on, so it is handed on only once.
   bool _done = false;
 
-  QrScanCopy get _copy => QrScanCopy.of(widget.target);
+  QrScanCopy get _copy => QrScanCopy.scanner;
 
   @override
   void initState() {
@@ -159,7 +142,7 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
       _done = true;
       context.pushReplacementNamed(
         RouteNames.verificationResult,
-        extra: ScannedQr(target: widget.target, value: latest.value!.trim()),
+        extra: ScannedQr.read(latest.value!),
       );
       return;
     }

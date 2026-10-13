@@ -29,9 +29,7 @@ GoRouter _router() => GoRouter(
     GoRoute(
       path: RoutePaths.qrScan,
       name: RouteNames.qrScan,
-      builder: (context, state) => QrScanScreen(
-        target: QrScanTarget.fromQuery(state.uri.queryParameters['for']),
-      ),
+      builder: (context, state) => const QrScanScreen(),
     ),
     GoRoute(
       path: RoutePaths.manualPlate,
@@ -43,7 +41,7 @@ GoRouter _router() => GoRouter(
       name: RouteNames.verificationResult,
       builder: (context, state) {
         final scan = state.extra! as ScannedQr;
-        return _page('result ${scan.target.name} ${scan.value}');
+        return _page('result ${scan.kind.name} ${scan.value}');
       },
     ),
   ],
@@ -59,7 +57,6 @@ class _Harness {
 
 Future<_Harness> _pump(
   WidgetTester tester, {
-  bool eTag = false,
   FakeQrScanner? scanner,
   FakePermissionAdapter? permissions,
   Size size = const Size(390, 844),
@@ -92,13 +89,7 @@ Future<_Harness> _pump(
     ),
   );
   await tester.pumpAndSettle();
-  unawaited(
-    router.push(
-      eTag
-          ? '${RoutePaths.qrScan}?for=${QrScanTarget.eTagQuery}'
-          : RoutePaths.qrScan,
-    ),
-  );
+  unawaited(router.push(RoutePaths.qrScan));
   await tester.pumpAndSettle();
   return harness;
 }
@@ -152,19 +143,6 @@ void main() {
     expect(find.bySemanticsLabel('Close receipt QR scanner'), findsOneWidget);
   });
 
-  testWidgets('an E-Tag, worded for the tag', (tester) async {
-    await _pump(tester, eTag: true);
-
-    expect(find.text('E-Tag verification'), findsOneWidget);
-    expect(find.text('Scan E-Tag QR'), findsOneWidget);
-    expect(
-      find.text('Point your camera at the QR code on the JRB E-Tag.'),
-      findsOneWidget,
-    );
-    expect(find.text('Scan E-Tag'), findsOneWidget);
-    expect(find.bySemanticsLabel('Close E-Tag QR scanner'), findsOneWidget);
-  });
-
   testWidgets('Scan with a code in view continues to verification', (
     tester,
   ) async {
@@ -180,14 +158,16 @@ void main() {
     expect(harness.scanner.disposed, isTrue);
   });
 
-  testWidgets('an E-Tag code is handed on as an E-Tag', (tester) async {
-    final harness = await _pump(tester, eTag: true);
+  testWidgets('the same scanner hands an E-Tag code on as an E-Tag', (
+    tester,
+  ) async {
+    final harness = await _pump(tester);
 
-    harness.scanner.see('ETAG-7781');
+    harness.scanner.see('ETAG-7781-0042');
     await tester.pump();
     await _tapShutter(tester);
 
-    expect(find.text('result eTag ETAG-7781'), findsOneWidget);
+    expect(find.text('result eTag ETAG-7781-0042'), findsOneWidget);
   });
 
   testWidgets('Scan with nothing in view: no QR code detected', (tester) async {
@@ -243,7 +223,7 @@ void main() {
   });
 
   testWidgets('a blank code is unreadable too', (tester) async {
-    final harness = await _pump(tester, eTag: true);
+    final harness = await _pump(tester);
 
     harness.scanner.see('   ');
     await tester.pump();
@@ -251,7 +231,7 @@ void main() {
 
     expect(
       find.text(
-        'Unable to read this E-Tag QR. Improve lighting and try again.',
+        'Unable to read this receipt QR. Improve lighting and try again.',
       ),
       findsOneWidget,
     );

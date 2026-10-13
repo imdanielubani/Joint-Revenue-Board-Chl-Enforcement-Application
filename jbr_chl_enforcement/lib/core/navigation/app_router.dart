@@ -23,7 +23,6 @@ import '../../features/verification/presentation/screens/ocr_capture_screen.dart
 import '../../features/verification/presentation/screens/qr_scan_screen.dart';
 import '../../features/verification/presentation/screens/rfid_scan_screen.dart';
 import '../../features/verification/presentation/screens/verification_hub_screen.dart';
-import '../../features/verification/presentation/screens/verify_e_tag_screen.dart';
 import '../../features/verification_history/presentation/screens/history_record_details_screen.dart';
 import '../../features/verification_history/presentation/screens/verification_history_screen.dart';
 import 'main_shell_scaffold.dart';
@@ -128,11 +127,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: RouteNames.verifyTrip,
         builder: (context, state) => const VerificationHubScreen(),
       ),
-      GoRoute(
-        path: RoutePaths.verifyETag,
-        name: RouteNames.verifyETag,
-        builder: (context, state) => const VerifyETagScreen(),
-      ),
       // Verification methods, opened from either verify page.
       GoRoute(
         path: RoutePaths.rfidScan,
@@ -142,9 +136,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.qrScan,
         name: RouteNames.qrScan,
-        builder: (context, state) => QrScanScreen(
-          target: QrScanTarget.fromQuery(state.uri.queryParameters['for']),
-        ),
+        builder: (context, state) => const QrScanScreen(),
       ),
       GoRoute(
         path: RoutePaths.manualPlate,

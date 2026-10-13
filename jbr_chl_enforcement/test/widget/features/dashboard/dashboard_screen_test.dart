@@ -85,7 +85,6 @@ GoRouter _router() => GoRouter(
     for (final (path, name) in [
       (RoutePaths.sos, RouteNames.sos),
       (RoutePaths.verifyTrip, RouteNames.verifyTrip),
-      (RoutePaths.verifyETag, RouteNames.verifyETag),
     ])
       GoRoute(
         path: path,

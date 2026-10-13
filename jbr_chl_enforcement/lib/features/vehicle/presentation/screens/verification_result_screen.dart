@@ -6,8 +6,9 @@ import '../../../../shared/ui/widgets/green_header_scaffold.dart';
 import '../../../verification/domain/entities/plate_number.dart';
 import '../../../verification/domain/entities/scanned_qr.dart';
 
-/// Vehicle and CHL trip result for a verified plate or a scanned receipt or
-/// E-Tag QR code. Placeholder until its design is implemented.
+/// Result for a verified plate, a scanned CHL receipt QR or a scanned
+/// E-Tag QR; a receipt and an E-Tag each have their own result.
+/// Placeholder until its designs are implemented.
 class VerificationResultScreen extends StatelessWidget {
   const VerificationResultScreen({super.key, this.plate, this.scan});
 
@@ -25,9 +26,9 @@ class VerificationResultScreen extends StatelessWidget {
       body: EmptyState(
         title:
             plate?.display ??
-            switch (scan?.target) {
-              QrScanTarget.receipt => 'Receipt QR scanned',
-              QrScanTarget.eTag => 'E-Tag QR scanned',
+            switch (scan?.kind) {
+              ScannedQrKind.receipt => 'Receipt QR scanned',
+              ScannedQrKind.eTag => 'E-Tag QR scanned',
               null => 'Verification result',
             },
         message: notBuiltYetMessage,
