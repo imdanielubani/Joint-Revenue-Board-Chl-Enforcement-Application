@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: LND 482 XK has no active trip; any other plate, and a scanned receipt, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a scanned E-Tag has a valid JRB E-Tag (`DemoVerificationRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -92,7 +92,7 @@ flutter run --dart-define=AUTH_DEMO=true
 ```
 Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                     (skipped when      │         ├─ Dashboard ──► SOS
-                     nothing pending)  │         │             └─► Verify CHL Trip ──► manual plate, QR scanner (receipt or E-Tag), haulage tag
+                     nothing pending)  │         │             └─► Verify CHL Trip ──► manual plate, QR scanner (receipt or E-Tag), haulage tag ──► Verification processing ──► Verification result
                                        │         ├─ History ──► Verification record
                                        │         ├─ Notifications ──► Notification details
                                        │         └─ Profile ──► Account details
@@ -226,7 +226,9 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Notification details | `features/notifications/presentation/screens/notification_details_screen.dart` | See below. |
 | Verification history | `features/verification_history/presentation/screens/verification_history_screen.dart` | See below. |
 | QR scanner | `features/verification/presentation/screens/qr_scan_screen.dart` | See "QR scanner" below. |
-| SOS, RFID and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
+| Verification processing | `features/verification/presentation/screens/verification_processing_screen.dart` | See "Verification processing and result" below. |
+| Verification result | `features/vehicle/presentation/screens/verification_result_screen.dart` | See "Verification processing and result" below. |
+| SOS, RFID and OCR verification | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." |
 
 ### Dashboard
 
@@ -363,6 +365,59 @@ card opens again; an interruption stays until retried.
 - The designs' prototype wording ("local snapshot", "no upload is sent to
   CHL", "Local response walkthrough only.") is replaced with what the app
   really does.
+
+### Verification processing and result
+
+Enter plate (Verify Plate) and the QR scanner (shutter) open **Verification
+processing** (`/verify/processing`, with a `VerificationRequest`: a
+`PlateVerification` or a `QrVerification`).
+
+- **Processing:** "Checking vehicle…", the turning check icon, the plate
+  (for a scanned code, "Receipt QR" / "E-Tag QR" until the vehicle is
+  identified), "Verifying vehicle · Waiting for CHL confirmation", and the
+  three checks in order: Identifying vehicle, Validating E-Tag, Checking
+  CHL trip. The running check spins, finished ones are ticked, the rest
+  wait. When all are done they stay ticked for a moment
+  (`VerificationProcessingScreen.finishedPause`), then the result replaces
+  the page (so back returns to plate entry or the method page). Cancel
+  Verification and the back button abandon the request. If CHL cannot be
+  reached: "Verification unavailable" with the reason, Try again and Cancel
+  Verification (no design; same parts).
+- **Result, active trip** (`/verify/result`, with a `VerificationResult`):
+  the green tick, "Active CHL trip"; vehicle identity, E-Tag validity
+  ("No E-Tag", "Valid JRB E-Tag", "Invalid JRB E-Tag") and CHL trip status;
+  **Current trip**: origin → destination, the illustrative route (A → B;
+  not road geometry), transaction reference, trip start and payment times
+  ("05 Oct 2026, 16:28 GMT+1", in the phone's time zone), plate, vehicle
+  type, transaction type, origin and destination state and LGA, trip
+  status, and the **trip validity countdown**, ticking every second
+  (`secondTickerProvider`) and stopping at "00 h 00 min 00 sec";
+  **Additional trip information** opens to show cargo and payment
+  reference. **Destination check**: destination LGA, enforcement point,
+  completion decision and centrally defined delay; Record location for
+  destination check reads the GPS (`LocationReader`, asking for location
+  permission if needed), shows "Recording Location...", then "Location
+  received" with coordinates, accuracy and time and Location Record
+  Updated (tap to record again). GPS off, permission refused or no fix
+  each say what to do in a toast. **Finish Verification** returns to the
+  dashboard; **Refresh Trip Status** asks CHL again ("Trip status
+  updated.").
+- **Other results** (no active trip) have no design yet and show a
+  placeholder with the plate.
+- **Data:** `VerificationRepository`
+  (`features/verification/domain/repositories/`): `verify` streams
+  `StageStarted`, `VehicleIdentified` and `VerificationCompleted`, and
+  fails with `VerificationFailure`; `refresh`; `recordDestinationLocation`.
+  `RemoteVerificationRepository` says verification is not available until
+  the CHL API exists (TODO in
+  `data/repositories/verification_repository_impl.dart`). Entities:
+  `ChlTrip`, `VerificationResult`, `DestinationCheck`, `RecordedLocation`.
+- **Wording:** the designs mix Poppins and Segoe UI; the app uses Poppins
+  throughout, so a few long values (e.g. "Awaiting central validation")
+  wrap onto a second line. The designs' sample data disagreed (Adamawa →
+  Kano on the route card, Ogun → Lagos below); the demo uses Ogun → Lagos
+  throughout. "cargo" and "payment Reference" are written "Cargo" and
+  "Payment reference".
 
 ### QR scanner
 
@@ -811,6 +866,13 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Verification processing (three checks with spinners and ticks, Cancel
+  Verification, Try again when CHL cannot be reached) and the verification
+  result for an active trip (summary, current trip with route, details and
+  live validity countdown, additional trip information, destination check
+  that records the officer's GPS location, Finish Verification and Refresh
+  Trip Status). Plate entry and the QR scanner now go through processing.
 
 - One QR scanner for both CHL receipts and E-Tags: it tells them apart
   from the code, so each gets its own result. The separate Verify E-Tag

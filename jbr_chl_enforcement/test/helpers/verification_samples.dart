@@ -1,0 +1,45 @@
+import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/chl_trip.dart';
+import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/trip_status.dart';
+import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/e_tag_status.dart';
+import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/plate_number.dart';
+
+/// The active trip in the designs, checked at [now]: ABC 123 AA from
+/// Abeokuta South, Ogun, to Ikeja, Lagos, valid for 4 h 21 min 2 s more.
+VerificationResult sampleActiveResult(
+  DateTime now, {
+  ETagStatus eTag = ETagStatus.missing,
+}) => VerificationResult(
+  plate: PlateNumber.tryParse('ABC123AA')!,
+  vehicleType: 'Heavy goods vehicle',
+  eTagStatus: eTag,
+  tripStatus: TripStatus.active,
+  checkedAt: now,
+  trip: ChlTrip(
+    transactionReference: 'CHL-2026-08142',
+    startedAt: DateTime(2026, 10, 5, 16, 28),
+    paidAt: DateTime(2026, 10, 5, 16, 22),
+    transactionType: 'CHL levy',
+    originState: 'Ogun',
+    originLga: 'Abeokuta South',
+    destinationState: 'Lagos',
+    destinationLga: 'Ikeja',
+    validUntil: now.add(const Duration(hours: 4, minutes: 21, seconds: 2)),
+    cargo: 'General haulage',
+    paymentReference: 'PAY-2026-08142',
+  ),
+  destinationCheck: const DestinationCheck(
+    enforcementPoint: 'Ikeja enforcement point',
+    completionDecision: 'Awaiting central validation',
+    centralDelay: Duration(seconds: 900),
+  ),
+);
+
+/// LND 482 XK, with no active trip.
+VerificationResult sampleNoTripResult(DateTime now) => VerificationResult(
+  plate: PlateNumber.tryParse('LND482XK')!,
+  vehicleType: 'Heavy goods vehicle',
+  eTagStatus: ETagStatus.invalid,
+  tripStatus: TripStatus.noActive,
+  checkedAt: now,
+);

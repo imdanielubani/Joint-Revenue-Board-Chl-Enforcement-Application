@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/navigation/route_names.dart';
 import '../../../../shared/ui/widgets/app_button.dart';
 import '../../domain/entities/plate_number.dart';
+import '../../domain/entities/verification_request.dart';
 import '../widgets/plate_input_field.dart';
 import '../widgets/verification_page.dart';
 
@@ -33,7 +34,10 @@ class _ManualPlateEntryScreenState extends State<ManualPlateEntryScreen> {
     final plate = PlateNumber.tryParse(_controller.text);
     if (plate == null) return;
     FocusScope.of(context).unfocus();
-    context.pushNamed(RouteNames.verificationResult, extra: plate);
+    context.pushNamed(
+      RouteNames.verificationProcessing,
+      extra: PlateVerification(plate),
+    );
   }
 
   /// Below this body height (e.g. a phone in landscape with the keyboard

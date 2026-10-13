@@ -99,6 +99,7 @@ flutter:
     - assets/icons/notifications/
     - assets/icons/history/
     - assets/icons/scanner/
+    - assets/icons/result/
     - assets/animations/
     - assets/sounds/
     - assets/fonts/poppins/OFL.txt

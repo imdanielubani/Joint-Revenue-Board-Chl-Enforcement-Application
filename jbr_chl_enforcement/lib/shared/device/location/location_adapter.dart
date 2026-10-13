@@ -38,3 +38,95 @@ final gpsStatusProvider = StreamProvider<bool>((ref) async* {
     yield await ready(status == ServiceStatus.enabled);
   }
 });
+
+/// A position fix from the device.
+@immutable
+class DeviceLocation {
+  const DeviceLocation({
+    required this.latitude,
+    required this.longitude,
+    required this.accuracyMetres,
+    required this.at,
+  });
+
+  final double latitude;
+  final double longitude;
+
+  /// Radius within which the true position lies, in metres.
+  final double accuracyMetres;
+
+  final DateTime at;
+}
+
+/// Why no position could be read.
+enum LocationProblem {
+  /// The location service (GPS) is switched off.
+  serviceOff,
+
+  /// The officer has not allowed the app to use the location.
+  permissionDenied,
+
+  /// No fix in time, or the platform failed.
+  unavailable,
+}
+
+class LocationUnavailable implements Exception {
+  const LocationUnavailable(this.problem);
+
+  final LocationProblem problem;
+
+  @override
+  String toString() => 'LocationUnavailable: ${problem.name}';
+}
+
+final locationReaderProvider = Provider<LocationReader>(
+  (ref) => GeolocatorLocationReader(ref.watch(permissionAdapterProvider)),
+);
+
+/// Reads the device's current position.
+abstract class LocationReader {
+  /// The current position; throws [LocationUnavailable].
+  Future<DeviceLocation> current();
+}
+
+/// [LocationReader] backed by `geolocator`. Asks for location permission
+/// when it has not been answered yet.
+class GeolocatorLocationReader implements LocationReader {
+  const GeolocatorLocationReader(this._permissions);
+
+  final PermissionAdapter _permissions;
+
+  /// Longest wait for a fix.
+  static const Duration timeLimit = Duration(seconds: 20);
+
+  @override
+  Future<DeviceLocation> current() async {
+    if (!await _permissions.isLocationServiceEnabled()) {
+      throw const LocationUnavailable(LocationProblem.serviceOff);
+    }
+    var status = await _permissions.status(AppPermission.location);
+    if (status == AppPermissionStatus.denied) {
+      status = await _permissions.request(AppPermission.location);
+    }
+    if (status != AppPermissionStatus.granted) {
+      throw const LocationUnavailable(LocationProblem.permissionDenied);
+    }
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: timeLimit,
+        ),
+      );
+      return DeviceLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracyMetres: position.accuracy,
+        at: position.timestamp,
+      );
+    } catch (error) {
+      debugPrint('Reading the location failed: $error');
+      throw const LocationUnavailable(LocationProblem.unavailable);
+    }
+  }
+}

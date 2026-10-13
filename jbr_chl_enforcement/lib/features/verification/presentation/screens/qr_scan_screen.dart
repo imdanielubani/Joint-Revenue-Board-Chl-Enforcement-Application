@@ -16,6 +16,7 @@ import '../../../../core/utils/clock.dart';
 import '../../../../shared/device/permissions/permission_adapter.dart';
 import '../../../../shared/device/scanner/qr_scanner_adapter.dart';
 import '../../domain/entities/scanned_qr.dart';
+import '../../domain/entities/verification_request.dart';
 import '../widgets/qr_scanner_overlay.dart';
 
 /// Why a scan did not go through.
@@ -141,8 +142,8 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
     if (inView && latest.isReadable) {
       _done = true;
       context.pushReplacementNamed(
-        RouteNames.verificationResult,
-        extra: ScannedQr.read(latest.value!),
+        RouteNames.verificationProcessing,
+        extra: QrVerification(ScannedQr.read(latest.value!)),
       );
       return;
     }

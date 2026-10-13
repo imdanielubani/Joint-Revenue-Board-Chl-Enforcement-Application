@@ -16,13 +16,14 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/sos/presentation/screens/sos_screen.dart';
 import '../../features/vehicle/presentation/screens/verification_result_screen.dart';
-import '../../features/verification/domain/entities/plate_number.dart';
-import '../../features/verification/domain/entities/scanned_qr.dart';
+import '../../features/vehicle/domain/entities/verification_result.dart';
+import '../../features/verification/domain/entities/verification_request.dart';
 import '../../features/verification/presentation/screens/manual_plate_entry_screen.dart';
 import '../../features/verification/presentation/screens/ocr_capture_screen.dart';
 import '../../features/verification/presentation/screens/qr_scan_screen.dart';
 import '../../features/verification/presentation/screens/rfid_scan_screen.dart';
 import '../../features/verification/presentation/screens/verification_hub_screen.dart';
+import '../../features/verification/presentation/screens/verification_processing_screen.dart';
 import '../../features/verification_history/presentation/screens/history_record_details_screen.dart';
 import '../../features/verification_history/presentation/screens/verification_history_screen.dart';
 import 'main_shell_scaffold.dart';
@@ -127,7 +128,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: RouteNames.verifyTrip,
         builder: (context, state) => const VerificationHubScreen(),
       ),
-      // Verification methods, opened from either verify page.
+      // Verification methods, opened from Verify CHL Trip.
       GoRoute(
         path: RoutePaths.rfidScan,
         name: RouteNames.rfidScan,
@@ -149,13 +150,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OcrCaptureScreen(),
       ),
       GoRoute(
+        path: RoutePaths.verificationProcessing,
+        name: RouteNames.verificationProcessing,
+        builder: (context, state) => switch (state.extra) {
+          final VerificationRequest request => VerificationProcessingScreen(
+            request: request,
+          ),
+          // Opened without a vehicle (e.g. restored after the app was
+          // closed): nothing to verify, so show the empty result page.
+          _ => const VerificationResultScreen(),
+        },
+      ),
+      GoRoute(
         path: RoutePaths.verificationResult,
         name: RouteNames.verificationResult,
         builder: (context, state) => VerificationResultScreen(
-          plate: state.extra is PlateNumber
-              ? state.extra! as PlateNumber
+          result: state.extra is VerificationResult
+              ? state.extra! as VerificationResult
               : null,
-          scan: state.extra is ScannedQr ? state.extra! as ScannedQr : null,
         ),
       ),
     ],

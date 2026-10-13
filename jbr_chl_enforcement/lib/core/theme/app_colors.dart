@@ -75,6 +75,15 @@ abstract final class AppColors {
   static const Color filterOutline = Color(0xFF7C9075); // Filters button
   static const Color recordDivider = Color(0xFFD7D9D6); // record page rows
 
+  // Verification processing and result.
+  static const Color stepPending = Color(0xFFF0F0F2); // step disc
+  static const Color stepPendingDot = Color(0xFFC4C6CC);
+  static const Color stepPendingText = Color(0x4D1A0C21); // ink at 30%
+  static const Color stepActive = Color(0xFFDCE3EE); // behind the spinner
+  static const Color stepDone = Color(0xFFE2F4E0);
+  static const Color processingText = Color(0xFF0E0F13);
+  static const Color routeMapGround = Color(0xFFEDF1E8);
+
   // QR scanner (dark camera page).
   static const Color scannerGlow = Color(0xFF46534B); // background, centre
   static const Color scannerMid = Color(0xFF2F3C34);

@@ -84,6 +84,21 @@ abstract final class AssetPaths {
   static const String iconScannerShutter = '$scannerDir/camera.svg';
   static const String iconScannerLocked = '$scannerDir/lock.svg';
 
+  // Verification processing and result
+  static const String resultDir = 'assets/icons/result';
+  static const String iconProcessingChecking = '$resultDir/checking.svg';
+  static const String iconProcessingStepActive = '$resultDir/step_active.svg';
+  static const String iconProcessingStepDone = '$resultDir/step_done.svg';
+  static const String iconResultVerified = '$resultDir/verified.svg';
+  static const String iconResultVehicle = '$resultDir/vehicle.svg';
+  static const String iconResultETag = '$resultDir/e_tag.svg';
+  static const String iconResultTrip = '$resultDir/trip.svg';
+  static const String iconResultActive = '$resultDir/badge_active.svg';
+  static const String iconResultArrow = '$resultDir/arrow.svg';
+  static const String iconResultRoutePin = '$resultDir/route_pin.svg';
+  static const String iconResultChevron = '$resultDir/chevron.svg';
+  static const String imageResultRouteMap = '$resultDir/route_map.svg';
+
   // Verification history
   static const String historyDir = 'assets/icons/history';
   static const String iconHistoryTripOk = '$historyDir/trip_ok.svg';

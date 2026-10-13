@@ -11,9 +11,13 @@ import 'package:jbr_chl_enforcement/features/notifications/domain/entities/app_n
 import 'package:jbr_chl_enforcement/features/notifications/domain/repositories/notifications_repository.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/entities/sync_queue_item.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/repositories/sync_repository.dart';
+import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_method.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/repositories/verification_repository.dart';
 import 'package:jbr_chl_enforcement/features/verification_history/domain/entities/verification_record.dart';
 import 'package:jbr_chl_enforcement/features/verification_history/domain/repositories/history_repository.dart';
+import 'package:jbr_chl_enforcement/shared/device/location/location_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/device/permissions/permission_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/device/scanner/qr_scanner_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/storage/preferences_service.dart';
@@ -330,5 +334,93 @@ class FakeQrScanner implements QrScanner {
   Future<void> dispose() async {
     disposed = true;
     await _readings.close();
+  }
+}
+
+/// Verifications the test drives: each [verify] opens a stream that
+/// [emit] and [fail] feed.
+class FakeVerificationRepository implements VerificationRepository {
+  final List<VerificationRequest> requests = [];
+  StreamController<VerificationProgress>? _current;
+  int cancelled = 0;
+
+  /// What [refresh] returns (the same result by default), or throws.
+  VerificationResult? refreshed;
+  Object? refreshError;
+  int refreshes = 0;
+
+  /// What [recordDestinationLocation] fails with, if set; [recordGate]
+  /// holds it until completed.
+  Object? recordError;
+  Completer<void>? recordGate;
+  final List<DeviceLocation> recordedLocations = [];
+  DateTime recordedAt = DateTime(2026, 10, 6, 0, 50);
+
+  void emit(VerificationProgress progress) => _current!.add(progress);
+
+  void fail(Object error) => _current!.addError(error);
+
+  @override
+  Stream<VerificationProgress> verify(VerificationRequest request) {
+    requests.add(request);
+    final controller = StreamController<VerificationProgress>(
+      onCancel: () => cancelled++,
+    );
+    _current = controller;
+    return controller.stream;
+  }
+
+  @override
+  Future<VerificationResult> refresh(VerificationResult result) async {
+    refreshes++;
+    final error = refreshError;
+    if (error != null) throw error;
+    return refreshed ?? result;
+  }
+
+  @override
+  Future<RecordedLocation> recordDestinationLocation(
+    String transactionReference,
+    DeviceLocation location,
+  ) async {
+    await recordGate?.future;
+    final error = recordError;
+    if (error != null) throw error;
+    recordedLocations.add(location);
+    return RecordedLocation(
+      latitude: location.latitude,
+      longitude: location.longitude,
+      accuracyMetres: location.accuracyMetres,
+      recordedAt: recordedAt,
+    );
+  }
+}
+
+/// A position that is always [location], unless [problem] is set.
+class FakeLocationReader implements LocationReader {
+  FakeLocationReader({DeviceLocation? location, this.problem})
+    : location =
+          location ??
+          DeviceLocation(
+            latitude: 8.974402,
+            longitude: 7.452813,
+            accuracyMetres: 97.2,
+            at: DateTime(2026, 10, 6, 0, 49),
+          );
+
+  DeviceLocation location;
+  LocationProblem? problem;
+
+  /// Holds [current] until completed.
+  Completer<void>? gate;
+  int reads = 0;
+
+  @override
+  Future<DeviceLocation> current() async {
+    reads++;
+    await gate?.future;
+    final problem = this.problem;
+    if (problem != null) throw LocationUnavailable(problem);
+    return location;
   }
 }

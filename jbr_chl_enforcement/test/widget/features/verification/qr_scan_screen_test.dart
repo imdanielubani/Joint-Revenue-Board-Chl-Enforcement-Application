@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/core/utils/clock.dart';
-import 'package:jbr_chl_enforcement/features/verification/domain/entities/scanned_qr.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/qr_scan_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/widgets/qr_scanner_overlay.dart';
 import 'package:jbr_chl_enforcement/shared/device/permissions/permission_adapter.dart';
@@ -37,10 +37,10 @@ GoRouter _router() => GoRouter(
       builder: (context, state) => _page('plate page'),
     ),
     GoRoute(
-      path: RoutePaths.verificationResult,
-      name: RouteNames.verificationResult,
+      path: RoutePaths.verificationProcessing,
+      name: RouteNames.verificationProcessing,
       builder: (context, state) {
-        final scan = state.extra! as ScannedQr;
+        final scan = (state.extra! as QrVerification).code;
         return _page('result ${scan.kind.name} ${scan.value}');
       },
     ),

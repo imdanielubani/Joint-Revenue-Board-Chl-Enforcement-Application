@@ -25,6 +25,7 @@ abstract final class RouteNames {
   static const String qrScan = 'qr-scan';
   static const String manualPlate = 'manual-plate';
   static const String ocrCapture = 'ocr-capture';
+  static const String verificationProcessing = 'verification-processing';
   static const String verificationResult = 'verification-result';
 }
 
@@ -48,5 +49,6 @@ abstract final class RoutePaths {
   static const String qrScan = '/verify/qr';
   static const String manualPlate = '/verify/plate';
   static const String ocrCapture = '/verify/ocr';
+  static const String verificationProcessing = '/verify/processing';
   static const String verificationResult = '/verify/result';
 }

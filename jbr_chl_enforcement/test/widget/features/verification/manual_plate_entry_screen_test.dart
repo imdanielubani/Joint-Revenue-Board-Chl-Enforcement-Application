@@ -7,8 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_colors.dart';
 import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
-import 'package:jbr_chl_enforcement/features/vehicle/presentation/screens/verification_result_screen.dart';
-import 'package:jbr_chl_enforcement/features/verification/domain/entities/plate_number.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/manual_plate_entry_screen.dart';
 import 'package:jbr_chl_enforcement/shared/ui/widgets/app_button.dart';
 
@@ -59,10 +58,14 @@ Future<void> _pump(
         builder: (context, state) => const ManualPlateEntryScreen(),
       ),
       GoRoute(
-        path: RoutePaths.verificationResult,
-        name: RouteNames.verificationResult,
-        builder: (context, state) =>
-            VerificationResultScreen(plate: state.extra as PlateNumber?),
+        path: RoutePaths.verificationProcessing,
+        name: RouteNames.verificationProcessing,
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(leading: const BackButton()),
+          body: Text(
+            'verifying ${(state.extra! as PlateVerification).plate.display}',
+          ),
+        ),
       ),
     ],
   );
@@ -223,18 +226,14 @@ void main() {
     expect(_verifyAction(tester), isNotNull);
   });
 
-  testWidgets('Verify Plate opens the result for the plate', (tester) async {
+  testWidgets('Verify Plate starts verifying the plate', (tester) async {
     await _pump(tester);
     await _type(tester, 'lnd-482-xk');
 
     await tester.tap(find.text('Verify Plate'));
     await tester.pumpAndSettle();
 
-    final result = tester.widget<VerificationResultScreen>(
-      find.byType(VerificationResultScreen),
-    );
-    expect(result.plate, PlateNumber.tryParse('LND482XK'));
-    expect(find.text('LND 482 XK'), findsOneWidget);
+    expect(find.text('verifying LND 482 XK'), findsOneWidget);
     // The keyboard was closed before leaving.
     expect(tester.testTextInput.isVisible, isFalse);
 
@@ -252,7 +251,7 @@ void main() {
 
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(find.byType(VerificationResultScreen), findsOneWidget);
+    expect(find.text('verifying KJA 719 FG'), findsOneWidget);
   });
 
   testWidgets('the Done key does nothing while the plate is too short', (
@@ -263,7 +262,7 @@ void main() {
 
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(find.byType(VerificationResultScreen), findsNothing);
+    expect(find.textContaining('verifying'), findsNothing);
     expect(find.byType(ManualPlateEntryScreen), findsOneWidget);
   });
 
