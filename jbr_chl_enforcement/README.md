@@ -635,6 +635,11 @@ flutter test test/widget/features/auth         # one area
   paths to `lib/core/constants/asset_paths.dart`. Prefer SVG for icons.
 - **Colours and text styles:** add new values to `app_colors.dart` /
   `app_typography.dart` rather than hard-coding them in widgets.
+- **Screen readers:** when a control merges its content into one label
+  with `Semantics(excludeSemantics: true)`, give that `Semantics` the
+  same `onTap` as the control; excluding the children also drops their
+  tap, and a screen reader could then not activate it
+  (`test/widget/shared/screen_reader_taps_test.dart`).
 - **Comments:** explain why, not what. Keep TODOs tagged with the feature,
   e.g. `// TODO(auth): ...`.
 - **This README:** update it in the same commit as the change it describes.
@@ -695,6 +700,11 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Screen readers can now activate every control that merges its content
+  into one label (bottom bar tabs, back and bell buttons, settings rows,
+  profile card, verification methods and records, card close buttons,
+  show password, toast). The bottom bar tab is labelled "Notification".
 
 - Notifications: inbox with All / Unread, Mark all as read, grouping by
   day, loading skeleton, empty, unavailable and all-caught-up states, and

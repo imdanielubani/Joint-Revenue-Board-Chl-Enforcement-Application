@@ -37,6 +37,8 @@ class ProfileHeaderCard extends StatelessWidget {
         role,
         'Account details',
       ].where((part) => part.isNotEmpty).join(', '),
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onTap,
       excludeSemantics: true,
       child: Material(
         color: Colors.white,

@@ -142,6 +142,8 @@ class _BackButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: 'Back',
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onPressed,
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

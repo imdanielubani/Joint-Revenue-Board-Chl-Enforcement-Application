@@ -207,6 +207,8 @@ class _VisibilityToggle extends StatelessWidget {
     return Semantics(
       button: true,
       label: obscured ? 'Show password' : 'Hide password',
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onPressed,
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

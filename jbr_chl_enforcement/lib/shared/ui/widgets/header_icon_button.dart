@@ -29,6 +29,8 @@ class HeaderIconButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticLabel,
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onPressed,
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

@@ -59,6 +59,8 @@ class SettingsTile extends StatelessWidget {
       toggled: toggled,
       label: '$title. $subtitle',
       value: semanticValue,
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onTap,
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
@@ -224,6 +226,8 @@ class SettingsLinkRow extends StatelessWidget {
       container: true,
       button: true,
       label: label,
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onTap,
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,

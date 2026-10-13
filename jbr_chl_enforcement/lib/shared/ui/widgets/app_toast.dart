@@ -117,6 +117,8 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                 container: true,
                 liveRegion: true,
                 label: widget.message,
+                // Excluding the children drops their tap, so it is declared here.
+                onTap: _close,
                 excludeSemantics: true,
                 child: GestureDetector(
                   onTap: _close,

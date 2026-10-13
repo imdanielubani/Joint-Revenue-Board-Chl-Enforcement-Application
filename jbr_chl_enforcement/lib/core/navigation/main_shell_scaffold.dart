@@ -39,7 +39,7 @@ class MainShellScaffold extends StatelessWidget {
   static const _items = [
     _NavItem('Dashboard', AssetPaths.navDashboard),
     _NavItem('History', AssetPaths.navHistory),
-    _NavItem('Notifications', AssetPaths.navNotifications),
+    _NavItem('Notification', AssetPaths.navNotifications),
     _NavItem('Profile', AssetPaths.navProfile),
   ];
 
@@ -163,6 +163,8 @@ class _NavButton extends StatelessWidget {
       button: true,
       selected: selected,
       label: item.label,
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onPressed,
       excludeSemantics: true,
       child: Material(
         color: selected ? AppColors.navActive : Colors.transparent,

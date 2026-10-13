@@ -56,6 +56,8 @@ class VerificationRecordTile extends StatelessWidget {
       container: true,
       button: onTap != null,
       label: '${record.plateNumber}, $detail, ${record.outcome.label} at $time',
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onTap,
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,

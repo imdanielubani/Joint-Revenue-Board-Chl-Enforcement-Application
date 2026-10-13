@@ -434,6 +434,8 @@ class _CloseButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: onPressed,
       excludeSemantics: true,
       child: InkResponse(
         onTap: onPressed,

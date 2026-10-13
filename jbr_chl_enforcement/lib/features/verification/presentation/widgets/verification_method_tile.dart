@@ -83,6 +83,8 @@ class VerificationMethodTile extends StatelessWidget {
       container: true,
       button: true,
       label: '${option.title}. ${option.description}',
+      // Excluding the children drops their tap, so it is declared here.
+      onTap: option.onSelected,
       excludeSemantics: true,
       child: Material(
         color: Colors.white,
