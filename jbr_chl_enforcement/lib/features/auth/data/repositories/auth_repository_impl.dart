@@ -88,6 +88,13 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  /// The `code` in an error response body, lowercased, if there is one.
+  static String? _errorCode(DioException error) {
+    final body = error.response?.data;
+    final code = body is Map ? body['code'] : null;
+    return code is String ? code.toLowerCase() : null;
+  }
+
   static AuthFailure _failureFor(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
@@ -99,6 +106,10 @@ class AuthRepositoryImpl implements AuthRepository {
       case DioExceptionType.badResponse:
         return switch (error.response?.statusCode) {
           400 || 401 || 422 => AuthFailure.invalidCredentials,
+          // No such account, or one that may not use this app.
+          404 => AuthFailure.notAuthorized,
+          403 when _errorCode(error) == 'not_authorized' =>
+            AuthFailure.notAuthorized,
           403 => AuthFailure.accountDisabled,
           _ => AuthFailure.server,
         };

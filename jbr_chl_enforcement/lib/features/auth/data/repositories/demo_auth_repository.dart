@@ -11,10 +11,14 @@ import 'auth_repository_impl.dart';
 /// is available. Only used in debug builds started with
 /// `--dart-define=AUTH_DEMO=true` (see `AppEnvironment.authDemoMode`).
 ///
-/// [demoEmail] signs in as an enforcement agent and [clerkEmail] as an
-/// officer without agent access (to see "Agent access not authorized"), both
-/// with [demoPassword]. Anything else fails as invalid credentials, so
-/// "Unable to sign in" can be seen too.
+/// Only [demoEmail] is an enforcement agent:
+/// - [demoEmail] with [demoPassword] signs in;
+/// - [demoEmail] with any other password is a wrong password ("Unable to
+///   sign in");
+/// - any other email, [clerkEmail] included and whatever the password, may
+///   not sign in at all ("Agent access not authorized"). [clerkEmail] with
+///   [demoPassword] gets there through the role check, like a real account
+///   with a non-agent role; the others are refused outright.
 class DemoAuthRepository implements AuthRepository {
   DemoAuthRepository(this._local) : assert(!kReleaseMode);
 
@@ -33,32 +37,40 @@ class DemoAuthRepository implements AuthRepository {
     required String password,
   }) async {
     await Future<void>.delayed(latency);
-    final officer = switch (email.toLowerCase()) {
-      demoEmail => const Officer(
-        id: 'demo',
-        name: 'Demo Officer',
-        email: demoEmail,
-        region: 'Lagos State',
-        role: 'Enforcement Agent',
-      ),
-      clerkEmail => const Officer(
-        id: 'demo-clerk',
-        name: 'Demo Clerk',
-        email: clerkEmail,
-        region: 'Lagos State',
-        role: 'Revenue Clerk',
-      ),
-      _ => null,
-    };
-    if (officer == null || password != demoPassword) {
-      throw const AuthException(AuthFailure.invalidCredentials, 'demo');
+    final correct = password == demoPassword;
+    switch (email.toLowerCase()) {
+      case demoEmail when correct:
+        return _session(
+          const Officer(
+            id: 'demo',
+            name: 'Demo Officer',
+            email: demoEmail,
+            region: 'Lagos State',
+            role: 'Enforcement Agent',
+          ),
+        );
+      case demoEmail:
+        throw const AuthException(AuthFailure.invalidCredentials, 'demo');
+      case clerkEmail when correct:
+        return _session(
+          const Officer(
+            id: 'demo-clerk',
+            name: 'Demo Clerk',
+            email: clerkEmail,
+            region: 'Lagos State',
+            role: 'Revenue Clerk',
+          ),
+        );
+      default:
+        throw const AuthException(AuthFailure.notAuthorized, 'demo');
     }
-    return AuthSession(
-      accessToken: 'demo-token',
-      expiresAt: DateTime.now().add(const Duration(hours: 8)),
-      officer: officer,
-    );
   }
+
+  static AuthSession _session(Officer officer) => AuthSession(
+    accessToken: 'demo-token',
+    expiresAt: DateTime.now().add(const Duration(hours: 8)),
+    officer: officer,
+  );
 
   @override
   Future<void> keepSession(

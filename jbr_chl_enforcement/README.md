@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts (password `Demo@2026`): `officer@jbr.com` is an enforcement agent; `clerk@jbr.com` is not, to see "Agent access not authorized". Any other email or password shows "Unable to sign in". Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -322,17 +322,21 @@ phone sizes, tablets, a foldable, landscape and 200% text.
   locked. The close button (and system back) abandons
   sign-in until access is confirmed; a late server answer is then ignored.
 - **Outcomes** (all in the same dialog):
-  - **Unable to sign in** (Sign-In Unsuccessful): wrong credentials, no
-    connection, server error or no API configured, each with its own
+  - **Unable to sign in** (Sign-In Unsuccessful): an account that may sign
+    in, with the wrong password; or no connection, server error or no API
+    configured, each with its own
     explanation (`LoginMessages.rejectionFor`). *Try again* repeats with the
     same credentials; *Edit credentials* closes the dialog with the form as
     it was.
-  - **Agent access not authorized** (Access Restricted): signed in, but the
-    account is not an enforcement agent. *Use Another Account* closes the
+  - **Agent access not authorized** (Access Restricted): anyone who may
+    not sign in at all: the server refuses the account
+    (`AuthFailure.notAuthorized`), or it signs in but its role is not
+    enforcement agent. *Use Another Account* closes the
     dialog and empties the form (and ends the browser's autofill session,
-    which on the web would otherwise put the old password back); *Recheck Access* signs in again in the
-    background to fetch the current role, so a role just fixed by an
-    administrator is picked up without retyping.
+        which on the web would otherwise put the old password back); *Recheck
+    Access* signs in again in the background (from the start when the
+    server refused the account) to fetch the current role, so access just
+    granted by an administrator is picked up without retyping.
   - **Account deactivated** (HTTP 403) still shows its own sheet.
 - **Agent role rule:** `AgentAccessPolicy`
   (`domain/entities/agent_access.dart`) allows only the role
@@ -353,15 +357,23 @@ phone sizes, tablets, a foldable, landscape and 200% text.
   **`officer.role` is required for agent access**: without it every sign-in
   is refused as "Agent access not authorized".
   Parsing is in `features/auth/data/models/auth_token_model.dart`.
-  HTTP 400/401/422 mean wrong credentials; timeouts and connection errors
-  mean no connection; anything else is a server error
-  (`auth_repository_impl.dart`).
+  HTTP 400/401/422 mean a wrong password; HTTP 404, or 403 with
+  `{ "code": "not_authorized" }`, mean the account may not sign in at all
+  ("Agent access not authorized"); timeouts and connection errors mean no
+  connection; anything else is a server error (`auth_repository_impl.dart`).
+  **Confirm with the backend** that it tells these apart: a wrong password
+  for an agent (401) versus an account that is not an agent or does not
+  exist (403 `not_authorized` or 404). Note that this tells someone guessing
+  whether an email belongs to an agent; if that is not acceptable, the
+  backend should answer 401 for both and the app will show "Unable to sign
+  in" for both.
 - **Password reset (assumed contract):** `POST /auth/forgot-password` with
   `{ "email" }`; the response body is not used. A 404 (unknown email) is
   shown as sent, so the screen never reveals which emails have accounts;
   400/422 mark the email as invalid. The debug demo repository always
   succeeds.
-- **Deactivated accounts:** HTTP 403 on sign-in becomes
+- **Deactivated accounts:** HTTP 403 (without `code: not_authorized`) on
+  sign-in becomes
   `AuthFailure.accountDisabled` and shows the "Account Deactivated" sheet.
   A 403 on password reset is reported as sent, like an unknown email.
 - **Session expiry:** `SessionNotifier` (`presentation/providers/
@@ -486,6 +498,13 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- "Agent access not authorized" is now shown for anyone who may not sign
+  in at all (not an enforcement agent, or no such account), whatever the
+  password; "Unable to sign in" is for an agent's wrong password and for
+  connection or server problems. New `AuthFailure.notAuthorized` (HTTP 404,
+  or 403 with code `not_authorized`); Recheck Access then signs in again
+  from the start. Demo: only `officer@jbr.com` is an agent.
 
 - Sign-in fixes: the form is never left locked after a sign-in dialog
   (only locked while sign-in runs; a dialog closed by navigation or browser

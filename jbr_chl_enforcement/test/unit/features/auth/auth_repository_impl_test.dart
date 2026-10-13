@@ -39,14 +39,22 @@ class _FakeRemote implements AuthRemoteDataSource {
   }
 }
 
-DioException _dioError(DioExceptionType type, {int? status}) {
+DioException _dioError(
+  DioExceptionType type, {
+  int? status,
+  Map<String, dynamic>? body,
+}) {
   final options = RequestOptions(path: '/auth/login');
   return DioException(
     requestOptions: options,
     type: type,
     response: status == null
         ? null
-        : Response<void>(requestOptions: options, statusCode: status),
+        : Response<Map<String, dynamic>>(
+            requestOptions: options,
+            statusCode: status,
+            data: body,
+          ),
   );
 }
 
@@ -109,6 +117,26 @@ void main() {
       (
         _dioError(DioExceptionType.badResponse, status: 403),
         AuthFailure.accountDisabled,
+      ),
+      (
+        _dioError(
+          DioExceptionType.badResponse,
+          status: 403,
+          body: {'code': 'account_disabled'},
+        ),
+        AuthFailure.accountDisabled,
+      ),
+      (
+        _dioError(
+          DioExceptionType.badResponse,
+          status: 403,
+          body: {'code': 'NOT_AUTHORIZED'},
+        ),
+        AuthFailure.notAuthorized,
+      ),
+      (
+        _dioError(DioExceptionType.badResponse, status: 404),
+        AuthFailure.notAuthorized,
       ),
       (
         _dioError(DioExceptionType.badResponse, status: 500),

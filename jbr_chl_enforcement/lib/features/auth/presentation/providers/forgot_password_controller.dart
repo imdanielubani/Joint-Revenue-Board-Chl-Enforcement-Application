@@ -113,9 +113,8 @@ class ForgotPasswordController extends Notifier<ForgotPasswordState> {
           message: LoginMessages.notConfigured,
         ),
         // Not raised for resets (reported as sent); handled for safety.
-        AuthFailure.accountDisabled => const ForgotPasswordState(
-          status: ForgotPasswordStatus.sent,
-        ),
+        AuthFailure.accountDisabled || AuthFailure.notAuthorized =>
+          const ForgotPasswordState(status: ForgotPasswordStatus.sent),
         AuthFailure.server => const ForgotPasswordState(
           status: ForgotPasswordStatus.failure,
           message: ForgotPasswordMessages.server,

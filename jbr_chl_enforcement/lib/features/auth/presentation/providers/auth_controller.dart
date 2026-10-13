@@ -160,7 +160,9 @@ abstract final class LoginMessages {
     AuthFailure.network => rejectedNetwork,
     AuthFailure.server => rejectedServer,
     AuthFailure.notConfigured => rejectedNotConfigured,
+    // Shown as their own dialog or sheet instead; listed for completeness.
     AuthFailure.invalidCredentials ||
+    AuthFailure.notAuthorized ||
     AuthFailure.accountDisabled ||
     null => rejectedCredentials,
   };
@@ -297,9 +299,18 @@ class LoginController extends Notifier<LoginState> {
   /// "Recheck Access": asks the server again for the account's role, in
   /// case an administrator has just changed it.
   Future<void> recheckAccess() async {
+    if (state.status != LoginStatus.notAuthorized || _credentials == null) {
+      return;
+    }
+    final attempt = ++_attempt;
     final pending = _pendingSession;
-    if (state.status != LoginStatus.notAuthorized || pending == null) return;
-    await _checkAccess(pending, ++_attempt, refresh: true);
+    if (pending != null) {
+      // Signed in but not an agent: ask again for the role.
+      await _checkAccess(pending, attempt, refresh: true);
+    } else {
+      // Refused at sign-in: sign in again from the start.
+      await _signIn(attempt);
+    }
   }
 
   /// Closes the dialog and returns to the form as it was ("Edit
@@ -415,6 +426,13 @@ class LoginController extends Notifier<LoginState> {
     if (failure == AuthFailure.accountDisabled) {
       _forgetAttempt();
       state = state.copyWith(status: LoginStatus.accountDisabled);
+      return;
+    }
+    if (failure == AuthFailure.notAuthorized) {
+      // The account may not sign in at all; keep the credentials for
+      // "Recheck Access".
+      _pendingSession = null;
+      state = state.copyWith(status: LoginStatus.notAuthorized);
       return;
     }
     state = state.copyWith(

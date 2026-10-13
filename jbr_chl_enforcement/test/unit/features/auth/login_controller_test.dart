@@ -280,6 +280,53 @@ void main() {
     });
   });
 
+  group('accounts that may not sign in at all', () {
+    test('show "not authorized", not "Unable to sign in"', () {
+      withTime((async, c) {
+        repository.failure = AuthFailure.notAuthorized;
+        submit(c);
+        async.elapse(_allSteps);
+
+        expect(state(c).status, LoginStatus.notAuthorized);
+        expect(state(c).rejection, isNull);
+        expect(repository.kept, isEmpty);
+        expect(c.read(sessionProvider), isNull);
+      });
+    });
+
+    test('Recheck Access signs in again from the start', () {
+      withTime((async, c) {
+        repository.failure = AuthFailure.notAuthorized;
+        submit(c, password: 'pass');
+        async.elapse(_allSteps);
+
+        // An administrator gives the account agent access.
+        repository.failure = null;
+        final statuses = record(c);
+        controller(c).recheckAccess();
+        async.elapse(_allSteps);
+
+        expect(statuses.first, LoginStatus.authenticating);
+        expect(state(c).status, LoginStatus.success);
+        expect(repository.calls, hasLength(2));
+        expect(repository.calls.last.password, 'pass');
+      });
+    });
+
+    test('Recheck Access still refused stays "not authorized"', () {
+      withTime((async, c) {
+        repository.failure = AuthFailure.notAuthorized;
+        submit(c);
+        async.elapse(_allSteps);
+
+        controller(c).recheckAccess();
+        async.elapse(_allSteps);
+
+        expect(state(c).status, LoginStatus.notAuthorized);
+      });
+    });
+  });
+
   group('sign-in not confirmed', () {
     for (final failure in [
       AuthFailure.invalidCredentials,

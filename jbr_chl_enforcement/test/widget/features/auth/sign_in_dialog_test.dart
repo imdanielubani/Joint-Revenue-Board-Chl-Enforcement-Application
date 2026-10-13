@@ -265,6 +265,26 @@ void main() {
   });
 
   group('Agent access not authorized', () {
+    testWidgets('an account refused at sign-in gets this dialog too', (
+      tester,
+    ) async {
+      final repository = FakeAuthRepository(failure: AuthFailure.notAuthorized);
+      await _pump(tester, repository);
+      await _signIn(tester);
+      await _toResult(tester);
+
+      expect(find.text('Agent access not authorized'), findsOneWidget);
+      expect(find.text('Unable to sign in'), findsNothing);
+
+      // Access granted since: Recheck Access lets the officer in.
+      repository.failure = null;
+      await tester.tap(find.text('Recheck Access'));
+      await tester.pump();
+      expect(find.text('Signing you in'), findsOneWidget);
+      await _toDashboard(tester);
+      expect(find.text(_dashboard), findsOneWidget);
+    });
+
     testWidgets('Use Another Account empties the form', (tester) async {
       await _pump(tester, FakeAuthRepository(role: 'Revenue Clerk'));
       await _signIn(tester);

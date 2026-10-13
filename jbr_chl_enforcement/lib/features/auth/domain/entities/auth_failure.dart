@@ -1,7 +1,11 @@
 /// Why sign-in failed.
 enum AuthFailure {
-  /// Wrong email or password.
+  /// Wrong password for an account that may sign in.
   invalidCredentials,
+
+  /// The account may not sign in to this app at all: it is not an
+  /// enforcement agent, or there is no such account.
+  notAuthorized,
 
   /// The account exists but has been deactivated (HTTP 403).
   accountDisabled,
