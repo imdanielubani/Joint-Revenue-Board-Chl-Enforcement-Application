@@ -416,10 +416,8 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   "Completion recorded …" when CHL recorded a completion. Return To Result
   goes back; Return to Dashboard ends the check. The trip's status
   (`ChlTripState`: Active, Completed, Expired) is shown as CHL reported it,
-  in the badge and the Trip status row; Expired reads in amber. The
-  designs label this card "Current trip" with an "Active" badge, which
-  contradicts "This is not an active trip", so the card reads "Last trip"
-  and shows the reported status. The shared trip card, buttons and bell
+  in the badge and the Trip status row; Expired reads in amber. The card
+  is headed "Current trip", as designed. The shared trip card, buttons and bell
   live in `features/vehicle/presentation/widgets/trip_details_card.dart`.
 - **Data:** `VerificationRepository`
   (`features/verification/domain/repositories/`): `verify` streams
@@ -885,6 +883,7 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- The Last CHL trip card is headed "Current trip", as designed.
 - Verification result for no active trip ("No Active Trip Found", the
   summary, View Last CHL Trip) and the Last CHL trip page (the historical
   trip with no countdown, its reported status and completion time, Return

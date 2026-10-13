@@ -48,7 +48,7 @@ class LastChlTripScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       TripDetailsCard(
-                        heading: 'Last trip',
+                        heading: 'Current trip',
                         plate: result.plate,
                         vehicleType: result.vehicleType,
                         trip: trip,

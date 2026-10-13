@@ -475,7 +475,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Last trip'), findsOneWidget);
+      expect(find.text('Current trip'), findsOneWidget);
       // The badge and the trip status.
       expect(find.text('Completed'), findsNWidgets(2));
       expect(_row('From Abeokuta South, Ogun to Ikeja, Lagos'), findsOneWidget);
