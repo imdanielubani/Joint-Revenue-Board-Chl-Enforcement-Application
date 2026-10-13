@@ -14,6 +14,7 @@ import '../../../../shared/ui/widgets/empty_state.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../chl_trips/domain/entities/chl_trip.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
+import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../../verification/data/repositories/verification_repository_impl.dart';
 import '../../../verification/domain/repositories/verification_repository.dart';
 import '../../../verification/presentation/widgets/verification_page.dart';
@@ -167,7 +168,7 @@ class _VerificationResultScreenState
 
     return VerificationPageScaffold(
       title: 'Verification result',
-      trailing: const ResultNotificationsButton(),
+      trailing: const NotificationsBell(),
       body: body,
     );
   }

@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/asset_paths.dart';
-import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../shared/ui/widgets/header_icon_button.dart';
 import '../../../chl_trips/domain/entities/chl_trip.dart';
-import '../../../notifications/presentation/providers/notifications_controller.dart';
 import '../../../verification/domain/entities/plate_number.dart';
 
 /// Parts shared by the verification result and the last CHL trip pages.
@@ -89,24 +84,6 @@ BoxDecoration resultCardDecoration({double radius = 16}) => BoxDecoration(
   border: Border.all(color: AppColors.cardBorder, width: 1.5),
   borderRadius: BorderRadius.all(Radius.circular(radius)),
 );
-
-/// The notifications bell in the header.
-class ResultNotificationsButton extends ConsumerWidget {
-  const ResultNotificationsButton({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final unread = ref.watch(unreadNotificationCountProvider);
-    return HeaderIconButton(
-      iconAsset: AssetPaths.iconBell,
-      semanticLabel: unread > 0
-          ? 'Notifications, $unread unread'
-          : 'Notifications',
-      badgeCount: unread,
-      onPressed: () => context.goNamed(RouteNames.notifications),
-    );
-  }
-}
 
 /// Green 54 px button.
 class ResultFilledButton extends StatelessWidget {

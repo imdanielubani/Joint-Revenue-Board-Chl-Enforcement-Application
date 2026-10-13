@@ -189,6 +189,7 @@ Shared widgets in `lib/shared/ui/widgets/`:
 | `AppSpinner` | Rotating loading symbol (still when reduced motion is on) |
 | `GreenHeaderScaffold` | Green header with title and a rounded white sheet; pass `onBack` for the round back button and a left-aligned title; `headerHeight` (default 69) sets where the sheet starts and `sheetColor` its colour; `trailing` puts a widget (the notifications bell) at the right |
 | `HeaderIconButton` | 41 px round header button with an optional count badge (the notifications bell) |
+| `NotificationsBell` | The bell at the right of every signed-in page header, with the unread count; opens the notifications (`features/notifications/presentation/widgets/`) |
 | `InitialsAvatar` | Green disc with the officer's initials and a dark ring (dashboard, Profile, Account details) |
 | `ScreenHeading` | 22 px page heading with a short description under it |
 | `BrandAccentBar` | Short green bar under brand headings |
@@ -402,8 +403,7 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   **Try again** runs the same verification again; **Choose another
   method** returns to the method page. Both pages are in
   `features/vehicle/presentation/screens/unresolved_verification_screen.dart`
-  (`UnresolvedVerification`: `VehicleNotFound`, `VerificationUnavailable`);
-  as designed, they have no notifications bell.
+  (`UnresolvedVerification`: `VehicleNotFound`, `VerificationUnavailable`).
 - **Result, active trip** (`/verify/result`, with a `VerificationResult`):
   the green tick, "Active CHL trip"; vehicle identity, E-Tag validity
   ("No E-Tag", "Valid JRB E-Tag", "Invalid JRB E-Tag") and CHL trip status;
@@ -437,8 +437,7 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   goes back; Return to Dashboard ends the check. The trip's status
   (`ChlTripState`: Active, Completed, Expired) is shown as CHL reported it,
   in the badge and the Trip status row; Expired reads in amber. The card
-  is headed "Current trip", as designed. The shared trip card, buttons and bell
-  live in `features/vehicle/presentation/widgets/trip_details_card.dart`.
+  is headed "Current trip", as designed. The shared trip card and buttons live in `features/vehicle/presentation/widgets/trip_details_card.dart`.
 - **Data:** `VerificationRepository`
   (`features/verification/domain/repositories/`): `verify` streams
   `StageStarted`, `VehicleIdentified` and `VerificationCompleted` (or
@@ -904,6 +903,11 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Every signed-in page has the notifications bell (`NotificationsBell` in
+  `features/notifications/presentation/widgets/`), now also Vehicle Not
+  Found, Verification Unavailable, Manual plate entry, My Activity, the
+  verification record, SOS and the RFID and OCR pages. Not on the
+  notifications pages themselves or before sign-in.
 - Vehicle Not Found (what was checked, verification details on demand,
   Check Plate Again) and Verification Unavailable (nothing concluded, Try
   again, Choose another method) result pages. Processing now opens them

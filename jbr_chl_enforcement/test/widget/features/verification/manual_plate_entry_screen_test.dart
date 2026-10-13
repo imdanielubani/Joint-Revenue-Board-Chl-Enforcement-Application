@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_colors.dart';
 import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
+import 'package:jbr_chl_enforcement/features/notifications/presentation/providers/notifications_controller.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/manual_plate_entry_screen.dart';
 import 'package:jbr_chl_enforcement/shared/ui/widgets/app_button.dart';
@@ -72,7 +74,10 @@ Future<void> _pump(
   addTearDown(router.dispose);
 
   await tester.pumpWidget(
-    MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+    ProviderScope(
+      overrides: [unreadNotificationCountProvider.overrideWithValue(0)],
+      child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+    ),
   );
   await tester.pumpAndSettle();
   unawaited(router.push(RoutePaths.manualPlate));

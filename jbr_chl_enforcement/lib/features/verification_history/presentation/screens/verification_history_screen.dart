@@ -15,6 +15,7 @@ import '../../../../shared/ui/widgets/green_header_scaffold.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../../shared/ui/widgets/segmented_switch.dart';
 import '../../../../shared/ui/widgets/state_message.dart';
+import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../../settings/presentation/widgets/settings_section.dart';
 import '../../domain/entities/history_filter.dart';
 import '../../domain/entities/verification_record.dart';
@@ -140,6 +141,7 @@ class _VerificationHistoryScreenState
     return GreenHeaderScaffold(
       title: 'My Activity',
       onBack: () => context.goNamed(RouteNames.dashboard),
+      trailing: const NotificationsBell(),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: _maxContentWidth),

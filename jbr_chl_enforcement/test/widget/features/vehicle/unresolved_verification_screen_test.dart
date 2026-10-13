@@ -224,6 +224,7 @@ void main() {
 
       expect(find.text('Verification result'), findsOneWidget);
       expect(find.text('Vehicle Not Found'), findsOneWidget);
+      expect(find.bySemanticsLabel('Notifications'), findsOneWidget);
       expect(
         find.text(
           'We couldn’t find a vehicle for this plate. Check the number and '
@@ -324,6 +325,7 @@ void main() {
       await _pump(tester, unavailable);
 
       expect(find.text('Verification Unavailable'), findsOneWidget);
+      expect(find.bySemanticsLabel('Notifications'), findsOneWidget);
       expect(
         find.text(
           'CHL verification could not be completed. Please retry when the '

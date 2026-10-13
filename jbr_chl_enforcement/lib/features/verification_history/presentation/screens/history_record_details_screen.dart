@@ -16,6 +16,7 @@ import '../../../../shared/ui/widgets/empty_state.dart';
 import '../../../../shared/ui/widgets/green_header_scaffold.dart';
 import '../../../../shared/ui/widgets/state_message.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
+import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../verification/domain/entities/plate_number.dart';
 import '../../domain/entities/verification_record.dart';
@@ -75,6 +76,7 @@ class HistoryRecordDetailsScreen extends ConsumerWidget {
     return GreenHeaderScaffold(
       title: 'Verification Record',
       onBack: () => _back(context),
+      trailing: const NotificationsBell(),
       body: body,
     );
   }

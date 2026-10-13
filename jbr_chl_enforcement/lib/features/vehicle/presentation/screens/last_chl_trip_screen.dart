@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/ui/widgets/empty_state.dart';
+import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../../verification/presentation/widgets/verification_page.dart';
 import '../../domain/entities/verification_result.dart';
 import '../widgets/trip_details_card.dart';
@@ -27,7 +28,7 @@ class LastChlTripScreen extends StatelessWidget {
 
     return VerificationPageScaffold(
       title: 'Last CHL trip',
-      trailing: const ResultNotificationsButton(),
+      trailing: const NotificationsBell(),
       body: result == null || trip == null
           ? const EmptyState(
               title: 'Last CHL trip',

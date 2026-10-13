@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/route_names.dart';
 import '../../../../shared/ui/widgets/app_button.dart';
+import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/verification_request.dart';
 import '../widgets/plate_input_field.dart';
@@ -73,6 +74,7 @@ class _ManualPlateEntryScreenState extends State<ManualPlateEntryScreen> {
 
     return VerificationPageScaffold(
       title: 'Manual plate entry',
+      trailing: const NotificationsBell(),
       body: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxHeight < _minPinnedHeight) {

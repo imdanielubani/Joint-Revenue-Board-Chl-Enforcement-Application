@@ -11,8 +11,7 @@ import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/clock.dart';
-import '../../../../shared/ui/widgets/header_icon_button.dart';
-import '../../../notifications/presentation/providers/notifications_controller.dart';
+import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../data/repositories/verification_repository_impl.dart';
 import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/scanned_qr.dart';
@@ -137,18 +136,9 @@ class _VerificationProcessingScreenState
 
   @override
   Widget build(BuildContext context) {
-    final unread = ref.watch(unreadNotificationCountProvider);
-
     return VerificationPageScaffold(
       title: 'Verification processing',
-      trailing: HeaderIconButton(
-        iconAsset: AssetPaths.iconBell,
-        semanticLabel: unread > 0
-            ? 'Notifications, $unread unread'
-            : 'Notifications',
-        badgeCount: unread,
-        onPressed: () => context.goNamed(RouteNames.notifications),
-      ),
+      trailing: const NotificationsBell(),
       body: Column(
         children: [
           Expanded(

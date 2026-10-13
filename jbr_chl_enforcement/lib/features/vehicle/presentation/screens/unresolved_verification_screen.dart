@@ -11,6 +11,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../../verification/domain/entities/scanned_qr.dart';
 import '../../../verification/domain/entities/unresolved_verification.dart';
 import '../../../verification/domain/entities/verification_request.dart';
@@ -165,6 +166,7 @@ class UnresolvedVerificationScreen extends ConsumerWidget {
 
     return VerificationPageScaffold(
       title: 'Verification result',
+      trailing: const NotificationsBell(),
       body: CustomScrollView(
         slivers: [
           SliverPadding(
