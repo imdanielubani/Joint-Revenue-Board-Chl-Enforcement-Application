@@ -198,13 +198,7 @@ void main() {
         UnresolvedVerificationScreen.method(
           QrVerification(ScannedQr.read('JRB-CHL-RCPT-000123')),
         ),
-        'Receipt QR',
-      );
-      expect(
-        UnresolvedVerificationScreen.method(
-          QrVerification(ScannedQr.read('ETAG-7781')),
-        ),
-        'Tag QR',
+        'QR code',
       );
     });
   });
@@ -296,7 +290,9 @@ void main() {
     testWidgets('a scanned code offers to enter the plate', (tester) async {
       await _pump(
         tester,
-        notFound(request: QrVerification(ScannedQr.read('ETAG-7781'))),
+        notFound(
+          request: QrVerification(ScannedQr.read('JRB-CHL-RCPT-000123')),
+        ),
       );
 
       expect(
@@ -306,7 +302,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(_row('Scanned E-Tag QR code'), findsOneWidget);
+      expect(_row('Scanned QR code'), findsOneWidget);
       expect(find.text('Check Plate Again'), findsNothing);
 
       await tester.tap(find.text('Enter Plate Instead'));
@@ -356,7 +352,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a scanned receipt says what was scanned', (tester) async {
+    testWidgets('a scanned QR code says what was scanned', (tester) async {
       await _pump(
         tester,
         VerificationUnavailable(
@@ -365,8 +361,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Receipt QR'), findsOneWidget);
-      expect(_row('Scanned receipt QR code'), findsOneWidget);
+      expect(find.text('QR code'), findsOneWidget);
+      expect(_row('Scanned QR code'), findsOneWidget);
     });
 
     testWidgets('Try again verifies the same request again', (tester) async {

@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'plate_number.dart';
 import 'scanned_qr.dart';
 
-/// What the officer asked to verify: a plate they entered, or a QR code
-/// they scanned (a CHL receipt or a JRB E-Tag).
+/// What the officer asked to verify: a plate they entered, or a CHL QR
+/// code they scanned. (A scanned E-Tag opens its receipt instead.)
 @immutable
 sealed class VerificationRequest {
   const VerificationRequest();
@@ -28,7 +28,7 @@ final class PlateVerification extends VerificationRequest {
   int get hashCode => plate.hashCode;
 }
 
-/// Verify the vehicle a scanned receipt or E-Tag belongs to.
+/// Verify the vehicle a scanned CHL QR code belongs to.
 final class QrVerification extends VerificationRequest {
   const QrVerification(this.code);
 

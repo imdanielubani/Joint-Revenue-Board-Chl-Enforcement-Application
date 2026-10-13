@@ -173,18 +173,12 @@ void main() {
       tester,
       QrVerification(ScannedQr.read('JRB-CHL-RCPT-000123')),
     );
-    expect(find.text('Receipt QR'), findsOneWidget);
+    expect(find.text('QR code'), findsOneWidget);
 
     repository.emit(VehicleIdentified(_plate));
     await tester.pump();
     expect(find.text('ABC 123 AA'), findsOneWidget);
-    expect(find.text('Receipt QR'), findsNothing);
-  });
-
-  testWidgets('a scanned E-Tag says so', (tester) async {
-    await _pump(tester, QrVerification(ScannedQr.read('ETAG-7781')));
-
-    expect(find.text('E-Tag QR'), findsOneWidget);
+    expect(find.text('QR code'), findsNothing);
   });
 
   testWidgets('no such vehicle opens Vehicle Not Found', (tester) async {

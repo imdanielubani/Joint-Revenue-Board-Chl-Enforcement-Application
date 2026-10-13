@@ -9,7 +9,6 @@ import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
 import '../../../verification_history/domain/entities/verification_record_details.dart';
 import '../../domain/entities/plate_number.dart';
-import '../../domain/entities/scanned_qr.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
 
@@ -52,9 +51,8 @@ class RemoteVerificationRepository implements VerificationRepository {
 /// - AAA 503 AA cannot be verified (CHL does not respond);
 /// - LND 482 XK has no active trip (and an invalid E-Tag), and a
 ///   completed last trip;
-/// - any other plate, and a scanned receipt (ABC 123 AA), has an active
-///   trip from Abeokuta South, Ogun, to Ikeja, Lagos, and no E-Tag;
-/// - a scanned E-Tag is ABC 123 AA with a valid JRB E-Tag.
+/// - any other plate, and a scanned QR code (ABC 123 AA), has an active
+///   trip from Abeokuta South, Ogun, to Ikeja, Lagos, and no E-Tag.
 class DemoVerificationRepository implements VerificationRepository {
   DemoVerificationRepository({
     required this.now,
@@ -66,7 +64,7 @@ class DemoVerificationRepository implements VerificationRepository {
   /// How long each check takes.
   final Duration stepDelay;
 
-  static final PlateNumber _receiptPlate = PlateNumber.tryParse('ABC123AA')!;
+  static final PlateNumber _qrCodePlate = PlateNumber.tryParse('ABC123AA')!;
   static final PlateNumber _noTripPlate = PlateNumber.tryParse('LND482XK')!;
   static final PlateNumber _unknownPlate = PlateNumber.tryParse('AAA000AA')!;
   static final PlateNumber _unavailablePlate = PlateNumber.tryParse(
@@ -86,17 +84,14 @@ class DemoVerificationRepository implements VerificationRepository {
     if (request.plate == _unavailablePlate) {
       throw const VerificationFailure('CHL is not responding.');
     }
-    final plate = request.plate ?? _receiptPlate;
+    final plate = request.plate ?? _qrCodePlate;
     yield VehicleIdentified(plate);
 
     yield const StageStarted(VerificationStage.validatingETag);
     await Future<void>.delayed(stepDelay);
-    final eTag = switch (request) {
-      QrVerification(code: ScannedQr(kind: ScannedQrKind.eTag)) =>
-        ETagStatus.valid,
-      _ when plate == _noTripPlate => ETagStatus.invalid,
-      _ => ETagStatus.missing,
-    };
+    final eTag = plate == _noTripPlate
+        ? ETagStatus.invalid
+        : ETagStatus.missing;
 
     yield const StageStarted(VerificationStage.checkingTrip);
     await Future<void>.delayed(stepDelay);

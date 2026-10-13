@@ -14,7 +14,6 @@ import '../../../../core/utils/clock.dart';
 import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../data/repositories/verification_repository_impl.dart';
 import '../../domain/entities/plate_number.dart';
-import '../../domain/entities/scanned_qr.dart';
 import '../../domain/entities/unresolved_verification.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
@@ -125,14 +124,8 @@ class _VerificationProcessingScreenState
     context.popOrGoHome();
   }
 
-  /// The plate once known; until a scanned code is looked up, what was
-  /// scanned.
-  String get _badge =>
-      _plate?.display ??
-      switch (widget.request) {
-        QrVerification(code: ScannedQr(kind: ScannedQrKind.eTag)) => 'E-Tag QR',
-        _ => 'Receipt QR',
-      };
+  /// The plate once known; until a scanned code is looked up, "QR code".
+  String get _badge => _plate?.display ?? 'QR code';
 
   @override
   Widget build(BuildContext context) {

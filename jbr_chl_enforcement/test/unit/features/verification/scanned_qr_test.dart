@@ -24,7 +24,7 @@ void main() {
         // "ETAG" only counts at the start.
         'RCPT-ETAG-000123',
       ]) {
-        expect(ScannedQr.read(code).kind, ScannedQrKind.receipt, reason: code);
+        expect(ScannedQr.read(code).kind, ScannedQrKind.qrCode, reason: code);
       }
     });
 

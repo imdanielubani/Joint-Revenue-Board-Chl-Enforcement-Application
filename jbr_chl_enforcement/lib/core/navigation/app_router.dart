@@ -15,10 +15,12 @@ import '../../features/profile/presentation/screens/change_password_screen.dart'
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/sos/presentation/screens/sos_screen.dart';
+import '../../features/vehicle/presentation/screens/e_tag_receipt_screen.dart';
 import '../../features/vehicle/presentation/screens/last_chl_trip_screen.dart';
 import '../../features/vehicle/presentation/screens/unresolved_verification_screen.dart';
 import '../../features/vehicle/presentation/screens/verification_result_screen.dart';
 import '../../features/vehicle/domain/entities/verification_result.dart';
+import '../../features/verification/domain/entities/scanned_qr.dart';
 import '../../features/verification/domain/entities/unresolved_verification.dart';
 import '../../features/verification/domain/entities/verification_request.dart';
 import '../../features/verification/presentation/screens/manual_plate_entry_screen.dart';
@@ -176,6 +178,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           _ => const VerificationResultScreen(),
         },
+      ),
+      GoRoute(
+        path: RoutePaths.eTagReceipt,
+        name: RouteNames.eTagReceipt,
+        builder: (context, state) => ETagReceiptScreen(
+          code: state.extra is ScannedQr ? state.extra! as ScannedQr : null,
+        ),
       ),
       GoRoute(
         path: RoutePaths.lastChlTrip,

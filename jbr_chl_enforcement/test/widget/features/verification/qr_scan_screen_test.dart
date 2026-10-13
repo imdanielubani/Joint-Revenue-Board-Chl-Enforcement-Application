@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/core/utils/clock.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/scanned_qr.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/qr_scan_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/widgets/qr_scanner_overlay.dart';
@@ -43,6 +44,12 @@ GoRouter _router() => GoRouter(
         final scan = (state.extra! as QrVerification).code;
         return _page('result ${scan.kind.name} ${scan.value}');
       },
+    ),
+    GoRoute(
+      path: RoutePaths.eTagReceipt,
+      name: RouteNames.eTagReceipt,
+      builder: (context, state) =>
+          _page('receipt ${(state.extra! as ScannedQr).value}'),
     ),
   ],
 );
@@ -153,12 +160,12 @@ void main() {
     harness.now = harness.now.add(const Duration(milliseconds: 600));
     await _tapShutter(tester);
 
-    expect(find.text('result receipt JRB-CHL-RCPT-000123'), findsOneWidget);
+    expect(find.text('result qrCode JRB-CHL-RCPT-000123'), findsOneWidget);
     // The scanner page was replaced, so its camera is released.
     expect(harness.scanner.disposed, isTrue);
   });
 
-  testWidgets('the same scanner hands an E-Tag code on as an E-Tag', (
+  testWidgets('the same scanner opens the receipt for an E-Tag', (
     tester,
   ) async {
     final harness = await _pump(tester);
@@ -167,7 +174,9 @@ void main() {
     await tester.pump();
     await _tapShutter(tester);
 
-    expect(find.text('result eTag ETAG-7781-0042'), findsOneWidget);
+    // Not verified: an E-Tag opens its receipt.
+    expect(find.text('receipt ETAG-7781-0042'), findsOneWidget);
+    expect(harness.scanner.disposed, isTrue);
   });
 
   testWidgets('Scan with nothing in view: no QR code detected', (tester) async {
@@ -356,7 +365,7 @@ void main() {
       find.semantics.byLabel('Scan receipt QR and continue to verification'),
     );
     await tester.pumpAndSettle();
-    expect(find.text('result receipt JRB-CHL-RCPT-000123'), findsOneWidget);
+    expect(find.text('result qrCode JRB-CHL-RCPT-000123'), findsOneWidget);
   });
 
   group('fits', () {

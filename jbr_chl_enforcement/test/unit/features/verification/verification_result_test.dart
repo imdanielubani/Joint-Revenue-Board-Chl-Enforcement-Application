@@ -168,14 +168,15 @@ void main() {
       );
     });
 
-    test('a scanned E-Tag is a valid E-Tag on ABC 123 AA', () async {
+    test('a scanned QR code is ABC 123 AA, like the plate', () async {
       final progress = await repository
-          .verify(QrVerification(ScannedQr.read('ETAG-7781')))
+          .verify(QrVerification(ScannedQr.read('JRB-CHL-000123')))
           .toList();
 
       expect((progress[1] as VehicleIdentified).plate, _plate('ABC123AA'));
       final result = (progress.last as VerificationCompleted).result;
-      expect(result.eTagStatus, ETagStatus.valid);
+      expect(result.tripStatus, TripStatus.active);
+      expect(result.eTagStatus, ETagStatus.missing);
     });
 
     test('records the location as received', () async {

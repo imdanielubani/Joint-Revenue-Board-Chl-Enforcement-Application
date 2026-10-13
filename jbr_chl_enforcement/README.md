@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned receipt, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a scanned E-Tag has a valid JRB E-Tag (`DemoVerificationRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page. |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -92,7 +92,7 @@ flutter run --dart-define=AUTH_DEMO=true
 ```
 Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                     (skipped when      │         ├─ Dashboard ──► SOS
-                     nothing pending)  │         │             └─► Verify CHL Trip ──► manual plate, QR scanner (receipt or E-Tag), haulage tag ──► Verification processing ──► Verification result
+                     nothing pending)  │         │             └─► Verify CHL Trip ──► manual plate, QR scanner (QR code or E-Tag), haulage tag ──► Verification processing ──► Verification result
                                        │         ├─ History ──► Verification record
                                        │         ├─ Notifications ──► Notification details
                                        │         └─ Profile ──► Account details
@@ -231,6 +231,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Verification result | `features/vehicle/presentation/screens/verification_result_screen.dart` | See "Verification processing and result" below. |
 | Last CHL trip | `features/vehicle/presentation/screens/last_chl_trip_screen.dart` | See "Verification processing and result" below. |
 | Vehicle Not Found, Verification Unavailable | `features/vehicle/presentation/screens/unresolved_verification_screen.dart` | See "Verification processing and result" below. |
+| E-Tag receipt | `features/vehicle/presentation/screens/e_tag_receipt_screen.dart` | Opened by scanning an E-Tag; "not available yet" until its design arrives. |
 | SOS, RFID and OCR verification | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." |
 
 ### Dashboard
@@ -376,8 +377,7 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
 `PlateVerification` or a `QrVerification`).
 
 - **Processing:** "Checking vehicle…", the turning check icon, the plate
-  (for a scanned code, "Receipt QR" / "E-Tag QR" until the vehicle is
-  identified), "Verifying vehicle · Waiting for CHL confirmation", and the
+  (for a scanned QR code, "QR code" until the vehicle is identified), "Verifying vehicle · Waiting for CHL confirmation", and the
   three checks in order: Identifying vehicle, Validating E-Tag, Checking
   CHL trip. The running check spins, finished ones are ticked, the rest
   wait. When all are done they stay ticked for a moment
@@ -458,14 +458,20 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
 ### QR scanner
 
 One full-screen scanner (Verify CHL Trip → Scan E-Tag QR code,
-`/verify/qr`) reads both QR codes the officer meets: the CHL haulage
-receipt and the JRB E-Tag. Its wording is as designed. What was scanned
-decides the result: `ScannedQr.read` takes a code starting "ETAG",
-"E-TAG" or "JRB-ETAG" (any case) as an E-Tag and any other code as a CHL
-receipt, and the result page receives which it is. The real QR formats
-are not published yet; that rule is the one place to change (TODO in
-`features/verification/domain/entities/scanned_qr.dart`). There is no
-separate Verify E-Tag page.
+`/verify/qr`) reads both codes the officer meets: a CHL QR code and the
+JRB E-Tag. Its wording is as designed. What was scanned decides where it
+goes: `ScannedQr.read` takes a code starting "ETAG", "E-TAG" or
+"JRB-ETAG" (any case) as an E-Tag and any other code as a CHL QR code.
+- **A QR code** is verified like a typed plate (Verification processing,
+  then Active Trip, No Active Trip, Vehicle Not Found or Verification
+  Unavailable).
+- **An E-Tag** opens the **E-Tag receipt** (`/verify/e-tag-receipt`,
+  `features/vehicle/presentation/screens/e_tag_receipt_screen.dart`),
+  which says it is not available yet until its design arrives (TODO).
+
+The real formats are not published yet; that rule is the one place to
+change (TODO in `features/verification/domain/entities/scanned_qr.dart`).
+There is no separate Verify E-Tag page.
 
 - **Scanning:** the live camera in a rounded frame with white corner
   guides and the amber scan line, the hint under it, the white shutter
@@ -488,9 +494,7 @@ separate Verify E-Tag page.
   goes to the method page.
 - **Camera:** `QrScanner` (`shared/device/scanner/qr_scanner_adapter.dart`)
   wraps `mobile_scanner` (QR codes only); the page never uses the plugin
-  directly, and tests use `FakeQrScanner`. The page shows "Not built yet"
-  for the result until its design arrives; it receives the code and
-  whether it is a receipt or an E-Tag (each will have its own result).
+  directly, and tests use `FakeQrScanner`.
 
 ### Verification history
 
@@ -903,6 +907,12 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- A scanned QR code is verified like a typed plate and shows the usual
+  results ("QR code" until the vehicle is identified); a scanned E-Tag
+  opens the E-Tag receipt page (not designed yet) instead of being
+  verified. "Receipt QR" / "E-Tag QR" on the processing and result pages
+  now read "QR code". The demo no longer gives a scanned E-Tag a valid
+  E-Tag result.
 - Every signed-in page has the notifications bell (`NotificationsBell` in
   `features/notifications/presentation/widgets/`), now also Vehicle Not
   Found, Verification Unavailable, Manual plate entry, My Activity, the

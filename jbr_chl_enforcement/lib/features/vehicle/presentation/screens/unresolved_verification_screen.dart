@@ -12,7 +12,6 @@ import '../../../../core/utils/clock.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../notifications/presentation/widgets/notifications_bell.dart';
-import '../../../verification/domain/entities/scanned_qr.dart';
 import '../../../verification/domain/entities/unresolved_verification.dart';
 import '../../../verification/domain/entities/verification_request.dart';
 import '../../../verification/presentation/widgets/verification_page.dart';
@@ -51,11 +50,10 @@ class UnresolvedVerificationScreen extends ConsumerWidget {
         '${part(location.longitude, 'E', 'W')}';
   }
 
-  /// How the request was made, as the history names it.
+  /// How the request was made.
   static String method(VerificationRequest request) => switch (request) {
     PlateVerification() => 'Manual plate',
-    QrVerification(code: ScannedQr(kind: ScannedQrKind.eTag)) => 'Tag QR',
-    QrVerification() => 'Receipt QR',
+    QrVerification() => 'QR code',
   };
 
   @override
@@ -248,7 +246,7 @@ class _Checked extends StatelessWidget {
   }
 }
 
-/// What was checked: the plate as entered, or the kind of code scanned.
+/// What was checked: the plate as entered, or that a QR code was scanned.
 class _RequestPill extends StatelessWidget {
   const _RequestPill(this.request);
 
@@ -262,11 +260,7 @@ class _RequestPill extends StatelessWidget {
         plate.value,
         'Plate ${plate.display}',
       ),
-      QrVerification(code: ScannedQr(kind: ScannedQrKind.eTag)) => (
-        'E-Tag QR',
-        'Scanned E-Tag QR code',
-      ),
-      QrVerification() => ('Receipt QR', 'Scanned receipt QR code'),
+      QrVerification() => ('QR code', 'Scanned QR code'),
     };
     return Semantics(
       container: true,

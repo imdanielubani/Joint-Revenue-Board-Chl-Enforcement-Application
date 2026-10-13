@@ -28,6 +28,7 @@ abstract final class RouteNames {
   static const String verificationProcessing = 'verification-processing';
   static const String verificationResult = 'verification-result';
   static const String lastChlTrip = 'last-chl-trip';
+  static const String eTagReceipt = 'e-tag-receipt';
 }
 
 abstract final class RoutePaths {
@@ -53,4 +54,5 @@ abstract final class RoutePaths {
   static const String verificationProcessing = '/verify/processing';
   static const String verificationResult = '/verify/result';
   static const String lastChlTrip = '/verify/result/last-trip';
+  static const String eTagReceipt = '/verify/e-tag-receipt';
 }
