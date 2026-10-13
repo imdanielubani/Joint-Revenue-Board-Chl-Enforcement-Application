@@ -227,12 +227,13 @@ void main() {
   testWidgets('Additional trip information opens and closes', (tester) async {
     await _pump(tester);
     await _reveal(tester, find.text('Additional trip information'));
-    expect(find.text('General haulage'), findsNothing);
+    expect(find.text('PAY-2026-08142'), findsNothing);
 
     await tester.tap(find.text('Additional trip information'));
     await tester.pumpAndSettle();
+    // Cargo is not shown for now.
+    expect(find.textContaining('Cargo'), findsNothing);
     for (final row in [
-      'Cargo: General haulage',
       'Payment reference: PAY-2026-08142',
       'Terminal ID: 2070MJHU',
       'Contact number: 8139751699',
@@ -244,7 +245,7 @@ void main() {
 
     tester.semantics.tap(find.semantics.byLabel('Additional trip information'));
     await tester.pumpAndSettle();
-    expect(find.text('General haulage'), findsNothing);
+    expect(find.text('PAY-2026-08142'), findsNothing);
   });
 
   group('destination check', () {
@@ -517,7 +518,7 @@ void main() {
 
       await tester.tap(find.text('Additional trip information'));
       await tester.pumpAndSettle();
-      expect(_row('Cargo: General haulage'), findsOneWidget);
+      expect(find.textContaining('Cargo'), findsNothing);
       expect(_row('Payment reference: PAY-2026-07960'), findsOneWidget);
       // Not recorded for this trip.
       expect(_row('Terminal ID: Not recorded'), findsOneWidget);

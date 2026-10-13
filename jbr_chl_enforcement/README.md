@@ -417,7 +417,7 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   12, 2026 12:49 PM", in the phone's time zone. Then the **trip validity
   countdown**, ticking every second (`secondTickerProvider`) and stopping
   at "00 h 00 min 00 sec"; **Additional trip information** opens to show
-  cargo, payment reference, terminal ID, contact number, channel (e.g.
+  payment reference, terminal ID, contact number, channel (e.g.
   "Fortis") and channel type (e.g. "POS"), each "Not recorded" when CHL
   did not send it. **Destination check**: destination LGA, enforcement point,
   completion decision and centrally defined delay; Record location for
@@ -912,6 +912,8 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Additional trip information no longer shows Cargo (not needed for
+  now); `ChlTrip.cargo` is kept for when it returns.
 - The trip card (Active trip and Last CHL trip) shows the CHL receipt's
   fields: transaction date (was "Payment date/time"), vehicle license
   number, transaction type (trip type), transaction status, and when the

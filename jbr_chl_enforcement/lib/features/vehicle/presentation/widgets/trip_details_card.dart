@@ -564,7 +564,6 @@ class _MoreTripInformationState extends State<_MoreTripInformation> {
     final trip = widget.trip;
     const notRecorded = 'Not recorded';
     final rows = [
-      ('Cargo', trip.cargo ?? 'Not declared'),
       ('Payment reference', trip.paymentReference ?? notRecorded),
       ('Terminal ID', trip.terminalId ?? notRecorded),
       ('Contact number', trip.contactNumber ?? notRecorded),
