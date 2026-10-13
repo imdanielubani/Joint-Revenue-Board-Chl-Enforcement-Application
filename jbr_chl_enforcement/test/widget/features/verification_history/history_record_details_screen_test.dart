@@ -77,6 +77,41 @@ final _eTag = VerificationRecord(
   recordedAt: DateTime(2026, 10, 11, 8, 42),
 );
 
+/// A check that did not finish.
+final _unfinished = VerificationRecord(
+  id: 'VR-1042',
+  plateNumber: 'BDG 204 XY',
+  method: VerificationMethod.qrCode,
+  outcome: VerificationOutcome.notCompleted,
+  recordedAt: DateTime(2026, 9, 26, 10, 18),
+  details: const VerificationRecordDetails(
+    reference: 'VRE-221-087',
+    vehicleType: 'Heavy goods vehicle',
+    agentName: 'Demo Officer',
+    agentId: 'JRB-AG-0142',
+    actionTaken: 'None',
+    pendingAction: 'Retry the verification when connectivity is available',
+  ),
+);
+
+/// A trip check that found no E-Tag on the vehicle.
+final _noTag = VerificationRecord(
+  id: 'VR-1046',
+  plateNumber: 'KTU 552 BC',
+  tripStatus: TripStatus.active,
+  method: VerificationMethod.rfid,
+  outcome: VerificationOutcome.verified,
+  recordedAt: DateTime(2026, 10, 11, 8, 30),
+  details: const VerificationRecordDetails(
+    reference: 'VRE-222-005',
+    vehicleType: 'Mini truck',
+    agentName: 'Demo Officer',
+    agentId: 'JRB-AG-0142',
+    actionTaken: 'Verified',
+    tagStatus: ETagStatus.missing,
+  ),
+);
+
 Widget _page(String label) => Scaffold(body: Center(child: Text(label)));
 
 GoRouter _router(String id) => GoRouter(
@@ -121,7 +156,15 @@ Future<FakeHistoryRepository> _pump(
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
   final fake =
-      repository ?? FakeHistoryRepository([_active, _noActive, _bare, _eTag]);
+      repository ??
+      FakeHistoryRepository([
+        _active,
+        _noActive,
+        _bare,
+        _eTag,
+        _unfinished,
+        _noTag,
+      ]);
   final router = _router(id);
   addTearDown(router.dispose);
   await tester.pumpWidget(
@@ -259,6 +302,42 @@ void main() {
     expect(_row('Pending action: Not recorded'), findsOneWidget);
   });
 
+  testWidgets('verification unavailable: nothing concluded, retry', (
+    tester,
+  ) async {
+    await _pump(tester, 'VR-1042');
+
+    expect(find.text('Verification Unavailable'), findsOneWidget);
+    expect(find.text('Not completed · Receipt QR'), findsOneWidget);
+    expect(_row('Verification reference: VRE-221-087'), findsOneWidget);
+    expect(_row('Date and time: 26 Sept 2026 · 10:18 AM'), findsOneWidget);
+
+    await _reveal(tester, find.text('Back to history'));
+    for (final row in [
+      'Trip status: Not concluded',
+      'E-Tag status: Not concluded',
+      'Completion status: Not completed',
+      'Action taken: None',
+      'Pending action: Retry the verification when connectivity is available',
+      'Violation issued: No',
+      'GPS: Not recorded',
+    ]) {
+      expect(_row(row), findsOneWidget, reason: row);
+    }
+    expect(find.text('View verification result'), findsNothing);
+
+    await tester.tap(find.text('Retry verification'));
+    await tester.pumpAndSettle();
+    expect(find.text('result BDG204XY'), findsOneWidget);
+  });
+
+  testWidgets('a vehicle with no E-Tag shows it as missing', (tester) async {
+    await _pump(tester, 'VR-1046');
+    await _reveal(tester, find.text('Back to history'));
+
+    expect(_row('E-Tag status: Missing'), findsOneWidget);
+  });
+
   testWidgets('an E-Tag record has no design yet', (tester) async {
     await _pump(tester, 'VR-1047');
 
@@ -286,8 +365,8 @@ void main() {
       ('tablet', const Size(820, 1180), 1.0),
       ('200% text', const Size(390, 844), 2.0),
     ]) {
-      testWidgets('both records on a $name', (tester) async {
-        for (final id in ['VR-1051', 'VR-1050']) {
+      testWidgets('every designed record on a $name', (tester) async {
+        for (final id in ['VR-1051', 'VR-1050', 'VR-1042']) {
           await tester.pumpWidget(const SizedBox());
           await _pump(tester, id, size: size, textScale: scale);
           expect(tester.takeException(), isNull);

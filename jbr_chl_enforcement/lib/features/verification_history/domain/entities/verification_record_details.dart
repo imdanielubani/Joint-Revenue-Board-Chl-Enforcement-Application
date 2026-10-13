@@ -49,7 +49,8 @@ class VerificationRecordDetails {
   /// e.g. "Verified", "Unverified".
   final String actionTaken;
 
-  /// The vehicle's E-Tag as read during the check; null when it was not.
+  /// The vehicle's E-Tag as found during the check (valid, invalid or
+  /// missing); null when not recorded.
   final ETagStatus? tagStatus;
 
   /// What still has to be done, e.g. "Complete required evidence and

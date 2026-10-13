@@ -23,10 +23,12 @@ import '../../domain/entities/verification_record_details.dart';
 import '../providers/history_controller.dart';
 import '../widgets/history_list_item.dart';
 
-/// One verification record, full screen above the tabs. A CHL trip check
-/// shows its summary, "Verification details" and "Result and completion";
-/// an active trip also offers View verification result. E-Tag and
-/// unfinished checks have no design yet and show a placeholder.
+/// One verification record, full screen above the tabs: its summary,
+/// "Verification details" and "Result and completion". A CHL trip check is
+/// as designed, with View verification result for an active trip. An
+/// unfinished check ("Verification Unavailable") is built from the same
+/// parts: nothing concluded, and Retry verification. E-Tag checks have no
+/// design yet and show a placeholder.
 class HistoryRecordDetailsScreen extends ConsumerWidget {
   const HistoryRecordDetailsScreen({super.key, required this.id});
 
@@ -55,8 +57,8 @@ class HistoryRecordDetailsScreen extends ConsumerWidget {
     }
 
     final Widget body;
-    if (record != null && record.tripStatus != null) {
-      body = _TripRecord(record: record, onBack: () => _back(context));
+    if (record != null && (record.tripStatus != null || !record.isCompleted)) {
+      body = _RecordPage(record: record, onBack: () => _back(context));
     } else if (record != null) {
       body = EmptyState(title: record.plateNumber, message: notBuiltYetMessage);
     } else if (history.isLoading) {
@@ -78,9 +80,9 @@ class HistoryRecordDetailsScreen extends ConsumerWidget {
   }
 }
 
-/// The record of a CHL trip check.
-class _TripRecord extends StatelessWidget {
-  const _TripRecord({required this.record, required this.onBack});
+/// The record of a CHL trip check, or of a check that did not finish.
+class _RecordPage extends StatelessWidget {
+  const _RecordPage({required this.record, required this.onBack});
 
   final VerificationRecord record;
   final VoidCallback onBack;
@@ -92,8 +94,11 @@ class _TripRecord extends StatelessWidget {
   Widget build(BuildContext context) {
     final details = record.details;
     final active = record.tripStatus == TripStatus.active;
+    final unfinished = !record.isCompleted;
     final plate = PlateNumber.tryParse(record.plateNumber);
     const notRecorded = HistoryRecordDetailsScreen.notRecorded;
+    // An unfinished check concluded nothing about the trip or E-Tag.
+    const notConcluded = 'Not concluded';
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 36),
@@ -160,8 +165,14 @@ class _TripRecord extends StatelessWidget {
                   borderColor: AppColors.recordDivider,
                   borderWidth: 1.067,
                   rows: [
-                    _Row('Trip status', record.finding),
-                    _Row('E-Tag status', _tagStatus(details)),
+                    _Row(
+                      'Trip status',
+                      unfinished ? notConcluded : record.finding,
+                    ),
+                    _Row(
+                      'E-Tag status',
+                      unfinished ? notConcluded : _tagStatus(details),
+                    ),
                     _Row(
                       'Completion status',
                       record.isCompleted ? 'Completed' : 'Not completed',
@@ -179,7 +190,12 @@ class _TripRecord extends StatelessWidget {
                           ? notRecorded
                           : (details.violationIssued ? 'Yes' : 'No'),
                     ),
-                    _Row('GPS', _gps(details?.location), large: true),
+                    _Row(
+                      'GPS',
+                      _gps(details?.location),
+                      // Coordinates are larger, as designed.
+                      large: details?.location != null,
+                    ),
                     const _Row(
                       'Payment request generated',
                       HistoryRecordDetailsScreen.paymentNote,
@@ -190,10 +206,13 @@ class _TripRecord extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 21),
-                // As designed, only an active trip has a result to view.
-                if (active && plate != null) ...[
+                // As designed, an active trip has a result to view; an
+                // unfinished check can be run again for the same plate.
+                if ((active || unfinished) && plate != null) ...[
                   PillButton(
-                    label: 'View verification result',
+                    label: unfinished
+                        ? 'Retry verification'
+                        : 'View verification result',
                     weight: AppTypography.medium,
                     onPressed: () => context.pushNamed(
                       RouteNames.verificationResult,
@@ -240,8 +259,8 @@ class _TripRecord extends StatelessWidget {
     return switch (details.tagStatus) {
       ETagStatus.valid => 'Valid',
       ETagStatus.invalid => 'Invalid',
-      ETagStatus.expired => 'Expired',
-      null => 'Not read',
+      ETagStatus.missing => 'Missing',
+      null => HistoryRecordDetailsScreen.notRecorded,
     };
   }
 
@@ -253,8 +272,8 @@ class _TripRecord extends StatelessWidget {
   }
 }
 
-/// The trip result in a card: icon, "Active Trip", "Completed · Manual
-/// plate".
+/// The result in a card: icon, "Active Trip", "Completed · Manual plate";
+/// or "Verification Unavailable", "Not completed · Receipt QR".
 class _Summary extends StatelessWidget {
   const _Summary({required this.record});
 
@@ -263,10 +282,16 @@ class _Summary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = record.tripStatus == TripStatus.active;
-    final title = switch (record.tripStatus!) {
+    final title = switch (record.tripStatus) {
       TripStatus.active => 'Active Trip',
       TripStatus.noActive => 'No Active Trip',
       TripStatus.previous => 'Previous Trip',
+      null => 'Verification Unavailable',
+    };
+    final icon = switch (record.tripStatus) {
+      TripStatus.active => AssetPaths.iconHistoryRecordOk,
+      null => AssetPaths.iconHistoryUnfinished,
+      _ => AssetPaths.iconHistoryTripWarn,
     };
 
     return Container(
@@ -289,9 +314,7 @@ class _Summary extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: SvgPicture.asset(
-              active
-                  ? AssetPaths.iconHistoryRecordOk
-                  : AssetPaths.iconHistoryTripWarn,
+              icon,
               width: 20,
               height: 20,
               excludeFromSemantics: true,

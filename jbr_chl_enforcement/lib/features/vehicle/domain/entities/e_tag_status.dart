@@ -1,2 +1,11 @@
-/// The state of a vehicle's JRB E-Tag when it was read.
-enum ETagStatus { valid, invalid, expired }
+/// A vehicle's JRB E-Tag as found at verification.
+enum ETagStatus {
+  /// Registered and valid.
+  valid,
+
+  /// Registered but not valid.
+  invalid,
+
+  /// The vehicle has no E-Tag.
+  missing,
+}

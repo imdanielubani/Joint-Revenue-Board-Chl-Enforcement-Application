@@ -138,6 +138,17 @@ class DemoHistoryRepository implements HistoryRepository {
         method: VerificationMethod.qrCode,
         outcome: VerificationOutcome.notCompleted,
         recordedAt: on(17, 10, 18),
+        details: const VerificationRecordDetails(
+          reference: 'VRE-221-087',
+          vehicleType: 'Heavy goods vehicle',
+          agentName: _agentName,
+          agentId: _agentId,
+          actionTaken: 'None',
+          pendingAction:
+              'Retry the verification when connectivity is '
+              'available',
+          location: RecordLocation(latitude: 9.05785, longitude: 7.49508),
+        ),
       ),
       VerificationRecord(
         id: 'VR-1031',

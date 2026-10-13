@@ -385,7 +385,8 @@ the tabs at `/history/:id`, as designed (no navigation bar).
   (the same setting as the page's switch), Verification method (Manual
   plate, Receipt QR, Tag QR, RFID, OCR; a QR code is a receipt for a trip
   and a tag for an E-Tag), Verification result (what was found: Active
-  trip, No active trip, E-Tag valid, ...) and Completion status. Choices
+  trip, No active trip, E-Tag valid, E-Tag invalid, E-Tag missing, ...)
+  and Completion status. Choices
   apply only on Show; while a filter is set the card counts the matches
   ("1 matching record", "Show 1 record"). Reset returns the card to the
   last 30 days with no filters without closing it; the close button keeps
@@ -413,8 +414,12 @@ the tabs at `/history/:id`, as designed (no navigation bar).
   scope", since the app never makes payment requests). An active trip
   offers View verification result (the result page for the plate); every
   record has Back to history. A value the server did not send shows "Not
-  recorded". E-Tag and unfinished records have no design yet and still
-  show a placeholder with the plate.
+  recorded". An unfinished check (no design; built from the same parts)
+  shows "Verification Unavailable" with the unfinished icon, "Not
+  completed · Receipt QR", trip and E-Tag status "Not concluded" (as its
+  notification says, nothing was concluded), its pending action, and
+  Retry verification (the result page for the plate). E-Tag records have
+  no design yet and still show a placeholder with the plate.
 - **Data:** `HistoryRepository`; `RemoteHistoryRepository` is empty until
   the API exists (TODO in `data/repositories/history_repository_impl.dart`).
   A record's page fields come in `VerificationRecord.details`
@@ -770,6 +775,11 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Verification record for an unfinished check ("Verification
+  Unavailable"), with Retry verification. An E-Tag is now valid, invalid
+  or missing (no longer "expired"): records, the result filter and the
+  record page say "E-Tag missing" / "Missing".
 
 - Removed the unused biometric unlock button widget.
 

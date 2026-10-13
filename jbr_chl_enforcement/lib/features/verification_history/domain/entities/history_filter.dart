@@ -52,7 +52,7 @@ enum HistoryResult {
   previousTrip('Previous trip'),
   eTagValid('E-Tag valid'),
   eTagInvalid('E-Tag invalid'),
-  eTagExpired('E-Tag expired');
+  eTagMissing('E-Tag missing');
 
   const HistoryResult(this.label);
 
@@ -65,7 +65,7 @@ enum HistoryResult {
     HistoryResult.previousTrip => record.tripStatus == TripStatus.previous,
     HistoryResult.eTagValid => record.eTagStatus == ETagStatus.valid,
     HistoryResult.eTagInvalid => record.eTagStatus == ETagStatus.invalid,
-    HistoryResult.eTagExpired => record.eTagStatus == ETagStatus.expired,
+    HistoryResult.eTagMissing => record.eTagStatus == ETagStatus.missing,
   };
 }
 

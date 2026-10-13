@@ -120,6 +120,17 @@ void main() {
       expect(HistoryResult.activeTrip.matches(trip), isTrue);
       expect(HistoryResult.noActiveTrip.matches(trip), isFalse);
       expect(HistoryResult.eTagValid.matches(_eTag), isTrue);
+      expect(HistoryResult.eTagMissing.matches(_eTag), isFalse);
+      expect(HistoryResult.eTagMissing.label, 'E-Tag missing');
+      // An E-Tag is valid, invalid or missing.
+      expect(HistoryResult.values.map((r) => r.label), [
+        'Active trip',
+        'No active trip',
+        'Previous trip',
+        'E-Tag valid',
+        'E-Tag invalid',
+        'E-Tag missing',
+      ]);
       for (final result in HistoryResult.values) {
         expect(result.matches(_unfinished), isFalse);
       }

@@ -169,7 +169,7 @@ extension ETagStatusLabel on ETagStatus {
   String get label => switch (this) {
     ETagStatus.valid => 'E-Tag valid',
     ETagStatus.invalid => 'E-Tag invalid',
-    ETagStatus.expired => 'E-Tag expired',
+    ETagStatus.missing => 'E-Tag missing',
   };
 }
 
