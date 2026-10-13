@@ -381,13 +381,23 @@ inside the tab.
   "Tag QR · 08:42 AM") and **Completed** / **Not completed**. Pull down to
   refresh. The last 30 days are today and the 29 days before
   (`inPeriod`).
-- **Filters** (`widgets/history_filter_sheet.dart`; there is no design for
-  it, so it uses the app's floating card): check (All checks / CHL trips /
-  E-Tags) and result (All / Completed / Not completed), with Show records
-  and Clear filters. The button shows how many are set ("Filters (2)").
-  Nothing matching: "No matching records" with Clear filters. Nothing in
-  the last 30 days but older records exist: "Nothing in the last 30 days"
-  with View All History.
+- **Filter history** (`widgets/history_filter_sheet.dart`): Date range
+  (the same setting as the page's switch), Verification method (Manual
+  plate, Receipt QR, Tag QR, RFID, OCR; a QR code is a receipt for a trip
+  and a tag for an E-Tag), Verification result (what was found: Active
+  trip, No active trip, E-Tag valid, ...) and Completion status. Choices
+  apply only on Show; while a filter is set the card counts the matches
+  ("1 matching record", "Show 1 record"). Reset returns the card to the
+  last 30 days with no filters without closing it; the close button keeps
+  the filters as they were. The model is `HistoryFilter`
+  (`domain/entities/history_filter.dart`).
+- **Applied filters:** the Filters button shows a green count, the summary
+  says "1 matching record · Last 30 days", and each filter shows as a chip
+  that removes it ("Remove method filter: Receipt QR"), with Clear all.
+  The date range is not a chip. Nothing matching: "No matching records"
+  with Adjust filters (reopens the card) and Clear all filters. Nothing in
+  the last 30 days and no filters set: "Nothing in the last 30 days" with
+  View All History (no design; built from the same parts).
 - **States:** "Loading your verification history…" with the skeleton; "No
   verifications yet" (no button, as designed); "History unavailable" with
   Try again (never shown as an empty history). A refresh keeps the list on
@@ -405,7 +415,8 @@ inside the tab.
   "Today", "Yesterday" or "26 Sept 2026" ("Sept", as in the designs) for
   the history and notifications.
 - **Shared with notifications:** `SegmentedSwitch`, `CardListSkeleton` and
-  `StateMessage` / `PillButton` (`shared/ui/widgets/`).
+  `StateMessage` / `PillButton` (`shared/ui/widgets/`). `StateMessage` can
+  show a second, outlined button.
 
 ### Notifications
 
@@ -743,6 +754,12 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Verification history filters: Filter history card with date range,
+  method, result and completion dropdowns, a live match count, Show and
+  Reset; applied filters as removable chips with Clear all and a count on
+  the Filters button; "No matching records" with Adjust filters and Clear
+  all filters. Replaces the earlier stand-in filter card.
 
 - Verification history: Last 30 days / View All History, records grouped
   by day with Completed / Not completed, Filters, loading skeleton, no

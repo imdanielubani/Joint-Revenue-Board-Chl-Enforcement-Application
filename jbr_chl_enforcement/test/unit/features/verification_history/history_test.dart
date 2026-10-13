@@ -9,6 +9,7 @@ import 'package:jbr_chl_enforcement/features/verification_history/domain/entitie
 import 'package:jbr_chl_enforcement/features/verification_history/domain/entities/verification_record.dart';
 import 'package:jbr_chl_enforcement/features/verification_history/presentation/providers/history_controller.dart';
 import 'package:jbr_chl_enforcement/features/verification_history/presentation/screens/verification_history_screen.dart';
+import 'package:jbr_chl_enforcement/features/verification_history/presentation/widgets/history_filter_sheet.dart';
 import 'package:jbr_chl_enforcement/features/verification_history/presentation/widgets/history_list_item.dart';
 
 import '../../../helpers/fakes.dart';
@@ -86,38 +87,83 @@ void main() {
 
   group('filter', () {
     final trip = _trip(DateTime(2026, 10, 13, 9));
+    final receipt = _trip(DateTime(2026, 10, 13, 9, 30));
 
-    test('none matches everything', () {
+    test('none: last 30 days, nothing filtered', () {
+      expect(HistoryFilter.none.period, HistoryPeriod.last30Days);
       expect(HistoryFilter.none.isActive, isFalse);
       expect(HistoryFilter.none.count, 0);
       for (final record in [trip, _eTag, _unfinished]) {
-        expect(HistoryFilter.none.matches(record), isTrue);
+        expect(HistoryFilter.none.matches(record, _now), isTrue);
       }
-    });
-
-    test('by check', () {
-      const trips = HistoryFilter(check: HistoryCheck.chlTrips);
-      const eTags = HistoryFilter(check: HistoryCheck.eTags);
-      expect(trips.matches(trip), isTrue);
-      expect(trips.matches(_eTag), isFalse);
-      expect(trips.matches(_unfinished), isFalse);
-      expect(eTags.matches(_eTag), isTrue);
-      expect(eTags.matches(trip), isFalse);
-    });
-
-    test('by result', () {
-      const done = HistoryFilter(result: HistoryResult.completed);
-      const notDone = HistoryFilter(result: HistoryResult.notCompleted);
-      expect(done.matches(trip), isTrue);
-      expect(done.matches(_unfinished), isFalse);
-      expect(notDone.matches(_unfinished), isTrue);
-      expect(notDone.matches(trip), isFalse);
       expect(
-        const HistoryFilter(
-          check: HistoryCheck.eTags,
-          result: HistoryResult.notCompleted,
-        ).count,
-        2,
+        HistoryFilter.none.matches(_trip(DateTime(2026, 9, 1)), _now),
+        isFalse,
+      );
+      expect(
+        HistoryFilter.none
+            .withPeriod(HistoryPeriod.all)
+            .matches(_trip(DateTime(2026, 9, 1)), _now),
+        isTrue,
+      );
+    });
+
+    test('a QR code is a receipt for a trip and a tag for an E-Tag', () {
+      expect(HistoryMethod.receiptQr.matches(receipt), isTrue);
+      expect(HistoryMethod.receiptQr.matches(_eTag), isFalse);
+      expect(HistoryMethod.tagQr.matches(_eTag), isTrue);
+      expect(HistoryMethod.tagQr.matches(receipt), isFalse);
+      expect(HistoryMethod.manualPlate.matches(receipt), isFalse);
+    });
+
+    test('result is what was found; unfinished checks found nothing', () {
+      expect(HistoryResult.activeTrip.matches(trip), isTrue);
+      expect(HistoryResult.noActiveTrip.matches(trip), isFalse);
+      expect(HistoryResult.eTagValid.matches(_eTag), isTrue);
+      for (final result in HistoryResult.values) {
+        expect(result.matches(_unfinished), isFalse);
+      }
+      // The same words as on the record.
+      expect(HistoryResult.activeTrip.label, trip.finding);
+      expect(HistoryResult.eTagValid.label, _eTag.finding);
+    });
+
+    test('completion', () {
+      expect(HistoryCompletion.completed.matches(trip), isTrue);
+      expect(HistoryCompletion.completed.matches(_unfinished), isFalse);
+      expect(HistoryCompletion.notCompleted.matches(_unfinished), isTrue);
+    });
+
+    test('count, cleared and equality leave the date range alone', () {
+      const filter = HistoryFilter(
+        period: HistoryPeriod.all,
+        method: HistoryMethod.tagQr,
+        completion: HistoryCompletion.notCompleted,
+      );
+      expect(filter.count, 2);
+      expect(filter.isActive, isTrue);
+      expect(filter.withMethod(null).count, 1);
+      expect(filter.cleared(), const HistoryFilter(period: HistoryPeriod.all));
+      expect(
+        HistoryFilter.none.withPeriod(HistoryPeriod.all).isActive,
+        isFalse,
+      );
+      expect(
+        filter.withResult(HistoryResult.noActiveTrip).matches(trip, _now),
+        isFalse,
+      );
+    });
+
+    test('matching wording', () {
+      expect(HistoryFilterSheet.matching(1), '1 matching record');
+      expect(HistoryFilterSheet.matching(0), '0 matching records');
+      expect(
+        VerificationHistoryScreen.summary(
+          1,
+          HistoryPeriod.last30Days,
+          filtered: true,
+        ),
+        '1 matching record · Last 30 days',
       );
     });
   });

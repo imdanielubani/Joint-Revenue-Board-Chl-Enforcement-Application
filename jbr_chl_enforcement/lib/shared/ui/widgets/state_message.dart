@@ -4,9 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
-/// A centred icon, title, message and an optional button, for a page with
+/// A centred icon, title, message and up to two buttons, for a page with
 /// nothing to show or that could not load ("No notifications yet",
-/// "History unavailable").
+/// "History unavailable", "No matching records").
 class StateMessage extends StatelessWidget {
   const StateMessage({
     super.key,
@@ -17,8 +17,12 @@ class StateMessage extends StatelessWidget {
     this.onAction,
     this.actionWeight = AppTypography.semiBold,
     this.messageColor = Colors.black,
+    this.secondaryLabel,
+    this.onSecondary,
     this.liveRegion = false,
-  }) : assert((actionLabel == null) == (onAction == null));
+  }) : assert((actionLabel == null) == (onAction == null)),
+       assert((secondaryLabel == null) == (onSecondary == null)),
+       assert(secondaryLabel == null || actionLabel != null);
 
   final String iconAsset;
   final String title;
@@ -29,6 +33,10 @@ class StateMessage extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final FontWeight actionWeight;
+
+  /// An outlined button under the first one, if any.
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
   /// Announce the title when it appears (e.g. a load failed).
   final bool liveRegion;
@@ -94,6 +102,33 @@ class StateMessage extends StatelessWidget {
               label: label,
               onPressed: onAction!,
               weight: actionWeight,
+            ),
+          ],
+          if (secondaryLabel case final label?) ...[
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: onSecondary,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 52),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 13,
+                ),
+                backgroundColor: AppColors.surface,
+                foregroundColor: AppColors.forest,
+                side: const BorderSide(color: AppColors.ink, width: 1.5),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(28)),
+                ),
+                textStyle: TextStyle(
+                  fontFamily: AppTypography.fontFamily,
+                  fontSize: 15,
+                  fontWeight: actionWeight,
+                  letterSpacing: 0,
+                  height: 20.25 / 15,
+                ),
+              ),
+              child: Text(label, textAlign: TextAlign.center),
             ),
           ],
         ],

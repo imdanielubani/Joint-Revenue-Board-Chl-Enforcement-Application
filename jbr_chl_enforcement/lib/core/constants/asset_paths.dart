@@ -89,6 +89,11 @@ abstract final class AssetPaths {
   static const String iconHistoryChevron = '$historyDir/chevron.svg';
   static const String iconHistoryFilter = '$historyDir/filter.svg';
   static const String iconHistoryEmpty = '$historyDir/empty.svg';
+  static const String iconHistoryNoMatch = '$historyDir/no_match.svg';
+  static const String iconHistoryChipRemove = '$historyDir/chip_remove.svg';
+  static const String iconHistorySheetClose = '$historyDir/sheet_close.svg';
+  static const String iconHistoryDropdown = '$historyDir/dropdown.svg';
+  static const String iconHistoryMatch = '$historyDir/match_filter.svg';
 
   // Notifications
   static const String notificationsDir = 'assets/icons/notifications';

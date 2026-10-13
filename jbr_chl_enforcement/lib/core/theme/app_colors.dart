@@ -73,6 +73,12 @@ abstract final class AppColors {
   static const Color historyCompleted = Color(0xFF2A6639); // badge text
   static const Color historyNotCompleted = Color(0xFF875900); // badge text
   static const Color filterOutline = Color(0xFF7C9075); // Filters button
+  static const Color filterInk = Color(0xFF201629); // Filter history text
+  static const Color filterField = Color(0xFF7C897C); // dropdown outline
+  static const Color filterMatchTint = Color(0xFFEAF9EF); // "1 matching record"
+  static const Color filterMatchBorder = Color(0xFF37974D);
+  static const Color filterMatchDisc = Color(0xFFD4F0DC);
+  static const Color filterSheetShadow = Color(0x45000000); // black at 27%
 
   // Notifications.
   static const Color noticeWarningTint = Color(0xFFFFF1D9); // icon disc

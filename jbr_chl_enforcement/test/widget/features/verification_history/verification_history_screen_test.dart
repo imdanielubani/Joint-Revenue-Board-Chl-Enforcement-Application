@@ -180,14 +180,16 @@ Future<void> _reveal(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _filter(WidgetTester tester, List<String> choices) async {
+Future<void> _openFilters(WidgetTester tester) async {
   await tester.tap(find.bySemanticsLabel(RegExp('^Filter history')));
   await tester.pumpAndSettle();
-  for (final choice in choices) {
-    await tester.tap(find.text(choice));
-    await tester.pumpAndSettle();
-  }
-  await tester.tap(find.text('Show records'));
+}
+
+/// Opens the dropdown showing [current] and chooses [choice].
+Future<void> _pick(WidgetTester tester, String current, String choice) async {
+  await tester.tap(find.text(current).last);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(choice).last);
   await tester.pumpAndSettle();
 }
 
@@ -300,65 +302,191 @@ void main() {
   });
 
   group('filters', () {
-    testWidgets('E-Tags only', (tester) async {
+    testWidgets('the card counts matches and applies only on Show', (
+      tester,
+    ) async {
       await _pump(tester);
+      await _openFilters(tester);
 
-      await _filter(tester, ['E-Tags']);
+      expect(find.text('Filter history'), findsOneWidget);
+      expect(
+        find.text(
+          'Choose the checks you want to see.\n'
+          'Changes apply only when you confirm.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Last 30 days').last, findsOneWidget);
+      expect(find.text('All methods'), findsOneWidget);
+      expect(find.text('All results'), findsOneWidget);
+      expect(find.text('All statuses'), findsOneWidget);
+      expect(find.text('Show'), findsOneWidget);
+      expect(find.textContaining('matching record'), findsNothing);
 
-      expect(find.text('1 personal record · Last 30 days'), findsOneWidget);
-      expect(find.text('GGE 651 PL'), findsOneWidget);
-      expect(find.text('ABC 123 AA'), findsNothing);
-      expect(find.text('Filters (1)'), findsOneWidget);
-    });
-
-    testWidgets('not completed only', (tester) async {
-      await _pump(tester);
-
-      await _filter(tester, ['Not completed']);
-
-      expect(find.byType(HistoryRecordTile), findsOneWidget);
-      expect(find.text('BDG 204 XY'), findsOneWidget);
-    });
-
-    testWidgets('no match offers to clear the filters', (tester) async {
-      await _pump(tester);
-
-      await _filter(tester, ['E-Tags', 'Not completed']);
-
-      expect(find.text('No matching records'), findsOneWidget);
-      expect(find.text('Filters (2)'), findsOneWidget);
-      await tester.tap(find.text('Clear filters'));
-      await tester.pumpAndSettle();
+      await _pick(tester, 'All methods', 'Manual plate');
+      expect(find.text('3 matching records'), findsOneWidget);
+      await _pick(tester, 'All results', 'No active trip');
+      await _pick(tester, 'All statuses', 'Completed');
+      expect(find.text('1 matching record'), findsOneWidget);
+      // Nothing changes behind the card until it is confirmed.
       expect(find.text('6 personal records · Last 30 days'), findsOneWidget);
-      expect(find.text('Filters'), findsOneWidget);
-    });
 
-    testWidgets('Clear filters on the card resets them', (tester) async {
-      await _pump(tester);
-      await _filter(tester, ['CHL trips']);
-      expect(find.text('Filters (1)'), findsOneWidget);
-
-      await tester.tap(find.bySemanticsLabel(RegExp('^Filter history')));
-      await tester.pumpAndSettle();
-      expect(find.byType(HistoryFilterSheet), findsOneWidget);
-      await tester.tap(find.text('Clear filters'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Filters'), findsOneWidget);
-      expect(find.text('6 personal records · Last 30 days'), findsOneWidget);
-    });
-
-    testWidgets('closing the card keeps the filters', (tester) async {
-      await _pump(tester);
-      await _filter(tester, ['E-Tags']);
-
-      await tester.tap(find.bySemanticsLabel(RegExp('^Filter history')));
-      await tester.pumpAndSettle();
-      await tester.tapAt(const Offset(195, 60));
+      await tester.tap(find.text('Show 1 record'));
       await tester.pumpAndSettle();
 
       expect(find.byType(HistoryFilterSheet), findsNothing);
-      expect(find.text('Filters (1)'), findsOneWidget);
+      expect(find.text('1 matching record · Last 30 days'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Filter history, 3 active filters'),
+        findsOneWidget,
+      );
+      expect(find.byType(HistoryRecordTile), findsOneWidget);
+      expect(find.text('LND 482 XK'), findsOneWidget);
+      for (final chip in [
+        'Remove method filter: Manual plate',
+        'Remove result filter: No active trip',
+        'Remove completion filter: Completed',
+      ]) {
+        expect(find.bySemanticsLabel(chip), findsOneWidget);
+      }
+    });
+
+    testWidgets('a chip removes its filter; Clear all removes them all', (
+      tester,
+    ) async {
+      await _pump(tester);
+      await _openFilters(tester);
+      await _pick(tester, 'All methods', 'Receipt QR');
+      await _pick(tester, 'All statuses', 'Not completed');
+      await tester.tap(find.text('Show 1 record'));
+      await tester.pumpAndSettle();
+      expect(find.text('BDG 204 XY'), findsOneWidget);
+
+      await tester.tap(find.bySemanticsLabel(RegExp('^Remove completion')));
+      await tester.pumpAndSettle();
+      expect(find.text('2 matching records · Last 30 days'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Filter history, 1 active filter'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Clear all'));
+      await tester.pumpAndSettle();
+      expect(find.text('6 personal records · Last 30 days'), findsOneWidget);
+      expect(find.text('Clear all'), findsNothing);
+      expect(find.bySemanticsLabel('Filter history'), findsOneWidget);
+    });
+
+    testWidgets('screen readers can remove a chip', (tester) async {
+      await _pump(tester);
+      await _openFilters(tester);
+      await _pick(tester, 'All results', 'E-Tag valid');
+      await tester.tap(find.text('Show 1 record'));
+      await tester.pumpAndSettle();
+
+      tester.semantics.tap(
+        find.semantics.byLabel('Remove result filter: E-Tag valid'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('6 personal records · Last 30 days'), findsOneWidget);
+    });
+
+    testWidgets('the date range is the page switch', (tester) async {
+      await _pump(tester);
+      await _openFilters(tester);
+      await _pick(tester, 'Last 30 days', 'All available dates');
+      await tester.tap(find.text('Show'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('7 personal records · All available dates'),
+        findsOneWidget,
+      );
+      // The date range is not a filter chip.
+      expect(find.text('Clear all'), findsNothing);
+
+      await tester.tap(find.text('Last 30 days'));
+      await tester.pumpAndSettle();
+      await _openFilters(tester);
+      expect(find.text('Last 30 days').last, findsOneWidget);
+      expect(find.text('All available dates'), findsNothing);
+    });
+
+    testWidgets('Reset clears the card but applies nothing yet', (
+      tester,
+    ) async {
+      await _pump(tester);
+      await tester.tap(find.text('View All History'));
+      await tester.pumpAndSettle();
+      await _openFilters(tester);
+      await _pick(tester, 'All methods', 'Tag QR');
+      // GGE 651 PL today and APP 610 KS on 6 Sept.
+      expect(find.text('2 matching records'), findsOneWidget);
+
+      await tester.tap(find.text('Reset'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HistoryFilterSheet), findsOneWidget);
+      expect(find.text('All methods'), findsOneWidget);
+      expect(find.text('Last 30 days').last, findsOneWidget);
+      expect(find.text('Show'), findsOneWidget);
+      expect(
+        find.text('7 personal records · All available dates'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('closing the card keeps the filters as they were', (
+      tester,
+    ) async {
+      await _pump(tester);
+      await _openFilters(tester);
+      await _pick(tester, 'All methods', 'Tag QR');
+      await tester.tap(find.text('Show 1 record'));
+      await tester.pumpAndSettle();
+
+      await _openFilters(tester);
+      await _pick(tester, 'Tag QR', 'Manual plate');
+      await tester.tap(find.bySemanticsLabel('Cancel history filters'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HistoryFilterSheet), findsNothing);
+      expect(find.text('GGE 651 PL'), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('Tag QR\$')), findsOneWidget);
+    });
+
+    testWidgets('no match: Adjust filters reopens the card, Clear all '
+        'filters shows everything', (tester) async {
+      await _pump(tester);
+      await _openFilters(tester);
+      await _pick(tester, 'All methods', 'Tag QR');
+      await _pick(tester, 'All results', 'No active trip');
+      expect(find.text('0 matching records'), findsOneWidget);
+      await tester.tap(find.text('Show 0 records'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('0 matching records · Last 30 days'), findsOneWidget);
+      expect(find.text('No matching records'), findsOneWidget);
+      expect(
+        find.text(
+          'Try a different date range or remove a filter. Your '
+          'verification history has not been deleted.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(HistoryRecordTile), findsNothing);
+
+      await tester.tap(find.text('Adjust filters'));
+      await tester.pumpAndSettle();
+      expect(find.byType(HistoryFilterSheet), findsOneWidget);
+      expect(find.text('Tag QR').last, findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Cancel history filters'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Clear all filters'));
+      await tester.pumpAndSettle();
+      expect(find.text('6 personal records · Last 30 days'), findsOneWidget);
+      expect(find.text('No matching records'), findsNothing);
     });
   });
 
@@ -465,10 +593,10 @@ void main() {
         await tester.tap(find.bySemanticsLabel(RegExp('^Filter history')));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        await tester.ensureVisible(find.text('Show records'));
+        await tester.ensureVisible(find.text('Show'));
         await tester.pumpAndSettle();
-        expect(find.text('Show records').hitTestable(), findsOneWidget);
-        await tester.tap(find.text('Show records'));
+        expect(find.text('Show').hitTestable(), findsOneWidget);
+        await tester.tap(find.text('Show'));
         await tester.pumpAndSettle();
 
         await tester.pumpWidget(const SizedBox());
