@@ -17,6 +17,7 @@ import 'package:jbr_chl_enforcement/features/offline_sync/presentation/screens/s
 import 'package:jbr_chl_enforcement/features/offline_sync/presentation/widgets/offline_sync_sheet.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/presentation/widgets/sync_queue_item_tile.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_method.dart';
+import 'package:jbr_chl_enforcement/features/verification_history/presentation/widgets/history_list_item.dart';
 import 'package:jbr_chl_enforcement/shared/device/connectivity/connectivity_adapter.dart';
 
 import '../../../helpers/fakes.dart';
@@ -151,10 +152,10 @@ void main() {
   });
 
   test('labels how each record was taken', () {
-    expect(VerificationMethod.manualPlate.queueLabel, 'Manual plate');
-    expect(VerificationMethod.qrCode.queueLabel, 'Receipt QR');
-    expect(VerificationMethod.rfid.queueLabel, 'RFID tag');
-    expect(VerificationMethod.ocr.queueLabel, 'Plate OCR');
+    expect(VerificationMethod.manualPlate.recordLabel, 'Manual plate');
+    expect(VerificationMethod.qrCode.recordLabel, 'Receipt QR');
+    expect(VerificationMethod.rfid.recordLabel, 'RFID tag');
+    expect(VerificationMethod.ocr.recordLabel, 'Plate OCR');
   });
 
   test('summarises the queue', () {

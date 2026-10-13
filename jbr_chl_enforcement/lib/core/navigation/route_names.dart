@@ -7,6 +7,7 @@ abstract final class RouteNames {
   // Signed-in tabs.
   static const String dashboard = 'dashboard';
   static const String history = 'history';
+  static const String historyRecord = 'history-record';
   static const String notifications = 'notifications';
   static const String notificationDetails = 'notification-details';
   static const String profile = 'profile';

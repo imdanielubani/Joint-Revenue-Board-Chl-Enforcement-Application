@@ -69,19 +69,32 @@ GoRouter _router(String initialLocation) => GoRouter(
       builder: (context, state, shell) =>
           MainShellScaffold(navigationShell: shell),
       branches: [
-        for (final (path, name) in [
-          (RoutePaths.dashboard, RouteNames.dashboard),
-          (RoutePaths.history, RouteNames.history),
-        ])
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: path,
-                name: name,
-                builder: (context, state) => _page('$name page'),
-              ),
-            ],
-          ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: RoutePaths.dashboard,
+              name: RouteNames.dashboard,
+              builder: (context, state) => _page('dashboard page'),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: RoutePaths.history,
+              name: RouteNames.history,
+              builder: (context, state) => _page('history page'),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  name: RouteNames.historyRecord,
+                  builder: (context, state) =>
+                      _page('record ${state.pathParameters['id']} page'),
+                ),
+              ],
+            ),
+          ],
+        ),
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -489,7 +502,7 @@ void main() {
       await tester.tap(find.text('View Verification Record'));
       await tester.pumpAndSettle();
 
-      expect(find.text('history page'), findsOneWidget);
+      expect(find.text('record VR-1042 page'), findsOneWidget);
     });
 
     testWidgets('an earlier notification shows its date', (tester) async {

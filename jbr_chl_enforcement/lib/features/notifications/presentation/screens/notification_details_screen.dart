@@ -12,9 +12,9 @@ import '../../../../shared/ui/widgets/app_spinner.dart';
 import '../../../../shared/ui/widgets/empty_state.dart';
 import '../../../../shared/ui/widgets/green_header_scaffold.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
+import '../../../../shared/ui/widgets/state_message.dart';
 import '../../domain/entities/app_notification.dart';
 import '../providers/notifications_controller.dart';
-import '../widgets/inbox_message.dart';
 import '../widgets/notification_style.dart';
 
 /// One notification in full. Opening it marks it as read. A verification
@@ -98,12 +98,14 @@ class _NotificationDetailsScreenState
           _DetailsCard(notification: notification, now: now),
           if (notification.verificationRecordId != null) ...[
             const SizedBox(height: 35),
-            InboxButton(
+            PillButton(
               label: 'View Verification Record',
               weight: AppTypography.medium,
-              // TODO(verification_history): open the record itself once the
-              // history has a record page.
-              onPressed: () => context.goNamed(RouteNames.history),
+              // Opens the record in the History tab.
+              onPressed: () => context.goNamed(
+                RouteNames.historyRecord,
+                pathParameters: {'id': notification.verificationRecordId!},
+              ),
             ),
           ],
         ],

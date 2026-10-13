@@ -97,6 +97,7 @@ flutter:
     - assets/icons/account/
     - assets/icons/sync/
     - assets/icons/notifications/
+    - assets/icons/history/
     - assets/animations/
     - assets/sounds/
     - assets/fonts/poppins/OFL.txt

@@ -151,11 +151,18 @@ class VerificationRecordTile extends StatelessWidget {
 
 extension VerificationRecordDetail on VerificationRecord {
   /// What was found · how the vehicle was identified.
-  String get detail {
-    final eTag = eTagStatus;
-    if (eTag != null) return '${eTag.label} · ${method.eTagLabel}';
-    return '${tripStatus!.label} · ${method.label}';
-  }
+  /// e.g. "Active trip · RFID", as on the dashboard.
+  String get detail =>
+      '$finding · ${isETagCheck ? method.eTagLabel : method.label}';
+
+  /// "Active trip", "E-Tag valid" or "Verification unavailable".
+  String get finding =>
+      eTagStatus?.label ?? tripStatus?.label ?? 'Verification unavailable';
+
+  /// How the vehicle was identified, as in the history: "Tag QR" for an
+  /// E-Tag, "Receipt QR" or "Manual plate" for a CHL trip.
+  String get historyMethod =>
+      isETagCheck ? method.eTagLabel : method.recordLabel;
 }
 
 extension ETagStatusLabel on ETagStatus {
@@ -182,6 +189,14 @@ extension VerificationMethodLabel on VerificationMethod {
     VerificationMethod.ocr => 'OCR',
   };
 
+  /// How a CHL trip record was taken ("Receipt QR", "Manual plate").
+  String get recordLabel => switch (this) {
+    VerificationMethod.rfid => 'RFID tag',
+    VerificationMethod.qrCode => 'Receipt QR',
+    VerificationMethod.manualPlate => 'Manual plate',
+    VerificationMethod.ocr => 'Plate OCR',
+  };
+
   /// How an E-Tag was read ("Tag RFID", "Tag QR").
   String get eTagLabel => switch (this) {
     VerificationMethod.rfid => 'Tag RFID',
@@ -198,5 +213,6 @@ extension VerificationOutcomeLabel on VerificationOutcome {
     VerificationOutcome.validated => 'Validated',
     VerificationOutcome.caseCreated => 'Case created',
     VerificationOutcome.escalated => 'Escalated',
+    VerificationOutcome.notCompleted => 'Not completed',
   };
 }

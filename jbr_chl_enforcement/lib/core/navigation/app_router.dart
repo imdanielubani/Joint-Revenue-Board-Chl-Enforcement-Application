@@ -23,6 +23,7 @@ import '../../features/verification/presentation/screens/qr_scan_screen.dart';
 import '../../features/verification/presentation/screens/rfid_scan_screen.dart';
 import '../../features/verification/presentation/screens/verification_hub_screen.dart';
 import '../../features/verification/presentation/screens/verify_e_tag_screen.dart';
+import '../../features/verification_history/presentation/screens/history_record_details_screen.dart';
 import '../../features/verification_history/presentation/screens/verification_history_screen.dart';
 import 'main_shell_scaffold.dart';
 import 'route_names.dart';
@@ -71,6 +72,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             RoutePaths.history,
             RouteNames.history,
             VerificationHistoryScreen(),
+            routes: [
+              // Inside the tab, so the navigation bar stays.
+              GoRoute(
+                path: ':id',
+                name: RouteNames.historyRecord,
+                builder: (context, state) =>
+                    HistoryRecordDetailsScreen(id: state.pathParameters['id']!),
+              ),
+            ],
           ),
           _tab(
             RoutePaths.notifications,

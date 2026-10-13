@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
 
-/// A centred icon, title, message and one button: "No notifications yet",
-/// "Notifications unavailable" and "You're all caught up".
-class InboxMessage extends StatelessWidget {
-  const InboxMessage({
+/// A centred icon, title, message and an optional button, for a page with
+/// nothing to show or that could not load ("No notifications yet",
+/// "History unavailable").
+class StateMessage extends StatelessWidget {
+  const StateMessage({
     super.key,
     required this.iconAsset,
     required this.title,
     required this.message,
-    required this.actionLabel,
-    required this.onAction,
+    this.actionLabel,
+    this.onAction,
+    this.actionWeight = AppTypography.semiBold,
     this.messageColor = Colors.black,
     this.liveRegion = false,
-  });
+  }) : assert((actionLabel == null) == (onAction == null));
 
   final String iconAsset;
   final String title;
   final String message;
   final Color messageColor;
-  final String actionLabel;
-  final VoidCallback onAction;
+
+  /// The button, if any.
+  final String? actionLabel;
+  final VoidCallback? onAction;
+  final FontWeight actionWeight;
 
   /// Announce the title when it appears (e.g. a load failed).
   final bool liveRegion;
@@ -83,8 +88,14 @@ class InboxMessage extends StatelessWidget {
               color: messageColor,
             ),
           ),
-          const SizedBox(height: 24),
-          InboxButton(label: actionLabel, onPressed: onAction),
+          if (actionLabel case final label?) ...[
+            const SizedBox(height: 24),
+            PillButton(
+              label: label,
+              onPressed: onAction!,
+              weight: actionWeight,
+            ),
+          ],
         ],
       ),
     );
@@ -92,8 +103,8 @@ class InboxMessage extends StatelessWidget {
 }
 
 /// 52 px green pill with a 15 px label.
-class InboxButton extends StatelessWidget {
-  const InboxButton({
+class PillButton extends StatelessWidget {
+  const PillButton({
     super.key,
     required this.label,
     required this.onPressed,

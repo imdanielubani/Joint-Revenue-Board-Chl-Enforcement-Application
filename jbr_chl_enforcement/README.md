@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -94,7 +94,7 @@ Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                     (skipped when      │         ├─ Dashboard ──► SOS
                      nothing pending)  │         │             ├─► Verify CHL Trip ──► RFID, QR, manual plate, OCR
                                        │         │             └─► Verify E-Tag ─────► RFID, QR
-                                       │         ├─ History
+                                       │         ├─ History ──► Verification record
                                        │         ├─ Notifications ──► Notification details
                                        │         └─ Profile ──► Account details
                                        │                     └─► App settings ──► Security, Offline sync (card), Sync queue
@@ -226,7 +226,8 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | App settings ("My Preferences") | `features/settings/presentation/screens/settings_screen.dart` | See below. |
 | Notifications | `features/notifications/presentation/screens/notifications_screen.dart` | See below. |
 | Notification details | `features/notifications/presentation/screens/notification_details_screen.dart` | See below. |
-| History, SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
+| Verification history | `features/verification_history/presentation/screens/verification_history_screen.dart` | See below. |
+| Verification record, SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -364,6 +365,48 @@ card opens again; an interruption stays until retried.
   CHL", "Local response walkthrough only.") is replaced with what the app
   really does.
 
+### Verification history
+
+History tab ("My Activity", `/history`); a record opens at `/history/:id`
+inside the tab.
+
+- **List:** "Verification history" / "Review your trip and E-Tag checks.",
+  the **Last 30 days / View All History** switch, "6 personal records ·
+  Last 30 days" with **Filters**, then the records grouped by day ("Today",
+  "Yesterday", "26 Sept 2026") in cards. Each row
+  (`widgets/history_record_tile.dart`): icon on a green disc when all was
+  well (active trip, valid E-Tag) or amber (no active trip, invalid E-Tag,
+  unfinished), plate, what was found ("Active trip", "E-Tag valid",
+  "Verification unavailable"), how and when ("Receipt QR · 09:08 AM",
+  "Tag QR · 08:42 AM") and **Completed** / **Not completed**. Pull down to
+  refresh. The last 30 days are today and the 29 days before
+  (`inPeriod`).
+- **Filters** (`widgets/history_filter_sheet.dart`; there is no design for
+  it, so it uses the app's floating card): check (All checks / CHL trips /
+  E-Tags) and result (All / Completed / Not completed), with Show records
+  and Clear filters. The button shows how many are set ("Filters (2)").
+  Nothing matching: "No matching records" with Clear filters. Nothing in
+  the last 30 days but older records exist: "Nothing in the last 30 days"
+  with View All History.
+- **States:** "Loading your verification history…" with the skeleton; "No
+  verifications yet" (no button, as designed); "History unavailable" with
+  Try again (never shown as an empty history). A refresh keeps the list on
+  screen, and keeps it if the refresh fails.
+- **Record page** (`history_record_details_screen.dart`): a placeholder
+  showing the plate until its design arrives.
+- **Data:** `HistoryRepository`; `RemoteHistoryRepository` is empty until
+  the API exists (TODO in `data/repositories/history_repository_impl.dart`).
+  `historyProvider` (`HistoryController`: load, `retry`; no automatic
+  retries). A record that did not finish has
+  `VerificationOutcome.notCompleted` and neither a trip nor an E-Tag
+  status. The dashboard keeps its own method wording ("Active trip ·
+  RFID"); the history uses `recordLabel` ("Receipt QR", "Manual plate").
+- **Dates:** `DateFormatter` (`core/utils/date_formatter.dart`) writes
+  "Today", "Yesterday" or "26 Sept 2026" ("Sept", as in the designs) for
+  the history and notifications.
+- **Shared with notifications:** `SegmentedSwitch`, `CardListSkeleton` and
+  `StateMessage` / `PillButton` (`shared/ui/widgets/`).
+
 ### Notifications
 
 Notifications tab (`/notifications`) and details (`/notifications/:id`,
@@ -379,7 +422,7 @@ inside the tab so the bottom bar stays).
   summary and "Category · 09:40 AM · Unread". Tapping a row marks it read
   and opens it. Pull down to refresh.
 - **States:** while loading, "Loading your notifications…" with four
-  pulsing skeleton cards (`widgets/notifications_skeleton.dart`, built
+  pulsing skeleton cards (`CardListSkeleton`, built
   with `skeletonizer`; the bars hold still with reduced motion). No
   notifications: "No notifications yet" with Back to dashboard. Load
   failure: "Notifications unavailable" with Try again (a failure is never
@@ -390,7 +433,7 @@ inside the tab so the bottom bar stays).
   09:40 AM") and Read status. Opening it marks it read (once; a refused
   read receipt shows it unread rather than retrying in a loop). A
   verification notification has **View Verification Record**, which opens
-  the History tab until the history has a record page.
+  that record in the History tab.
 - **State:** `notificationsProvider` (`NotificationsController`: load,
   `retry`, `markRead`, `markAllRead`; read changes show at once and are
   undone if the server refuses; no automatic retries).
@@ -700,6 +743,14 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Verification history: Last 30 days / View All History, records grouped
+  by day with Completed / Not completed, Filters, loading skeleton, no
+  verifications yet, history unavailable, and a placeholder record page
+  that the notification's View Verification Record now opens. Records can
+  be unfinished (`VerificationOutcome.notCompleted`). New shared
+  `SegmentedSwitch`, `CardListSkeleton`, `StateMessage` and
+  `DateFormatter`, now also used by notifications.
 
 - Screen readers can now activate every control that merges its content
   into one label (bottom bar tabs, back and bell buttons, settings rows,

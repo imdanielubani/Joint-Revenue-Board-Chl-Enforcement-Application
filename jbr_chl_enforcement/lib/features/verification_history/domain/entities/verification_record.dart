@@ -20,10 +20,15 @@ enum VerificationOutcome {
 
   /// Passed to a supervisor.
   escalated,
+
+  /// The verification did not finish (e.g. no connection); nothing about
+  /// the trip or E-Tag was concluded.
+  notCompleted,
 }
 
-/// One completed vehicle verification: of its CHL trip ([tripStatus]) or of
-/// its E-Tag ([eTagStatus]). Exactly one of the two is set.
+/// One vehicle verification: of its CHL trip ([tripStatus]) or of its E-Tag
+/// ([eTagStatus]). Exactly one of the two is set, unless the verification
+/// did not finish ([VerificationOutcome.notCompleted]), when neither is.
 @immutable
 class VerificationRecord {
   const VerificationRecord({
@@ -35,8 +40,11 @@ class VerificationRecord {
     required this.outcome,
     required this.recordedAt,
   }) : assert(
-         (tripStatus == null) != (eTagStatus == null),
-         'A record is about either a CHL trip or an E-Tag.',
+         outcome == VerificationOutcome.notCompleted
+             ? tripStatus == null && eTagStatus == null
+             : (tripStatus == null) != (eTagStatus == null),
+         'A finished record is about either a CHL trip or an E-Tag; an '
+         'unfinished one about neither.',
        );
 
   final String id;
@@ -53,4 +61,7 @@ class VerificationRecord {
   final DateTime recordedAt;
 
   bool get isETagCheck => eTagStatus != null;
+
+  /// Whether the verification finished with a trip or E-Tag result.
+  bool get isCompleted => outcome != VerificationOutcome.notCompleted;
 }

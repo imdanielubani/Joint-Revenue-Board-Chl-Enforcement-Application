@@ -5,18 +5,8 @@ import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../verification/domain/entities/plate_number.dart';
-import '../../../verification/domain/entities/verification_method.dart';
+import '../../../verification_history/presentation/widgets/history_list_item.dart';
 import '../../domain/entities/sync_queue_item.dart';
-
-extension SyncQueueMethodLabel on VerificationMethod {
-  /// How the queued record was taken, e.g. "Receipt QR".
-  String get queueLabel => switch (this) {
-    VerificationMethod.rfid => 'RFID tag',
-    VerificationMethod.qrCode => 'Receipt QR',
-    VerificationMethod.manualPlate => 'Manual plate',
-    VerificationMethod.ocr => 'Plate OCR',
-  };
-}
 
 const TextStyle _secondary = TextStyle(
   fontFamily: AppTypography.fontFamily,
@@ -37,7 +27,7 @@ class SyncQueueItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final plate = PlateNumber.group(item.plateNumber);
-    final method = '${item.method.queueLabel} · $recordKind';
+    final method = '${item.method.recordLabel} · $recordKind';
     final reference = '${item.id} · $status';
 
     return Semantics(

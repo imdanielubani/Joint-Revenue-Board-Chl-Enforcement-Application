@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/app_notification.dart';
 import '../../domain/entities/notification_type.dart';
 
@@ -55,19 +56,10 @@ extension NotificationTypeStyle on NotificationType {
 /// Dates and times as shown in the inbox and on the details page.
 abstract final class NotificationDates {
   static final DateFormat _time = DateFormat('hh:mm a');
-  static final DateFormat _day = DateFormat('d MMM y');
-
-  static bool _sameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
 
   /// "Today", "Yesterday" or "10 Oct 2026".
-  static String day(DateTime when, DateTime now) {
-    if (_sameDay(when, now)) return 'Today';
-    if (_sameDay(when, DateTime(now.year, now.month, now.day - 1))) {
-      return 'Yesterday';
-    }
-    return _day.format(when);
-  }
+  static String day(DateTime when, DateTime now) =>
+      DateFormatter.day(when, now);
 
   /// "09:40 AM".
   static String time(DateTime when) => _time.format(when);

@@ -9,6 +9,8 @@ import 'package:jbr_chl_enforcement/features/notifications/domain/repositories/n
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/entities/sync_queue_item.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/repositories/sync_repository.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_method.dart';
+import 'package:jbr_chl_enforcement/features/verification_history/domain/entities/verification_record.dart';
+import 'package:jbr_chl_enforcement/features/verification_history/domain/repositories/history_repository.dart';
 import 'package:jbr_chl_enforcement/shared/device/permissions/permission_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/storage/preferences_service.dart';
 import 'package:jbr_chl_enforcement/shared/storage/secure_storage_service.dart';
@@ -255,5 +257,29 @@ class FakeNotificationsRepository implements NotificationsRepository {
     for (var i = 0; i < inbox.length; i++) {
       inbox[i] = inbox[i].copyWith(isRead: true);
     }
+  }
+}
+
+/// Verification history whose answers the test decides.
+class FakeHistoryRepository implements HistoryRepository {
+  FakeHistoryRepository(this.records);
+
+  List<VerificationRecord> records;
+
+  /// Set to make loading fail.
+  Object? fetchError;
+
+  /// Set to hold loading until it completes.
+  Completer<void>? gate;
+
+  int fetchCount = 0;
+
+  @override
+  Future<List<VerificationRecord>> fetchHistory() async {
+    fetchCount++;
+    await gate?.future;
+    final error = fetchError;
+    if (error != null) throw error;
+    return List.unmodifiable(records);
   }
 }

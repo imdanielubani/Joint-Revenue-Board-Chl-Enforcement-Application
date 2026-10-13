@@ -78,6 +78,18 @@ abstract final class AssetPaths {
   static const String iconSignOutLock =
       'assets/icons/account/sign_out_lock.svg';
 
+  // Verification history
+  static const String historyDir = 'assets/icons/history';
+  static const String iconHistoryTripOk = '$historyDir/trip_ok.svg';
+  static const String iconHistoryTripWarn = '$historyDir/trip_warn.svg';
+  static const String iconHistoryETagWarn = '$historyDir/etag_warn.svg';
+  static const String iconHistoryUnfinished = '$historyDir/unfinished.svg';
+  static const String iconHistoryCompleted = '$historyDir/badge_done.svg';
+  static const String iconHistoryNotCompleted = '$historyDir/badge_pending.svg';
+  static const String iconHistoryChevron = '$historyDir/chevron.svg';
+  static const String iconHistoryFilter = '$historyDir/filter.svg';
+  static const String iconHistoryEmpty = '$historyDir/empty.svg';
+
   // Notifications
   static const String notificationsDir = 'assets/icons/notifications';
   static const String iconNotificationChevron = '$notificationsDir/chevron.svg';

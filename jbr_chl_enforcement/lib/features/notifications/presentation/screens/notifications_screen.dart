@@ -10,10 +10,11 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../../shared/ui/widgets/green_header_scaffold.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
+import '../../../../shared/ui/widgets/segmented_switch.dart';
+import '../../../../shared/ui/widgets/state_message.dart';
 import '../../../settings/presentation/widgets/settings_section.dart';
 import '../../domain/entities/app_notification.dart';
 import '../providers/notifications_controller.dart';
-import '../widgets/inbox_message.dart';
 import '../widgets/notification_style.dart';
 import '../widgets/notification_tile.dart';
 import '../widgets/notifications_skeleton.dart';
@@ -79,7 +80,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         _centered(
           bottom,
           alignment: -0.263,
-          child: InboxMessage(
+          child: StateMessage(
             iconAsset: AssetPaths.iconNotificationsUnavailable,
             title: 'Notifications unavailable',
             message:
@@ -98,7 +99,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               _centered(
                 bottom,
                 alignment: -0.263,
-                child: InboxMessage(
+                child: StateMessage(
                   iconAsset: AssetPaths.iconNotificationsEmpty,
                   title: 'No notifications yet',
                   message:
@@ -155,9 +156,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 16),
-              _FilterTabs(
-                filter: _filter,
-                unread: unread.length,
+              SegmentedSwitch<NotificationFilter>(
+                options: [
+                  (NotificationFilter.all, 'All'),
+                  (
+                    NotificationFilter.unread,
+                    unread.isEmpty ? 'Unread' : 'Unread (${unread.length})',
+                  ),
+                ],
+                selected: _filter,
                 onChanged: (filter) => setState(() => _filter = filter),
               ),
               const SizedBox(height: 16),
@@ -175,7 +182,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         _centered(
           bottom,
           alignment: -0.25,
-          child: InboxMessage(
+          child: StateMessage(
             iconAsset: AssetPaths.iconNotificationsCaughtUp,
             title: 'You’re all caught up',
             message:
@@ -222,100 +229,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       child: Padding(
         padding: EdgeInsets.fromLTRB(16, 24, 16, bottom),
         child: Align(alignment: Alignment(0, alignment), child: child),
-      ),
-    );
-  }
-}
-
-/// "All" / "Unread (3)" switch.
-class _FilterTabs extends StatelessWidget {
-  const _FilterTabs({
-    required this.filter,
-    required this.unread,
-    required this.onChanged,
-  });
-
-  final NotificationFilter filter;
-  final int unread;
-  final ValueChanged<NotificationFilter> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: const BoxDecoration(
-        color: AppColors.segmentTrack,
-        borderRadius: BorderRadius.all(Radius.circular(32)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _FilterTab(
-              label: 'All',
-              selected: filter == NotificationFilter.all,
-              onTap: () => onChanged(NotificationFilter.all),
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _FilterTab(
-              label: unread > 0 ? 'Unread ($unread)' : 'Unread',
-              selected: filter == NotificationFilter.unread,
-              onTap: () => onChanged(NotificationFilter.unread),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FilterTab extends StatelessWidget {
-  const _FilterTab({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      // The tap is declared here: excluding the children drops theirs.
-      onTap: onTap,
-      excludeSemantics: true,
-      child: Material(
-        color: selected ? AppColors.green : Colors.transparent,
-        borderRadius: const BorderRadius.all(Radius.circular(28)),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: const BorderRadius.all(Radius.circular(28)),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-              child: Center(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontFamily,
-                    fontSize: 12,
-                    fontWeight: AppTypography.medium,
-                    letterSpacing: 0,
-                    color: selected ? Colors.white : AppColors.forest,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

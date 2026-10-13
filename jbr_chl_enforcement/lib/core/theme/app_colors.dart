@@ -67,6 +67,13 @@ abstract final class AppColors {
   static const Color switchOffBorder = Color(0xFF657966);
   static const Color destructive = Color(0xFFBD2013); // Sign out
 
+  // Verification history.
+  static const Color historyGoodTint = Color(0xFFE8F3E6); // icon disc
+  static const Color historyWarnTint = Color(0xFFFFF3DB); // icon disc
+  static const Color historyCompleted = Color(0xFF2A6639); // badge text
+  static const Color historyNotCompleted = Color(0xFF875900); // badge text
+  static const Color filterOutline = Color(0xFF7C9075); // Filters button
+
   // Notifications.
   static const Color noticeWarningTint = Color(0xFFFFF1D9); // icon disc
   static const Color noticePositiveTint = Color(0xFFE4F3E5); // icon disc
