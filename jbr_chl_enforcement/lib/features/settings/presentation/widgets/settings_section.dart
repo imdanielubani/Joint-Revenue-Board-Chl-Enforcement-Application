@@ -53,7 +53,8 @@ class SettingsSection extends StatelessWidget {
               for (var i = 0; i < children.length; i++)
                 i == 0
                     ? children[i]
-                    : DecoratedBox(
+                    // A Container gives the line its own 1.5 px, as designed.
+                    : Container(
                         decoration: const BoxDecoration(
                           border: Border(top: _divider),
                         ),

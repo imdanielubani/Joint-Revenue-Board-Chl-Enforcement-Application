@@ -222,7 +222,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Profile ("My Account") | `features/profile/presentation/screens/profile_screen.dart` | See below. |
 | Account details | `features/profile/presentation/screens/account_details_screen.dart` | See below. |
 | App settings ("My Preferences") | `features/settings/presentation/screens/settings_screen.dart` | See below. |
-| History, Notifications, SOS, RFID, QR and OCR verification, Verification result, Change password, Sync queue | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
+| History, Notifications, SOS, RFID, QR and OCR verification, Verification result, Change password | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -303,9 +303,10 @@ border `#D92D20` and a message under it); **failures not tied to one field**
     cannot take its own permissions back, so turning it off opens the
     phone's settings. **Review access details** also opens them.
   - **Offline sync** opens the offline sync card (see below).
-  - **Security** and **Sync queue** open placeholder pages. The Sync queue
-    line counts `pendingSyncCountProvider` ("2 local records awaiting
+  - **Sync queue** opens the sync queue (see below); its line counts
+    `pendingSyncCountProvider` ("2 local records awaiting
     synchronization").
+  - **Security** opens a placeholder page.
 - **Fonts:** a few rows in the designs (Account details values, the
   region · agent ID line) are drawn in Segoe UI, a Windows font that
   cannot be shipped on Android or iOS; the app uses Poppins everywhere.
@@ -338,11 +339,16 @@ card opens again; an interruption stays until retried.
   `domain/entities/sync_status.dart`) lives as long as the app. It sends at
   most one sync at a time and ignores the answer to a sync the officer
   stopped waiting for.
-- **Queue and upload:** `SyncRepository` (`watchPendingCount`,
-  `synchronize`). `LocalSyncRepository` is used outside demo mode and is
+- **Queue and upload:** `SyncRepository` (`watchQueue`, the queued
+  `SyncQueueItem`s oldest first, and `synchronize`). `LocalSyncRepository` is used outside demo mode and is
   empty until the local queue and the upload API exist (TODO in
   `data/repositories/sync_repository_impl.dart`). `pendingSyncCountProvider`
-  (dashboard Sync tile, settings, session-expired sheet) follows it.
+  (dashboard Sync tile, settings, session-expired sheet) and
+  `syncQueueProvider` follow it.
+- **Starting a sync** waits for the first connection reading if there is
+  none yet (two quick taps still send once). Call `start()` while
+  `syncControllerProvider` is watched, as the screens do: Riverpod pauses
+  unwatched providers.
 - **For the backend:** retrying must never create a second copy of a
   record, so uploads need an idempotency key per record. `synchronize`
   must complete only once CHL has acknowledged the records.
@@ -353,6 +359,27 @@ card opens again; an interruption stays until retried.
 - The designs' prototype wording ("local snapshot", "no upload is sent to
   CHL", "Local response walkthrough only.") is replaced with what the app
   really does.
+
+### Sync queue
+
+`features/offline_sync/presentation/screens/sync_queue_screen.dart`
+(`/settings/sync-queue`), opened from App settings → Sync queue or View
+queue on the offline sync card.
+
+- **With records:** "2 verification records · Awaiting synchronization"
+  ("· Synchronizing" while a sync runs), then one row per record
+  (`widgets/sync_queue_item_tile.dart`): plate grouped as "FKJ 803 XY", how
+  it was taken ("Manual plate", "Receipt QR", "RFID tag", "Plate OCR") ·
+  Verification record, and "SYN-Q-001 · Queued". **Sync now** stays at the
+  bottom; it starts the sync and opens the offline sync card to follow it
+  (View queue there only closes the card), or shows "No internet
+  connection" when offline.
+- **Empty:** "Nothing waiting to sync" with Back to settings. The page
+  turns empty by itself once CHL acknowledges the records.
+- If the queue cannot be read, "Sync queue unavailable" shows instead.
+- The design's prototype wording ("local accepted response", "These
+  fixtures are independent of operational records", "in this local
+  response") is replaced with what the app does.
 
 ### Verification method pages
 
@@ -619,6 +646,11 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Sync queue page: queued records with Sync now, and the "Nothing waiting
+  to sync" empty state. The sync repository now streams the queued records
+  (`watchQueue`). Starting a sync waits for the first connection reading.
+  Dividers in settings cards now take their own 1.5 px, as designed.
 
 - Offline sync card in App settings: overview, synchronizing (with a
   spinner), acknowledged, interrupted and no internet connection. New sync

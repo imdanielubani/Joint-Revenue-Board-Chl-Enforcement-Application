@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_failure.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_session.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/officer.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/repositories/auth_repository.dart';
+import 'package:jbr_chl_enforcement/features/offline_sync/domain/entities/sync_queue_item.dart';
+import 'package:jbr_chl_enforcement/features/offline_sync/domain/repositories/sync_repository.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_method.dart';
 import 'package:jbr_chl_enforcement/shared/device/permissions/permission_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/storage/preferences_service.dart';
 import 'package:jbr_chl_enforcement/shared/storage/secure_storage_service.dart';
@@ -152,4 +157,53 @@ class FakeAuthRepository implements AuthRepository {
     final failure = resetFailure;
     if (failure != null) throw AuthException(failure);
   }
+}
+
+/// Sync queue whose answers the test decides.
+class FakeSyncRepository implements SyncRepository {
+  FakeSyncRepository(this.pending);
+
+  int pending;
+  final _changes = StreamController<List<SyncQueueItem>>.broadcast();
+  final List<Completer<void>> calls = [];
+
+  /// Queued records; [pending] numbered ones unless [items] is set.
+  List<SyncQueueItem>? items;
+
+  List<SyncQueueItem> get _queue =>
+      items ??
+      [
+        for (var i = 1; i <= pending; i++)
+          SyncQueueItem(
+            id: 'SYN-Q-00$i',
+            plateNumber: 'ABC12${i}AA',
+            method: VerificationMethod.manualPlate,
+            savedAt: DateTime(2026, 10, 13, 9, i),
+          ),
+      ];
+
+  @override
+  Stream<List<SyncQueueItem>> watchQueue() async* {
+    yield _queue;
+    yield* _changes.stream;
+  }
+
+  @override
+  Future<void> synchronize() {
+    final call = Completer<void>();
+    calls.add(call);
+    return call.future;
+  }
+
+  /// CHL acknowledges the latest call; the queue empties.
+  void acknowledge() {
+    pending = 0;
+    items = null;
+    _changes.add(const []);
+    calls.last.complete();
+  }
+
+  void fail() => calls.last.completeError(StateError('server error'));
+
+  void dispose() => _changes.close();
 }

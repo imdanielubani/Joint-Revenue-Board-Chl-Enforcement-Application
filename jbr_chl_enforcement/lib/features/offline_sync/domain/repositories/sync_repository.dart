@@ -1,8 +1,10 @@
+import '../entities/sync_queue_item.dart';
+
 /// The queue of records saved on the phone and their upload to CHL.
 abstract interface class SyncRepository {
-  /// How many records wait to be synchronized: the current number first,
-  /// then every change.
-  Stream<int> watchPendingCount();
+  /// The records waiting to be synchronized, oldest first: the current
+  /// queue first, then every change.
+  Stream<List<SyncQueueItem>> watchQueue();
 
   /// Sends every queued record and completes once CHL has acknowledged
   /// them, removing them from the queue. Throws when they were not

@@ -84,6 +84,8 @@ abstract final class AssetPaths {
       'assets/icons/sync/acknowledged.svg';
   static const String iconSyncInterrupted = 'assets/icons/sync/interrupted.svg';
   static const String iconSyncOffline = 'assets/icons/sync/offline.svg';
+  static const String iconQueueRecord = 'assets/icons/sync/queue_record.svg';
+  static const String iconQueueEmpty = 'assets/icons/sync/queue_empty.svg';
 
   // Sign-in progress and result dialogs
   static const String iconSignInLock = 'assets/icons/sign_in/status_lock.svg';

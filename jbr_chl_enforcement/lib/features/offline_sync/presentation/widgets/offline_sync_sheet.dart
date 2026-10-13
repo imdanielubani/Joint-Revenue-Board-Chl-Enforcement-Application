@@ -12,8 +12,11 @@ import '../../domain/entities/sync_status.dart';
 import '../providers/sync_controller.dart';
 
 /// Opens the offline sync card. "View queue" closes it and opens the sync
-/// queue.
-Future<void> showOfflineSyncSheet(BuildContext context) async {
+/// queue, or only closes it when opened [fromQueue].
+Future<void> showOfflineSyncSheet(
+  BuildContext context, {
+  bool fromQueue = false,
+}) async {
   ProviderScope.containerOf(
     context,
     listen: false,
@@ -23,7 +26,7 @@ Future<void> showOfflineSyncSheet(BuildContext context) async {
     useRootNavigator: true,
     builder: (context) => const OfflineSyncSheet(),
   );
-  if (viewQueue == true && context.mounted) {
+  if (viewQueue == true && !fromQueue && context.mounted) {
     context.pushNamed(RouteNames.syncQueue);
   }
 }

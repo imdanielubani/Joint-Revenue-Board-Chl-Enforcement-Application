@@ -9,50 +9,18 @@ import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/data/repositories/sync_repository_impl.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/entities/sync_status.dart';
-import 'package:jbr_chl_enforcement/features/offline_sync/domain/repositories/sync_repository.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/presentation/providers/sync_controller.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/presentation/widgets/offline_sync_sheet.dart';
 import 'package:jbr_chl_enforcement/shared/device/connectivity/connectivity_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/ui/widgets/ring_spinner.dart';
 
-/// Sync queue whose answers the test decides.
-class _FakeSyncRepository implements SyncRepository {
-  _FakeSyncRepository(this.pending);
-
-  int pending;
-  final _changes = StreamController<int>.broadcast();
-  final List<Completer<void>> calls = [];
-
-  @override
-  Stream<int> watchPendingCount() async* {
-    yield pending;
-    yield* _changes.stream;
-  }
-
-  @override
-  Future<void> synchronize() {
-    final call = Completer<void>();
-    calls.add(call);
-    return call.future;
-  }
-
-  /// CHL acknowledges the latest call; the queue empties.
-  void acknowledge() {
-    pending = 0;
-    _changes.add(0);
-    calls.last.complete();
-  }
-
-  void fail() => calls.last.completeError(StateError('server error'));
-
-  void dispose() => _changes.close();
-}
+import '../../../helpers/fakes.dart';
 
 class _Harness {
   _Harness(this.container, this.repository, this.connection);
 
   final ProviderContainer container;
-  final _FakeSyncRepository repository;
+  final FakeSyncRepository repository;
   final StreamController<bool> connection;
 
   SyncPhase get phase => container.read(syncControllerProvider);
@@ -78,7 +46,7 @@ Future<_Harness> _pump(
   addTearDown(tester.view.reset);
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-  final repository = _FakeSyncRepository(pending);
+  final repository = FakeSyncRepository(pending);
   addTearDown(repository.dispose);
   final connection = StreamController<bool>.broadcast();
   addTearDown(connection.close);
