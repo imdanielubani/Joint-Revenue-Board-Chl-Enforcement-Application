@@ -16,8 +16,10 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/sos/presentation/screens/sos_screen.dart';
 import '../../features/vehicle/presentation/screens/last_chl_trip_screen.dart';
+import '../../features/vehicle/presentation/screens/unresolved_verification_screen.dart';
 import '../../features/vehicle/presentation/screens/verification_result_screen.dart';
 import '../../features/vehicle/domain/entities/verification_result.dart';
+import '../../features/verification/domain/entities/unresolved_verification.dart';
 import '../../features/verification/domain/entities/verification_request.dart';
 import '../../features/verification/presentation/screens/manual_plate_entry_screen.dart';
 import '../../features/verification/presentation/screens/ocr_capture_screen.dart';
@@ -165,11 +167,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.verificationResult,
         name: RouteNames.verificationResult,
-        builder: (context, state) => VerificationResultScreen(
-          result: state.extra is VerificationResult
-              ? state.extra! as VerificationResult
-              : null,
-        ),
+        builder: (context, state) => switch (state.extra) {
+          final VerificationResult result => VerificationResultScreen(
+            result: result,
+          ),
+          final UnresolvedVerification outcome => UnresolvedVerificationScreen(
+            outcome: outcome,
+          ),
+          _ => const VerificationResultScreen(),
+        },
       ),
       GoRoute(
         path: RoutePaths.lastChlTrip,

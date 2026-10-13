@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned receipt, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a scanned E-Tag has a valid JRB E-Tag (`DemoVerificationRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned receipt, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a scanned E-Tag has a valid JRB E-Tag (`DemoVerificationRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -229,6 +229,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Verification processing | `features/verification/presentation/screens/verification_processing_screen.dart` | See "Verification processing and result" below. |
 | Verification result | `features/vehicle/presentation/screens/verification_result_screen.dart` | See "Verification processing and result" below. |
 | Last CHL trip | `features/vehicle/presentation/screens/last_chl_trip_screen.dart` | See "Verification processing and result" below. |
+| Vehicle Not Found, Verification Unavailable | `features/vehicle/presentation/screens/unresolved_verification_screen.dart` | See "Verification processing and result" below. |
 | SOS, RFID and OCR verification | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." |
 
 ### Dashboard
@@ -381,9 +382,28 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   wait. When all are done they stay ticked for a moment
   (`VerificationProcessingScreen.finishedPause`), then the result replaces
   the page (so back returns to plate entry or the method page). Cancel
-  Verification and the back button abandon the request. If CHL cannot be
-  reached: "Verification unavailable" with the reason, Try again and Cancel
-  Verification (no design; same parts).
+  Verification and the back button abandon the request. When CHL has no
+  such vehicle, or cannot be reached or finish, the result page replaces
+  the processing page with Vehicle Not Found or Verification Unavailable.
+- **Vehicle Not Found** (`/verify/result`, with a `VehicleNotFound`): the
+  brown search icon, "Vehicle Not Found", "Checked just now" (then "Checked
+  5 min ago", then the time), the plate as entered, vehicle identity "Not
+  resolved", E-Tag "Not verified", trip "Not resolved"; **Verification
+  details** opens on a tap (as designed, without a chevron) to show the
+  method, check time, GPS ("6.6018° N, 3.3515° E", or "Not recorded") and
+  the signed-in agent. **Check Plate Again** returns to plate entry with
+  the plate still typed. For a scanned code (no design) the wording asks
+  to scan again or enter the plate, the pill shows what was scanned, and
+  **Enter Plate Instead** opens plate entry.
+- **Verification Unavailable** (`/verify/result`, with a
+  `VerificationUnavailable`): any failure to verify, whatever its cause.
+  The brown cloud icon, "Verification Unavailable", the check time and
+  plate, "No trip conclusion has been made…", and nothing verified.
+  **Try again** runs the same verification again; **Choose another
+  method** returns to the method page. Both pages are in
+  `features/vehicle/presentation/screens/unresolved_verification_screen.dart`
+  (`UnresolvedVerification`: `VehicleNotFound`, `VerificationUnavailable`);
+  as designed, they have no notifications bell.
 - **Result, active trip** (`/verify/result`, with a `VerificationResult`):
   the green tick, "Active CHL trip"; vehicle identity, E-Tag validity
   ("No E-Tag", "Valid JRB E-Tag", "Invalid JRB E-Tag") and CHL trip status;
@@ -421,8 +441,9 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   live in `features/vehicle/presentation/widgets/trip_details_card.dart`.
 - **Data:** `VerificationRepository`
   (`features/verification/domain/repositories/`): `verify` streams
-  `StageStarted`, `VehicleIdentified` and `VerificationCompleted`, and
-  fails with `VerificationFailure`; `refresh`; `recordDestinationLocation`.
+  `StageStarted`, `VehicleIdentified` and `VerificationCompleted` (or
+  `NoVehicleFound`), and fails with `VerificationFailure`; `refresh`;
+  `recordDestinationLocation`.
   `RemoteVerificationRepository` says verification is not available until
   the CHL API exists (TODO in
   `data/repositories/verification_repository_impl.dart`). Entities:
@@ -883,6 +904,12 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Vehicle Not Found (what was checked, verification details on demand,
+  Check Plate Again) and Verification Unavailable (nothing concluded, Try
+  again, Choose another method) result pages. Processing now opens them
+  instead of showing its own failure state; the repository reports
+  `NoVehicleFound`. Demo: AAA 000 AA is not found, AAA 503 AA is
+  unavailable.
 - The Last CHL trip card is headed "Current trip", as designed.
 - Verification result for no active trip ("No Active Trip Found", the
   summary, View Last CHL Trip) and the Last CHL trip page (the historical

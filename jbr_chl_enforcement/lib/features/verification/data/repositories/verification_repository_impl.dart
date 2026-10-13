@@ -7,6 +7,7 @@ import '../../../chl_trips/domain/entities/chl_trip.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
 import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
+import '../../../verification_history/domain/entities/verification_record_details.dart';
 import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/scanned_qr.dart';
 import '../../domain/entities/verification_request.dart';
@@ -47,6 +48,8 @@ class RemoteVerificationRepository implements VerificationRepository {
 
 /// Sample verifications, each check taking a moment as it would over a
 /// network:
+/// - AAA 000 AA is not a known vehicle;
+/// - AAA 503 AA cannot be verified (CHL does not respond);
 /// - LND 482 XK has no active trip (and an invalid E-Tag), and a
 ///   completed last trip;
 /// - any other plate, and a scanned receipt (ABC 123 AA), has an active
@@ -65,11 +68,24 @@ class DemoVerificationRepository implements VerificationRepository {
 
   static final PlateNumber _receiptPlate = PlateNumber.tryParse('ABC123AA')!;
   static final PlateNumber _noTripPlate = PlateNumber.tryParse('LND482XK')!;
+  static final PlateNumber _unknownPlate = PlateNumber.tryParse('AAA000AA')!;
+  static final PlateNumber _unavailablePlate = PlateNumber.tryParse(
+    'AAA503AA',
+  )!;
 
   @override
   Stream<VerificationProgress> verify(VerificationRequest request) async* {
     yield const StageStarted(VerificationStage.identifyingVehicle);
     await Future<void>.delayed(stepDelay);
+    if (request.plate == _unknownPlate) {
+      yield const NoVehicleFound(
+        location: RecordLocation(latitude: 6.6018, longitude: 3.3515),
+      );
+      return;
+    }
+    if (request.plate == _unavailablePlate) {
+      throw const VerificationFailure('CHL is not responding.');
+    }
     final plate = request.plate ?? _receiptPlate;
     yield VehicleIdentified(plate);
 

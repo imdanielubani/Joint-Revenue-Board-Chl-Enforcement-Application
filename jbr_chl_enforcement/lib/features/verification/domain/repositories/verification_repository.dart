@@ -2,15 +2,17 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../shared/device/location/location_adapter.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
+import '../../../verification_history/domain/entities/verification_record_details.dart';
 import '../entities/plate_number.dart';
 import '../entities/verification_request.dart';
 
 /// Runs verifications with CHL.
 abstract class VerificationRepository {
   /// Verifies [request]: reports each [VerificationStage] as it starts,
-  /// the plate once the vehicle is identified, and ends with the result.
-  /// Fails with a [VerificationFailure]. Cancelling the subscription
-  /// abandons the verification.
+  /// the plate once the vehicle is identified, and ends with the result,
+  /// or with [NoVehicleFound] when CHL has no such vehicle. Fails with a
+  /// [VerificationFailure] when CHL cannot be reached or cannot finish.
+  /// Cancelling the subscription abandons the verification.
   Stream<VerificationProgress> verify(VerificationRequest request);
 
   /// Asks CHL again for the trip of an earlier [result].
@@ -42,6 +44,14 @@ final class VehicleIdentified extends VerificationProgress {
   const VehicleIdentified(this.plate);
 
   final PlateNumber plate;
+}
+
+/// CHL has no vehicle for the request; the verification ends here.
+final class NoVehicleFound extends VerificationProgress {
+  const NoVehicleFound({this.location});
+
+  /// Where the check was made, when CHL recorded it.
+  final RecordLocation? location;
 }
 
 /// Every check finished.

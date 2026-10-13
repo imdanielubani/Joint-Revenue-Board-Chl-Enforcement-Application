@@ -9,9 +9,11 @@ import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/features/notifications/presentation/providers/notifications_controller.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
+import 'package:jbr_chl_enforcement/features/verification_history/domain/entities/verification_record_details.dart';
 import 'package:jbr_chl_enforcement/features/verification/data/repositories/verification_repository_impl.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/plate_number.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/scanned_qr.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/unresolved_verification.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/repositories/verification_repository.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/verification_processing_screen.dart';
@@ -71,9 +73,15 @@ Future<FakeVerificationRepository> _pump(
       GoRoute(
         path: RoutePaths.verificationResult,
         name: RouteNames.verificationResult,
-        builder: (context, state) => _page(
-          'result for ${(state.extra! as VerificationResult).plate.display}',
-        ),
+        builder: (context, state) => _page(switch (state.extra) {
+          final VerificationResult result =>
+            'result for ${result.plate.display}',
+          VehicleNotFound(:final location) =>
+            'not found at ${location?.latitude}',
+          VerificationUnavailable(:final request) =>
+            'unavailable: ${request.plate}',
+          _ => 'no result',
+        }),
       ),
     ],
   );
@@ -179,39 +187,36 @@ void main() {
     expect(find.text('E-Tag QR'), findsOneWidget);
   });
 
-  testWidgets('when CHL cannot be reached: unavailable, and Try again', (
-    tester,
-  ) async {
+  testWidgets('no such vehicle opens Vehicle Not Found', (tester) async {
     final repository = await _pump(tester, PlateVerification(_plate));
     repository
       ..emit(const StageStarted(VerificationStage.identifyingVehicle))
-      ..fail(const VerificationFailure('CHL is not responding.'));
-    await tester.pump();
+      ..emit(
+        const NoVehicleFound(
+          location: RecordLocation(latitude: 6.6018, longitude: 3.3515),
+        ),
+      );
+    await _settle(tester);
 
-    expect(find.text('Verification unavailable'), findsOneWidget);
-    expect(find.text('CHL is not responding.'), findsOneWidget);
-    expect(find.text('Try again'), findsOneWidget);
-    expect(_step('Identifying vehicle', 'waiting'), findsOneWidget);
-
-    await tester.tap(find.text('Try again'));
-    await tester.pump();
-    expect(repository.requests, hasLength(2));
-    expect(find.text('Verifying vehicle'), findsOneWidget);
-    expect(find.text('Try again'), findsNothing);
+    expect(find.text('not found at 6.6018'), findsOneWidget);
+    expect(find.byType(VerificationProcessingScreen), findsNothing);
   });
 
-  testWidgets('any other error reads as a connection problem', (tester) async {
-    final repository = await _pump(tester, PlateVerification(_plate));
-    repository.fail(StateError('socket closed'));
-    await tester.pump();
+  for (final (name, error) in [
+    ('CHL failing', const VerificationFailure('CHL is not responding.')),
+    ('any other error', StateError('socket closed')),
+  ]) {
+    testWidgets('$name opens Verification Unavailable', (tester) async {
+      final repository = await _pump(tester, PlateVerification(_plate));
+      repository
+        ..emit(const StageStarted(VerificationStage.identifyingVehicle))
+        ..fail(error);
+      await _settle(tester);
 
-    expect(
-      find.text(
-        'CHL could not be reached. Check the connection and try again.',
-      ),
-      findsOneWidget,
-    );
-  });
+      expect(find.text('unavailable: ABC 123 AA'), findsOneWidget);
+      expect(find.byType(VerificationProcessingScreen), findsNothing);
+    });
+  }
 
   testWidgets('Cancel stops the verification and goes back', (tester) async {
     final repository = await _pump(tester, PlateVerification(_plate));
@@ -239,7 +244,7 @@ void main() {
       ('landscape', const Size(844, 390), 1.0),
       ('200% text', const Size(390, 844), 2.0),
     ]) {
-      testWidgets('running and failed on a $name', (tester) async {
+      testWidgets('running on a $name', (tester) async {
         final repository = await _pump(
           tester,
           PlateVerification(_plate),
@@ -250,11 +255,6 @@ void main() {
         await tester.pump();
         expect(tester.takeException(), isNull);
         expect(find.text('Cancel Verification').hitTestable(), findsOneWidget);
-
-        repository.fail(const VerificationFailure('CHL is not responding.'));
-        await tester.pump();
-        expect(tester.takeException(), isNull);
-        expect(find.text('Try again').hitTestable(), findsOneWidget);
       });
     }
   });

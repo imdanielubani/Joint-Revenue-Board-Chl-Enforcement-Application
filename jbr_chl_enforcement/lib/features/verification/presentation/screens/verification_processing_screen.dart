@@ -10,11 +10,13 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/clock.dart';
 import '../../../../shared/ui/widgets/header_icon_button.dart';
 import '../../../notifications/presentation/providers/notifications_controller.dart';
 import '../../data/repositories/verification_repository_impl.dart';
 import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/scanned_qr.dart';
+import '../../domain/entities/unresolved_verification.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
 import '../widgets/verification_page.dart';
@@ -22,7 +24,8 @@ import '../widgets/verification_page.dart';
 /// "Verification processing": checks the vehicle in [request] with CHL,
 /// showing each check as it runs (identifying the vehicle, validating the
 /// E-Tag, checking the CHL trip), then opens the result. Cancel abandons
-/// it. When CHL cannot be reached it says so and offers Try again.
+/// it. When CHL has no such vehicle, or cannot be reached, the result page
+/// says so instead.
 class VerificationProcessingScreen extends ConsumerStatefulWidget {
   const VerificationProcessingScreen({super.key, required this.request});
 
@@ -44,7 +47,6 @@ class _VerificationProcessingScreenState
   VerificationStage? _stage;
   final Set<VerificationStage> _done = {};
   PlateNumber? _plate;
-  VerificationFailure? _failure;
 
   @override
   void initState() {
@@ -66,20 +68,22 @@ class _VerificationProcessingScreenState
         .verify(widget.request)
         .listen(
           _onProgress,
-          onError: (Object error) {
-            if (!mounted) return;
-            setState(() {
-              _stage = null;
-              _failure = error is VerificationFailure
-                  ? error
-                  : const VerificationFailure(
-                      'CHL could not be reached. Check the connection and try '
-                      'again.',
-                    );
-            });
-          },
+          // Whatever went wrong, nothing was concluded.
+          onError: (Object _) => _showUnresolved(
+            VerificationUnavailable(
+              request: widget.request,
+              checkedAt: ref.read(clockProvider)(),
+            ),
+          ),
           cancelOnError: true,
         );
+  }
+
+  /// Replaces this page with the result page for a verification that
+  /// ended without a vehicle result.
+  void _showUnresolved(UnresolvedVerification outcome) {
+    if (!mounted) return;
+    context.pushReplacementNamed(RouteNames.verificationResult, extra: outcome);
   }
 
   void _onProgress(VerificationProgress progress) {
@@ -93,6 +97,14 @@ class _VerificationProcessingScreenState
         });
       case VehicleIdentified(:final plate):
         setState(() => _plate = plate);
+      case NoVehicleFound(:final location):
+        _showUnresolved(
+          VehicleNotFound(
+            request: widget.request,
+            checkedAt: ref.read(clockProvider)(),
+            location: location,
+          ),
+        );
       case VerificationCompleted(:final result):
         setState(() {
           _done.addAll(VerificationStage.values);
@@ -106,17 +118,6 @@ class _VerificationProcessingScreenState
           );
         });
     }
-  }
-
-  void _retry() {
-    unawaited(_progress?.cancel());
-    setState(() {
-      _failure = null;
-      _stage = null;
-      _done.clear();
-      _plate = widget.request.plate;
-    });
-    _start();
   }
 
   void _cancel() {
@@ -137,7 +138,6 @@ class _VerificationProcessingScreenState
   @override
   Widget build(BuildContext context) {
     final unread = ref.watch(unreadNotificationCountProvider);
-    final failure = _failure;
 
     return VerificationPageScaffold(
       title: 'Verification processing',
@@ -166,12 +166,7 @@ class _VerificationProcessingScreenState
                             'status\nare checked together.',
                       ),
                       const SizedBox(height: 49),
-                      _StatusCard(
-                        badge: _badge,
-                        failure: failure,
-                        stage: _stage,
-                        done: _done,
-                      ),
+                      _StatusCard(badge: _badge, stage: _stage, done: _done),
                     ],
                   ),
                 ),
@@ -181,22 +176,9 @@ class _VerificationProcessingScreenState
           VerificationContentWidth(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (failure != null) ...[
-                    _FilledButton(label: 'Try again', onPressed: _retry),
-                    const SizedBox(height: 8),
-                    _TextButton(
-                      label: 'Cancel Verification',
-                      onPressed: _cancel,
-                    ),
-                  ] else
-                    _FilledButton(
-                      label: 'Cancel Verification',
-                      onPressed: _cancel,
-                    ),
-                ],
+              child: _FilledButton(
+                label: 'Cancel Verification',
+                onPressed: _cancel,
               ),
             ),
           ),
@@ -210,19 +192,16 @@ class _VerificationProcessingScreenState
 class _StatusCard extends StatelessWidget {
   const _StatusCard({
     required this.badge,
-    required this.failure,
     required this.stage,
     required this.done,
   });
 
   final String badge;
-  final VerificationFailure? failure;
   final VerificationStage? stage;
   final Set<VerificationStage> done;
 
   @override
   Widget build(BuildContext context) {
-    final failure = this.failure;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 32),
       decoration: const BoxDecoration(
@@ -237,18 +216,14 @@ class _StatusCard extends StatelessWidget {
           Container(
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
-              color: failure == null
-                  ? AppColors.activityRing
-                  : AppColors.historyWarnTint,
+            decoration: const BoxDecoration(
+              color: AppColors.activityRing,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: failure == null
-                ? const _Turning(
-                    child: _Svg(AssetPaths.iconProcessingChecking, size: 40),
-                  )
-                : const _Svg(AssetPaths.iconHistoryUnfinished, size: 40),
+            child: const _Turning(
+              child: _Svg(AssetPaths.iconProcessingChecking, size: 40),
+            ),
           ),
           const SizedBox(height: 17),
           Container(
@@ -279,12 +254,10 @@ class _StatusCard extends StatelessWidget {
             liveRegion: true,
             child: Column(
               children: [
-                Text(
-                  failure == null
-                      ? 'Verifying vehicle'
-                      : 'Verification unavailable',
+                const Text(
+                  'Verifying vehicle',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTypography.fontFamily,
                     fontSize: 20,
                     fontWeight: AppTypography.semiBold,
@@ -293,10 +266,10 @@ class _StatusCard extends StatelessWidget {
                     color: AppColors.processingText,
                   ),
                 ),
-                Text(
-                  failure?.message ?? 'Waiting for CHL confirmation',
+                const Text(
+                  'Waiting for CHL confirmation',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTypography.fontFamily,
                     fontSize: 13,
                     fontWeight: AppTypography.regular,
@@ -475,35 +448,6 @@ class _FilledButton extends StatelessWidget {
         textStyle: const TextStyle(
           fontFamily: AppTypography.fontFamily,
           fontSize: 16,
-          fontWeight: AppTypography.semiBold,
-          letterSpacing: 0,
-        ),
-      ),
-      child: Text(label, textAlign: TextAlign.center),
-    );
-  }
-}
-
-/// Plain 54 px button.
-class _TextButton extends StatelessWidget {
-  const _TextButton({required this.label, required this.onPressed});
-
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        minimumSize: const Size(double.infinity, 54),
-        foregroundColor: AppColors.ink,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(24)),
-        ),
-        textStyle: const TextStyle(
-          fontFamily: AppTypography.fontFamily,
-          fontSize: 15,
           fontWeight: AppTypography.semiBold,
           letterSpacing: 0,
         ),

@@ -147,6 +147,27 @@ void main() {
       expect(last.startedAt.isBefore(last.completedAt!), isTrue);
     });
 
+    test('AAA 000 AA is not a known vehicle', () async {
+      final progress = await repository
+          .verify(PlateVerification(_plate('AAA000AA')))
+          .toList();
+
+      expect(progress.whereType<VehicleIdentified>(), isEmpty);
+      final notFound = progress.last as NoVehicleFound;
+      expect(notFound.location!.latitude, 6.6018);
+      expect(notFound.location!.longitude, 3.3515);
+    });
+
+    test('AAA 503 AA cannot be verified', () {
+      expect(
+        repository.verify(PlateVerification(_plate('AAA503AA'))),
+        emitsInOrder([
+          isA<StageStarted>(),
+          emitsError(isA<VerificationFailure>()),
+        ]),
+      );
+    });
+
     test('a scanned E-Tag is a valid E-Tag on ABC 123 AA', () async {
       final progress = await repository
           .verify(QrVerification(ScannedQr.read('ETAG-7781')))
