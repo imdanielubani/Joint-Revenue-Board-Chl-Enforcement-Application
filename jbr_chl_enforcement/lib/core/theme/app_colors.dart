@@ -96,6 +96,9 @@ abstract final class AppColors {
   static const Color rfidDisconnected = Color(0xFFE23835);
   static const Color rfidDanger = Color(0xFFB42318); // Detect Reader Again
   static const Color rfidDangerTint = Color(0x1AB42318); // red at 10%
+  static const Color rfidScanningDisc = Color(0xFFEAF4E7);
+  static const Color rfidSuccess = Color(0xFF22C55E); // tag detected note
+  static const Color rfidSuccessTint = Color(0x1A22C55E); // at 10%
 
   // QR scanner (dark camera page).
   static const Color scannerGlow = Color(0xFF46534B); // background, centre

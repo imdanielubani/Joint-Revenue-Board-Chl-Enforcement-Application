@@ -124,8 +124,14 @@ class _VerificationProcessingScreenState
     context.popOrGoHome();
   }
 
-  /// The plate once known; until a scanned code is looked up, "QR code".
-  String get _badge => _plate?.display ?? 'QR code';
+  /// The plate once known; until a scanned code or read tag is looked up,
+  /// what was used.
+  String get _badge =>
+      _plate?.display ??
+      switch (widget.request) {
+        TagVerification() => 'Haulage tag',
+        _ => 'QR code',
+      };
 
   @override
   Widget build(BuildContext context) {

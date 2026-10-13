@@ -15,6 +15,7 @@ import 'package:jbr_chl_enforcement/features/vehicle/presentation/screens/unreso
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/plate_number.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/scanned_qr.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/unresolved_verification.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/haulage_tag.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification_history/domain/entities/verification_record_details.dart';
 
@@ -200,6 +201,12 @@ void main() {
         ),
         'QR code',
       );
+      expect(
+        UnresolvedVerificationScreen.method(
+          const TagVerification(HaulageTag('E2000017')),
+        ),
+        'Haulage tag',
+      );
     });
   });
 
@@ -308,6 +315,26 @@ void main() {
       await tester.tap(find.text('Enter Plate Instead'));
       await tester.pumpAndSettle();
       expect(find.text('plate page'), findsOneWidget);
+    });
+
+    testWidgets('a read haulage tag offers to enter the plate', (tester) async {
+      await _pump(
+        tester,
+        notFound(request: const TagVerification(HaulageTag('E2000017'))),
+      );
+
+      expect(
+        find.text(
+          'We couldn’t find a vehicle for this tag. Read it again or enter '
+          'the plate instead.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Haulage tag'), findsOneWidget);
+      expect(_row('Haulage tag read by RFID'), findsOneWidget);
+      // The raw reference is never shown.
+      expect(find.textContaining('E2000017'), findsNothing);
+      expect(find.text('Enter Plate Instead'), findsOneWidget);
     });
   });
 

@@ -14,6 +14,7 @@ import 'package:jbr_chl_enforcement/features/verification/data/repositories/veri
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/plate_number.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/scanned_qr.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/unresolved_verification.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/haulage_tag.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/repositories/verification_repository.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/verification_processing_screen.dart';
@@ -179,6 +180,20 @@ void main() {
     await tester.pump();
     expect(find.text('ABC 123 AA'), findsOneWidget);
     expect(find.text('QR code'), findsNothing);
+  });
+
+  testWidgets('a read haulage tag says so until the vehicle is identified', (
+    tester,
+  ) async {
+    final repository = await _pump(
+      tester,
+      const TagVerification(HaulageTag('E2000017')),
+    );
+    expect(find.text('Haulage tag'), findsOneWidget);
+
+    repository.emit(VehicleIdentified(_plate));
+    await tester.pump();
+    expect(find.text('ABC 123 AA'), findsOneWidget);
   });
 
   testWidgets('no such vehicle opens Vehicle Not Found', (tester) async {

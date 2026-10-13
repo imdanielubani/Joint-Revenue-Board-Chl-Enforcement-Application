@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -7,13 +9,18 @@ import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/clock.dart';
 import '../../../../shared/device/rfid/rfid_reader_adapter.dart';
-import '../../../../shared/ui/widgets/app_toast.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../notifications/presentation/widgets/notifications_bell.dart';
+import '../../data/repositories/verification_repository_impl.dart';
+import '../../domain/entities/haulage_tag.dart';
+import '../../domain/entities/unresolved_verification.dart';
+import '../../domain/entities/verification_request.dart';
+import '../../domain/repositories/verification_repository.dart';
 import '../widgets/verification_page.dart';
 
-/// Where the RFID reader stands on the page.
+/// Where RFID verification stands on the page.
 enum RfidReaderPhase {
   /// Not detected yet: "Connection not checked".
   notChecked,
@@ -26,12 +33,22 @@ enum RfidReaderPhase {
 
   /// Not found, or lost.
   disconnected,
+
+  /// Waiting for a haulage tag to come into range.
+  scanning,
+
+  /// A tag was read; not yet a verified vehicle.
+  tagDetected,
+
+  /// Verifying the tag with CHL.
+  verifying,
 }
 
 /// "RFID verification" (Haulage tag on Verify CHL Trip): detects the RFID
-/// reader connected to the device, then lets the officer read a haulage
-/// tag. Stop abandons a detection. When no reader is found it says so and
-/// offers to detect again or continue by plate.
+/// reader connected to the device, reads a haulage tag, and verifies it
+/// like a plate, ending in the verification result. Stop abandons a
+/// detection, scan or verification. When no reader is found, or it is
+/// lost, it says so and offers to detect again or continue by plate.
 class RfidScanScreen extends ConsumerStatefulWidget {
   const RfidScanScreen({super.key});
 
@@ -42,31 +59,98 @@ class RfidScanScreen extends ConsumerStatefulWidget {
 class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
   RfidReaderPhase _phase = RfidReaderPhase.notChecked;
 
-  /// Counts detections, so the answer to a stopped one is ignored.
-  int _detection = 0;
+  /// Counts reader requests, so the answer to a stopped one is ignored.
+  int _request = 0;
+
+  /// The tag read, until it is verified.
+  HaulageTag? _tag;
+
+  StreamSubscription<VerificationProgress>? _verification;
+
+  @override
+  void dispose() {
+    unawaited(_verification?.cancel());
+    super.dispose();
+  }
+
+  void _show(RfidReaderPhase phase) => setState(() => _phase = phase);
+
+  void _reportReader({required bool connected}) =>
+      ref.read(rfidReaderStatusProvider.notifier).report(connected: connected);
 
   Future<void> _detect() async {
-    final detection = ++_detection;
-    setState(() => _phase = RfidReaderPhase.detecting);
-    final connected = await ref.read(rfidReaderDetectorProvider).detect();
-    if (!mounted || detection != _detection) return;
-    ref.read(rfidReaderStatusProvider.notifier).report(connected: connected);
-    setState(
-      () => _phase = connected
-          ? RfidReaderPhase.connected
-          : RfidReaderPhase.disconnected,
-    );
+    final request = ++_request;
+    _show(RfidReaderPhase.detecting);
+    final connected = await ref.read(rfidReaderProvider).detect();
+    if (!mounted || request != _request) return;
+    _reportReader(connected: connected);
+    _show(connected ? RfidReaderPhase.connected : RfidReaderPhase.disconnected);
   }
 
+  Future<void> _scan() async {
+    final request = ++_request;
+    _show(RfidReaderPhase.scanning);
+    try {
+      final reference = await ref.read(rfidReaderProvider).readTag();
+      if (!mounted || request != _request) return;
+      _tag = HaulageTag(reference);
+      _show(RfidReaderPhase.tagDetected);
+    } on RfidReaderLost {
+      if (!mounted || request != _request) return;
+      _reportReader(connected: false);
+      _show(RfidReaderPhase.disconnected);
+    }
+  }
+
+  void _verify() {
+    final tag = _tag;
+    if (tag == null) return;
+    final request = TagVerification(tag);
+    _show(RfidReaderPhase.verifying);
+    _verification = ref
+        .read(verificationRepositoryProvider)
+        .verify(request)
+        .listen(
+          (progress) => switch (progress) {
+            VerificationCompleted(:final result) => _open(result),
+            NoVehicleFound(:final location) => _open(
+              VehicleNotFound(
+                request: request,
+                checkedAt: ref.read(clockProvider)(),
+                location: location,
+              ),
+            ),
+            // The checks run unseen here; the card shows they are running.
+            StageStarted() || VehicleIdentified() => null,
+          },
+          // Whatever went wrong, nothing was concluded.
+          onError: (Object _) => _open(
+            VerificationUnavailable(
+              request: request,
+              checkedAt: ref.read(clockProvider)(),
+            ),
+          ),
+          cancelOnError: true,
+        );
+  }
+
+  /// Replaces this page with the result, so back returns to the methods.
+  void _open(Object outcome) {
+    if (!mounted) return;
+    context.pushReplacementNamed(RouteNames.verificationResult, extra: outcome);
+  }
+
+  /// Stops what is running and goes back a step.
   void _stop() {
-    _detection++;
-    setState(() => _phase = RfidReaderPhase.notChecked);
+    _request++;
+    unawaited(_verification?.cancel());
+    _verification = null;
+    _show(switch (_phase) {
+      RfidReaderPhase.scanning => RfidReaderPhase.connected,
+      RfidReaderPhase.verifying => RfidReaderPhase.tagDetected,
+      _ => RfidReaderPhase.notChecked,
+    });
   }
-
-  // TODO(rfid): read the haulage tag and verify it once reading is designed
-  // and the reader SDK is in place.
-  void _startScanning() =>
-      showAppToast(context, 'Reading haulage tags is not available yet.');
 
   void _enterPlate() => context.pushReplacementNamed(RouteNames.manualPlate);
 
@@ -93,30 +177,50 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
         'Check the cable or approved reader connection, then detect the '
             'reader again. You can continue by plate number.',
       ),
+      RfidReaderPhase.scanning => (
+        'Scanning for haulage tag',
+        'Hold the reader near the physical E-Tag. Keep other vehicle tags '
+            'outside the reading area.',
+      ),
+      RfidReaderPhase.tagDetected => (
+        'Haulage tag detected',
+        'A tag was detected. Verify it to resolve the vehicle, validate the '
+            'E-Tag and check its CHL trip.',
+      ),
+      RfidReaderPhase.verifying => (
+        'Haulage tag detected',
+        'Resolving vehicle identity, E-Tag validation and CHL trip status '
+            'through the shared verification response.',
+      ),
     };
 
+    final chooseAnotherMethod = _RfidButton.outlined(
+      'Choose Another Method',
+      onPressed: _chooseAnotherMethod,
+    );
+    final enterPlate = _RfidButton.outlined(
+      'Enter Plate Instead',
+      onPressed: _enterPlate,
+    );
     final List<Widget> actions = switch (_phase) {
       RfidReaderPhase.notChecked => [
         _RfidButton.filled('Detect Reader', onPressed: _detect),
-        _RfidButton.outlined('Enter Plate Instead', onPressed: _enterPlate),
-        _RfidButton.outlined(
-          'Choose Another Method',
-          onPressed: _chooseAnotherMethod,
-        ),
+        enterPlate,
+        chooseAnotherMethod,
       ],
-      RfidReaderPhase.detecting => [
+      RfidReaderPhase.detecting ||
+      RfidReaderPhase.scanning ||
+      RfidReaderPhase.verifying => [
         _RfidButton.filled('Stop', onPressed: _stop),
-        _RfidButton.outlined(
-          'Choose Another Method',
-          onPressed: _chooseAnotherMethod,
-        ),
+        chooseAnotherMethod,
       ],
       RfidReaderPhase.connected => [
-        _RfidButton.filled('Start Scanning', onPressed: _startScanning),
-        _RfidButton.outlined(
-          'Choose Another Method',
-          onPressed: _chooseAnotherMethod,
-        ),
+        _RfidButton.filled('Start Scanning', onPressed: _scan),
+        chooseAnotherMethod,
+      ],
+      RfidReaderPhase.tagDetected => [
+        _RfidButton.filled('Verify Detected Tag', onPressed: _verify),
+        chooseAnotherMethod,
       ],
       RfidReaderPhase.disconnected => [
         _RfidButton.filled(
@@ -124,11 +228,8 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
           color: AppColors.rfidDanger,
           onPressed: _detect,
         ),
-        _RfidButton.outlined('Enter Plate Instead', onPressed: _enterPlate),
-        _RfidButton.outlined(
-          'Choose Another Method',
-          onPressed: _chooseAnotherMethod,
-        ),
+        enterPlate,
+        chooseAnotherMethod,
       ],
     };
 
@@ -181,8 +282,8 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
   }
 }
 
-/// The reader: its icon, "RFID reader" and its status; and, when it is
-/// disconnected, why that is not a finding.
+/// The reader: its icon, "RFID reader" and its status; and a note under it
+/// when it is disconnected or has read a tag.
 class _ReaderPanel extends StatelessWidget {
   const _ReaderPanel({required this.phase});
 
@@ -190,8 +291,6 @@ class _ReaderPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final disconnected = phase == RfidReaderPhase.disconnected;
-
     if (phase == RfidReaderPhase.notChecked) {
       // Before detection the reader is shown without a card.
       return Semantics(
@@ -204,7 +303,11 @@ class _ReaderPanel extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const _ReaderIcon(size: 76),
+              const _ReaderIcon(
+                size: 76,
+                asset: AssetPaths.iconRfidReader,
+                disc: AppColors.greenTint,
+              ),
               const SizedBox(height: 12),
               const Text('RFID reader', style: _Styles.readerTitle),
               const SizedBox(height: 12),
@@ -238,8 +341,36 @@ class _ReaderPanel extends StatelessWidget {
 
     final (Color dot, String status) = switch (phase) {
       RfidReaderPhase.detecting => (AppColors.rfidDetecting, 'Detecting'),
-      RfidReaderPhase.connected => (AppColors.rfidConnected, 'Connected'),
-      _ => (AppColors.rfidDisconnected, 'Disconnected'),
+      RfidReaderPhase.disconnected => (
+        AppColors.rfidDisconnected,
+        'Disconnected',
+      ),
+      _ => (AppColors.rfidConnected, 'Connected'),
+    };
+    final (String icon, Color disc) = switch (phase) {
+      RfidReaderPhase.disconnected => (
+        AssetPaths.iconRfidReaderDisconnected,
+        AppColors.rfidDangerTint,
+      ),
+      RfidReaderPhase.scanning => (
+        AssetPaths.iconRfidReader,
+        AppColors.rfidScanningDisc,
+      ),
+      RfidReaderPhase.tagDetected => (
+        AssetPaths.iconRfidTagDetected,
+        AppColors.greenTint,
+      ),
+      RfidReaderPhase.verifying => (
+        AssetPaths.iconRfidVerifying,
+        AppColors.greenTint,
+      ),
+      _ => (AssetPaths.iconRfidReader, AppColors.greenTint),
+    };
+    final busy = switch (phase) {
+      RfidReaderPhase.detecting ||
+      RfidReaderPhase.scanning ||
+      RfidReaderPhase.verifying => true,
+      _ => false,
     };
 
     return Column(
@@ -260,11 +391,7 @@ class _ReaderPanel extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _ReaderIcon(
-                  size: 94,
-                  disconnected: disconnected,
-                  spinning: phase == RfidReaderPhase.detecting,
-                ),
+                _ReaderIcon(size: 94, asset: icon, disc: disc, spinning: busy),
                 const SizedBox(height: 12),
                 const Text('RFID reader', style: _Styles.readerTitle),
                 const SizedBox(height: 12),
@@ -298,40 +425,28 @@ class _ReaderPanel extends StatelessWidget {
             ),
           ),
         ),
-        if (disconnected) ...[
+        if (phase == RfidReaderPhase.disconnected) ...[
           const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.rfidDangerTint,
-              border: Border.all(color: AppColors.rfidDanger, width: 1.5),
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
-            ),
-            child: Row(
-              children: [
-                SvgPicture.asset(
-                  AssetPaths.iconRfidAlert,
-                  width: 22,
-                  height: 22,
-                  excludeFromSemantics: true,
-                ),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'No scan failure is treated as a missing tag, invalid tag '
-                    'or No Active Trip.',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontFamily,
-                      fontSize: 14,
-                      fontWeight: AppTypography.regular,
-                      letterSpacing: 0,
-                      height: 22.4 / 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          const _Note(
+            icon: AssetPaths.iconRfidAlert,
+            border: AppColors.rfidDanger,
+            fill: AppColors.rfidDangerTint,
+            textColor: Colors.black,
+            text:
+                'No scan failure is treated as a missing tag, invalid tag or '
+                'No Active Trip.',
+          ),
+        ],
+        if (phase == RfidReaderPhase.tagDetected) ...[
+          const SizedBox(height: 16),
+          const _Note(
+            icon: AssetPaths.iconRfidInfo,
+            border: AppColors.rfidSuccess,
+            fill: AppColors.rfidSuccessTint,
+            textColor: AppColors.rfidTitle,
+            text:
+                'A detected tag is not yet a verified vehicle. Raw tag '
+                'references are hidden.',
           ),
         ],
       ],
@@ -339,39 +454,88 @@ class _ReaderPanel extends StatelessWidget {
   }
 }
 
-/// The reader icon on a tinted disc; while detecting, a ring turns round
-/// it.
+/// A note in a coloured box with its icon.
+class _Note extends StatelessWidget {
+  const _Note({
+    required this.icon,
+    required this.border,
+    required this.fill,
+    required this.textColor,
+    required this.text,
+  });
+
+  final String icon;
+  final Color border;
+  final Color fill;
+  final Color textColor;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: fill,
+        border: Border.all(color: border, width: 1.5),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+      ),
+      child: Row(
+        children: [
+          SvgPicture.asset(
+            icon,
+            width: 22,
+            height: 22,
+            excludeFromSemantics: true,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontFamily: AppTypography.fontFamily,
+                fontSize: 14,
+                fontWeight: AppTypography.regular,
+                letterSpacing: 0,
+                height: 22.4 / 14,
+                color: textColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// [asset] on a tinted disc; while something runs, a ring turns round it.
 class _ReaderIcon extends StatelessWidget {
   const _ReaderIcon({
     required this.size,
-    this.disconnected = false,
+    required this.asset,
+    required this.disc,
     this.spinning = false,
   });
 
   final double size;
-  final bool disconnected;
+  final String asset;
+  final Color disc;
   final bool spinning;
 
   @override
   Widget build(BuildContext context) {
-    final disc = Container(
+    final circle = Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: disconnected ? AppColors.rfidDangerTint : AppColors.greenTint,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: disc, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: SvgPicture.asset(
-        disconnected
-            ? AssetPaths.iconRfidReaderDisconnected
-            : AssetPaths.iconRfidReader,
+        asset,
         width: 38,
         height: 38,
         excludeFromSemantics: true,
       ),
     );
-    if (!spinning) return disc;
+    if (!spinning) return circle;
     // The ring is 8 px clear of the disc all round.
     return SizedBox(
       width: size + 16,
@@ -379,7 +543,7 @@ class _ReaderIcon extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          disc,
+          circle,
           const Positioned.fill(child: _TurningRing()),
         ],
       ),

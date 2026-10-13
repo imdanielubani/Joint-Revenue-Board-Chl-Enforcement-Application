@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page. |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a haulage tag read by RFID is the same trip with a valid JRB E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page. |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -464,8 +464,8 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
 ### RFID verification
 
 Haulage tag on Verify CHL Trip opens **RFID verification** (`/verify/rfid`).
-It first finds the RFID reader connected to the device; reading the
-haulage tag itself is the next step (not designed yet).
+It finds the RFID reader connected to the device, reads a haulage tag
+and verifies it like a plate, ending in the usual verification result.
 
 - **Detect RFID reader:** the reader icon, "RFID reader", "Connection not
   checked"; Detect Reader, Enter Plate Instead, Choose Another Method.
@@ -473,9 +473,22 @@ haulage tag itself is the next step (not designed yet).
 - **Detecting your reader:** the reader in a card, a ring turning round its
   icon and a yellow "Detecting" dot; Stop (abandons the detection; a late
   answer is ignored) and Choose Another Method.
-- **Reader detected:** green "Connected"; Start Scanning (says reading
-  haulage tags is not available yet until that step is designed and the
-  reader SDK is in place) and Choose Another Method.
+- **Reader detected:** green "Connected"; Start Scanning and Choose
+  Another Method.
+- **Scanning for haulage tag:** the ring turns round the reader while it
+  waits for a tag; Stop returns to Reader detected. A reader that stops
+  answering reads as RFID Reader Disconnected.
+- **Haulage tag detected:** a green tick and the note that a detected tag
+  is not yet a verified vehicle; the raw tag reference is never shown
+  (`HaulageTag.toString` hides it too). Verify Detected Tag.
+- **Verifying:** "Resolving vehicle identity, E-Tag validation and CHL
+  trip status…", the ring turning round a refresh icon; Stop keeps the tag
+  so it can be verified again. The tag is verified as a `TagVerification`
+  through the same `VerificationRepository` as a plate, and the result
+  replaces the page: Active Trip, No Active Trip, Vehicle Not Found ("this
+  tag… Read it again or enter the plate instead", pill "Haulage tag") or
+  Verification Unavailable (whose Try again goes through Verification
+  processing, badge "Haulage tag").
 - **RFID Reader Disconnected:** the red reader and "Disconnected", the
   note that no scan failure is a missing tag, invalid tag or No Active
   Trip, and Detect Reader Again (red), Enter Plate Instead and Choose
@@ -483,13 +496,16 @@ haulage tag itself is the next step (not designed yet).
 - The reader sits in the middle of the free space; short screens and
   large text scroll. Enter Plate Instead replaces the page with plate
   entry; Choose Another Method returns to Verify CHL Trip.
-- **Reader:** `RfidReaderDetector` (`shared/device/rfid/rfid_reader_adapter.dart`).
-  Each detection's result is kept in `rfidReaderStatusProvider`, so the
-  dashboard's RFID status reads Connected once a reader is found.
-  `DeviceRfidReaderDetector` finds no reader until the approved reader's
-  SDK is chosen (`TODO(rfid)`). In demo mode `DemoRfidReaderDetector` takes
-  2 seconds; the first detection finds nothing (Disconnected) and every
-  later one finds the reader, so both outcomes can be tried.
+- **Reader:** `RfidReader` (`shared/device/rfid/rfid_reader_adapter.dart`):
+  `detect` and `readTag` (which throws `RfidReaderLost` when the reader
+  stops answering). Each detection's result is kept in
+  `rfidReaderStatusProvider`, so the dashboard's RFID status reads
+  Connected once a reader is found. `DeviceRfidReader` finds no reader
+  until the approved reader's SDK is chosen (`TODO(rfid)`). In demo mode
+  `DemoRfidReader` takes 2 seconds per step; the first detection finds
+  nothing (Disconnected) and every later one finds the reader, and every
+  read finds ABC 123 AA's tag, which verifies as the active trip with a
+  valid JRB E-Tag.
 
 ### QR scanner
 
@@ -923,8 +939,7 @@ Elsewhere:
 - Dashboard figures: `LocalDashboardRepository` returns zeros until
   verifications are stored locally (`TODO(verification_history)`).
 - No RFID reader is ever found outside demo mode until the reader's SDK
-  is chosen, and reading a haulage tag is not built yet (`TODO(rfid)` in
-  `rfid_reader_adapter.dart` and `rfid_scan_screen.dart`).
+  is chosen (`TODO(rfid)` in `rfid_reader_adapter.dart`).
 - Unread notification count is always 0 until notifications are stored
   (`TODO(notifications)`).
 - History, Notifications, Profile, SOS, the RFID, QR and OCR method pages
@@ -944,6 +959,13 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- RFID haulage tag reading and verification: Scanning for haulage tag
+  (Stop), Haulage tag detected (Verify Detected Tag; the raw tag reference
+  is hidden) and verifying, then the usual verification result. A read tag
+  is verified as a `TagVerification`; Vehicle Not Found, Verification
+  Unavailable and processing name it "Haulage tag". `RfidReaderDetector`
+  became `RfidReader` (detect and read). Demo: a read tag is ABC 123 AA
+  with a valid JRB E-Tag.
 - RFID verification (Haulage tag): Detect RFID reader, Detecting your
   reader (turning ring, Stop), Reader detected (Start Scanning) and RFID
   Reader Disconnected (Detect Reader Again, Enter Plate Instead). The

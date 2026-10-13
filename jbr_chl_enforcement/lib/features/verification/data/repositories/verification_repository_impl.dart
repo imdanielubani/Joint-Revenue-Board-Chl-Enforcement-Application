@@ -52,7 +52,9 @@ class RemoteVerificationRepository implements VerificationRepository {
 /// - LND 482 XK has no active trip (and an invalid E-Tag), and a
 ///   completed last trip;
 /// - any other plate, and a scanned QR code (ABC 123 AA), has an active
-///   trip from Abeokuta South, Ogun, to Ikeja, Lagos, and no E-Tag.
+///   trip from Abeokuta South, Ogun, to Ikeja, Lagos, and no E-Tag;
+/// - a haulage tag read by RFID is ABC 123 AA's tag: the same trip, with a
+///   valid JRB E-Tag.
 class DemoVerificationRepository implements VerificationRepository {
   DemoVerificationRepository({
     required this.now,
@@ -89,9 +91,11 @@ class DemoVerificationRepository implements VerificationRepository {
 
     yield const StageStarted(VerificationStage.validatingETag);
     await Future<void>.delayed(stepDelay);
-    final eTag = plate == _noTripPlate
-        ? ETagStatus.invalid
-        : ETagStatus.missing;
+    final eTag = switch (request) {
+      TagVerification() => ETagStatus.valid,
+      _ when plate == _noTripPlate => ETagStatus.invalid,
+      _ => ETagStatus.missing,
+    };
 
     yield const StageStarted(VerificationStage.checkingTrip);
     await Future<void>.delayed(stepDelay);

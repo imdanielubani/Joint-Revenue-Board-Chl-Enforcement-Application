@@ -7,6 +7,7 @@ import 'package:jbr_chl_enforcement/features/vehicle/presentation/screens/verifi
 import 'package:jbr_chl_enforcement/features/verification/data/repositories/verification_repository_impl.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/plate_number.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/scanned_qr.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/haulage_tag.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/repositories/verification_repository.dart';
 import 'package:jbr_chl_enforcement/shared/device/location/location_adapter.dart';
@@ -168,6 +169,17 @@ void main() {
       final result = (progress.last as VerificationCompleted).result;
       expect(result.tripStatus, TripStatus.active);
       expect(result.eTagStatus, ETagStatus.missing);
+    });
+
+    test('a haulage tag is ABC 123 AA with a valid JRB E-Tag', () async {
+      final progress = await repository
+          .verify(const TagVerification(HaulageTag('E2000017')))
+          .toList();
+
+      expect((progress[1] as VehicleIdentified).plate, _plate('ABC123AA'));
+      final result = (progress.last as VerificationCompleted).result;
+      expect(result.tripStatus, TripStatus.active);
+      expect(result.eTagStatus, ETagStatus.valid);
     });
 
     test('records the location as received', () async {

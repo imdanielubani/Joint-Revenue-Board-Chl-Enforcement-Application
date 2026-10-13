@@ -54,6 +54,7 @@ class UnresolvedVerificationScreen extends ConsumerWidget {
   static String method(VerificationRequest request) => switch (request) {
     PlateVerification() => 'Manual plate',
     QrVerification() => 'QR code',
+    TagVerification() => 'Haulage tag',
   };
 
   @override
@@ -61,7 +62,7 @@ class UnresolvedVerificationScreen extends ConsumerWidget {
     final now =
         ref.watch(secondTickerProvider).value ?? ref.watch(clockProvider)();
     final request = outcome.request;
-    final scanned = request is QrVerification;
+    final scanned = request is! PlateVerification;
     final checked = checkedAgo(outcome.checkedAt, now);
 
     final List<Widget> content;
@@ -73,11 +74,17 @@ class UnresolvedVerificationScreen extends ConsumerWidget {
           const SizedBox(height: 11),
           ScreenHeading(
             heading: 'Vehicle Not Found',
-            description: scanned
-                ? 'We couldn’t find a vehicle for this code. Scan it again '
-                      'or enter the plate instead.'
-                : 'We couldn’t find a vehicle for this plate. Check the '
-                      'number and try again.',
+            description: switch (request) {
+              PlateVerification() =>
+                'We couldn’t find a vehicle for this plate. Check the '
+                    'number and try again.',
+              QrVerification() =>
+                'We couldn’t find a vehicle for this code. Scan it again '
+                    'or enter the plate instead.',
+              TagVerification() =>
+                'We couldn’t find a vehicle for this tag. Read it again '
+                    'or enter the plate instead.',
+            },
           ),
           const SizedBox(height: 16),
           _Checked(checked),
@@ -246,7 +253,8 @@ class _Checked extends StatelessWidget {
   }
 }
 
-/// What was checked: the plate as entered, or that a QR code was scanned.
+/// What was checked: the plate as entered, or that a QR code was scanned
+/// or a haulage tag read.
 class _RequestPill extends StatelessWidget {
   const _RequestPill(this.request);
 
@@ -261,6 +269,7 @@ class _RequestPill extends StatelessWidget {
         'Plate ${plate.display}',
       ),
       QrVerification() => ('QR code', 'Scanned QR code'),
+      TagVerification() => ('Haulage tag', 'Haulage tag read by RFID'),
     };
     return Semantics(
       container: true,
@@ -277,9 +286,11 @@ class _RequestPill extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              request is PlateVerification
-                  ? AssetPaths.iconResultPlateKeyboard
-                  : AssetPaths.iconMethodQr,
+              switch (request) {
+                PlateVerification() => AssetPaths.iconResultPlateKeyboard,
+                QrVerification() => AssetPaths.iconMethodQr,
+                TagVerification() => AssetPaths.iconRfidReader,
+              },
               width: 20,
               height: 20,
               excludeFromSemantics: true,

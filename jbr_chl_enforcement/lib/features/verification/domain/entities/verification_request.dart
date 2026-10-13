@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 
+import 'haulage_tag.dart';
 import 'plate_number.dart';
 import 'scanned_qr.dart';
 
-/// What the officer asked to verify: a plate they entered, or a CHL QR
-/// code they scanned. (A scanned E-Tag opens its receipt instead.)
+/// What the officer asked to verify: a plate they entered, a CHL QR code
+/// they scanned, or a haulage tag the RFID reader read. (A scanned E-Tag
+/// QR opens its receipt instead.)
 @immutable
 sealed class VerificationRequest {
   const VerificationRequest();
@@ -44,6 +46,24 @@ final class QrVerification extends VerificationRequest {
 
   @override
   int get hashCode => code.hashCode;
+}
+
+/// Verify the vehicle a haulage tag read by the RFID reader belongs to.
+final class TagVerification extends VerificationRequest {
+  const TagVerification(this.tag);
+
+  final HaulageTag tag;
+
+  /// Not known until the tag is looked up.
+  @override
+  PlateNumber? get plate => null;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TagVerification && other.tag == tag;
+
+  @override
+  int get hashCode => tag.hashCode;
 }
 
 /// The checks a verification runs, in order.
