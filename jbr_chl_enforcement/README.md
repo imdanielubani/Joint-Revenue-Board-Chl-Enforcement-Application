@@ -771,6 +771,8 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Removed the unused biometric unlock button widget.
+
 - Verification record for CHL trip checks (Active Trip and No Active
   Trip): summary card, Verification details, Result and completion, View
   verification result (active trips) and Back to history. The record page
