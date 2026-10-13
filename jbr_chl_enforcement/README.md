@@ -213,6 +213,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Permissions | `features/permissions/` | Notifications, camera, location and a "GPS is disabled" step. Each permission is asked only once per install; blocked permissions open app settings and the flow continues when the user returns. |
 | Sign in | `features/auth/presentation/screens/login_screen.dart` | See below. |
 | Password recovery | `features/auth/presentation/screens/forgot_password_screen.dart` | Email (carried over from sign-in), Send Reset Link (disabled until an email is entered), "Verifying..." while sending, then the "link sent" sheet (`widgets/reset_link_sent_sheet.dart`) with Return to Login. Closing the sheet keeps the screen so another link can be sent. |
+| Account Security (change password) | `features/profile/presentation/screens/change_password_screen.dart` | App settings → Security. The same screen as Password recovery (`ForgotPasswordScreen` with `title`, `leaveLabel` and `onLeave`), titled "Account Security", starting with an empty email as designed; the "link sent" sheet's button is Return to Settings, and Back returns to settings. |
 | Account deactivated | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in when the server refuses sign-in because the account is deactivated (HTTP 403). |
 | Session expired | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in after a session expires. Shows "Queued work is safe" when offline actions are waiting (`pendingSyncCountProvider`). |
 | Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | See below. |
@@ -222,7 +223,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Profile ("My Account") | `features/profile/presentation/screens/profile_screen.dart` | See below. |
 | Account details | `features/profile/presentation/screens/account_details_screen.dart` | See below. |
 | App settings ("My Preferences") | `features/settings/presentation/screens/settings_screen.dart` | See below. |
-| History, Notifications, SOS, RFID, QR and OCR verification, Verification result, Change password | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
+| History, Notifications, SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -306,7 +307,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
   - **Sync queue** opens the sync queue (see below); its line counts
     `pendingSyncCountProvider` ("2 local records awaiting
     synchronization").
-  - **Security** opens a placeholder page.
+  - **Security** opens Account Security (change password by reset link).
 - **Fonts:** a few rows in the designs (Account details values, the
   region · agent ID line) are drawn in Segoe UI, a Windows font that
   cannot be shipped on Android or iOS; the app uses Poppins everywhere.
@@ -647,6 +648,11 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Account Security (App settings → Security): request a password reset
+  link while signed in, reusing the Password recovery screen with its own
+  title and a Return to Settings button. `ResetLinkSentAction.returnToLogin`
+  is now `ResetLinkSentAction.leave`.
 
 - Removed three unused empty placeholders: `auth/domain/usecases/logout.dart`
   and `unlock_with_biometrics.dart` (sign-out lives in the Profile screen;

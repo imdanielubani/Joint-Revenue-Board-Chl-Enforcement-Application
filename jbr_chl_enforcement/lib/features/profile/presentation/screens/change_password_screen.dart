@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
-import '../../../../shared/ui/widgets/empty_state.dart';
-import '../../../../shared/ui/widgets/green_header_scaffold.dart';
+import '../../../auth/presentation/screens/forgot_password_screen.dart';
 
-/// Change the officer's CHL password. Placeholder until its design is implemented.
+/// App settings → Security ("Account Security"): the officer asks for a
+/// password reset link, as on sign-in, then returns to settings.
 class ChangePasswordScreen extends StatelessWidget {
   const ChangePasswordScreen({super.key});
 
+  static const String title = 'Account Security';
+  static const String returnToSettings = 'Return to Settings';
+
   @override
   Widget build(BuildContext context) {
-    return GreenHeaderScaffold(
-      title: 'Change password',
-      onBack: context.popOrGoHome,
-      body: const EmptyState(
-        title: 'Change password',
-        message: notBuiltYetMessage,
-      ),
+    return ForgotPasswordScreen(
+      title: title,
+      leaveLabel: returnToSettings,
+      onLeave: context.popOrGoHome,
     );
   }
 }

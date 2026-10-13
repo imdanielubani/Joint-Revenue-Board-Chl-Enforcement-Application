@@ -8,25 +8,35 @@ import '../../../../shared/ui/sheets/app_bottom_sheet.dart';
 import '../../../../shared/ui/widgets/app_button.dart';
 
 /// What the officer chose on the "link sent" sheet.
-enum ResetLinkSentAction { returnToLogin, dismissed }
+enum ResetLinkSentAction {
+  /// Tapped the button ("Return to Login", "Return to Settings").
+  leave,
 
-/// Shows the "Reset Password – link sent" card over a dark scrim.
-///
-/// Resolves to [ResetLinkSentAction.returnToLogin] when the officer taps
-/// "Return to Login", or [ResetLinkSentAction.dismissed] when the sheet is
-/// dragged down, the scrim is tapped or Back is pressed.
-Future<ResetLinkSentAction> showResetLinkSentSheet(BuildContext context) async {
+  /// Dragged the sheet down, tapped the scrim or pressed Back.
+  dismissed,
+}
+
+/// Shows the "Reset Password – link sent" card over a dark scrim, with a
+/// [leaveLabel] button.
+Future<ResetLinkSentAction> showResetLinkSentSheet(
+  BuildContext context, {
+  String leaveLabel = ResetLinkSentSheet.returnToLogin,
+}) async {
   final action = await showAppSheet<ResetLinkSentAction>(
     context: context,
-    builder: (context) => const ResetLinkSentSheet(),
+    builder: (context) => ResetLinkSentSheet(leaveLabel: leaveLabel),
   );
   return action ?? ResetLinkSentAction.dismissed;
 }
 
 /// Floating card: handle, title, explanation, confirmation and the button
-/// back to sign-in.
+/// back (to sign-in, or to settings when signed in).
 class ResetLinkSentSheet extends StatelessWidget {
-  const ResetLinkSentSheet({super.key});
+  const ResetLinkSentSheet({super.key, this.leaveLabel = returnToLogin});
+
+  static const String returnToLogin = 'Return to Login';
+
+  final String leaveLabel;
 
   static const TextStyle _titleStyle = TextStyle(
     fontFamily: AppTypography.fontFamily,
@@ -76,9 +86,9 @@ class ResetLinkSentSheet extends StatelessWidget {
           const _SentConfirmation(),
           const SizedBox(height: 22),
           AppButton.primary(
-            label: 'Return to Login',
+            label: leaveLabel,
             onPressed: () =>
-                Navigator.of(context).pop(ResetLinkSentAction.returnToLogin),
+                Navigator.of(context).pop(ResetLinkSentAction.leave),
           ),
         ],
       ),

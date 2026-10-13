@@ -15,16 +15,32 @@ import '../providers/forgot_password_controller.dart';
 import '../widgets/reset_link_sent_sheet.dart';
 
 /// Password recovery: the officer enters their email and is sent a reset
-/// link. Opened from sign-in, with any email already typed there.
+/// link. Opened from sign-in, with any email already typed there, and (as
+/// "Account Security") from App settings → Security.
 ///
 /// The content scrolls; the Send Reset Link button stays at the bottom,
 /// above the keyboard when it is open. The button is disabled until an
 /// email is entered.
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
-  const ForgotPasswordScreen({super.key, this.initialEmail});
+  const ForgotPasswordScreen({
+    super.key,
+    this.initialEmail,
+    this.title = 'Password Recovery',
+    this.leaveLabel = ResetLinkSentSheet.returnToLogin,
+    this.onLeave,
+  });
 
   /// Email carried over from the sign-in screen.
   final String? initialEmail;
+
+  /// Header title.
+  final String title;
+
+  /// The "link sent" sheet's button.
+  final String leaveLabel;
+
+  /// Back, and the sheet's button. Defaults to returning to sign-in.
+  final VoidCallback? onLeave;
 
   @override
   ConsumerState<ForgotPasswordScreen> createState() =>
@@ -74,7 +90,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   void _onEmailEdited() => setState(() {});
 
   void _goBack() {
-    if (context.canPop()) {
+    final onLeave = widget.onLeave;
+    if (onLeave != null) {
+      onLeave();
+    } else if (context.canPop()) {
       context.pop();
     } else {
       context.goNamed(RouteNames.login);
@@ -89,9 +108,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         previous?.status == ForgotPasswordStatus.sent) {
       return;
     }
-    final action = await showResetLinkSentSheet(context);
+    final action = await showResetLinkSentSheet(
+      context,
+      leaveLabel: widget.leaveLabel,
+    );
     if (!mounted) return;
-    if (action == ResetLinkSentAction.returnToLogin) {
+    if (action == ResetLinkSentAction.leave) {
       _goBack();
     } else {
       ref.read(forgotPasswordControllerProvider.notifier).acknowledgeSent();
@@ -112,7 +134,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final message = state.message;
 
     return GreenHeaderScaffold(
-      title: 'Password Recovery',
+      title: widget.title,
       onBack: _goBack,
       body: Center(
         child: ConstrainedBox(
