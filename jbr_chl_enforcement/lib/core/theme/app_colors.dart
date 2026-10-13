@@ -74,6 +74,26 @@ abstract final class AppColors {
   static const Color historyNotCompleted = Color(0xFF875900); // badge text
   static const Color filterOutline = Color(0xFF7C9075); // Filters button
   static const Color recordDivider = Color(0xFFD7D9D6); // record page rows
+
+  // QR scanner (dark camera page).
+  static const Color scannerGlow = Color(0xFF46534B); // background, centre
+  static const Color scannerMid = Color(0xFF2F3C34);
+  static const Color scannerDeep = Color(0xFF17241D); // also shutter ring
+  static const Color scannerBase = Color(0xFF0C120F); // background, edges
+  static const Color scannerLabel = Color(0xFFD6E2D9); // header, panel text
+  static const Color scannerText = Color(0xFFE0E6E2); // descriptions
+  static const Color scannerControl = Color(0x14FFFFFF); // white at 8%
+  static const Color scannerOutline = Color(0xFFBECFC0); // Enter plate
+  static const Color scannerOutlineFill = Color(0x0DFFFFFF); // white at 5%
+  static const Color scannerLine = Color(0xFFFFC21A); // scan line
+  static const Color scannerLineGlow = Color(0x30FFC21A); // 19%
+  static const Color scannerAlertFill = Color(0xFF382715);
+  static const Color scannerAlertBorder = Color(0xFFBB8A3E);
+  static const Color scannerAlertText = Color(0xFFFFE0A5);
+  static const Color scannerPreviewTop = Color(0xFF627367); // no camera yet
+  static const Color scannerPreviewUpper = Color(0xFF4D6154);
+  static const Color scannerPreviewLower = Color(0xFF384E40);
+  static const Color scannerPreviewEdge = Color(0xFF27372D);
   static const Color filterInk = Color(0xFF201629); // Filter history text
   static const Color filterField = Color(0xFF7C897C); // dropdown outline
   static const Color filterMatchTint = Color(0xFFEAF9EF); // "1 matching record"

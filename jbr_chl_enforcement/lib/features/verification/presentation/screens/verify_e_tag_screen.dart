@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/navigation/route_names.dart';
+import '../../domain/entities/scanned_qr.dart';
 import '../widgets/verification_method_tile.dart';
 
 /// Verify E-Tag: read the physical JRB E-Tag by RFID or its QR code.
@@ -27,7 +28,10 @@ class VerifyETagScreen extends StatelessWidget {
           iconAsset: AssetPaths.iconMethodQr,
           title: 'Scan E-Tag QR code',
           description: 'Read the physical JRB E-Tag.',
-          onSelected: () => context.pushNamed(RouteNames.qrScan),
+          onSelected: () => context.pushNamed(
+            RouteNames.qrScan,
+            queryParameters: const {'for': QrScanTarget.eTagQuery},
+          ),
         ),
       ],
     );

@@ -78,6 +78,12 @@ abstract final class AssetPaths {
   static const String iconSignOutLock =
       'assets/icons/account/sign_out_lock.svg';
 
+  // QR scanner
+  static const String scannerDir = 'assets/icons/scanner';
+  static const String iconScannerClose = '$scannerDir/close.svg';
+  static const String iconScannerShutter = '$scannerDir/camera.svg';
+  static const String iconScannerLocked = '$scannerDir/lock.svg';
+
   // Verification history
   static const String historyDir = 'assets/icons/history';
   static const String iconHistoryTripOk = '$historyDir/trip_ok.svg';

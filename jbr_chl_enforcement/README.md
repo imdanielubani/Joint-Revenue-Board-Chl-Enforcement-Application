@@ -227,7 +227,8 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Notifications | `features/notifications/presentation/screens/notifications_screen.dart` | See below. |
 | Notification details | `features/notifications/presentation/screens/notification_details_screen.dart` | See below. |
 | Verification history | `features/verification_history/presentation/screens/verification_history_screen.dart` | See below. |
-| SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
+| QR scanner | `features/verification/presentation/screens/qr_scan_screen.dart` | See "QR scanner" below. |
+| SOS, RFID and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -364,6 +365,39 @@ card opens again; an interruption stays until retried.
 - The designs' prototype wording ("local snapshot", "no upload is sent to
   CHL", "Local response walkthrough only.") is replaced with what the app
   really does.
+
+### QR scanner
+
+One full-screen scanner for both QR codes the officer reads: the CHL
+haulage receipt (Verify CHL Trip → Scan E-Tag QR code, `/verify/qr`) and
+the JRB E-Tag (Verify E-Tag → Scan E-Tag QR code, `/verify/qr?for=e-tag`).
+The wording follows the target ("Scan CHL receipt QR" / "Scan E-Tag QR",
+"Scan receipt" / "Scan E-Tag"); the layout is the same.
+
+- **Scanning:** the live camera in a rounded frame with white corner
+  guides and the amber scan line, the hint under it, the white shutter
+  button and Enter plate instead. The frame grows with the screen
+  (230–440 px); short screens and large text scroll.
+- **Shutter:** takes the code the camera saw in the last 1.5 s
+  (`QrScanScreen.recentReading`) on to the verification result (as a
+  `ScannedQr`). No code in view: "No QR code detected…"; a code that
+  cannot be decoded (or is blank): "Unable to read this … QR. Improve
+  lighting and try again." Both show Retry Scanning and Enter Plate
+  Instead, with the camera still running.
+- **Camera access:** refused: "Camera permission denied" in the frame,
+  "You can still verify by plate number.", Retry Camera Access (asks
+  again; if Android or iOS will not ask again, opens the app's settings,
+  and the camera starts when the officer comes back with access) and
+  Enter Plate Instead. No usable camera: "Camera unavailable", where Retry
+  starts the camera again (no design; same parts).
+- **Leaving:** the close button returns to the method page; the result
+  and Enter plate replace the scanner, so the camera is released and back
+  goes to the method page.
+- **Camera:** `QrScanner` (`shared/device/scanner/qr_scanner_adapter.dart`)
+  wraps `mobile_scanner` (QR codes only); the page never uses the plugin
+  directly, and tests use `FakeQrScanner`. The page shows "Not built yet"
+  for the result until its design arrives; it receives the code and
+  whether it is a receipt or an E-Tag.
 
 ### Verification history
 
@@ -775,6 +809,12 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- QR scanner for CHL receipts and E-Tags: live camera with frame and
+  guides, shutter that continues to verification, "No QR code detected",
+  unreadable code, camera permission denied (with Retry Camera Access and
+  the app settings) and camera unavailable, and Enter plate instead.
+  Verify E-Tag opens it worded for the E-Tag.
 
 - Verify CHL Trip: methods in the designed order (Enter plate manually,
   Scan E-Tag QR code, Haulage tag), "Read RFID tag" renamed Haulage tag,

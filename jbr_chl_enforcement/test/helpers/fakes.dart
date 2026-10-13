@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_failure.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_session.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/officer.dart';
@@ -12,6 +15,7 @@ import 'package:jbr_chl_enforcement/features/verification/domain/entities/verifi
 import 'package:jbr_chl_enforcement/features/verification_history/domain/entities/verification_record.dart';
 import 'package:jbr_chl_enforcement/features/verification_history/domain/repositories/history_repository.dart';
 import 'package:jbr_chl_enforcement/shared/device/permissions/permission_adapter.dart';
+import 'package:jbr_chl_enforcement/shared/device/scanner/qr_scanner_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/storage/preferences_service.dart';
 import 'package:jbr_chl_enforcement/shared/storage/secure_storage_service.dart';
 
@@ -281,5 +285,50 @@ class FakeHistoryRepository implements HistoryRepository {
     final error = fetchError;
     if (error != null) throw error;
     return List.unmodifiable(records);
+  }
+}
+
+/// A QR camera the test drives: [see] a code, or change [cameraStatus].
+class FakeQrScanner implements QrScanner {
+  FakeQrScanner({
+    QrCameraStatus status = QrCameraStatus.running,
+    this.statusAfterStart = QrCameraStatus.running,
+  }) : _status = ValueNotifier(status);
+
+  final ValueNotifier<QrCameraStatus> _status;
+  final StreamController<QrReading> _readings =
+      StreamController<QrReading>.broadcast();
+
+  /// What the camera reports after [start].
+  QrCameraStatus statusAfterStart;
+
+  int starts = 0;
+  bool disposed = false;
+
+  /// The camera sees a code; null when it cannot be decoded.
+  void see(String? value) => _readings.add(QrReading(value));
+
+  set cameraStatus(QrCameraStatus value) => _status.value = value;
+
+  @override
+  ValueListenable<QrCameraStatus> get status => _status;
+
+  @override
+  Stream<QrReading> get readings => _readings.stream;
+
+  @override
+  Widget buildPreview(BuildContext context) =>
+      const SizedBox.expand(key: Key('camera preview'));
+
+  @override
+  Future<void> start() async {
+    starts++;
+    _status.value = statusAfterStart;
+  }
+
+  @override
+  Future<void> dispose() async {
+    disposed = true;
+    await _readings.close();
   }
 }

@@ -11,6 +11,9 @@ import 'package:jbr_chl_enforcement/features/verification/presentation/screens/q
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/verification_hub_screen.dart';
 import 'package:jbr_chl_enforcement/shared/device/connectivity/connectivity_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/device/location/location_adapter.dart';
+import 'package:jbr_chl_enforcement/shared/device/scanner/qr_scanner_adapter.dart';
+
+import '../../../helpers/fakes.dart';
 
 /// The app's own router, starting on the dashboard tab.
 Future<void> _pumpApp(WidgetTester tester) async {
@@ -26,6 +29,7 @@ Future<void> _pumpApp(WidgetTester tester) async {
       ),
       internetStatusProvider.overrideWith((ref) => Stream.value(true)),
       gpsStatusProvider.overrideWith((ref) => Stream.value(true)),
+      qrScannerFactoryProvider.overrideWithValue(FakeQrScanner.new),
     ],
   );
   addTearDown(container.dispose);
@@ -80,7 +84,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(QrScanScreen), findsOneWidget);
 
-    await _back(tester);
+    await tester.tap(find.bySemanticsLabel('Close receipt QR scanner'));
+    await tester.pumpAndSettle();
     expect(find.byType(VerificationHubScreen), findsOneWidget);
 
     await _back(tester);

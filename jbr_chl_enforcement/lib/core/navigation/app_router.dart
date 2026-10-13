@@ -17,6 +17,7 @@ import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/sos/presentation/screens/sos_screen.dart';
 import '../../features/vehicle/presentation/screens/verification_result_screen.dart';
 import '../../features/verification/domain/entities/plate_number.dart';
+import '../../features/verification/domain/entities/scanned_qr.dart';
 import '../../features/verification/presentation/screens/manual_plate_entry_screen.dart';
 import '../../features/verification/presentation/screens/ocr_capture_screen.dart';
 import '../../features/verification/presentation/screens/qr_scan_screen.dart';
@@ -141,7 +142,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.qrScan,
         name: RouteNames.qrScan,
-        builder: (context, state) => const QrScanScreen(),
+        builder: (context, state) => QrScanScreen(
+          target: QrScanTarget.fromQuery(state.uri.queryParameters['for']),
+        ),
       ),
       GoRoute(
         path: RoutePaths.manualPlate,
@@ -160,6 +163,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           plate: state.extra is PlateNumber
               ? state.extra! as PlateNumber
               : null,
+          scan: state.extra is ScannedQr ? state.extra! as ScannedQr : null,
         ),
       ),
     ],

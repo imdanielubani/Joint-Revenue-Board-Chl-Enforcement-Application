@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/features/notifications/presentation/providers/notifications_controller.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/scanned_qr.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/manual_plate_entry_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/ocr_capture_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/qr_scan_screen.dart';
@@ -16,6 +17,9 @@ import 'package:jbr_chl_enforcement/features/verification/presentation/screens/r
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/verification_hub_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/verify_e_tag_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/widgets/verification_method_tile.dart';
+import 'package:jbr_chl_enforcement/shared/device/scanner/qr_scanner_adapter.dart';
+
+import '../../../helpers/fakes.dart';
 
 const _home = 'home page';
 
@@ -55,7 +59,9 @@ GoRouter _router(String first, {bool push = true}) {
       GoRoute(
         path: RoutePaths.qrScan,
         name: RouteNames.qrScan,
-        builder: (context, state) => const QrScanScreen(),
+        builder: (context, state) => QrScanScreen(
+          target: QrScanTarget.fromQuery(state.uri.queryParameters['for']),
+        ),
       ),
       GoRoute(
         path: RoutePaths.manualPlate,
@@ -100,7 +106,10 @@ Future<void> _pump(
   addTearDown(router.dispose);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [unreadNotificationCountProvider.overrideWithValue(unread)],
+      overrides: [
+        unreadNotificationCountProvider.overrideWithValue(unread),
+        qrScannerFactoryProvider.overrideWithValue(FakeQrScanner.new),
+      ],
       child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     ),
   );
@@ -176,7 +185,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.byType(screen), findsOneWidget);
 
-        await tester.tap(find.bySemanticsLabel('Back'));
+        await tester.tap(
+          find.bySemanticsLabel(
+            screen == QrScanScreen ? 'Close receipt QR scanner' : 'Back',
+          ),
+        );
         await tester.pumpAndSettle();
         expect(find.byType(VerificationHubScreen), findsOneWidget);
         expect(find.byType(screen), findsNothing);
@@ -252,8 +265,16 @@ void main() {
         await tester.tap(find.text(title));
         await tester.pumpAndSettle();
         expect(find.byType(screen), findsOneWidget);
+        if (screen == QrScanScreen) {
+          // The scanner is worded for an E-Tag.
+          expect(find.text('Scan E-Tag QR'), findsOneWidget);
+        }
 
-        await tester.tap(find.bySemanticsLabel('Back'));
+        await tester.tap(
+          find.bySemanticsLabel(
+            screen == QrScanScreen ? 'Close E-Tag QR scanner' : 'Back',
+          ),
+        );
         await tester.pumpAndSettle();
         expect(find.byType(VerifyETagScreen), findsOneWidget);
       });
