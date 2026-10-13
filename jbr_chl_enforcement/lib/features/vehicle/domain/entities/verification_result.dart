@@ -17,6 +17,7 @@ class VerificationResult {
     required this.checkedAt,
     this.trip,
     this.destinationCheck,
+    this.lastTrip,
   });
 
   final PlateNumber plate;
@@ -34,6 +35,10 @@ class VerificationResult {
   /// How the officer's location is checked against the destination; set
   /// with an active trip.
   final DestinationCheck? destinationCheck;
+
+  /// The vehicle's most recent earlier trip, when it has no active one and
+  /// CHL found one.
+  final ChlTrip? lastTrip;
 }
 
 /// The destination check CHL runs for an active trip: it compares the

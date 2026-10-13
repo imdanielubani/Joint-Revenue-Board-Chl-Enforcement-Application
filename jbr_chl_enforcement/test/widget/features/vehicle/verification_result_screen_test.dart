@@ -9,8 +9,11 @@ import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/core/utils/clock.dart';
 import 'package:jbr_chl_enforcement/features/notifications/presentation/providers/notifications_controller.dart';
+import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/chl_trip.dart';
+import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/trip_status.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/e_tag_status.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
+import 'package:jbr_chl_enforcement/features/vehicle/presentation/screens/last_chl_trip_screen.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/presentation/screens/verification_result_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/data/repositories/verification_repository_impl.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/repositories/verification_repository.dart';
@@ -80,6 +83,12 @@ Future<_Harness> _pump(
         builder: (context, state) => VerificationResultScreen(
           result: state.extra as VerificationResult?,
         ),
+      ),
+      GoRoute(
+        path: RoutePaths.lastChlTrip,
+        name: RouteNames.lastChlTrip,
+        builder: (context, state) =>
+            LastChlTripScreen(result: state.extra as VerificationResult?),
       ),
     ],
   );
@@ -365,11 +374,204 @@ void main() {
     expect(find.text('plate page'), findsOneWidget);
   });
 
-  testWidgets('no active trip has no design yet', (tester) async {
-    await _pump(tester, result: sampleNoTripResult(_now));
+  group('no active trip', () {
+    testWidgets('as designed', (tester) async {
+      await _pump(
+        tester,
+        result: sampleNoTripResult(
+          _now,
+          withLastTrip: true,
+          eTag: ETagStatus.valid,
+        ),
+      );
 
-    expect(find.text('LND 482 XK'), findsOneWidget);
-    expect(find.text('Active CHL trip'), findsNothing);
+      expect(find.text('Verification result'), findsOneWidget);
+      expect(find.bySemanticsLabel('Notifications, 2 unread'), findsOneWidget);
+      expect(find.text('No Active Trip Found'), findsOneWidget);
+      expect(
+        find.text(
+          'No current active trip was returned. Review the latest trip and '
+          'physical facts before taking action.',
+        ),
+        findsOneWidget,
+      );
+      for (final row in [
+        'Vehicle identity: LND 482 XK',
+        'E-Tag validity: Valid JRB E-Tag',
+        'CHL trip status: No Active Trip',
+      ]) {
+        expect(_row(row), findsOneWidget, reason: row);
+      }
+      expect(find.text('View Last CHL Trip').hitTestable(), findsOneWidget);
+      // Nothing of an active trip.
+      expect(find.text('Current trip'), findsNothing);
+      expect(find.text('Destination check'), findsNothing);
+      expect(find.text('Finish Verification'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('only an earlier trip still reads as no active trip', (
+      tester,
+    ) async {
+      final earlier = sampleNoTripResult(_now, withLastTrip: true);
+      await _pump(
+        tester,
+        result: VerificationResult(
+          plate: earlier.plate,
+          vehicleType: earlier.vehicleType,
+          eTagStatus: earlier.eTagStatus,
+          tripStatus: TripStatus.previous,
+          checkedAt: _now,
+          lastTrip: earlier.lastTrip,
+        ),
+      );
+
+      expect(_row('CHL trip status: No Active Trip'), findsOneWidget);
+      expect(_row('E-Tag validity: Invalid JRB E-Tag'), findsOneWidget);
+    });
+
+    testWidgets('without an earlier trip, the check can be finished', (
+      tester,
+    ) async {
+      await _pump(tester, result: sampleNoTripResult(_now));
+
+      expect(find.text('View Last CHL Trip'), findsNothing);
+      await tester.tap(find.text('Finish Verification'));
+      await tester.pumpAndSettle();
+      expect(find.text('dashboard page'), findsOneWidget);
+    });
+  });
+
+  group('last CHL trip', () {
+    Future<void> open(WidgetTester tester, {ChlTrip? trip}) async {
+      final base = sampleNoTripResult(_now, withLastTrip: true);
+      await _pump(
+        tester,
+        result: trip == null
+            ? base
+            : VerificationResult(
+                plate: base.plate,
+                vehicleType: base.vehicleType,
+                eTagStatus: base.eTagStatus,
+                tripStatus: base.tripStatus,
+                checkedAt: _now,
+                lastTrip: trip,
+              ),
+      );
+      await tester.tap(find.text('View Last CHL Trip'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('as designed', (tester) async {
+      await open(tester);
+
+      // The header title and the heading.
+      expect(find.text('Last CHL trip'), findsNWidgets(2));
+      expect(find.bySemanticsLabel('Notifications, 2 unread'), findsOneWidget);
+      expect(
+        find.text(
+          'Only the most recent historical trip is shown. This is not an '
+          'active trip.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Last trip'), findsOneWidget);
+      // The badge and the trip status.
+      expect(find.text('Completed'), findsNWidgets(2));
+      expect(_row('From Abeokuta South, Ogun to Ikeja, Lagos'), findsOneWidget);
+
+      await _reveal(tester, find.text('Additional trip information'));
+      for (final row in [
+        'Transaction reference: CHL-2026-07960',
+        'Vehicle plate number: LND 482 XK',
+        'Vehicle type: Heavy goods vehicle',
+        'Transaction type: CHL levy',
+        'Originating state: Ogun',
+        'Originating LGA: Abeokuta South',
+        'Destination state: Lagos',
+        'Destination LGA: Ikeja',
+        'Trip status: Completed',
+        'Trip validity countdown: Historical · no running countdown. '
+            'Historical status is retained from the response; elapsed time '
+            'does not reclassify this trip.',
+      ]) {
+        expect(_row(row), findsOneWidget, reason: row);
+      }
+      expect(
+        find.text(
+          'Completion recorded '
+          '${VerificationResultScreen.dateTime(DateTime(2026, 10, 5, 21, 45))}.',
+        ),
+        findsOneWidget,
+      );
+      // Historical: nothing counts down.
+      expect(find.textContaining(' min '), findsNothing);
+
+      await tester.tap(find.text('Additional trip information'));
+      await tester.pumpAndSettle();
+      expect(_row('Cargo: General haulage'), findsOneWidget);
+      expect(_row('Payment reference: PAY-2026-07960'), findsOneWidget);
+
+      await _reveal(tester, find.text('Return to Dashboard'));
+      expect(find.text('Return To Result'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the status stays as CHL reported it', (tester) async {
+      await open(
+        tester,
+        trip: sampleLastTrip(state: ChlTripState.expired, completed: false),
+      );
+
+      expect(find.text('Expired'), findsNWidgets(2));
+      await _reveal(tester, find.text('Additional trip information'));
+      expect(find.textContaining('Completion recorded'), findsNothing);
+    });
+
+    testWidgets('Return To Result goes back to the result', (tester) async {
+      await open(tester);
+      await _reveal(tester, find.text('Return To Result'));
+
+      await tester.tap(find.text('Return To Result'));
+      await tester.pumpAndSettle();
+      expect(find.text('No Active Trip Found'), findsOneWidget);
+    });
+
+    testWidgets('Return to Dashboard ends the check', (tester) async {
+      await open(tester);
+      await _reveal(tester, find.text('Return to Dashboard'));
+
+      await tester.tap(find.text('Return to Dashboard'));
+      await tester.pumpAndSettle();
+      expect(find.text('dashboard page'), findsOneWidget);
+    });
+
+    testWidgets('back goes back to the result', (tester) async {
+      await open(tester);
+
+      await tester.tap(find.bySemanticsLabel('Back'));
+      await tester.pumpAndSettle();
+      expect(find.text('No Active Trip Found'), findsOneWidget);
+    });
+
+    testWidgets('opened without a trip', (tester) async {
+      tester.view
+        ..physicalSize = const Size(390, 844) * 3
+        ..devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [unreadNotificationCountProvider.overrideWithValue(0)],
+          child: MaterialApp(
+            theme: AppTheme.light,
+            home: LastChlTripScreen(result: sampleNoTripResult(_now)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('There is no earlier trip to show.'), findsOneWidget);
+    });
   });
 
   testWidgets('opened without a verification', (tester) async {
@@ -392,6 +594,29 @@ void main() {
         await _reveal(tester, find.text('Refresh Trip Status'));
         expect(tester.takeException(), isNull);
         expect(find.text('Refresh Trip Status').hitTestable(), findsOneWidget);
+      });
+
+      testWidgets('no active trip, and its last trip, on a $name', (
+        tester,
+      ) async {
+        await _pump(
+          tester,
+          result: sampleNoTripResult(_now, withLastTrip: true),
+          size: size,
+          textScale: scale,
+        );
+        await _reveal(tester, find.text('View Last CHL Trip'));
+        expect(tester.takeException(), isNull);
+        expect(find.text('View Last CHL Trip').hitTestable(), findsOneWidget);
+
+        await tester.tap(find.text('View Last CHL Trip'));
+        await tester.pumpAndSettle();
+        await _reveal(tester, find.text('Additional trip information'));
+        await tester.tap(find.text('Additional trip information'));
+        await tester.pumpAndSettle();
+        await _reveal(tester, find.text('Return to Dashboard'));
+        expect(tester.takeException(), isNull);
+        expect(find.text('Return to Dashboard').hitTestable(), findsOneWidget);
       });
     }
   });

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/chl_trip.dart';
 import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/trip_status.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/e_tag_status.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
@@ -70,6 +71,18 @@ void main() {
       );
     });
 
+    test('CHL trip status', () {
+      expect(VerificationResultScreen.tripStatus(TripStatus.active), 'Active');
+      expect(
+        VerificationResultScreen.tripStatus(TripStatus.noActive),
+        'No Active Trip',
+      );
+      expect(
+        VerificationResultScreen.tripStatus(TripStatus.previous),
+        'No Active Trip',
+      );
+    });
+
     test('E-Tag validity', () {
       expect(
         VerificationResultScreen.eTagValidity(ETagStatus.valid),
@@ -128,6 +141,10 @@ void main() {
       expect(result.tripStatus, TripStatus.noActive);
       expect(result.trip, isNull);
       expect(result.eTagStatus, ETagStatus.invalid);
+      final last = result.lastTrip!;
+      expect(last.state, ChlTripState.completed);
+      expect(last.completedAt!.isBefore(_now), isTrue);
+      expect(last.startedAt.isBefore(last.completedAt!), isTrue);
     });
 
     test('a scanned E-Tag is a valid E-Tag on ABC 123 AA', () async {

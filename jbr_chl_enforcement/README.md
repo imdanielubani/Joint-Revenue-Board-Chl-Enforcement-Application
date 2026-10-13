@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: LND 482 XK has no active trip; any other plate, and a scanned receipt, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a scanned E-Tag has a valid JRB E-Tag (`DemoVerificationRepository`). |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned receipt, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a scanned E-Tag has a valid JRB E-Tag (`DemoVerificationRepository`). |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -228,6 +228,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | QR scanner | `features/verification/presentation/screens/qr_scan_screen.dart` | See "QR scanner" below. |
 | Verification processing | `features/verification/presentation/screens/verification_processing_screen.dart` | See "Verification processing and result" below. |
 | Verification result | `features/vehicle/presentation/screens/verification_result_screen.dart` | See "Verification processing and result" below. |
+| Last CHL trip | `features/vehicle/presentation/screens/last_chl_trip_screen.dart` | See "Verification processing and result" below. |
 | SOS, RFID and OCR verification | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." |
 
 ### Dashboard
@@ -402,8 +403,24 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   each say what to do in a toast. **Finish Verification** returns to the
   dashboard; **Refresh Trip Status** asks CHL again ("Trip status
   updated.").
-- **Other results** (no active trip) have no design yet and show a
-  placeholder with the plate.
+- **Result, no active trip:** the amber warning, "No Active Trip Found",
+  the same summary (CHL trip status "No Active Trip"; a result with only
+  an earlier trip reads the same), and **View Last CHL Trip** at the
+  bottom when CHL returned an earlier trip (`VerificationResult.lastTrip`).
+  Without one, Finish Verification takes its place (no design).
+- **Last CHL trip** (`/verify/result/last-trip`, with the
+  `VerificationResult`): "Only the most recent historical trip is shown.
+  This is not an active trip.", then the trip card as for an active trip
+  (route, illustration, details, Additional trip information), except the
+  validity reads "Historical · no running countdown" with why, followed by
+  "Completion recorded …" when CHL recorded a completion. Return To Result
+  goes back; Return to Dashboard ends the check. The trip's status
+  (`ChlTripState`: Active, Completed, Expired) is shown as CHL reported it,
+  in the badge and the Trip status row; Expired reads in amber. The
+  designs label this card "Current trip" with an "Active" badge, which
+  contradicts "This is not an active trip", so the card reads "Last trip"
+  and shows the reported status. The shared trip card, buttons and bell
+  live in `features/vehicle/presentation/widgets/trip_details_card.dart`.
 - **Data:** `VerificationRepository`
   (`features/verification/domain/repositories/`): `verify` streams
   `StageStarted`, `VehicleIdentified` and `VerificationCompleted`, and
@@ -411,7 +428,8 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   `RemoteVerificationRepository` says verification is not available until
   the CHL API exists (TODO in
   `data/repositories/verification_repository_impl.dart`). Entities:
-  `ChlTrip`, `VerificationResult`, `DestinationCheck`, `RecordedLocation`.
+  `ChlTrip` (with `ChlTripState` and `completedAt`), `VerificationResult`
+  (with `lastTrip`), `DestinationCheck`, `RecordedLocation`.
 - **Wording:** the designs mix Poppins and Segoe UI; the app uses Poppins
   throughout, so a few long values (e.g. "Awaiting central validation")
   wrap onto a second line. The designs' sample data disagreed (Adamawa →
@@ -867,6 +885,13 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Verification result for no active trip ("No Active Trip Found", the
+  summary, View Last CHL Trip) and the Last CHL trip page (the historical
+  trip with no countdown, its reported status and completion time, Return
+  To Result, Return to Dashboard). Trips carry their reported state and
+  completion time; a result can carry the vehicle's last trip. The trip
+  card, buttons and bell are shared from `trip_details_card.dart`. Demo:
+  LND 482 XK has a completed last trip.
 - Verification processing (three checks with spinners and ticks, Cancel
   Verification, Try again when CHL cannot be reached) and the verification
   result for an active trip (summary, current trip with route, details and

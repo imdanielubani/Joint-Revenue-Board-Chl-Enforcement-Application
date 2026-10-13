@@ -47,7 +47,8 @@ class RemoteVerificationRepository implements VerificationRepository {
 
 /// Sample verifications, each check taking a moment as it would over a
 /// network:
-/// - LND 482 XK has no active trip (and an invalid E-Tag);
+/// - LND 482 XK has no active trip (and an invalid E-Tag), and a
+///   completed last trip;
 /// - any other plate, and a scanned receipt (ABC 123 AA), has an active
 ///   trip from Abeokuta South, Ogun, to Ikeja, Lagos, and no E-Tag;
 /// - a scanned E-Tag is ABC 123 AA with a valid JRB E-Tag.
@@ -95,6 +96,7 @@ class DemoVerificationRepository implements VerificationRepository {
         eTagStatus: eTag,
         tripStatus: TripStatus.noActive,
         checkedAt: at,
+        lastTrip: _lastTrip(at),
       );
     }
     final started = at.subtract(const Duration(hours: 2, minutes: 8));
@@ -125,6 +127,27 @@ class DemoVerificationRepository implements VerificationRepository {
     );
   }
 
+  /// LND 482 XK's last trip: Abeokuta South, Ogun, to Ikeja, Lagos,
+  /// completed the day before.
+  ChlTrip _lastTrip(DateTime at) {
+    final started = at.subtract(const Duration(days: 1, hours: 8));
+    return ChlTrip(
+      transactionReference: 'CHL-2026-07960',
+      startedAt: started,
+      paidAt: started.subtract(const Duration(minutes: 6)),
+      transactionType: 'CHL levy',
+      originState: 'Ogun',
+      originLga: 'Abeokuta South',
+      destinationState: 'Lagos',
+      destinationLga: 'Ikeja',
+      validUntil: started.add(const Duration(hours: 12)),
+      cargo: 'General haulage',
+      paymentReference: 'PAY-2026-07960',
+      state: ChlTripState.completed,
+      completedAt: started.add(const Duration(hours: 5, minutes: 17)),
+    );
+  }
+
   @override
   Future<VerificationResult> refresh(VerificationResult result) async {
     await Future<void>.delayed(stepDelay);
@@ -136,6 +159,7 @@ class DemoVerificationRepository implements VerificationRepository {
       checkedAt: now(),
       trip: result.trip,
       destinationCheck: result.destinationCheck,
+      lastTrip: result.lastTrip,
     );
   }
 

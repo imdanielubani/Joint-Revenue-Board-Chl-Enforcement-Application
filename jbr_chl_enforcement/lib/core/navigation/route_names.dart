@@ -27,6 +27,7 @@ abstract final class RouteNames {
   static const String ocrCapture = 'ocr-capture';
   static const String verificationProcessing = 'verification-processing';
   static const String verificationResult = 'verification-result';
+  static const String lastChlTrip = 'last-chl-trip';
 }
 
 abstract final class RoutePaths {
@@ -51,4 +52,5 @@ abstract final class RoutePaths {
   static const String ocrCapture = '/verify/ocr';
   static const String verificationProcessing = '/verify/processing';
   static const String verificationResult = '/verify/result';
+  static const String lastChlTrip = '/verify/result/last-trip';
 }

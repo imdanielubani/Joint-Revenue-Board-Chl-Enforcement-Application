@@ -90,6 +90,7 @@ abstract final class AssetPaths {
   static const String iconProcessingStepActive = '$resultDir/step_active.svg';
   static const String iconProcessingStepDone = '$resultDir/step_done.svg';
   static const String iconResultVerified = '$resultDir/verified.svg';
+  static const String iconResultNoTrip = '$resultDir/no_trip.svg';
   static const String iconResultVehicle = '$resultDir/vehicle.svg';
   static const String iconResultETag = '$resultDir/e_tag.svg';
   static const String iconResultTrip = '$resultDir/trip.svg';

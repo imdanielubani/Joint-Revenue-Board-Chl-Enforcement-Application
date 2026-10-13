@@ -83,6 +83,7 @@ abstract final class AppColors {
   static const Color stepDone = Color(0xFFE2F4E0);
   static const Color processingText = Color(0xFF0E0F13);
   static const Color routeMapGround = Color(0xFFEDF1E8);
+  static const Color noTripIconFill = Color(0xFFFDCD0F); // no active trip
 
   // QR scanner (dark camera page).
   static const Color scannerGlow = Color(0xFF46534B); // background, centre

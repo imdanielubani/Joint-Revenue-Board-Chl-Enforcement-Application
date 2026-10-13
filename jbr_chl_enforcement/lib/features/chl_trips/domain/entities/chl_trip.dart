@@ -15,6 +15,8 @@ class ChlTrip {
     required this.validUntil,
     this.cargo,
     this.paymentReference,
+    this.state = ChlTripState.active,
+    this.completedAt,
   });
 
   /// e.g. "CHL-2026-08142".
@@ -40,9 +42,27 @@ class ChlTrip {
   /// e.g. "PAY-2026-08142".
   final String? paymentReference;
 
+  /// The trip's status as CHL reported it. For an earlier trip it is kept
+  /// as reported; elapsed time does not change it.
+  final ChlTripState state;
+
+  /// When CHL recorded the trip as completed, if it has.
+  final DateTime? completedAt;
+
   /// Time left until [validUntil], never negative.
   Duration remainingAt(DateTime now) {
     final left = validUntil.difference(now);
     return left.isNegative ? Duration.zero : left;
   }
+}
+
+/// Where a CHL trip stands, as CHL reports it.
+enum ChlTripState {
+  active('Active'),
+  completed('Completed'),
+  expired('Expired');
+
+  const ChlTripState(this.label);
+
+  final String label;
 }

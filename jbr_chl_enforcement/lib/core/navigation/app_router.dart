@@ -15,6 +15,7 @@ import '../../features/profile/presentation/screens/change_password_screen.dart'
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/sos/presentation/screens/sos_screen.dart';
+import '../../features/vehicle/presentation/screens/last_chl_trip_screen.dart';
 import '../../features/vehicle/presentation/screens/verification_result_screen.dart';
 import '../../features/vehicle/domain/entities/verification_result.dart';
 import '../../features/verification/domain/entities/verification_request.dart';
@@ -165,6 +166,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.verificationResult,
         name: RouteNames.verificationResult,
         builder: (context, state) => VerificationResultScreen(
+          result: state.extra is VerificationResult
+              ? state.extra! as VerificationResult
+              : null,
+        ),
+      ),
+      GoRoute(
+        path: RoutePaths.lastChlTrip,
+        name: RouteNames.lastChlTrip,
+        builder: (context, state) => LastChlTripScreen(
           result: state.extra is VerificationResult
               ? state.extra! as VerificationResult
               : null,
