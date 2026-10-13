@@ -597,9 +597,10 @@ Sign-in and sessions:
 
 1. Real sign-in API address and contract (needs the backend team).
 2. Restore a remembered session at launch (`launch_controller.dart` TODO).
-3. Proper sign-out (the Profile placeholder ends the session and clears
-   the saved copy, but nothing is sent to the server), token refresh
-   (`logout.dart`, `refresh_session.dart`).
+3. Server sign-out: Sign out ends the session and clears the saved copy on
+   the phone, but nothing is sent to the server yet; call the API's
+   sign-out endpoint from `ProfileScreen._signOut` once it exists. Token
+   refresh (`refresh_session.dart`).
 4. Attach the token to API requests and handle 401s
    (`shared/networking/interceptors/`); a 401 should call
    `SessionNotifier.expire()` so the "session expired" sheet appears.
@@ -646,6 +647,12 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Removed three unused empty placeholders: `auth/domain/usecases/logout.dart`
+  and `unlock_with_biometrics.dart` (sign-out lives in the Profile screen;
+  no design has biometric unlock) and
+  `dashboard/presentation/widgets/shift_status_card.dart` (the dashboard has
+  no shift card).
 
 - Sync queue page: queued records with Sync now, and the "Nothing waiting
   to sync" empty state. The sync repository now streams the queued records
