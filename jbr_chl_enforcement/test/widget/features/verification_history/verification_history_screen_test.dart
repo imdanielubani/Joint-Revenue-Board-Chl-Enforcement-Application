@@ -108,15 +108,6 @@ GoRouter _router() => GoRouter(
               path: RoutePaths.history,
               name: RouteNames.history,
               builder: (context, state) => const VerificationHistoryScreen(),
-              routes: [
-                GoRoute(
-                  path: ':id',
-                  name: RouteNames.historyRecord,
-                  builder: (context, state) => HistoryRecordDetailsScreen(
-                    id: state.pathParameters['id']!,
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -134,6 +125,13 @@ GoRouter _router() => GoRouter(
             ],
           ),
       ],
+    ),
+    // Full screen, above the tabs, as in the app.
+    GoRoute(
+      path: RoutePaths.historyRecord,
+      name: RouteNames.historyRecord,
+      builder: (context, state) =>
+          HistoryRecordDetailsScreen(id: state.pathParameters['id']!),
     ),
   ],
 );
@@ -268,7 +266,7 @@ void main() {
     expect(find.text('Tag QR · 02:46 PM'), findsOneWidget);
   });
 
-  testWidgets('tapping a record opens it in the tab', (tester) async {
+  testWidgets('tapping a record opens it full screen', (tester) async {
     await _pump(tester);
 
     await tester.tap(find.text('LND 482 XK'));
@@ -276,12 +274,13 @@ void main() {
 
     expect(find.byType(HistoryRecordDetailsScreen), findsOneWidget);
     expect(find.text('Verification Record'), findsOneWidget);
-    expect(find.text('LND 482 XK'), findsOneWidget);
-    expect(find.bySemanticsLabel('Main navigation'), findsOneWidget);
+    // Above the tabs, as designed: no navigation bar.
+    expect(find.bySemanticsLabel('Main navigation'), findsNothing);
 
     await tester.tap(find.bySemanticsLabel('Back'));
     await tester.pumpAndSettle();
     expect(find.byType(VerificationHistoryScreen), findsOneWidget);
+    expect(find.bySemanticsLabel('Main navigation'), findsOneWidget);
   });
 
   testWidgets('screen readers can open a record and switch period', (

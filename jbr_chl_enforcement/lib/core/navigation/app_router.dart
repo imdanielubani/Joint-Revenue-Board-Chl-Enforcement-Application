@@ -72,15 +72,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             RoutePaths.history,
             RouteNames.history,
             VerificationHistoryScreen(),
-            routes: [
-              // Inside the tab, so the navigation bar stays.
-              GoRoute(
-                path: ':id',
-                name: RouteNames.historyRecord,
-                builder: (context, state) =>
-                    HistoryRecordDetailsScreen(id: state.pathParameters['id']!),
-              ),
-            ],
           ),
           _tab(
             RoutePaths.notifications,
@@ -100,6 +91,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       // Full-screen pages above the tabs.
+      GoRoute(
+        path: RoutePaths.historyRecord,
+        name: RouteNames.historyRecord,
+        builder: (context, state) =>
+            HistoryRecordDetailsScreen(id: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: RoutePaths.accountDetails,
         name: RouteNames.accountDetails,

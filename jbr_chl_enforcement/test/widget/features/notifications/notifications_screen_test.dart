@@ -84,14 +84,6 @@ GoRouter _router(String initialLocation) => GoRouter(
               path: RoutePaths.history,
               name: RouteNames.history,
               builder: (context, state) => _page('history page'),
-              routes: [
-                GoRoute(
-                  path: ':id',
-                  name: RouteNames.historyRecord,
-                  builder: (context, state) =>
-                      _page('record ${state.pathParameters['id']} page'),
-                ),
-              ],
             ),
           ],
         ),
@@ -123,6 +115,13 @@ GoRouter _router(String initialLocation) => GoRouter(
           ],
         ),
       ],
+    ),
+    // Full screen, above the tabs, as in the app.
+    GoRoute(
+      path: RoutePaths.historyRecord,
+      name: RouteNames.historyRecord,
+      builder: (context, state) =>
+          _page('record ${state.pathParameters['id']} page'),
     ),
   ],
 );

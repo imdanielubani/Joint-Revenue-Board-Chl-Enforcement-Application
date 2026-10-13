@@ -36,6 +36,7 @@ abstract final class RoutePaths {
   static const String forgotPassword = '/login/forgot-password';
   static const String dashboard = '/dashboard';
   static const String history = '/history';
+  static const String historyRecord = '/history/:id';
   static const String notifications = '/notifications';
   static const String profile = '/profile';
   static const String sos = '/sos';

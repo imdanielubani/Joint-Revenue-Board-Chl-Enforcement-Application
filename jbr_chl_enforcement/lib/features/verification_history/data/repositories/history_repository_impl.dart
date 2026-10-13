@@ -6,6 +6,7 @@ import '../../../chl_trips/domain/entities/trip_status.dart';
 import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../verification/domain/entities/verification_method.dart';
 import '../../domain/entities/verification_record.dart';
+import '../../domain/entities/verification_record_details.dart';
 import '../../domain/repositories/history_repository.dart';
 
 /// The history: sample records in demo mode, otherwise the officer's own.
@@ -41,6 +42,10 @@ class DemoHistoryRepository implements HistoryRepository {
   /// The unfinished sample record, which a sample notification links to.
   static const String unfinishedRecordId = 'VR-1042';
 
+  /// The demo account's officer (see `DemoAuthRepository`).
+  static const String _agentName = 'Demo Officer';
+  static const String _agentId = 'JRB-AG-0142';
+
   @override
   Future<List<VerificationRecord>> fetchHistory() async {
     await Future<void>.delayed(delay);
@@ -59,6 +64,15 @@ class DemoHistoryRepository implements HistoryRepository {
         method: VerificationMethod.manualPlate,
         outcome: VerificationOutcome.verified,
         recordedAt: on(0, 9, 34),
+        details: const VerificationRecordDetails(
+          reference: 'VRE-222-001',
+          vehicleType: 'Heavy goods vehicle',
+          agentName: _agentName,
+          agentId: _agentId,
+          actionTaken: 'Verified',
+          tagStatus: ETagStatus.valid,
+          location: RecordLocation(latitude: 8.97439, longitude: 7.45280),
+        ),
       ),
       VerificationRecord(
         id: 'VR-1050',
@@ -67,6 +81,16 @@ class DemoHistoryRepository implements HistoryRepository {
         method: VerificationMethod.manualPlate,
         outcome: VerificationOutcome.checked,
         recordedAt: on(0, 9, 21),
+        details: const VerificationRecordDetails(
+          reference: 'VRE-222-002',
+          vehicleType: 'Heavy goods vehicle',
+          agentName: _agentName,
+          agentId: _agentId,
+          actionTaken: 'Unverified',
+          tagStatus: ETagStatus.invalid,
+          pendingAction: 'Complete required evidence and submit',
+          location: RecordLocation(latitude: 8.97439, longitude: 7.45280),
+        ),
       ),
       VerificationRecord(
         id: 'VR-1049',
@@ -75,6 +99,15 @@ class DemoHistoryRepository implements HistoryRepository {
         method: VerificationMethod.qrCode,
         outcome: VerificationOutcome.verified,
         recordedAt: on(0, 9, 8),
+        details: const VerificationRecordDetails(
+          reference: 'VRE-222-003',
+          vehicleType: 'Mini truck',
+          agentName: _agentName,
+          agentId: _agentId,
+          actionTaken: 'Verified',
+          tagStatus: ETagStatus.valid,
+          location: RecordLocation(latitude: 9.05785, longitude: 7.49508),
+        ),
       ),
       VerificationRecord(
         id: 'VR-1048',
@@ -83,6 +116,13 @@ class DemoHistoryRepository implements HistoryRepository {
         method: VerificationMethod.manualPlate,
         outcome: VerificationOutcome.verified,
         recordedAt: on(0, 8, 56),
+        details: const VerificationRecordDetails(
+          reference: 'VRE-222-004',
+          vehicleType: 'Articulated truck',
+          agentName: _agentName,
+          agentId: _agentId,
+          actionTaken: 'Verified',
+        ),
       ),
       VerificationRecord(
         id: 'VR-1047',

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
 import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../verification/domain/entities/verification_method.dart';
+import 'verification_record_details.dart';
 
 /// What the officer's verification led to.
 enum VerificationOutcome {
@@ -39,6 +40,7 @@ class VerificationRecord {
     required this.method,
     required this.outcome,
     required this.recordedAt,
+    this.details,
   }) : assert(
          outcome == VerificationOutcome.notCompleted
              ? tripStatus == null && eTagStatus == null
@@ -59,6 +61,10 @@ class VerificationRecord {
   final VerificationMethod method;
   final VerificationOutcome outcome;
   final DateTime recordedAt;
+
+  /// The rest of the record, for its record page; null when the server
+  /// did not send it.
+  final VerificationRecordDetails? details;
 
   bool get isETagCheck => eTagStatus != null;
 

@@ -90,6 +90,7 @@ abstract final class AssetPaths {
   static const String iconHistoryFilter = '$historyDir/filter.svg';
   static const String iconHistoryEmpty = '$historyDir/empty.svg';
   static const String iconHistoryNoMatch = '$historyDir/no_match.svg';
+  static const String iconHistoryRecordOk = '$historyDir/record_ok.svg';
   static const String iconHistoryChipRemove = '$historyDir/chip_remove.svg';
   static const String iconHistorySheetClose = '$historyDir/sheet_close.svg';
   static const String iconHistoryDropdown = '$historyDir/dropdown.svg';

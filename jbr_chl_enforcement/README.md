@@ -227,7 +227,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Notifications | `features/notifications/presentation/screens/notifications_screen.dart` | See below. |
 | Notification details | `features/notifications/presentation/screens/notification_details_screen.dart` | See below. |
 | Verification history | `features/verification_history/presentation/screens/verification_history_screen.dart` | See below. |
-| Verification record, SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
+| SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -367,8 +367,8 @@ card opens again; an interruption stays until retried.
 
 ### Verification history
 
-History tab ("My Activity", `/history`); a record opens at `/history/:id`
-inside the tab.
+History tab ("My Activity", `/history`); a record opens full screen above
+the tabs at `/history/:id`, as designed (no navigation bar).
 
 - **List:** "Verification history" / "Review your trip and E-Tag checks.",
   the **Last 30 days / View All History** switch, "6 personal records ·
@@ -402,10 +402,26 @@ inside the tab.
   verifications yet" (no button, as designed); "History unavailable" with
   Try again (never shown as an empty history). A refresh keeps the list on
   screen, and keeps it if the refresh fails.
-- **Record page** (`history_record_details_screen.dart`): a placeholder
-  showing the plate until its design arrives.
+- **Record page** (`history_record_details_screen.dart`), for a CHL trip
+  check: "Personal Verification" and the plate; a summary card ("Active
+  Trip" with a green check, or "No Active Trip" / "Previous Trip" with an
+  amber warning, then "Completed · Manual plate"); "Verification details"
+  (reference, plate, vehicle type, method, date and time, agent and agent
+  ID); "Result and completion" (trip status, the E-Tag as read during the
+  check, completion, action taken, pending action or "None", violation
+  issued, GPS to five decimals, and "No · payments are outside this
+  scope", since the app never makes payment requests). An active trip
+  offers View verification result (the result page for the plate); every
+  record has Back to history. A value the server did not send shows "Not
+  recorded". E-Tag and unfinished records have no design yet and still
+  show a placeholder with the plate.
 - **Data:** `HistoryRepository`; `RemoteHistoryRepository` is empty until
   the API exists (TODO in `data/repositories/history_repository_impl.dart`).
+  A record's page fields come in `VerificationRecord.details`
+  (`VerificationRecordDetails`, with `RecordLocation` for GPS), sent with
+  the history so the page needs no second request. The demo's four
+  newest trip records carry them (VR-1048 without a GPS fix or E-Tag
+  read), with the demo account's officer as the agent.
   `historyProvider` (`HistoryController`: load, `retry`; no automatic
   retries). A record that did not finish has
   `VerificationOutcome.notCompleted` and neither a trip nor an E-Tag
@@ -754,6 +770,12 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Verification record for CHL trip checks (Active Trip and No Active
+  Trip): summary card, Verification details, Result and completion, View
+  verification result (active trips) and Back to history. The record page
+  now opens full screen above the tabs. Records can carry their details
+  (`VerificationRecordDetails`).
 
 - Verification history filters: Filter history card with date range,
   method, result and completion dropdowns, a live match count, Show and
