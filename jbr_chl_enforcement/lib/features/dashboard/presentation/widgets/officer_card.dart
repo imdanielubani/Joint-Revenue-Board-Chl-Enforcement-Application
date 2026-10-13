@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/ui/widgets/initials_avatar.dart';
 import '../../../auth/domain/entities/officer.dart';
 
 /// "Welcome back" card with the officer's initials, name, region and role.
@@ -54,28 +55,11 @@ class OfficerCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar: green disc with a 4 px dark forest ring, which overlaps
-          // the card padding as designed.
-          Container(
-            width: 60,
-            height: 60,
-            decoration: const BoxDecoration(
-              color: AppColors.green,
-              shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: AppColors.forest, spreadRadius: 4)],
-            ),
-            alignment: Alignment.center,
-            child: ExcludeSemantics(
-              child: Text(
-                officer?.initials ?? '',
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontFamily,
-                  fontSize: 20,
-                  fontWeight: AppTypography.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+          // The 4 px ring overlaps the card padding, as designed.
+          InitialsAvatar(
+            initials: officer?.initials ?? '',
+            size: 60,
+            fontSize: 20,
           ),
           const SizedBox(width: 12),
           Expanded(

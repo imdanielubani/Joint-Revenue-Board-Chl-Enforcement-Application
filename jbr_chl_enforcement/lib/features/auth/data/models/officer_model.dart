@@ -9,6 +9,9 @@ abstract final class OfficerModel {
       email: json['email'] as String? ?? '',
       region: json['region'] as String?,
       role: json['role'] as String?,
+      agentId: json['agentId'] as String?,
+      assignment: json['assignment'] as String?,
+      organization: json['organization'] as String?,
     );
   }
 
@@ -18,5 +21,8 @@ abstract final class OfficerModel {
     'email': officer.email,
     'region': officer.region,
     'role': officer.role,
+    'agentId': officer.agentId,
+    'assignment': officer.assignment,
+    'organization': officer.organization,
   };
 }

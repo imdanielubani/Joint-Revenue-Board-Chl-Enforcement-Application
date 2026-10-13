@@ -21,6 +21,7 @@ class GreenHeaderScaffold extends StatelessWidget {
     this.onBack,
     this.headerHeight = defaultHeaderHeight,
     this.sheetColor = AppColors.surface,
+    this.trailing,
   });
 
   final String title;
@@ -33,6 +34,10 @@ class GreenHeaderScaffold extends StatelessWidget {
   final double headerHeight;
 
   final Color sheetColor;
+
+  /// Shown at the right of the header, e.g. a [HeaderIconButton]. Only with
+  /// [onBack].
+  final Widget? trailing;
 
   static const double defaultHeaderHeight = 69;
 
@@ -86,9 +91,13 @@ class GreenHeaderScaffold extends StatelessWidget {
                               top: 6.5,
                               child: _BackButton(onPressed: onBack),
                             ),
+                            if (trailing != null)
+                              // 41 px button 20 from the right and 10 below
+                              // the status bar.
+                              Positioned(right: 20, top: 6.5, child: trailing!),
                             Positioned(
                               left: 71,
-                              right: 16,
+                              right: trailing == null ? 16 : 72,
                               top: 17.5,
                               child: Semantics(
                                 header: true,

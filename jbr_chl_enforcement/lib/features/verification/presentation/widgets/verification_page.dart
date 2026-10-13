@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/ui/widgets/green_header_scaffold.dart';
+import '../../../../shared/ui/widgets/screen_heading.dart';
 
 /// Frame shared by the verification pages: green header with a back button,
 /// and the grey sheet starting 73 px below the status bar.
@@ -68,41 +68,7 @@ class VerificationHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Semantics(
-              header: true,
-              child: Text(
-                heading,
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontFamily,
-                  fontSize: 22,
-                  fontWeight: AppTypography.bold,
-                  height: 25.96 / 22,
-                  letterSpacing: -0.77,
-                  color: AppColors.forest,
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: Text(
-              description,
-              style: const TextStyle(
-                fontFamily: AppTypography.fontFamily,
-                fontSize: 12,
-                fontWeight: AppTypography.regular,
-                height: 18 / 12,
-                color: AppColors.ink,
-              ),
-            ),
-          ),
-        ],
-      ),
+      child: ScreenHeading(heading: heading, description: description),
     );
   }
 }

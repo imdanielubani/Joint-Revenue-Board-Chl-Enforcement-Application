@@ -9,6 +9,9 @@ class Officer {
     required this.email,
     this.region,
     this.role,
+    this.agentId,
+    this.assignment,
+    this.organization,
   });
 
   final String id;
@@ -20,6 +23,15 @@ class Officer {
 
   /// Job title, e.g. "Enforcement Agent".
   final String? role;
+
+  /// Badge number, e.g. "JRB-AG-0142".
+  final String? agentId;
+
+  /// Line of work, e.g. "Revenue Collection".
+  final String? assignment;
+
+  /// Unit the officer belongs to, e.g. "CHL Enforcement Unit".
+  final String? organization;
 
   /// Up to two initials from [name], e.g. "Daniel John" -> "DJ".
   String get initials {
@@ -41,8 +53,20 @@ class Officer {
       other.name == name &&
       other.email == email &&
       other.region == region &&
-      other.role == role;
+      other.role == role &&
+      other.agentId == agentId &&
+      other.assignment == assignment &&
+      other.organization == organization;
 
   @override
-  int get hashCode => Object.hash(id, name, email, region, role);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    email,
+    region,
+    role,
+    agentId,
+    assignment,
+    organization,
+  );
 }

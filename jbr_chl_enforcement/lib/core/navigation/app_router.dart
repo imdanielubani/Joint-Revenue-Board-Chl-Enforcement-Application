@@ -7,8 +7,13 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/offline_sync/presentation/screens/sync_queue_screen.dart';
+import '../../features/offline_sync/presentation/screens/sync_status_screen.dart';
 import '../../features/permissions/presentation/screens/permission_screen.dart';
+import '../../features/profile/presentation/screens/account_details_screen.dart';
+import '../../features/profile/presentation/screens/change_password_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/sos/presentation/screens/sos_screen.dart';
 import '../../features/vehicle/presentation/screens/verification_result_screen.dart';
 import '../../features/verification/domain/entities/plate_number.dart';
@@ -76,6 +81,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       // Full-screen pages above the tabs.
+      GoRoute(
+        path: RoutePaths.accountDetails,
+        name: RouteNames.accountDetails,
+        builder: (context, state) => const AccountDetailsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.settings,
+        name: RouteNames.settings,
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.changePassword,
+        name: RouteNames.changePassword,
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.syncStatus,
+        name: RouteNames.syncStatus,
+        builder: (context, state) => const SyncStatusScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.syncQueue,
+        name: RouteNames.syncQueue,
+        builder: (context, state) => const SyncQueueScreen(),
+      ),
       GoRoute(
         path: RoutePaths.sos,
         name: RouteNames.sos,

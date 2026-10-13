@@ -10,4 +10,7 @@ abstract final class StorageKeys {
 
   /// Saved session (secure storage), present only when remembered.
   static const String authSession = 'auth.session';
+
+  /// Whether device alerts (notifications) are on.
+  static const String deviceAlerts = 'settings.device_alerts';
 }

@@ -63,6 +63,19 @@ abstract final class AssetPaths {
   static const String iconChevronRight =
       'assets/icons/verification/chevron_right.svg';
 
+  // Profile and settings
+  static const String iconChevronLarge =
+      'assets/icons/account/chevron_large.svg';
+  static const String iconRowChevron = 'assets/icons/account/chevron.svg';
+  static const String iconRowChevronDark =
+      'assets/icons/account/chevron_dark.svg';
+  static const String iconRowHistory = 'assets/icons/account/history.svg';
+  static const String iconRowDevice = 'assets/icons/account/device.svg';
+  static const String iconRowBell = 'assets/icons/account/bell.svg';
+  static const String iconRowLock = 'assets/icons/account/lock.svg';
+  static const String iconRowSync = 'assets/icons/account/sync.svg';
+  static const String iconRowDatabase = 'assets/icons/account/database.svg';
+
   // Sign-in progress and result dialogs
   static const String iconSignInLock = 'assets/icons/sign_in/status_lock.svg';
   static const String iconSignInShieldCheck =

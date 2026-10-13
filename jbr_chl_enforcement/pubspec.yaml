@@ -93,6 +93,7 @@ flutter:
     - assets/icons/dashboard/
     - assets/icons/verification/
     - assets/icons/sign_in/
+    - assets/icons/account/
     - assets/animations/
     - assets/sounds/
     - assets/fonts/poppins/OFL.txt

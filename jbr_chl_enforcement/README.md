@@ -96,7 +96,8 @@ Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                                        │         │             └─► Verify E-Tag ─────► RFID, QR
                                        │         ├─ History
                                        │         ├─ Notifications
-                                       │         └─ Profile
+                                       │         └─ Profile ──► Account details
+                                       │                     └─► App settings ──► Security, Offline sync, Sync queue
                                        └─► Forgot password
 ```
 
@@ -105,7 +106,10 @@ using `go_router`. The four signed-in tabs are a `StatefulShellRoute`, so
 each tab keeps its own state and scroll position; `MainShellScaffold`
 draws the floating green navigation bar over them. SOS, the two verify
 pages and the four verification method pages (`/verify/rfid`, `/verify/qr`,
-`/verify/plate`, `/verify/ocr`) open full screen above the tabs. Back from
+`/verify/plate`, `/verify/ocr`) open full screen above the tabs, as do
+Account details (`/account`), App settings (`/settings`) and the pages
+opened from settings (`/settings/password`, `/settings/sync`,
+`/settings/sync-queue`). Back from
 any of them uses `context.popOrGoHome()` (`core/extensions/`), which returns
 to the dashboard when the page was opened directly.
 
@@ -182,7 +186,10 @@ Shared widgets in `lib/shared/ui/widgets/`:
 | `AppCheckbox` | Checkbox with label and a 48 px touch target |
 | `AppAlertBanner` | Error or success alert above a form |
 | `AppSpinner` | Rotating loading symbol (still when reduced motion is on) |
-| `GreenHeaderScaffold` | Green header with title and a rounded white sheet; pass `onBack` for the round back button and a left-aligned title; `headerHeight` (default 69) sets where the sheet starts and `sheetColor` its colour |
+| `GreenHeaderScaffold` | Green header with title and a rounded white sheet; pass `onBack` for the round back button and a left-aligned title; `headerHeight` (default 69) sets where the sheet starts and `sheetColor` its colour; `trailing` puts a widget (the notifications bell) at the right |
+| `HeaderIconButton` | 41 px round header button with an optional count badge (the notifications bell) |
+| `InitialsAvatar` | Green disc with the officer's initials and a dark ring (dashboard, Profile, Account details) |
+| `ScreenHeading` | 22 px page heading with a short description under it |
 | `BrandAccentBar` | Short green bar under brand headings |
 | `EmptyState` | Centred title and message for screens with nothing to show; `notBuiltYetMessage` for placeholder screens |
 
@@ -209,7 +216,10 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Verify CHL Trip | `features/verification/presentation/screens/verification_hub_screen.dart` | "Choose verification method": Read RFID tag, Scan E-Tag QR code, Enter plate manually, Scan plate with OCR. |
 | Verify E-Tag | `features/verification/presentation/screens/verify_e_tag_screen.dart` | Read RFID tag or Scan E-Tag QR code. |
 | Manual plate entry | `features/verification/presentation/screens/manual_plate_entry_screen.dart` | See below. |
-| History, Notifications, Profile, SOS, RFID, QR and OCR verification, Verification result | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." Profile has a temporary Sign out button; the result page shows the plate being verified. |
+| Profile ("My Account") | `features/profile/presentation/screens/profile_screen.dart` | See below. |
+| Account details | `features/profile/presentation/screens/account_details_screen.dart` | See below. |
+| App settings ("My Preferences") | `features/settings/presentation/screens/settings_screen.dart` | See below. |
+| History, Notifications, SOS, RFID, QR and OCR verification, Verification result, Change password, Offline sync, Sync queue | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." The result page shows the plate being verified. |
 
 ### Dashboard
 
@@ -252,6 +262,42 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 - Accessibility: amber and red status text uses the darker `warningText`
   (#B54708) and `statusDownText` (#B42318) rather than the design's #CF9D00
   and #EE4031, which are too faint for 10 px text on white.
+
+### Profile, Account details and App settings
+
+- **Profile tab** (`profile_screen.dart`): header "My Account" with back (to
+  the dashboard) and the notifications bell. The officer card
+  (`widgets/profile_header.dart`) shows initials, name, region · agent ID
+  and role, and opens Account details. "Activity & account" links to the
+  History tab and to App settings. **Sign out** ends the session, removes
+  the saved copy and returns to sign-in; it sits 28 px above the bottom
+  bar on every phone.
+- **Account details** (`account_details_screen.dart`): read-only, as the
+  identity is managed centrally. Full name, Agent ID, Role, Assigned state,
+  Assignment, CHL email, Organization (`widgets/assignment_card.dart`).
+  Values come from the signed-in `Officer`; missing ones show "—". Long
+  values (an email) wrap at the right.
+- **App settings** (`features/settings/`): rows are `SettingsSection` /
+  `SettingsTile` / `SettingsSwitchTile` / `SettingsLinkRow`
+  (`presentation/widgets/`), logic in `presentation/providers/
+  settings_controller.dart`.
+  - **Notifications** switch: saved on the phone (`settings.device_alerts`,
+    on by default) by `deviceAlertsProvider`. Not yet used to decide whether
+    to show alerts; see the TODO there for when push notifications arrive.
+  - **Permissions & devices** switch: On when camera and location are both
+    allowed (`devicePermissionsProvider`), checked again whenever the app
+    returns to the foreground. Turning it on asks for whatever is missing
+    (or opens the phone's settings for anything refused for good). An app
+    cannot take its own permissions back, so turning it off opens the
+    phone's settings. **Review access details** also opens them.
+  - **Security**, **Offline sync** and **Sync queue** open placeholder
+    pages. The Sync queue line counts `pendingSyncCountProvider` ("2 local
+    records awaiting synchronization").
+- **Fonts:** a few rows in the designs (Account details values, the
+  region · agent ID line) are drawn in Segoe UI, a Windows font that
+  cannot be shipped on Android or iOS; the app uses Poppins everywhere.
+  The design's subtitle "Your Identity in managed by central CHL" is shown
+  corrected as "Your identity is managed by central CHL."
 
 ### Verification method pages
 
@@ -371,7 +417,9 @@ phone sizes, tablets, a foldable, landscape and 200% text.
   is not built yet.*
 - **API contract (assumed, confirm with the backend):** `POST /auth/login`
   with `{ "email", "password" }`, answering
-  `{ "accessToken", "refreshToken"?, "expiresIn"?, "officer": { "id", "name", "email", "region"?, "role" } }`.
+  `{ "accessToken", "refreshToken"?, "expiresIn"?, "officer": { "id", "name", "email", "region"?, "role", "agentId"?, "assignment"?, "organization"? } }`.
+  `agentId` (e.g. "JRB-AG-0142"), `assignment` and `organization` are shown
+  on Profile and Account details; anything missing shows as "—".
   **`officer.role` is required for agent access**: without it every sign-in
   is refused as "Agent access not authorized".
   Parsing is in `features/auth/data/models/auth_token_model.dart`.
@@ -516,6 +564,14 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Profile ("My Account"), Account details and App settings ("My
+  Preferences") screens. `Officer` gains `agentId`, `assignment` and
+  `organization`. New shared `HeaderIconButton`, `InitialsAvatar` and
+  `ScreenHeading`; `GreenHeaderScaffold` takes a `trailing` widget. Page
+  descriptions use no letter spacing, as designed (this also corrects the
+  verification pages). Placeholder pages for Change password, Offline sync
+  and Sync queue.
 
 - Dashboard update: SOS button and Verify E-Tag button removed (one
   full-width Verify CHL Trip), Sync tile shows "Synced" and a red "Offline"

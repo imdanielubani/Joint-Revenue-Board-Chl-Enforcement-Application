@@ -60,6 +60,13 @@ abstract final class AppColors {
   static const Color activityViolations = Color(0xFFEDF4E8);
   static const Color activityRing = Color(0xFFEEF1E8);
 
+  // Settings and profile lists.
+  static const Color sage = Color(0xFF637861); // secondary line on a row
+  static const Color iconWell = Color(0xFFEAF4E7); // circle behind row icons
+  static const Color switchOffTrack = Color(0xFFE0E5DE);
+  static const Color switchOffBorder = Color(0xFF657966);
+  static const Color destructive = Color(0xFFBD2013); // Sign out
+
   // Recent verification icon backgrounds.
   static const Color recentActive = mint;
   static const Color recentNoActive = Color(0xFFFFF3D9);

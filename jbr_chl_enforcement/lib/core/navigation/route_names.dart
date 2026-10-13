@@ -14,6 +14,11 @@ abstract final class RouteNames {
   static const String sos = 'sos';
   static const String verifyTrip = 'verify-trip';
   static const String verifyETag = 'verify-e-tag';
+  static const String accountDetails = 'account-details';
+  static const String settings = 'settings';
+  static const String changePassword = 'change-password';
+  static const String syncStatus = 'sync-status';
+  static const String syncQueue = 'sync-queue';
 
   // Verification methods.
   static const String rfidScan = 'rfid-scan';
@@ -35,6 +40,11 @@ abstract final class RoutePaths {
   static const String sos = '/sos';
   static const String verifyTrip = '/verify';
   static const String verifyETag = '/verify-e-tag';
+  static const String accountDetails = '/account';
+  static const String settings = '/settings';
+  static const String changePassword = '/settings/password';
+  static const String syncStatus = '/settings/sync';
+  static const String syncQueue = '/settings/sync-queue';
   static const String rfidScan = '/verify/rfid';
   static const String qrScan = '/verify/qr';
   static const String manualPlate = '/verify/plate';

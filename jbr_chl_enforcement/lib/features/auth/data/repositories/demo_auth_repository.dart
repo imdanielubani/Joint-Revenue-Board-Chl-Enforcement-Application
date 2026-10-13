@@ -47,6 +47,9 @@ class DemoAuthRepository implements AuthRepository {
             email: demoEmail,
             region: 'Lagos State',
             role: 'Enforcement Agent',
+            agentId: 'JRB-AG-0142',
+            assignment: 'Revenue Collection',
+            organization: 'CHL Enforcement Unit',
           ),
         );
       case demoEmail:
