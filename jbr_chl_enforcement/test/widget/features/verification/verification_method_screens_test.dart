@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
+import 'package:jbr_chl_enforcement/features/notifications/presentation/providers/notifications_controller.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/manual_plate_entry_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/ocr_capture_screen.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/qr_scan_screen.dart';
@@ -28,6 +30,12 @@ GoRouter _router(String first, {bool push = true}) {
         name: RouteNames.dashboard,
         builder: (context, state) =>
             const Scaffold(body: Center(child: Text(_home))),
+      ),
+      GoRoute(
+        path: RoutePaths.notifications,
+        name: RouteNames.notifications,
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('notifications page'))),
       ),
       GoRoute(
         path: RoutePaths.verifyTrip,
@@ -71,6 +79,7 @@ Future<void> _pump(
   Size size = const Size(390, 844),
   EdgeInsets safeArea = const EdgeInsets.only(top: 47, bottom: 34),
   double textScale = 1,
+  int unread = 3,
 }) async {
   final padding = FakeViewPadding(
     left: safeArea.left * 3,
@@ -90,7 +99,10 @@ Future<void> _pump(
   final router = _router(first, push: push);
   addTearDown(router.dispose);
   await tester.pumpWidget(
-    MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+    ProviderScope(
+      overrides: [unreadNotificationCountProvider.overrideWithValue(unread)],
+      child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+    ),
   );
   await tester.pumpAndSettle();
   if (push) {
@@ -118,7 +130,7 @@ void main() {
   });
 
   group('Verify CHL Trip', () {
-    testWidgets('offers the four methods', (tester) async {
+    testWidgets('offers the three methods', (tester) async {
       await _pump(tester, RoutePaths.verifyTrip);
 
       expect(find.text('Verification'), findsOneWidget);
@@ -128,11 +140,16 @@ void main() {
         findsOneWidget,
       );
       expect(_cardTitles(tester), [
-        'Read RFID tag',
-        'Scan E-Tag QR code',
         'Enter plate manually',
-        'Scan plate with OCR',
+        'Scan E-Tag QR code',
+        'Haulage tag',
       ]);
+      expect(
+        find.bySemanticsLabel(
+          'Haulage tag. Connect a reader and scan the haulage tag.',
+        ),
+        findsOneWidget,
+      );
       expect(
         find.bySemanticsLabel(
           'Scan E-Tag QR code. Read the code on the physical JRB E-Tag.',
@@ -148,10 +165,9 @@ void main() {
     });
 
     for (final (title, screen) in [
-      ('Read RFID tag', RfidScanScreen),
-      ('Scan E-Tag QR code', QrScanScreen),
       ('Enter plate manually', ManualPlateEntryScreen),
-      ('Scan plate with OCR', OcrCaptureScreen),
+      ('Scan E-Tag QR code', QrScanScreen),
+      ('Haulage tag', RfidScanScreen),
     ]) {
       testWidgets('$title opens its page, and back returns', (tester) async {
         await _pump(tester, RoutePaths.verifyTrip);
@@ -166,6 +182,26 @@ void main() {
         expect(find.byType(screen), findsNothing);
       });
     }
+
+    testWidgets('the bell shows unread notifications and opens them', (
+      tester,
+    ) async {
+      await _pump(tester, RoutePaths.verifyTrip);
+
+      expect(find.bySemanticsLabel('Notifications, 3 unread'), findsOneWidget);
+      expect(find.text('3'), findsOneWidget);
+
+      await tester.tap(find.bySemanticsLabel('Notifications, 3 unread'));
+      await tester.pumpAndSettle();
+      expect(find.text('notifications page'), findsOneWidget);
+    });
+
+    testWidgets('no unread notifications: a plain bell', (tester) async {
+      await _pump(tester, RoutePaths.verifyTrip, unread: 0);
+
+      expect(find.bySemanticsLabel('Notifications'), findsOneWidget);
+      expect(find.text('0'), findsNothing);
+    });
 
     testWidgets('back returns to the dashboard', (tester) async {
       await _pump(tester, RoutePaths.verifyTrip);

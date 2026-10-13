@@ -29,16 +29,21 @@ class VerificationMethodPage extends StatelessWidget {
     required this.heading,
     required this.description,
     required this.options,
+    this.trailing,
   });
 
   final String heading;
   final String description;
   final List<VerificationOption> options;
 
+  /// Shown at the right of the header, e.g. the notifications bell.
+  final Widget? trailing;
+
   @override
   Widget build(BuildContext context) {
     return VerificationPageScaffold(
       title: 'Verification',
+      trailing: trailing,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [

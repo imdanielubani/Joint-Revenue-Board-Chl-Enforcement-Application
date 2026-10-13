@@ -12,10 +12,14 @@ class VerificationPageScaffold extends StatelessWidget {
     super.key,
     required this.title,
     required this.body,
+    this.trailing,
   });
 
   final String title;
   final Widget body;
+
+  /// Shown at the right of the header, e.g. the notifications bell.
+  final Widget? trailing;
 
   /// Widest the page content grows on tablets.
   static const double maxContentWidth = 560;
@@ -27,6 +31,7 @@ class VerificationPageScaffold extends StatelessWidget {
       headerHeight: 73,
       sheetColor: AppColors.canvas,
       onBack: context.popOrGoHome,
+      trailing: trailing,
       body: body,
     );
   }

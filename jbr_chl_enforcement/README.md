@@ -92,7 +92,7 @@ flutter run --dart-define=AUTH_DEMO=true
 ```
 Launch (splash) ──► Permissions ──► Sign in ──► Signed-in tabs
                     (skipped when      │         ├─ Dashboard ──► SOS
-                     nothing pending)  │         │             ├─► Verify CHL Trip ──► RFID, QR, manual plate, OCR
+                     nothing pending)  │         │             ├─► Verify CHL Trip ──► manual plate, E-Tag QR, haulage tag
                                        │         │             └─► Verify E-Tag ─────► RFID, QR
                                        │         ├─ History ──► Verification record
                                        │         ├─ Notifications ──► Notification details
@@ -218,7 +218,7 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Account deactivated | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in when the server refuses sign-in because the account is deactivated (HTTP 403). |
 | Session expired | `features/auth/presentation/widgets/auth_status_sheets.dart` | Sheet over sign-in after a session expires. Shows "Queued work is safe" when offline actions are waiting (`pendingSyncCountProvider`). |
 | Dashboard | `features/dashboard/presentation/screens/dashboard_screen.dart` | See below. |
-| Verify CHL Trip | `features/verification/presentation/screens/verification_hub_screen.dart` | "Choose verification method": Read RFID tag, Scan E-Tag QR code, Enter plate manually, Scan plate with OCR. |
+| Verify CHL Trip | `features/verification/presentation/screens/verification_hub_screen.dart` | "Choose verification method": Enter plate manually, Scan E-Tag QR code, Haulage tag (RFID reader). The header bell shows unread notifications and opens the Notification tab. The design has no OCR option, so nothing opens the OCR page now (its route is kept). |
 | Verify E-Tag | `features/verification/presentation/screens/verify_e_tag_screen.dart` | Read RFID tag or Scan E-Tag QR code. |
 | Manual plate entry | `features/verification/presentation/screens/manual_plate_entry_screen.dart` | See below. |
 | Profile ("My Account") | `features/profile/presentation/screens/profile_screen.dart` | See below. |
@@ -775,6 +775,11 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Verify CHL Trip: methods in the designed order (Enter plate manually,
+  Scan E-Tag QR code, Haulage tag), "Read RFID tag" renamed Haulage tag,
+  OCR option removed, and a notifications bell with the unread count in
+  the header.
 
 - Verification record for an unfinished check ("Verification
   Unavailable"), with Retry verification. An E-Tag is now valid, invalid
