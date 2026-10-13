@@ -194,6 +194,7 @@ Shared widgets in `lib/shared/ui/widgets/`:
 | `InitialsAvatar` | Green disc with the officer's initials and a dark ring (dashboard, Profile, Account details) |
 | `ScreenHeading` | 22 px page heading with a short description under it |
 | `BrandAccentBar` | Short green bar under brand headings |
+| `showAppToast` (`shared/ui/widgets/app_toast.dart`) | Short white confirmation ("Sign out successful") near the top of the screen, clear of bottom buttons; goes after 3 s or when tapped, never blocks the screen, read out by screen readers, replaces any toast already showing |
 | `EmptyState` | Centred title and message for screens with nothing to show; `notBuiltYetMessage` for placeholder screens |
 
 Accessibility adjustments to the design: dark text on amber buttons
@@ -277,7 +278,8 @@ border `#D92D20` and a message under it); **failures not tied to one field**
   (`widgets/sign_out_sheet.dart`, `confirmSignOut`). The card covers the
   whole screen, bottom bar included (`showAppSheet(useRootNavigator:
   true)`). **Sign out** there ends the session, removes the saved copy and
-  returns to sign-in; **Keep working**, the close button, tapping outside
+  returns to sign-in (`LoginNotice.signedOut`), where a "Sign out
+  successful" toast shows; **Keep working**, the close button, tapping outside
   or dragging the card down leave everything as it was. The card sits 19 px
   from the bottom on iPhones (inside the home indicator's spare space, as
   designed) and clear of the whole system inset elsewhere. Signing out
@@ -578,6 +580,9 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- After signing out, sign-in shows a "Sign out successful" toast. New
+  shared `showAppToast`.
 
 - The dashboard's GPS tile is checked again when the app returns to the
   foreground, so it turns Online after location is allowed in the phone's

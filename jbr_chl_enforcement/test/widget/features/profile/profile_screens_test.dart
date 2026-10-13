@@ -11,6 +11,7 @@ import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_session.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/officer.dart';
 import 'package:jbr_chl_enforcement/features/auth/presentation/providers/session_provider.dart';
+import 'package:jbr_chl_enforcement/features/auth/presentation/screens/login_screen.dart';
 import 'package:jbr_chl_enforcement/features/notifications/presentation/providers/notifications_controller.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/presentation/providers/sync_controller.dart';
 import 'package:jbr_chl_enforcement/features/profile/presentation/screens/account_details_screen.dart';
@@ -43,7 +44,11 @@ GoRouter _router(String initialLocation) => GoRouter(
     GoRoute(
       path: RoutePaths.login,
       name: RouteNames.login,
-      builder: (context, state) => _page('login page'),
+      builder: (context, state) => _page(
+        state.extra == LoginNotice.signedOut
+            ? 'login page (signed out)'
+            : 'login page',
+      ),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) =>
@@ -348,7 +353,8 @@ void main() {
 
         expect(harness.container.read(sessionProvider), isNull);
         expect(storage.values, isNot(contains(StorageKeys.authSession)));
-        expect(find.text('login page'), findsOneWidget);
+        // Sign-in is told, so it can confirm with a toast.
+        expect(find.text('login page (signed out)'), findsOneWidget);
         expect(find.byType(SignOutSheet), findsNothing);
       });
 

@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_gradients.dart';
+import '../../../../shared/ui/widgets/app_toast.dart';
 import '../../../offline_sync/presentation/providers/sync_controller.dart';
 import '../providers/auth_controller.dart';
 import '../widgets/auth_status_sheets.dart';
@@ -28,7 +29,8 @@ import '../widgets/sign_in_dialog.dart';
 /// is in progress or needs a decision, and closed when it finishes. Shows the
 /// "account deactivated" sheet when sign-in is refused for that reason, and
 /// the "session expired" sheet when opened with
-/// [LoginNotice.sessionExpired].
+/// [LoginNotice.sessionExpired], and a "Sign out successful" toast with
+/// [LoginNotice.signedOut].
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key, this.notice});
 
@@ -37,6 +39,9 @@ class LoginScreen extends ConsumerStatefulWidget {
 
   /// How long "Login Successful..." shows before moving on.
   static const Duration successHoldDuration = Duration(milliseconds: 1200);
+
+  /// Toast shown after signing out.
+  static const String signedOutMessage = 'Sign out successful';
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -77,6 +82,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           context,
           pendingActions: ref.read(pendingSyncCountProvider),
         );
+      });
+    } else if (widget.notice == LoginNotice.signedOut) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showAppToast(context, LoginScreen.signedOutMessage);
       });
     }
   }
@@ -246,6 +255,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 enum LoginNotice {
   /// Their session ended; they must sign in again.
   sessionExpired,
+
+  /// They signed out; confirm it with a toast.
+  signedOut,
 }
 
 enum _Slot { header, sheet }

@@ -151,6 +151,55 @@ void main() {
     });
   });
 
+  group('signed out', () {
+    testWidgets('confirms with a "Sign out successful" toast', (tester) async {
+      await _pumpLogin(tester, notice: LoginNotice.signedOut);
+
+      expect(find.text('Sign out successful'), findsOneWidget);
+      expect(find.bySemanticsLabel('Sign out successful'), findsOneWidget);
+      // Only the toast: no session-expired sheet.
+      expect(find.byType(SessionExpiredSheet), findsNothing);
+      // At the top, clear of the Sign in button.
+      expect(
+        tester.getRect(find.text('Sign out successful')).bottom,
+        lessThan(tester.getRect(find.text('Sign in')).top),
+      );
+      expect(
+        tester.getRect(find.text('Sign out successful')).top,
+        lessThan(200),
+      );
+
+      // It goes away by itself and the form stays usable.
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pumpAndSettle();
+      expect(find.text('Sign out successful'), findsNothing);
+      await tester.enterText(find.byType(TextField).first, 'a@b.co');
+      expect(find.text('a@b.co'), findsOneWidget);
+    });
+
+    testWidgets('does not block the screen, and tapping closes it', (
+      tester,
+    ) async {
+      await _pumpLogin(tester, notice: LoginNotice.signedOut);
+
+      // The form can be used while the toast shows.
+      await tester.enterText(find.byType(TextField).first, 'a@b.co');
+      expect(find.text('a@b.co'), findsOneWidget);
+
+      await tester.tap(find.text('Sign out successful'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sign out successful'), findsNothing);
+    });
+
+    testWidgets('no toast on a normal visit or after expiry', (tester) async {
+      await _pumpLogin(tester);
+      expect(find.text('Sign out successful'), findsNothing);
+
+      await _pumpLogin(tester, notice: LoginNotice.sessionExpired);
+      expect(find.text('Sign out successful'), findsNothing);
+    });
+  });
+
   group('session expired', () {
     testWidgets('shows when sign-in opens after expiry, without a banner', (
       tester,

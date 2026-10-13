@@ -12,6 +12,7 @@ import '../../../../shared/ui/widgets/header_icon_button.dart';
 import '../../../../shared/ui/widgets/screen_heading.dart';
 import '../../../auth/data/repositories/auth_repository_impl.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../notifications/presentation/providers/notifications_controller.dart';
 import '../../../settings/presentation/widgets/settings_section.dart';
 import '../../../settings/presentation/widgets/settings_tile.dart';
@@ -36,7 +37,9 @@ class ProfileScreen extends ConsumerWidget {
     } catch (error) {
       debugPrint('Could not clear the saved session: $error');
     }
-    if (context.mounted) context.goNamed(RouteNames.login);
+    if (context.mounted) {
+      context.goNamed(RouteNames.login, extra: LoginNotice.signedOut);
+    }
   }
 
   @override
