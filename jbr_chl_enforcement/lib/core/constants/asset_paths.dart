@@ -75,6 +75,8 @@ abstract final class AssetPaths {
   static const String iconRowLock = 'assets/icons/account/lock.svg';
   static const String iconRowSync = 'assets/icons/account/sync.svg';
   static const String iconRowDatabase = 'assets/icons/account/database.svg';
+  static const String iconSignOutLock =
+      'assets/icons/account/sign_out_lock.svg';
 
   // Sign-in progress and result dialogs
   static const String iconSignInLock = 'assets/icons/sign_in/status_lock.svg';

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,7 @@ import 'package:jbr_chl_enforcement/features/offline_sync/presentation/providers
 import 'package:jbr_chl_enforcement/features/profile/presentation/screens/account_details_screen.dart';
 import 'package:jbr_chl_enforcement/features/profile/presentation/screens/profile_screen.dart';
 import 'package:jbr_chl_enforcement/features/profile/presentation/widgets/assignment_card.dart';
+import 'package:jbr_chl_enforcement/features/profile/presentation/widgets/sign_out_sheet.dart';
 import 'package:jbr_chl_enforcement/features/settings/presentation/screens/settings_screen.dart';
 import 'package:jbr_chl_enforcement/shared/device/permissions/permission_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/storage/preferences_service.dart';
@@ -271,17 +273,196 @@ void main() {
       expect(find.text('dashboard page'), findsOneWidget);
     });
 
-    testWidgets('Sign out ends the session and opens sign-in', (tester) async {
-      final storage = FakeSecureStorageService()
-        ..values[StorageKeys.authSession] = '{}';
-      final harness = await _pump(tester, secureStorage: storage);
+    group('sign out', () {
+      Finder sheetSignOut() => find.descendant(
+        of: find.byType(SignOutSheet),
+        matching: find.text('Sign out'),
+      );
 
-      await tester.tap(find.text('Sign out'));
-      await tester.pumpAndSettle();
+      Future<(_Harness, FakeSecureStorageService)> openSheet(
+        WidgetTester tester, {
+        Size size = const Size(390, 844),
+        double textScale = 1,
+      }) async {
+        final storage = FakeSecureStorageService()
+          ..values[StorageKeys.authSession] = '{}';
+        final harness = await _pump(
+          tester,
+          secureStorage: storage,
+          size: size,
+          textScale: textScale,
+        );
+        await tester.drag(
+          find.byType(Scrollable).first,
+          const Offset(0, -3000),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byType(OutlinedButton));
+        await tester.pumpAndSettle();
+        return (harness, storage);
+      }
 
-      expect(harness.container.read(sessionProvider), isNull);
-      expect(storage.values, isNot(contains(StorageKeys.authSession)));
-      expect(find.text('login page'), findsOneWidget);
+      void expectStillSignedIn(_Harness harness, FakeSecureStorageService s) {
+        expect(find.byType(SignOutSheet), findsNothing);
+        expect(harness.container.read(sessionProvider), isNotNull);
+        expect(s.values, contains(StorageKeys.authSession));
+        expect(find.byType(ProfileScreen), findsOneWidget);
+      }
+
+      testWidgets('asks first, with the design text', (tester) async {
+        final (harness, storage) = await openSheet(tester);
+
+        expect(find.byType(SignOutSheet), findsOneWidget);
+        expect(find.text('Account'), findsOneWidget);
+        expect(find.text('Sign out of JRB CHL?'), findsOneWidget);
+        expect(
+          find.text(
+            'Return to sign-in? Saved operational records are not deleted.',
+          ),
+          findsOneWidget,
+        );
+        expect(sheetSignOut(), findsOneWidget);
+        expect(find.text('Keep working'), findsOneWidget);
+        // Nothing happens until the officer confirms.
+        expect(harness.container.read(sessionProvider), isNotNull);
+        expect(storage.values, contains(StorageKeys.authSession));
+      });
+
+      testWidgets('covers the navigation bar', (tester) async {
+        await openSheet(tester);
+
+        // The bar is under the scrim, so it cannot be tapped.
+        expect(
+          find.bySemanticsLabel('Main navigation').hitTestable(),
+          findsNothing,
+        );
+      });
+
+      testWidgets('Sign out ends the session and opens sign-in', (
+        tester,
+      ) async {
+        final (harness, storage) = await openSheet(tester);
+
+        await tester.tap(sheetSignOut());
+        await tester.pumpAndSettle();
+
+        expect(harness.container.read(sessionProvider), isNull);
+        expect(storage.values, isNot(contains(StorageKeys.authSession)));
+        expect(find.text('login page'), findsOneWidget);
+        expect(find.byType(SignOutSheet), findsNothing);
+      });
+
+      testWidgets('Keep working stays signed in', (tester) async {
+        final (harness, storage) = await openSheet(tester);
+
+        await tester.tap(find.text('Keep working'));
+        await tester.pumpAndSettle();
+
+        expectStillSignedIn(harness, storage);
+      });
+
+      testWidgets('the close button stays signed in', (tester) async {
+        final (harness, storage) = await openSheet(tester);
+
+        await tester.tap(_semantics('Close and keep working'));
+        await tester.pumpAndSettle();
+
+        expectStillSignedIn(harness, storage);
+      });
+
+      testWidgets('tapping the scrim stays signed in', (tester) async {
+        final (harness, storage) = await openSheet(tester);
+
+        await tester.tapAt(const Offset(195, 60));
+        await tester.pumpAndSettle();
+
+        expectStillSignedIn(harness, storage);
+      });
+
+      testWidgets('dragging the card down stays signed in', (tester) async {
+        final (harness, storage) = await openSheet(tester);
+
+        await tester.drag(
+          find.text('Sign out of JRB CHL?'),
+          const Offset(0, 500),
+        );
+        await tester.pumpAndSettle();
+
+        expectStillSignedIn(harness, storage);
+      });
+
+      for (final (name, size, scale) in [
+        ('small phone', const Size(320, 568), 1.0),
+        ('landscape', const Size(844, 390), 1.0),
+        ('200% text', const Size(390, 844), 2.0),
+      ]) {
+        testWidgets('fits on a $name, both buttons reachable', (tester) async {
+          await openSheet(tester, size: size, textScale: scale);
+
+          expect(tester.takeException(), isNull);
+          final scrollable = find.descendant(
+            of: find.byType(SignOutSheet),
+            matching: find.byType(Scrollable),
+          );
+          await tester.scrollUntilVisible(
+            find.text('Keep working'),
+            100,
+            scrollable: scrollable,
+          );
+          expect(find.text('Keep working').hitTestable(), findsOneWidget);
+          // Back up (a drag would pull the whole sheet down and close it).
+          await tester.scrollUntilVisible(
+            find.text('Sign out of JRB CHL?'),
+            -100,
+            scrollable: scrollable,
+          );
+          await tester.scrollUntilVisible(
+            sheetSignOut(),
+            100,
+            scrollable: scrollable,
+          );
+          expect(sheetSignOut().hitTestable(), findsOneWidget);
+        });
+      }
+
+      testWidgets('keeps 12 px sides and clears the home indicator', (
+        tester,
+      ) async {
+        await openSheet(tester);
+
+        final card = tester.getRect(
+          find
+              .descendant(
+                of: find.byType(SignOutSheet),
+                matching: find.byType(DecoratedBox),
+              )
+              .first,
+        );
+        expect(card.left, 12);
+        expect(card.right, 390 - 12);
+        // Android (the test platform) keeps clear of the 34 px inset.
+        expect(card.bottom, 844 - 34);
+      });
+
+      testWidgets('sits 19 px from the bottom on an iPhone, as designed', (
+        tester,
+      ) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        try {
+          await openSheet(tester);
+          final card = tester.getRect(
+            find
+                .descendant(
+                  of: find.byType(SignOutSheet),
+                  matching: find.byType(DecoratedBox),
+                )
+                .first,
+          );
+          expect(card.bottom, 844 - 19);
+        } finally {
+          debugDefaultTargetPlatformOverride = null;
+        }
+      });
     });
 
     for (final (name, size, scale) in [

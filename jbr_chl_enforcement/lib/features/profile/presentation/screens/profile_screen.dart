@@ -16,6 +16,7 @@ import '../../../notifications/presentation/providers/notifications_controller.d
 import '../../../settings/presentation/widgets/settings_section.dart';
 import '../../../settings/presentation/widgets/settings_tile.dart';
 import '../widgets/profile_header.dart';
+import '../widgets/sign_out_sheet.dart';
 
 /// Profile tab ("My Account"): the officer's card (opens Account Details),
 /// links to Verification history and App settings, and Sign out.
@@ -25,7 +26,10 @@ class ProfileScreen extends ConsumerWidget {
   /// Widest the content grows on tablets.
   static const double _maxContentWidth = 560;
 
+  /// Asks first; on "Sign out" ends the session, removes the saved copy
+  /// and returns to sign-in.
   Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    if (!await confirmSignOut(context) || !context.mounted) return;
     ref.read(sessionProvider.notifier).end();
     try {
       await ref.read(authLocalDataSourceProvider).clearSession();

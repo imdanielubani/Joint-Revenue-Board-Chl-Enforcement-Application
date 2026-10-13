@@ -181,7 +181,7 @@ Shared widgets in `lib/shared/ui/widgets/`:
 | Widget | Use |
 |---|---|
 | `AppButton.primary` / `AppButton.text` | 54 px pill buttons; `isBusy` locks, `isLoading` shows a spinner (plus `loadingLabel` when given); a primary button with no `onPressed` shows the grey disabled style; `tone` picks brand green, danger red or warning amber (amber uses dark text for contrast) |
-| `showAppSheet` / `AppSheetCard` (`shared/ui/sheets/`) | Floating card over the dark scrim with a drag handle; content scrolls on short screens |
+| `showAppSheet` / `AppSheetCard` (`shared/ui/sheets/`) | Floating card over the dark scrim with a drag handle; content scrolls on short screens; `useRootNavigator: true` from a tab also covers the bottom bar |
 | `AppTextField` | Labelled pill field with icon, optional suffix and `errorText` |
 | `AppCheckbox` | Checkbox with label and a 48 px touch target |
 | `AppAlertBanner` | Error or success alert above a form |
@@ -269,9 +269,17 @@ border `#D92D20` and a message under it); **failures not tied to one field**
   the dashboard) and the notifications bell. The officer card
   (`widgets/profile_header.dart`) shows initials, name, region · agent ID
   and role, and opens Account details. "Activity & account" links to the
-  History tab and to App settings. **Sign out** ends the session, removes
-  the saved copy and returns to sign-in; it sits 28 px above the bottom
-  bar on every phone.
+  History tab and to App settings. **Sign out** sits 28 px above the bottom
+  bar on every phone and first asks "Sign out of JRB CHL?"
+  (`widgets/sign_out_sheet.dart`, `confirmSignOut`). The card covers the
+  whole screen, bottom bar included (`showAppSheet(useRootNavigator:
+  true)`). **Sign out** there ends the session, removes the saved copy and
+  returns to sign-in; **Keep working**, the close button, tapping outside
+  or dragging the card down leave everything as it was. The card sits 19 px
+  from the bottom on iPhones (inside the home indicator's spare space, as
+  designed) and clear of the whole system inset elsewhere. Signing out
+  does not tell the server yet (there is no sign-out endpoint); add the
+  call in `ProfileScreen._signOut` when there is one.
 - **Account details** (`account_details_screen.dart`): read-only, as the
   identity is managed centrally. Full name, Agent ID, Role, Assigned state,
   Assignment, CHL email, Organization (`widgets/assignment_card.dart`).
@@ -297,7 +305,10 @@ border `#D92D20` and a message under it); **failures not tied to one field**
   region · agent ID line) are drawn in Segoe UI, a Windows font that
   cannot be shipped on Android or iOS; the app uses Poppins everywhere.
   The design's subtitle "Your Identity in managed by central CHL" is shown
-  corrected as "Your identity is managed by central CHL."
+  corrected as "Your identity is managed by central CHL." The sign-out
+  card leaves out the design's prototype notes ("This local walkthrough
+  does not revoke a real CHL session." and "Local response walkthrough
+  only.").
 
 ### Verification method pages
 
@@ -564,6 +575,10 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Sign out now asks first: "Sign out of JRB CHL?" card with Sign out and
+  Keep working, over the whole screen. `showAppSheet` takes
+  `useRootNavigator`.
 
 - Profile ("My Account"), Account details and App settings ("My
   Preferences") screens. `Officer` gains `agentId`, `assignment` and

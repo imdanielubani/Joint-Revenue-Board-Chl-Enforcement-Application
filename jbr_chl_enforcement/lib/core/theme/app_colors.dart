@@ -67,6 +67,12 @@ abstract final class AppColors {
   static const Color switchOffBorder = Color(0xFF657966);
   static const Color destructive = Color(0xFFBD2013); // Sign out
 
+  // Sign-out confirmation sheet.
+  static const Color signOutHalo = Color(0xFFFFF0E7); // behind the lock
+  static const Color signOutHandle = Color(0xFFD1D5D2);
+  static const Color signOutBody = Color(0x80000000); // black at 50%
+  static const Color signOutShadow = Color(0x30102A1C);
+
   // Recent verification icon backgrounds.
   static const Color recentActive = mint;
   static const Color recentNoActive = Color(0xFFFFF3D9);

@@ -9,13 +9,18 @@ import '../../../core/theme/app_colors.dart';
 /// The card can be dragged down, or the scrim tapped, to close it unless
 /// [isDismissible] is false. Resolves to the value the card pops with, or
 /// null when it was dismissed.
+///
+/// Pass [useRootNavigator] from a signed-in tab so the scrim also covers
+/// the navigation bar.
 Future<T?> showAppSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
   bool isDismissible = true,
+  bool useRootNavigator = false,
 }) {
   return showModalBottomSheet<T>(
     context: context,
+    useRootNavigator: useRootNavigator,
     isScrollControlled: true,
     isDismissible: isDismissible,
     enableDrag: isDismissible,
