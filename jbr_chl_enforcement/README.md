@@ -232,7 +232,8 @@ border `#D92D20` and a message under it); **failures not tied to one field**
 | Last CHL trip | `features/vehicle/presentation/screens/last_chl_trip_screen.dart` | See "Verification processing and result" below. |
 | Vehicle Not Found, Verification Unavailable | `features/vehicle/presentation/screens/unresolved_verification_screen.dart` | See "Verification processing and result" below. |
 | E-Tag receipt | `features/vehicle/presentation/screens/e_tag_receipt_screen.dart` | Opened by scanning an E-Tag; "not available yet" until its design arrives. |
-| SOS, RFID and OCR verification | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." |
+| RFID verification | `features/verification/presentation/screens/rfid_scan_screen.dart` | See "RFID verification" below. |
+| SOS and OCR verification | `features/<feature>/presentation/screens/` | Placeholders with the green header and "This screen is not available yet." |
 
 ### Dashboard
 
@@ -459,6 +460,36 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   Kano on the route card, Ogun → Lagos below); the demo uses Ogun → Lagos
   throughout. "cargo" and "payment Reference" are written "Cargo" and
   "Payment reference".
+
+### RFID verification
+
+Haulage tag on Verify CHL Trip opens **RFID verification** (`/verify/rfid`).
+It first finds the RFID reader connected to the device; reading the
+haulage tag itself is the next step (not designed yet).
+
+- **Detect RFID reader:** the reader icon, "RFID reader", "Connection not
+  checked"; Detect Reader, Enter Plate Instead, Choose Another Method.
+  Nothing is looked for until the officer taps Detect Reader.
+- **Detecting your reader:** the reader in a card, a ring turning round its
+  icon and a yellow "Detecting" dot; Stop (abandons the detection; a late
+  answer is ignored) and Choose Another Method.
+- **Reader detected:** green "Connected"; Start Scanning (says reading
+  haulage tags is not available yet until that step is designed and the
+  reader SDK is in place) and Choose Another Method.
+- **RFID Reader Disconnected:** the red reader and "Disconnected", the
+  note that no scan failure is a missing tag, invalid tag or No Active
+  Trip, and Detect Reader Again (red), Enter Plate Instead and Choose
+  Another Method.
+- The reader sits in the middle of the free space; short screens and
+  large text scroll. Enter Plate Instead replaces the page with plate
+  entry; Choose Another Method returns to Verify CHL Trip.
+- **Reader:** `RfidReaderDetector` (`shared/device/rfid/rfid_reader_adapter.dart`).
+  Each detection's result is kept in `rfidReaderStatusProvider`, so the
+  dashboard's RFID status reads Connected once a reader is found.
+  `DeviceRfidReaderDetector` finds no reader until the approved reader's
+  SDK is chosen (`TODO(rfid)`). In demo mode `DemoRfidReaderDetector` takes
+  2 seconds; the first detection finds nothing (Disconnected) and every
+  later one finds the reader, so both outcomes can be tried.
 
 ### QR scanner
 
@@ -891,8 +922,9 @@ Elsewhere:
   offline vehicle cache.
 - Dashboard figures: `LocalDashboardRepository` returns zeros until
   verifications are stored locally (`TODO(verification_history)`).
-- RFID reader status is always "Offline" until the reader integration exists
-  (`TODO(rfid)` in `rfid_reader_adapter.dart`).
+- No RFID reader is ever found outside demo mode until the reader's SDK
+  is chosen, and reading a haulage tag is not built yet (`TODO(rfid)` in
+  `rfid_reader_adapter.dart` and `rfid_scan_screen.dart`).
 - Unread notification count is always 0 until notifications are stored
   (`TODO(notifications)`).
 - History, Notifications, Profile, SOS, the RFID, QR and OCR method pages
@@ -912,6 +944,12 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- RFID verification (Haulage tag): Detect RFID reader, Detecting your
+  reader (turning ring, Stop), Reader detected (Start Scanning) and RFID
+  Reader Disconnected (Detect Reader Again, Enter Plate Instead). The
+  reader is found through `RfidReaderDetector`; the dashboard's RFID status
+  follows the last detection. Demo: the first detection fails, later ones
+  succeed.
 - Additional trip information no longer shows Cargo (not needed for
   now); `ChlTrip.cargo` is kept for when it returns.
 - The trip card (Active trip and Last CHL trip) shows the CHL receipt's

@@ -103,6 +103,13 @@ abstract final class AssetPaths {
   static const String iconResultChevron = '$resultDir/chevron.svg';
   static const String imageResultRouteMap = '$resultDir/route_map.svg';
 
+  // RFID verification
+  static const String rfidDir = 'assets/icons/rfid';
+  static const String iconRfidReader = '$rfidDir/reader.svg';
+  static const String iconRfidReaderDisconnected =
+      '$rfidDir/reader_disconnected.svg';
+  static const String iconRfidAlert = '$rfidDir/alert.svg';
+
   // Verification history
   static const String historyDir = 'assets/icons/history';
   static const String iconHistoryTripOk = '$historyDir/trip_ok.svg';

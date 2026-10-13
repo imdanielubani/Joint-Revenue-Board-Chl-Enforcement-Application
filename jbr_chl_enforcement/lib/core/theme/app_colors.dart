@@ -86,6 +86,17 @@ abstract final class AppColors {
   static const Color noTripIconFill = Color(0xFFFDCD0F); // no active trip
   static const Color unresolvedIconFill = Color(0xFF875600); // not concluded
 
+  // RFID verification.
+  static const Color rfidCardBorder = Color(0xFFD7D9D6);
+  static const Color rfidRing = Color(0xFFC5DEC4); // around the detecting icon
+  static const Color rfidTitle = Color(0xFF173E24);
+  static const Color rfidStatusText = Color(0xFF637861);
+  static const Color rfidDetecting = Color(0xFFFFC107); // status dots
+  static const Color rfidConnected = Color(0xFF00C853);
+  static const Color rfidDisconnected = Color(0xFFE23835);
+  static const Color rfidDanger = Color(0xFFB42318); // Detect Reader Again
+  static const Color rfidDangerTint = Color(0x1AB42318); // red at 10%
+
   // QR scanner (dark camera page).
   static const Color scannerGlow = Color(0xFF46534B); // background, centre
   static const Color scannerMid = Color(0xFF2F3C34);
