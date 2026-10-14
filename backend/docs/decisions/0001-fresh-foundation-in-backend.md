@@ -1,6 +1,8 @@
 # ADR-0001: Build the Phase 1 foundation fresh in `backend/`
 
-**Status:** accepted (14 Oct 2026, project owner)
+**Status:** accepted (14 Oct 2026, project owner). Its "two backends"
+consequence is superseded by [ADR-0004](0004-single-backend.md):
+`iteime_backend/` was removed in commit `d3f5652`.
 
 ## Context
 

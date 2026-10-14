@@ -5,14 +5,16 @@ case management. It will serve the ITEIME Admin Dashboard and, once confirmed,
 the JRB CHL Enforcement mobile app and the Monitoring Dashboard. It reaches the
 existing JRB CHL platform only through a CHL adapter.
 
-**Status: Phase 1 foundation.** The app runs, with health endpoints,
-middleware, configuration, a Prisma setup without models, tests and
-documentation. **No business features are implemented yet.**
+**Status: Phase 2 (architecture and data model) done; awaiting review.** The
+app runs, with health endpoints, middleware, configuration, a Prisma setup
+without models, tests, and the architecture and data-model proposals.
+**No business features are implemented yet.**
 
-> A separate, earlier backend, `../iteime_backend/`, already serves the mobile
-> app (mobile API v1). Which one becomes canonical is an open decision:
-> [ADR-0001](docs/decisions/0001-fresh-foundation-in-backend.md),
-> [Q-REP-1](docs/requirements/open-questions.md).
+> The earlier backend, `iteime_backend/`, was removed from the repository
+> (commit `d3f5652`). The mobile app's `/api/v1` contract that it served is
+> not implemented here yet. See
+> [ADR-0004](docs/decisions/0004-single-backend.md) and
+> [ADR-0009](docs/decisions/0009-api-conventions-and-mobile-contract.md).
 
 **Stack:** Node.js ≥ 22.18, Express 5, TypeScript (strict), PostgreSQL,
 Prisma 7, zod, pino, Vitest, ESLint, Prettier.
@@ -143,25 +145,29 @@ To also check readiness against a real PostgreSQL server, set
 
 ## Documentation
 
-| Document                                                                                         | What it covers                          |
-| ------------------------------------------------------------------------------------------------ | --------------------------------------- |
-| [docs/architecture/system-context.md](docs/architecture/system-context.md)                       | Systems and how they connect (proposed) |
-| [docs/architecture/component-boundaries.md](docs/architecture/component-boundaries.md)           | Modules, layers, dashboard separation   |
-| [docs/architecture/data-ownership.md](docs/architecture/data-ownership.md)                       | Which system owns which data            |
-| [docs/requirements/requirements-traceability.md](docs/requirements/requirements-traceability.md) | Requirements → owner → module → status  |
-| [docs/requirements/open-questions.md](docs/requirements/open-questions.md)                       | Everything unresolved, with its source  |
-| [docs/decisions/](docs/decisions/README.md)                                                      | Architecture decision records           |
-| [src/integrations/chl/README.md](src/integrations/chl/README.md)                                 | Rules for the CHL boundary              |
+| Document                                                                                         | What it covers                         |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| [docs/architecture/system-context.md](docs/architecture/system-context.md)                       | Systems, actors, flows; label legend   |
+| [docs/architecture/component-boundaries.md](docs/architecture/component-boundaries.md)           | Domains, maturity, module dependencies |
+| [docs/architecture/data-ownership.md](docs/architecture/data-ownership.md)                       | Who owns which data; how it is stored  |
+| [docs/architecture/api-boundaries.md](docs/architecture/api-boundaries.md)                       | Per-client API boundaries; routing     |
+| [docs/architecture/data-model-proposal.md](docs/architecture/data-model-proposal.md)             | Proposed entities, ER and state models |
+| [docs/api/api-conventions.md](docs/api/api-conventions.md)                                       | Implemented and proposed API rules     |
+| [docs/requirements/requirements-traceability.md](docs/requirements/requirements-traceability.md) | Requirements → owner → module → status |
+| [docs/requirements/open-questions.md](docs/requirements/open-questions.md)                       | Everything unresolved, with its source |
+| [docs/decisions/](docs/decisions/README.md)                                                      | Architecture decision records          |
+| [src/integrations/chl/README.md](src/integrations/chl/README.md)                                 | Rules for the CHL boundary             |
 
 ## Current limitations
 
 - No authentication, authorization, audit log or business endpoints yet (Phases 3–4).
 - The CHL client has no operations: the CHL API contract is not available (Q-CHL-1).
 - Readiness checks the database only; CHL has no known health endpoint (Q-CHL-8).
-- No Prisma models or migrations yet (Phase 2).
+- No Prisma models or migrations yet. The data model is a proposal awaiting
+  review ([data-model-proposal.md](docs/architecture/data-model-proposal.md)).
 - No Dockerfile or Compose file yet: Docker wasn't available to verify one in
-  this environment. `../iteime_backend/` has a Dockerfile that can serve as a
-  reference.
+  this environment. The removed `iteime_backend` had one (git history,
+  `d654c84`) that can serve as a reference.
 - Graceful shutdown on SIGTERM/SIGINT is implemented but not covered by an
   automated test.
 - `npm audit` reports 4 high-severity advisories, all through the `prisma` 7.10
@@ -174,6 +180,17 @@ To also check readiness against a real PostgreSQL server, set
 ## Change log
 
 Newest first.
+
+- **Phase 2 architecture and data model (documentation only).**
+  - New documents: API boundaries for each client, a data-model proposal (ER
+    and state diagrams), and ADRs 0004–0009 (all proposed).
+  - Rewritten: system context, component boundaries (25 domains with
+    maturity grades), data ownership (strategies REF, SNAPSHOT, CACHE, OWN,
+    DERIVED) and the traceability matrix (T1–T18 against the SRD and MON).
+  - API conventions now mark each rule as implemented or proposed. The open
+    questions are restructured, with the recorded contradictions X1–X10 and
+    the decisions needed before Phase 3.
+  - No code or schema changes.
 
 - **Phase 1 foundation.** TypeScript/Express app with configuration
   validation, structured logging with redaction, request IDs, security headers,

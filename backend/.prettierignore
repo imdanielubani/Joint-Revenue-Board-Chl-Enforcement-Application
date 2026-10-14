@@ -4,4 +4,4 @@ coverage
 package-lock.json
 src/generated
 prisma/migrations
-CLAUDE.md
+CLAUDE*.md

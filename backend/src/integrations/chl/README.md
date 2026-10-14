@@ -33,6 +33,9 @@ No CHL URL, credential, endpoint or payload has been invented here.
    tests, and contract tests against recorded CHL responses once a sandbox
    exists.
 
-`iteime_backend/src/integrations/chl` has a mock and an HTTP skeleton built
-from a _requirements request_ to the CHL team. That request is a useful
-reference, but it is not a confirmed contract.
+The removed `iteime_backend` (git history, commit `d654c84`,
+`iteime_backend/src/integrations/chl`) had a mock and an HTTP skeleton, built
+from the _requirements request_ to the CHL team (`CHL BACKEND API
+REQUIREMENTS.pdf` at the repository root). That request is a useful reference,
+but it is not a confirmed contract. The boundary design is
+[ADR-0006](../../../docs/decisions/0006-chl-integration-boundary.md).
