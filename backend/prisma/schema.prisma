@@ -1,0 +1,19 @@
+// ITEIME-owned data only. CHL-owned records (agents, vehicles, E-Tags, trips,
+// tariffs, payments) are read through the CHL integration, never copied here
+// unless a documented data-sharing decision says so.
+//
+// No models yet: entities are proposed in Phase 2 (architecture and data
+// model), after data ownership is confirmed. See docs/architecture/data-ownership.md.
+//
+// The connection URL is configured in prisma.config.ts (Prisma 7).
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}

@@ -1,0 +1,125 @@
+openapi: 3.1.0
+info:
+  title: ITEIME Enforcement Engine API
+  version: 0.1.0
+  description: |
+    The ITEIME Enforcement Engine backend. This document lists only endpoints
+    that are implemented; business endpoints under /api/v1 are added as their
+    modules are built. Conventions: docs/api/api-conventions.md.
+
+    Every response carries an X-Request-ID header. Errors use the Error schema.
+servers:
+  - url: http://localhost:4000
+    description: Local development
+paths:
+  /health/live:
+    get:
+      operationId: getLiveness
+      summary: Liveness probe
+      description: The process is running and serving HTTP. Dependencies are not checked.
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: The process is alive.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                additionalProperties: false
+                properties:
+                  status:
+                    type: string
+                    const: ok
+  /health/ready:
+    get:
+      operationId: getReadiness
+      summary: Readiness probe
+      description: |
+        Whether every dependency is reachable. Currently checks the PostgreSQL
+        database only; the CHL integration has no confirmed health endpoint yet.
+        "not_configured" (for example, no DATABASE_URL in development) counts
+        as not ready.
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Every dependency is up.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessReport'
+              example:
+                status: ready
+                checks:
+                  database: up
+        '503':
+          description: At least one dependency is down or not configured.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessReport'
+              example:
+                status: not_ready
+                checks:
+                  database: down
+components:
+  headers:
+    RequestId:
+      description: |
+        The request's ID: the caller's X-Request-ID if it is 1-128 characters
+        of [A-Za-z0-9._:-], otherwise a generated UUID.
+      schema:
+        type: string
+  schemas:
+    DependencyStatus:
+      type: string
+      enum: [up, down, not_configured]
+    ReadinessReport:
+      type: object
+      required: [status, checks]
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [ready, not_ready]
+        checks:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DependencyStatus'
+    Error:
+      description: The body of every error response (4xx and 5xx).
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code:
+              type: string
+              description: Stable, machine-readable error code.
+              examples:
+                - not_found
+                - validation_failed
+                - malformed_json
+                - payload_too_large
+                - rate_limited
+                - internal_error
+            message:
+              type: string
+              description: Safe to show to a user. Never contains internal details.
+            requestId:
+              type: string
+            details:
+              description: Optional structured details, such as validation failures.
