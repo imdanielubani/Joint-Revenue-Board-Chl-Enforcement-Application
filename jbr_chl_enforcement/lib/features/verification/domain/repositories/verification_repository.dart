@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../shared/device/location/location_adapter.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
-import '../../../verification_history/domain/entities/verification_record_details.dart';
 import '../entities/plate_number.dart';
 import '../entities/verification_request.dart';
 
@@ -12,8 +11,12 @@ abstract class VerificationRepository {
   /// the plate once the vehicle is identified, and ends with the result,
   /// or with [NoVehicleFound] when CHL has no such vehicle. Fails with a
   /// [VerificationFailure] when CHL cannot be reached or cannot finish.
-  /// Cancelling the subscription abandons the verification.
-  Stream<VerificationProgress> verify(VerificationRequest request);
+  /// Cancelling the subscription abandons the verification. [location] is
+  /// where the officer is: every verification records it.
+  Stream<VerificationProgress> verify(
+    VerificationRequest request, {
+    required DeviceLocation location,
+  });
 
   /// Asks CHL again for the trip of an earlier [result].
   Future<VerificationResult> refresh(VerificationResult result);
@@ -48,10 +51,7 @@ final class VehicleIdentified extends VerificationProgress {
 
 /// CHL has no vehicle for the request; the verification ends here.
 final class NoVehicleFound extends VerificationProgress {
-  const NoVehicleFound({this.location});
-
-  /// Where the check was made, when CHL recorded it.
-  final RecordLocation? location;
+  const NoVehicleFound();
 }
 
 /// Every check finished.

@@ -19,6 +19,8 @@ import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/unresolved_verification.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
+import '../providers/tag_verification_cache.dart';
+import '../widgets/verification_location.dart';
 import '../widgets/verification_page.dart';
 
 /// Where RFID verification stands on the page.
@@ -137,22 +139,43 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
     _verify();
   }
 
-  void _verify() {
+  Future<void> _verify() async {
     final tag = _tag;
     if (tag == null) return;
+    final cache = ref.read(tagVerificationCacheProvider);
+    // The same tag verified moments ago is not sent to CHL again.
+    final recent = cache.recent(tag);
+    if (recent != null) {
+      _open(recent);
+      return;
+    }
     final request = TagVerification(tag);
+    final verification = ++_request;
+    final returnTo = _phase;
     _show(RfidReaderPhase.verifying);
+    // Every verification records where it was made.
+    final location = await readVerificationLocation(context, ref);
+    if (!mounted || verification != _request) return;
+    if (location == null) {
+      _show(returnTo);
+      return;
+    }
     _verification = ref
         .read(verificationRepositoryProvider)
-        .verify(request)
+        .verify(request, location: location)
         .listen(
           (progress) => switch (progress) {
-            VerificationCompleted(:final result) => _open(result),
-            NoVehicleFound(:final location) => _open(
-              VehicleNotFound(
-                request: request,
-                checkedAt: ref.read(clockProvider)(),
-                location: location,
+            VerificationCompleted(:final result) => _open(
+              cache.remembering(tag, result),
+            ),
+            NoVehicleFound() => _open(
+              cache.remembering(
+                tag,
+                VehicleNotFound(
+                  request: request,
+                  checkedAt: ref.read(clockProvider)(),
+                  location: recordLocation(location),
+                ),
               ),
             ),
             // The checks run unseen here; the card shows they are running.

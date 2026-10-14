@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../chl_trips/domain/entities/chl_trip.dart';
+import '../../../../shared/device/location/location_adapter.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
 import '../../../verification/domain/entities/plate_number.dart';
 import 'e_tag_status.dart';
@@ -18,6 +19,7 @@ class VerificationResult {
     this.trip,
     this.destinationCheck,
     this.lastTrip,
+    this.location,
   });
 
   final PlateNumber plate;
@@ -39,6 +41,9 @@ class VerificationResult {
   /// The vehicle's most recent earlier trip, when it has no active one and
   /// CHL found one.
   final ChlTrip? lastTrip;
+
+  /// Where the officer was when the vehicle was checked.
+  final DeviceLocation? location;
 }
 
 /// The destination check CHL runs for an active trip: it compares the

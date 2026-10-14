@@ -17,6 +17,12 @@ import '../../../helpers/fakes.dart';
 import '../../../helpers/verification_samples.dart';
 
 final _now = DateTime(2026, 10, 6, 0, 30);
+final _here = DeviceLocation(
+  latitude: 6.6018,
+  longitude: 3.3515,
+  accuracyMetres: 12,
+  at: _now,
+);
 PlateNumber _plate(String text) => PlateNumber.tryParse(text)!;
 
 void main() {
@@ -108,7 +114,7 @@ void main() {
 
     test('run the three checks in order, then the result', () async {
       final progress = await repository
-          .verify(PlateVerification(_plate('ABC123AA')))
+          .verify(location: _here, PlateVerification(_plate('ABC123AA')))
           .toList();
 
       expect(
@@ -124,9 +130,28 @@ void main() {
       expect(result.destinationCheck!.centralDelay.inSeconds, 900);
     });
 
+    test('AAA 001 AA has never made a CHL trip', () async {
+      final progress = await repository
+          .verify(location: _here, PlateVerification(_plate('AAA001AA')))
+          .toList();
+      final result = (progress.last as VerificationCompleted).result;
+
+      expect(result.tripStatus, TripStatus.noHistory);
+      expect(result.trip, isNull);
+      expect(result.lastTrip, isNull);
+    });
+
+    test('the result keeps where it was checked', () async {
+      final progress = await repository
+          .verify(location: _here, PlateVerification(_plate('ABC123AA')))
+          .toList();
+      final result = (progress.last as VerificationCompleted).result;
+      expect(result.location, same(_here));
+    });
+
     test('LND 482 XK has no active trip', () async {
       final progress = await repository
-          .verify(PlateVerification(_plate('LND482XK')))
+          .verify(location: _here, PlateVerification(_plate('LND482XK')))
           .toList();
       final result = (progress.last as VerificationCompleted).result;
 
@@ -141,18 +166,19 @@ void main() {
 
     test('AAA 000 AA is not a known vehicle', () async {
       final progress = await repository
-          .verify(PlateVerification(_plate('AAA000AA')))
+          .verify(location: _here, PlateVerification(_plate('AAA000AA')))
           .toList();
 
       expect(progress.whereType<VehicleIdentified>(), isEmpty);
-      final notFound = progress.last as NoVehicleFound;
-      expect(notFound.location!.latitude, 6.6018);
-      expect(notFound.location!.longitude, 3.3515);
+      expect(progress.last, isA<NoVehicleFound>());
     });
 
     test('AAA 503 AA cannot be verified', () {
       expect(
-        repository.verify(PlateVerification(_plate('AAA503AA'))),
+        repository.verify(
+          location: _here,
+          PlateVerification(_plate('AAA503AA')),
+        ),
         emitsInOrder([
           isA<StageStarted>(),
           emitsError(isA<VerificationFailure>()),
@@ -162,7 +188,10 @@ void main() {
 
     test('a scanned QR code is ABC 123 AA, like the plate', () async {
       final progress = await repository
-          .verify(QrVerification(ScannedQr.read('JRB-CHL-000123')))
+          .verify(
+            location: _here,
+            QrVerification(ScannedQr.read('JRB-CHL-000123')),
+          )
           .toList();
 
       expect((progress[1] as VehicleIdentified).plate, _plate('ABC123AA'));
@@ -174,7 +203,7 @@ void main() {
     test('a scanned code ending -404 is not a known vehicle', () async {
       for (final code in ['JRB-CHL-404', 'ETAG-7781-404']) {
         final progress = await repository
-            .verify(QrVerification(ScannedQr.read(code)))
+            .verify(location: _here, QrVerification(ScannedQr.read(code)))
             .toList();
         expect(progress.last, isA<NoVehicleFound>(), reason: code);
       }
@@ -182,7 +211,10 @@ void main() {
 
     test('a scanned code ending -503 cannot be verified', () {
       expect(
-        repository.verify(QrVerification(ScannedQr.read('ETAG-7781-503'))),
+        repository.verify(
+          location: _here,
+          QrVerification(ScannedQr.read('ETAG-7781-503')),
+        ),
         emitsInOrder([
           isA<StageStarted>(),
           emitsError(isA<VerificationFailure>()),
@@ -193,6 +225,7 @@ void main() {
     test('a tag resolved to LND 482 XK is that vehicle', () async {
       final progress = await repository
           .verify(
+            location: _here,
             TagVerification(HaulageTag('E2000017', plate: _plate('LND482XK'))),
           )
           .toList();
@@ -203,7 +236,10 @@ void main() {
 
     test('a haulage tag is ABC 123 AA with a valid JRB E-Tag', () async {
       final progress = await repository
-          .verify(const TagVerification(HaulageTag('E2000017')))
+          .verify(
+            location: _here,
+            const TagVerification(HaulageTag('E2000017')),
+          )
           .toList();
 
       expect((progress[1] as VehicleIdentified).plate, _plate('ABC123AA'));
@@ -230,7 +266,7 @@ void main() {
   test('without the API, verification is not available', () async {
     const repository = RemoteVerificationRepository();
     expect(
-      repository.verify(PlateVerification(_plate('ABC123AA'))),
+      repository.verify(location: _here, PlateVerification(_plate('ABC123AA'))),
       emitsError(isA<VerificationFailure>()),
     );
   });

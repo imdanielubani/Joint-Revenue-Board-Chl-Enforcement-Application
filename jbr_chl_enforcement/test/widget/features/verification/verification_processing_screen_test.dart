@@ -9,7 +9,6 @@ import 'package:jbr_chl_enforcement/core/navigation/route_names.dart';
 import 'package:jbr_chl_enforcement/core/theme/app_theme.dart';
 import 'package:jbr_chl_enforcement/features/notifications/presentation/providers/notifications_controller.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
-import 'package:jbr_chl_enforcement/features/verification_history/domain/entities/verification_record_details.dart';
 import 'package:jbr_chl_enforcement/features/verification/data/repositories/verification_repository_impl.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/plate_number.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/scanned_qr.dart';
@@ -18,6 +17,7 @@ import 'package:jbr_chl_enforcement/features/verification/domain/entities/haulag
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/repositories/verification_repository.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/verification_processing_screen.dart';
+import 'package:jbr_chl_enforcement/shared/device/location/location_adapter.dart';
 
 import '../../../helpers/fakes.dart';
 import '../../../helpers/verification_samples.dart';
@@ -39,6 +39,7 @@ Future<FakeVerificationRepository> _pump(
   VerificationRequest request, {
   Size size = const Size(390, 844),
   double textScale = 1,
+  FakeLocationReader? location,
 }) async {
   const padding = FakeViewPadding(top: 47 * 3, bottom: 34 * 3);
   tester.view
@@ -98,6 +99,9 @@ Future<FakeVerificationRepository> _pump(
       overrides: [
         verificationRepositoryProvider.overrideWithValue(repository),
         unreadNotificationCountProvider.overrideWithValue(0),
+        locationReaderProvider.overrideWithValue(
+          location ?? FakeLocationReader(),
+        ),
       ],
       child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     ),
@@ -155,6 +159,74 @@ void main() {
     await tester.pump();
     expect(_step('Validating E-Tag', 'done'), findsOneWidget);
     expect(_step('Checking CHL trip', 'in progress'), findsOneWidget);
+  });
+
+  group('GPS on every verification', () {
+    testWidgets('the location is read first and sent with the request', (
+      tester,
+    ) async {
+      final location = FakeLocationReader();
+      final repository = await _pump(
+        tester,
+        PlateVerification(_plate),
+        location: location,
+      );
+
+      expect(location.reads, 1);
+      expect(repository.locations.single.latitude, 8.974402);
+    });
+
+    testWidgets('while it is read, the first check shows as running', (
+      tester,
+    ) async {
+      final location = FakeLocationReader()..gate = Completer<void>();
+      final repository = await _pump(
+        tester,
+        PlateVerification(_plate),
+        location: location,
+      );
+
+      expect(_step('Identifying vehicle', 'in progress'), findsOneWidget);
+      expect(repository.requests, isEmpty);
+
+      location.gate!.complete();
+      await tester.pump();
+      expect(repository.requests, hasLength(1));
+    });
+
+    for (final (problem, message) in [
+      (
+        LocationProblem.serviceOff,
+        'Turn on location (GPS) to verify. Every verification records its '
+            'location.',
+      ),
+      (
+        LocationProblem.permissionDenied,
+        'Allow location access to verify. Every verification records its '
+            'location.',
+      ),
+      (
+        LocationProblem.unavailable,
+        'Your location could not be read. Move to open sky and try again.',
+      ),
+    ]) {
+      testWidgets('${problem.name}: not verified, and says why', (
+        tester,
+      ) async {
+        final repository = await _pump(
+          tester,
+          PlateVerification(_plate),
+          location: FakeLocationReader(problem: problem),
+        );
+        await _settle(tester);
+
+        expect(repository.requests, isEmpty);
+        expect(find.text('plate page'), findsOneWidget);
+        expect(find.text(message), findsOneWidget);
+        await tester.pump(const Duration(seconds: 4));
+        await _settle(tester);
+      });
+    }
   });
 
   testWidgets('when every check is done, the result opens', (tester) async {
@@ -223,21 +295,18 @@ void main() {
     );
     repository.emit(const NoVehicleFound());
     await _settle(tester);
-    expect(find.text('not found at null'), findsOneWidget);
+    expect(find.text('not found at 8.974402'), findsOneWidget);
   });
 
   testWidgets('no such vehicle opens Vehicle Not Found', (tester) async {
     final repository = await _pump(tester, PlateVerification(_plate));
     repository
       ..emit(const StageStarted(VerificationStage.identifyingVehicle))
-      ..emit(
-        const NoVehicleFound(
-          location: RecordLocation(latitude: 6.6018, longitude: 3.3515),
-        ),
-      );
+      ..emit(const NoVehicleFound());
     await _settle(tester);
 
-    expect(find.text('not found at 6.6018'), findsOneWidget);
+    // Found nowhere, at the officer's location.
+    expect(find.text('not found at 8.974402'), findsOneWidget);
     expect(find.byType(VerificationProcessingScreen), findsNothing);
   });
 

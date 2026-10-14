@@ -18,6 +18,8 @@ import '../../domain/entities/unresolved_verification.dart';
 import '../../domain/entities/scanned_qr.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
+import '../../../../shared/device/location/location_adapter.dart';
+import '../widgets/verification_location.dart';
 import '../widgets/verification_page.dart';
 
 /// "Verification processing": checks the vehicle in [request] with CHL,
@@ -47,11 +49,16 @@ class _VerificationProcessingScreenState
   final Set<VerificationStage> _done = {};
   PlateNumber? _plate;
 
+  /// Where the officer is, read before verifying.
+  DeviceLocation? _location;
+
   @override
   void initState() {
     super.initState();
     _plate = widget.request.plate;
-    _start();
+    // Reading the location is part of identifying the vehicle.
+    _stage = VerificationStage.identifyingVehicle;
+    unawaited(_start());
   }
 
   @override
@@ -61,10 +68,19 @@ class _VerificationProcessingScreenState
     super.dispose();
   }
 
-  void _start() {
+  Future<void> _start() async {
+    // Every verification records where it was made; without a location it
+    // does not start, and the officer is told why.
+    final location = await readVerificationLocation(context, ref);
+    if (!mounted) return;
+    if (location == null) {
+      context.popOrGoHome();
+      return;
+    }
+    _location = location;
     _progress = ref
         .read(verificationRepositoryProvider)
-        .verify(widget.request)
+        .verify(widget.request, location: location)
         .listen(
           _onProgress,
           // Whatever went wrong, nothing was concluded.
@@ -96,12 +112,12 @@ class _VerificationProcessingScreenState
         });
       case VehicleIdentified(:final plate):
         setState(() => _plate = plate);
-      case NoVehicleFound(:final location):
+      case NoVehicleFound():
         _showUnresolved(
           VehicleNotFound(
             request: widget.request,
             checkedAt: ref.read(clockProvider)(),
-            location: location,
+            location: recordLocation(_location!),
           ),
         );
       case VerificationCompleted(:final result):

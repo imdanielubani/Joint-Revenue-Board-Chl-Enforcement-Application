@@ -178,6 +178,7 @@ extension TripStatusLabel on TripStatus {
     TripStatus.active => 'Active trip',
     TripStatus.noActive => 'No active trip',
     TripStatus.previous => 'Previous trip',
+    TripStatus.noHistory => 'No trip history',
   };
 }
 

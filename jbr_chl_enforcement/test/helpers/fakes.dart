@@ -360,9 +360,16 @@ class FakeVerificationRepository implements VerificationRepository {
 
   void fail(Object error) => _current!.addError(error);
 
+  /// Where each verification was made.
+  final List<DeviceLocation> locations = [];
+
   @override
-  Stream<VerificationProgress> verify(VerificationRequest request) {
+  Stream<VerificationProgress> verify(
+    VerificationRequest request, {
+    required DeviceLocation location,
+  }) {
     requests.add(request);
+    locations.add(location);
     final controller = StreamController<VerificationProgress>(
       onCancel: () => cancelled++,
     );

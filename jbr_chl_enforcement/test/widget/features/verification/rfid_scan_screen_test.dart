@@ -17,6 +17,7 @@ import 'package:jbr_chl_enforcement/features/verification/domain/entities/unreso
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/repositories/verification_repository.dart';
 import 'package:jbr_chl_enforcement/features/verification/presentation/screens/rfid_scan_screen.dart';
+import 'package:jbr_chl_enforcement/shared/device/location/location_adapter.dart';
 import 'package:jbr_chl_enforcement/shared/device/rfid/rfid_reader_adapter.dart';
 
 import '../../../helpers/fakes.dart';
@@ -56,10 +57,11 @@ class _FakeReader implements RfidReader {
 }
 
 class _Harness {
-  _Harness(this.reader, this.verifications, this.container);
+  _Harness(this.reader, this.verifications, this.location, this.container);
 
   final _FakeReader reader;
   final FakeVerificationRepository verifications;
+  final FakeLocationReader location;
   final ProviderContainer container;
 
   bool get connected => container.read(rfidReaderConnectedProvider);
@@ -69,6 +71,7 @@ Future<_Harness> _pump(
   WidgetTester tester, {
   Size size = const Size(390, 844),
   double textScale = 1,
+  DateTime Function()? now,
 }) async {
   const padding = FakeViewPadding(top: 47 * 3, bottom: 34 * 3);
   tester.view
@@ -82,12 +85,14 @@ Future<_Harness> _pump(
 
   final reader = _FakeReader();
   final verifications = FakeVerificationRepository();
+  final location = FakeLocationReader();
   final container = ProviderContainer(
     overrides: [
       rfidReaderProvider.overrideWithValue(reader),
       verificationRepositoryProvider.overrideWithValue(verifications),
       unreadNotificationCountProvider.overrideWithValue(0),
-      clockProvider.overrideWithValue(() => _now),
+      clockProvider.overrideWithValue(now ?? () => _now),
+      locationReaderProvider.overrideWithValue(location),
     ],
   );
   addTearDown(container.dispose);
@@ -138,7 +143,7 @@ Future<_Harness> _pump(
   await tester.pumpAndSettle();
   unawaited(router.push(RoutePaths.rfidScan));
   await tester.pumpAndSettle();
-  return _Harness(reader, verifications, container);
+  return _Harness(reader, verifications, location, container);
 }
 
 /// Long enough for a page transition; the turning ring never settles.
@@ -526,6 +531,115 @@ void main() {
       ]);
       await _settle(tester);
       expect(find.text('Haulage tag detected'), findsOneWidget);
+    });
+  });
+
+  group('verifying the tag: GPS and repeated scans', () {
+    testWidgets('the location is read and sent with the tag', (tester) async {
+      final harness = await _pump(tester);
+      await _readTag(tester, harness);
+
+      await tester.tap(find.text('Verify Detected Tag'));
+      await tester.pump();
+      expect(harness.location.reads, 1);
+      expect(harness.verifications.locations.single.latitude, 8.974402);
+    });
+
+    testWidgets('without a location the tag is not verified', (tester) async {
+      final harness = await _pump(tester);
+      harness.location.problem = LocationProblem.serviceOff;
+      await _readTag(tester, harness);
+
+      await tester.tap(find.text('Verify Detected Tag'));
+      await tester.pump();
+      await tester.pump();
+      expect(harness.verifications.requests, isEmpty);
+      expect(_button('Verify Detected Tag'), findsOneWidget);
+      expect(
+        find.text(
+          'Turn on location (GPS) to verify. Every verification records its '
+          'location.',
+        ),
+        findsOneWidget,
+      );
+      await tester.pump(const Duration(seconds: 4));
+      await _settle(tester);
+    });
+
+    testWidgets('the same tag read again straight away is not sent again', (
+      tester,
+    ) async {
+      var now = _now;
+      final harness = await _pump(tester, now: () => now);
+      await _readTag(tester, harness);
+      await tester.tap(find.text('Verify Detected Tag'));
+      await tester.pump();
+      harness.verifications.emit(
+        VerificationCompleted(sampleActiveResult(_now)),
+      );
+      await _settle(tester);
+      expect(find.text('result for ABC 123 AA'), findsOneWidget);
+
+      // Back on the RFID page, the same tag is read again within a minute.
+      unawaited(
+        GoRouter.of(tester.element(find.text('result for ABC 123 AA')))
+            .push(RoutePaths.rfidScan),
+      );
+      await _settle(tester);
+      now = _now.add(const Duration(seconds: 30));
+      await _readTag(tester, harness);
+      await tester.tap(find.text('Verify Detected Tag'));
+      await _settle(tester);
+
+      expect(harness.verifications.requests, hasLength(1));
+      expect(find.text('result for ABC 123 AA'), findsOneWidget);
+    });
+
+    testWidgets('after a minute the same tag is verified again', (
+      tester,
+    ) async {
+      var now = _now;
+      final harness = await _pump(tester, now: () => now);
+      await _readTag(tester, harness);
+      await tester.tap(find.text('Verify Detected Tag'));
+      await tester.pump();
+      harness.verifications.emit(
+        VerificationCompleted(sampleActiveResult(_now)),
+      );
+      await _settle(tester);
+
+      unawaited(
+        GoRouter.of(tester.element(find.text('result for ABC 123 AA')))
+            .push(RoutePaths.rfidScan),
+      );
+      await _settle(tester);
+      now = _now.add(const Duration(seconds: 61));
+      await _readTag(tester, harness);
+      await tester.tap(find.text('Verify Detected Tag'));
+      await tester.pump();
+      expect(harness.verifications.requests, hasLength(2));
+    });
+
+    testWidgets('a failed verification is always tried again', (tester) async {
+      final harness = await _pump(tester);
+      await _readTag(tester, harness);
+      await tester.tap(find.text('Verify Detected Tag'));
+      await tester.pump();
+      harness.verifications.fail(
+        const VerificationFailure('CHL is not responding.'),
+      );
+      await _settle(tester);
+      expect(find.text('unavailable'), findsOneWidget);
+
+      unawaited(
+        GoRouter.of(tester.element(find.text('unavailable')))
+            .push(RoutePaths.rfidScan),
+      );
+      await _settle(tester);
+      await _readTag(tester, harness);
+      await tester.tap(find.text('Verify Detected Tag'));
+      await tester.pump();
+      expect(harness.verifications.requests, hasLength(2));
     });
   });
 

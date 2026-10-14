@@ -288,6 +288,7 @@ class _Summary extends StatelessWidget {
       TripStatus.active => 'Active Trip',
       TripStatus.noActive => 'No Active Trip',
       TripStatus.previous => 'Previous Trip',
+      TripStatus.noHistory => 'No Trip History',
       null => 'Verification Unavailable',
     };
     final icon = switch (record.tripStatus) {

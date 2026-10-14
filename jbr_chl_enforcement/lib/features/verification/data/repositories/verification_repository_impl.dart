@@ -7,7 +7,6 @@ import '../../../chl_trips/domain/entities/chl_trip.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
 import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
-import '../../../verification_history/domain/entities/verification_record_details.dart';
 import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
@@ -31,8 +30,10 @@ class RemoteVerificationRepository implements VerificationRepository {
   );
 
   @override
-  Stream<VerificationProgress> verify(VerificationRequest request) =>
-      Stream.error(_notAvailable);
+  Stream<VerificationProgress> verify(
+    VerificationRequest request, {
+    required DeviceLocation location,
+  }) => Stream.error(_notAvailable);
 
   @override
   Future<VerificationResult> refresh(VerificationResult result) =>
@@ -50,6 +51,7 @@ class RemoteVerificationRepository implements VerificationRepository {
 /// - AAA 000 AA, and a scanned code ending "-404", is not a known vehicle;
 /// - AAA 503 AA, and a scanned code ending "-503", cannot be verified (CHL
 ///   does not respond);
+/// - AAA 001 AA has never made a CHL trip (No Trip History);
 /// - LND 482 XK has no active trip (and an invalid E-Tag), and a
 ///   completed last trip;
 /// - any other plate, and a scanned QR code (ABC 123 AA), has an active
@@ -69,13 +71,17 @@ class DemoVerificationRepository implements VerificationRepository {
 
   static final PlateNumber _qrCodePlate = PlateNumber.tryParse('ABC123AA')!;
   static final PlateNumber _noTripPlate = PlateNumber.tryParse('LND482XK')!;
+  static final PlateNumber _noHistoryPlate = PlateNumber.tryParse('AAA001AA')!;
   static final PlateNumber _unknownPlate = PlateNumber.tryParse('AAA000AA')!;
   static final PlateNumber _unavailablePlate = PlateNumber.tryParse(
     'AAA503AA',
   )!;
 
   @override
-  Stream<VerificationProgress> verify(VerificationRequest request) async* {
+  Stream<VerificationProgress> verify(
+    VerificationRequest request, {
+    required DeviceLocation location,
+  }) async* {
     yield const StageStarted(VerificationStage.identifyingVehicle);
     await Future<void>.delayed(stepDelay);
     final code = switch (request) {
@@ -83,9 +89,7 @@ class DemoVerificationRepository implements VerificationRepository {
       _ => '',
     };
     if (request.plate == _unknownPlate || code.endsWith('-404')) {
-      yield const NoVehicleFound(
-        location: RecordLocation(latitude: 6.6018, longitude: 3.3515),
-      );
+      yield const NoVehicleFound();
       return;
     }
     if (request.plate == _unavailablePlate || code.endsWith('-503')) {
@@ -104,11 +108,25 @@ class DemoVerificationRepository implements VerificationRepository {
 
     yield const StageStarted(VerificationStage.checkingTrip);
     await Future<void>.delayed(stepDelay);
-    yield VerificationCompleted(_result(plate, eTag));
+    yield VerificationCompleted(_result(plate, eTag, location));
   }
 
-  VerificationResult _result(PlateNumber plate, ETagStatus eTag) {
+  VerificationResult _result(
+    PlateNumber plate,
+    ETagStatus eTag,
+    DeviceLocation location,
+  ) {
     final at = now();
+    if (plate == _noHistoryPlate) {
+      return VerificationResult(
+        plate: plate,
+        vehicleType: '12/14 tyres and its equivalent',
+        eTagStatus: eTag,
+        tripStatus: TripStatus.noHistory,
+        checkedAt: at,
+        location: location,
+      );
+    }
     if (plate == _noTripPlate) {
       return VerificationResult(
         plate: plate,
@@ -117,6 +135,7 @@ class DemoVerificationRepository implements VerificationRepository {
         tripStatus: TripStatus.noActive,
         checkedAt: at,
         lastTrip: _lastTrip(at),
+        location: location,
       );
     }
     final started = at.subtract(const Duration(hours: 2, minutes: 8));
@@ -126,6 +145,7 @@ class DemoVerificationRepository implements VerificationRepository {
       eTagStatus: eTag,
       tripStatus: TripStatus.active,
       checkedAt: at,
+      location: location,
       trip: ChlTrip(
         transactionReference: '564031956608',
         startedAt: started,
@@ -190,6 +210,7 @@ class DemoVerificationRepository implements VerificationRepository {
       trip: result.trip,
       destinationCheck: result.destinationCheck,
       lastTrip: result.lastTrip,
+      location: result.location,
     );
   }
 

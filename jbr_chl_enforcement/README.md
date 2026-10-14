@@ -66,7 +66,7 @@ Settings are passed with `--dart-define` and read in
 | Define | Purpose |
 |---|---|
 | `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a haulage tag read by RFID is that tag's vehicle (ABC 123 AA unless resolved otherwise) with a valid JRB E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page; any scanned code ending "-404" is Vehicle Not Found and one ending "-503" is Verification Unavailable. |
+| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 001 AA has never made a CHL trip (No Trip History); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a haulage tag read by RFID is that tag's vehicle (ABC 123 AA unless resolved otherwise) with a valid JRB E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page; any scanned code ending "-404" is Vehicle Not Found and one ending "-503" is Verification Unavailable. |
 
 ```sh
 flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
@@ -387,6 +387,20 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   Verification and the back button abandon the request. When CHL has no
   such vehicle, or cannot be reached or finish, the result page replaces
   the processing page with Vehicle Not Found or Verification Unavailable.
+- **GPS on every verification:** before any check starts (Verification
+  processing, and Verify Detected Tag on RFID) the officer's location is
+  read (`LocationReader`, asking for permission if needed) and sent with
+  the request (`VerificationRepository.verify(request, location:)`); the
+  result keeps it (`VerificationResult.location`) and Vehicle Not Found
+  shows it under Verification details. While it is read the first check
+  shows as running. Without a location nothing is sent: GPS off,
+  permission refused or no fix each say what to do in a toast, and the
+  officer goes back a step (`verification_location.dart`).
+- **No Trip History:** a vehicle CHL knows but that has never made a CHL
+  trip (`TripStatus.noHistory`) shows "No Trip History" on the no-active
+  page layout, with CHL trip status "No Trip History" and Finish
+  Verification; no last trip is offered or made up. History names it "No
+  trip history" and the No active trip filter includes it. No design yet.
 - **Vehicle Not Found** (`/verify/result`, with a `VehicleNotFound`): the
   brown search icon, "Vehicle Not Found", "Checked just now" (then "Checked
   5 min ago", then the time), the plate as entered (spaced, "ABC 123 AA"), vehicle identity "Not
@@ -485,6 +499,9 @@ and verifies it like a plate, ending in the usual verification result.
   "E2"; `TODO(api)` to confirm the format). It is decided on the device
   and nothing is sent to CHL. Scan Another Tag, Enter Plate Instead,
   Choose Another Method.
+- **Repeated scans:** a tag verified in the last 60 seconds is not sent
+  to CHL again; its result (or Vehicle Not Found) opens straight away
+  (`TagVerificationCache`). A failed verification is always tried again.
 - **Multiple tags detected:** the reader read several JRB tags (the same
   tag read twice counts once). Each shows as a vehicle with the plate
   resolved on the device from its tag ("Resolved vehicle plate"; a tag
@@ -979,6 +996,12 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- From the requirements document: GPS is read before every verification
+  and sent with it (none starts without it); No Trip History for a vehicle
+  that has never made a CHL trip (demo: AAA 001 AA); repeated RFID scans
+  of the same tag within 60 seconds reuse its result instead of asking CHL
+  again. `NoVehicleFound` no longer carries a location; Vehicle Not Found
+  shows the officer's.
 - RFID Multiple tags detected: several JRB tags in range show as vehicles
   (plates resolved on the device); picking one verifies its tag. The
   reader now returns every tag in range (`readTags`, `RfidTagRead`), and a

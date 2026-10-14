@@ -8,4 +8,7 @@ enum TripStatus {
 
   /// Only an earlier trip was found (e.g. an expired one).
   previous,
+
+  /// The vehicle exists but has never made a CHL trip.
+  noHistory,
 }

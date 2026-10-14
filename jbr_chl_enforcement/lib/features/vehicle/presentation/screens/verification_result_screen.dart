@@ -30,6 +30,8 @@ import '../widgets/trip_details_card.dart';
 ///   dashboard; Refresh Trip Status asks CHL again.
 /// - No active trip: "No Active Trip Found", and View Last CHL Trip when
 ///   CHL returned an earlier trip.
+/// - No trip history: "No Trip History"; the vehicle has never made a CHL
+///   trip, so there is nothing more to show.
 class VerificationResultScreen extends ConsumerStatefulWidget {
   const VerificationResultScreen({super.key, this.result});
 
@@ -64,6 +66,7 @@ class VerificationResultScreen extends ConsumerStatefulWidget {
   static String tripStatus(TripStatus status) => switch (status) {
     TripStatus.active => 'Active',
     TripStatus.noActive || TripStatus.previous => 'No Active Trip',
+    TripStatus.noHistory => 'No Trip History',
   };
 
   @override
@@ -153,9 +156,23 @@ class _VerificationResultScreenState
         onRefresh: _refresh,
         onFinish: finish,
       );
+    } else if (result.tripStatus == TripStatus.noHistory) {
+      body = _NoActiveTrip(
+        result: result,
+        heading: 'No Trip History',
+        description:
+            'This vehicle has never made a CHL trip, so there is no trip to '
+            'review. Check the physical facts before taking action.',
+        onViewLastTrip: null,
+        onFinish: finish,
+      );
     } else {
       body = _NoActiveTrip(
         result: result,
+        heading: 'No Active Trip Found',
+        description:
+            'No current active trip was returned. Review the latest trip and '
+            'physical facts before taking action.',
         onViewLastTrip: result.lastTrip == null
             ? null
             : () => context.pushNamed(RouteNames.lastChlTrip, extra: result),
@@ -286,11 +303,15 @@ class _ActiveTrip extends StatelessWidget {
 class _NoActiveTrip extends StatelessWidget {
   const _NoActiveTrip({
     required this.result,
+    required this.heading,
+    required this.description,
     required this.onViewLastTrip,
     required this.onFinish,
   });
 
   final VerificationResult result;
+  final String heading;
+  final String description;
 
   /// Null when CHL returned no earlier trip.
   final VoidCallback? onViewLastTrip;
@@ -314,12 +335,7 @@ class _NoActiveTrip extends StatelessWidget {
                     color: AppColors.noTripIconFill,
                   ),
                   const SizedBox(height: 11),
-                  const ScreenHeading(
-                    heading: 'No Active Trip Found',
-                    description:
-                        'No current active trip was returned. Review the '
-                        'latest trip and physical facts before taking action.',
-                  ),
+                  ScreenHeading(heading: heading, description: description),
                   const SizedBox(height: 20),
                   _Summary(result: result),
                 ],

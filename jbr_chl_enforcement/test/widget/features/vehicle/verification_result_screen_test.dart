@@ -436,6 +436,40 @@ void main() {
       expect(_row('E-Tag validity: Invalid JRB E-Tag'), findsOneWidget);
     });
 
+    testWidgets('a vehicle that has never made a trip: No Trip History', (
+      tester,
+    ) async {
+      final base = sampleNoTripResult(_now);
+      await _pump(
+        tester,
+        result: VerificationResult(
+          plate: base.plate,
+          vehicleType: base.vehicleType,
+          eTagStatus: base.eTagStatus,
+          tripStatus: TripStatus.noHistory,
+          checkedAt: _now,
+        ),
+      );
+
+      // The heading and the summary's CHL trip status.
+      expect(find.text('No Trip History'), findsNWidgets(2));
+      expect(
+        find.text(
+          'This vehicle has never made a CHL trip, so there is no trip to '
+          'review. Check the physical facts before taking action.',
+        ),
+        findsOneWidget,
+      );
+      expect(_row('CHL trip status: No Trip History'), findsOneWidget);
+      // Nothing is made up: no last trip is offered.
+      expect(find.text('View Last CHL Trip'), findsNothing);
+      expect(find.text('No Active Trip Found'), findsNothing);
+
+      await tester.tap(find.text('Finish Verification'));
+      await tester.pumpAndSettle();
+      expect(find.text('dashboard page'), findsOneWidget);
+    });
+
     testWidgets('without an earlier trip, the check can be finished', (
       tester,
     ) async {

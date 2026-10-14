@@ -61,7 +61,10 @@ enum HistoryResult {
 
   bool matches(VerificationRecord record) => switch (this) {
     HistoryResult.activeTrip => record.tripStatus == TripStatus.active,
-    HistoryResult.noActiveTrip => record.tripStatus == TripStatus.noActive,
+    // A vehicle that has never made a trip has no active trip either.
+    HistoryResult.noActiveTrip =>
+      record.tripStatus == TripStatus.noActive ||
+          record.tripStatus == TripStatus.noHistory,
     HistoryResult.previousTrip => record.tripStatus == TripStatus.previous,
     HistoryResult.eTagValid => record.eTagStatus == ETagStatus.valid,
     HistoryResult.eTagInvalid => record.eTagStatus == ETagStatus.invalid,
