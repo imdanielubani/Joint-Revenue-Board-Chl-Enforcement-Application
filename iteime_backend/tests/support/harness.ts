@@ -6,10 +6,10 @@ import request from 'supertest';
 import { expect } from 'vitest';
 
 import { createApp, type AppDependencies } from '../../src/app.js';
-import { MOCK_PASSWORD } from '../../src/chl/mock/mock-data.js';
-import { MockChlAdapter } from '../../src/chl/mock/mock-adapter.js';
-import { runMigrations } from '../../src/db/migrate.js';
-import { createDatabase, type Database } from '../../src/db/pool.js';
+import { MOCK_PASSWORD } from '../../src/integrations/chl/mock/mock-data.js';
+import { MockChlAdapter } from '../../src/integrations/chl/mock/mock-adapter.js';
+import { runMigrations } from '../../src/database/migrator.js';
+import { createDatabase, type Database } from '../../src/database/pool.js';
 
 /** The test database; database tests are skipped when it isn't set. */
 export const testDatabaseUrl = process.env.TEST_DATABASE_URL?.trim() || undefined;

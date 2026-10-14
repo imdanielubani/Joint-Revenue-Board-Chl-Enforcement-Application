@@ -1,11 +1,11 @@
 import 'dotenv/config';
 
 import { createApp } from './app.js';
-import { createChlAdapter } from './chl/index.js';
+import { createChlAdapter } from './integrations/chl/index.js';
 import { loadConfig } from './config/env.js';
-import { runMigrations } from './db/migrate.js';
-import { createDatabase } from './db/pool.js';
-import { createLogger } from './lib/logger.js';
+import { runMigrations } from './database/migrator.js';
+import { createDatabase } from './database/pool.js';
+import { createLogger } from './shared/logger.js';
 
 const config = loadConfig();
 const logger = createLogger(config);

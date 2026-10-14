@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AppError } from '../lib/errors.js';
+import { AppError } from '../shared/errors.js';
 
 /** Checks [value] against [schema]; a mismatch answers 400 with each problem. */
 export function parse<S extends z.ZodType>(schema: S, value: unknown): z.output<S> {

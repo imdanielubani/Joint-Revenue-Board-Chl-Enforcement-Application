@@ -3,42 +3,34 @@ import { randomUUID } from 'node:crypto';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
-import type { Logger } from 'pino';
 import { pinoHttp } from 'pino-http';
 
-import type { ChlAdapter } from './chl/adapter.js';
 import type { Config } from './config/env.js';
-import type { Database } from './db/pool.js';
-import { apiV1Router, type ApiDependencies } from './http/api-v1.js';
-import { errorHandler, notFoundHandler } from './http/error-handler.js';
-import { healthRouter } from './http/health.js';
-import { AuthService } from './services/auth-service.js';
-import { VerificationService } from './services/verification-service.js';
+import { createContainer, type Infrastructure } from './container.js';
+import { apiV1Router } from './http/api-v1.router.js';
+import { errorHandler, notFoundHandler } from './http/middleware/error-handler.js';
+import type { LoginRateLimit } from './modules/auth/auth.routes.js';
+import { healthRouter } from './modules/health/health.routes.js';
 
-export interface AppDependencies {
-  logger: Logger;
-  chl: ChlAdapter;
-  database: Database;
-  /** The clock (tests fix it). */
-  now?: () => Date;
-  session?: Config['session'];
+export interface AppDependencies
+  extends
+    Pick<Infrastructure, 'logger' | 'chl' | 'database'>,
+    Partial<Pick<Infrastructure, 'now' | 'session'>> {
   /** Defaults suit development and tests. */
   http?: Pick<Config, 'appEnv' | 'trustProxy' | 'corsOrigins'>;
-  loginRateLimit?: ApiDependencies['loginRateLimit'];
+  loginRateLimit?: LoginRateLimit;
 }
 
 /** The Express app, with everything it needs passed in (so tests can swap it). */
 export function createApp(dependencies: AppDependencies): Express {
-  const { logger, chl, database } = dependencies;
-  const now = dependencies.now ?? (() => new Date());
-  const auth = new AuthService({
-    database,
-    chl,
-    logger,
-    now,
+  const container = createContainer({
+    logger: dependencies.logger,
+    chl: dependencies.chl,
+    database: dependencies.database,
+    now: dependencies.now ?? (() => new Date()),
     session: dependencies.session ?? { accessTokenTtlMinutes: 30, sessionTtlHours: 24 },
   });
-  const verifications = new VerificationService({ database, chl, now });
+  const { logger } = container;
 
   const app = express();
   app.disable('x-powered-by');
@@ -69,17 +61,7 @@ export function createApp(dependencies: AppDependencies): Express {
   );
 
   app.use('/health', healthRouter({ ...dependencies, environment: http.appEnv }));
-  app.use(
-    '/api/v1',
-    apiV1Router({
-      auth,
-      verifications,
-      chl,
-      database,
-      now,
-      loginRateLimit: dependencies.loginRateLimit,
-    }),
-  );
+  app.use('/api/v1', apiV1Router(container, { loginRateLimit: dependencies.loginRateLimit }));
 
   app.use(notFoundHandler);
   app.use(errorHandler(logger));
