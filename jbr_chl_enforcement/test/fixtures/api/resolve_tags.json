@@ -1,0 +1,14 @@
+{
+  "tags": [
+    {
+      "tagReference": "E2000017221101441890D482",
+      "known": true,
+      "plate": "LND482XK"
+    },
+    {
+      "tagReference": "3034257BF7194E4000000001",
+      "known": false,
+      "plate": null
+    }
+  ]
+}

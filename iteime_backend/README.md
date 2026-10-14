@@ -224,7 +224,9 @@ agent ends. If CHL can't be reached to ask, the agent stays signed in.
 - `method` is `plate`, `qrCode` or `eTag` (with `reference`), or `rfid` (with
   `tagReference`). `location` is required.
 - The answer has `outcome`: `found` (with `vehicle`, `eTag` and `trip`),
-  `vehicleNotFound` or `unknownTag`. The raw identifier and CHL's internal IDs
+  `vehicleNotFound` or `unknownTag`. `plate` is the vehicle's plate, or the
+  plate typed when CHL didn't identify one (so an unfinished check can be
+  shown and retried). The raw identifier and CHL's internal IDs
   are never sent back.
 - When CHL can't complete the check, the answer is **503 `CHL_UNAVAILABLE`**,
   never a result. The attempt is still recorded (`details.verificationId`) as
@@ -284,13 +286,19 @@ createdb iteimedb_test   # once
 2. ✅ Database: sessions, verification records (audit trail with GPS),
    destination checks, Loaded/Empty, notifications, audit events; migrations.
 3. ✅ Mobile API v1.
-4. Connect the mobile app to the mobile API.
+4. ✅ Connect the mobile app to the mobile API.
 5. Fill in `HttpChlAdapter` from the CHL API documentation.
 6. Push notifications, and violations with the enforcement module.
 
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Connected to the mobile app.
+  - Each verification answer now includes `plate`, also when CHL was
+    unavailable.
+  - Known failures such as CHL being unavailable are logged as warnings;
+    unexpected errors are still logged as errors with their stack trace.
 
 - Database and the mobile API v1:
   - PostgreSQL schema and migrations (run at start-up or with

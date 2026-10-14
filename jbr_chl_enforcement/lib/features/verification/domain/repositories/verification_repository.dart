@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../shared/device/location/location_adapter.dart';
 import '../../../vehicle/domain/entities/load_status.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
+import '../entities/haulage_tag.dart';
 import '../entities/plate_number.dart';
 import '../entities/verification_request.dart';
 
@@ -26,12 +27,16 @@ abstract class VerificationRepository {
   /// carrying haulage goods, as the officer confirmed.
   Future<void> recordLoadStatus(VerificationResult result, LoadStatus status);
 
-  /// Sends the officer's [location] for the destination check of the trip
-  /// with [transactionReference]; returns it as CHL received it.
+  /// Sends the officer's [location] for the destination check of the
+  /// active trip of [result]; returns it as CHL received it.
   Future<RecordedLocation> recordDestinationLocation(
-    String transactionReference,
+    VerificationResult result,
     DeviceLocation location,
   );
+
+  /// [tags] read together, with the plates CHL knows for those that don't
+  /// carry one. Never fails: on any problem [tags] come back as they were.
+  Future<List<HaulageTag>> resolvePlates(List<HaulageTag> tags);
 }
 
 /// One step of a verification in progress.

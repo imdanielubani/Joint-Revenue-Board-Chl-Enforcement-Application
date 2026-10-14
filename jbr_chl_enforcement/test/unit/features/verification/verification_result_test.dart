@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/chl_trip.dart';
 import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/trip_status.dart';
@@ -250,7 +251,7 @@ void main() {
 
     test('records the location as received', () async {
       final recorded = await repository.recordDestinationLocation(
-        '564031956608',
+        sampleActiveResult(_now),
         DeviceLocation(
           latitude: 8.97,
           longitude: 7.45,
@@ -264,7 +265,7 @@ void main() {
   });
 
   test('without the API, verification is not available', () async {
-    const repository = RemoteVerificationRepository();
+    final repository = RemoteVerificationRepository(Dio(), isConfigured: false);
     expect(
       repository.verify(location: _here, PlateVerification(_plate('ABC123AA'))),
       emitsError(isA<VerificationFailure>()),

@@ -24,4 +24,8 @@ abstract interface class AuthRepository {
   /// app never reveals which emails are registered. Throws an
   /// `AuthException` when the request cannot be made or is rejected.
   Future<void> requestPasswordReset({required String email});
+
+  /// Ends [session] on the server, as far as possible: never throws, so
+  /// signing out on the device always works.
+  Future<void> signOut(AuthSession session);
 }

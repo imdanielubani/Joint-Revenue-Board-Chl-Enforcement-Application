@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "ACCOUNT_DEACTIVATED",
+    "message": "This account has been deactivated.",
+    "requestId": "232750e3-63f8-4358-8ada-5928bea8badb"
+  }
+}

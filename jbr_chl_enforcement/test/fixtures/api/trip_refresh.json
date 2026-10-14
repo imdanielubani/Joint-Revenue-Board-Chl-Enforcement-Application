@@ -1,0 +1,31 @@
+{
+  "trip": {
+    "status": "active",
+    "current": {
+      "transactionReference": "564031956608",
+      "startedAt": "2026-10-14T00:48:56.227Z",
+      "transactionDate": "2026-10-14T00:42:56.227Z",
+      "transactionType": "Complete Leg",
+      "transactionStatus": "Successful",
+      "originState": "Ogun",
+      "originLga": "Abeokuta South",
+      "destinationState": "Lagos",
+      "destinationLga": "Ikeja",
+      "status": "active",
+      "validUntil": "2026-10-14T07:17:58.227Z",
+      "completedAt": null,
+      "paymentReference": "PAY-2026-08142",
+      "terminalId": "2070MJHU",
+      "contactNumber": "8139751699",
+      "channel": "Fortis",
+      "channelType": "POS",
+      "cargo": "General haulage"
+    },
+    "last": null,
+    "destinationCheck": {
+      "enforcementPoint": "Ikeja enforcement point",
+      "completionDecision": "Awaiting central validation",
+      "centralDelaySeconds": 900
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "verification": {
+    "id": "972a8226-413f-4bac-9e85-ec20dce2148a",
+    "reference": "VRF-2026-59BFD678",
+    "method": "plate",
+    "outcome": "vehicleNotFound",
+    "plate": "AAA000AA",
+    "completed": true,
+    "checkedAt": "2026-10-14T02:56:56.178Z",
+    "syncStatus": "live",
+    "vehicle": null,
+    "eTag": null,
+    "trip": null,
+    "location": {
+      "latitude": 6.6018,
+      "longitude": 3.3515,
+      "accuracyMetres": 12
+    },
+    "loadStatus": null
+  }
+}

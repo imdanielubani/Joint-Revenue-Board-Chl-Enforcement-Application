@@ -1,0 +1,55 @@
+{
+  "verification": {
+    "id": "5741db31-566d-4775-9da2-924d0753e033",
+    "reference": "VRF-2026-5A937922",
+    "method": "plate",
+    "outcome": "found",
+    "plate": "ABC123AA",
+    "completed": true,
+    "checkedAt": "2026-10-14T02:56:56.071Z",
+    "syncStatus": "live",
+    "vehicle": {
+      "type": "12/14 tyres and its equivalent",
+      "plate": "ABC123AA"
+    },
+    "eTag": {
+      "status": "valid",
+      "belongsToPlate": null
+    },
+    "trip": {
+      "last": null,
+      "status": "active",
+      "current": {
+        "cargo": "General haulage",
+        "status": "active",
+        "channel": "Fortis",
+        "originLga": "Abeokuta South",
+        "startedAt": "2026-10-14T00:48:56.071Z",
+        "terminalId": "2070MJHU",
+        "validUntil": "2026-10-14T07:17:58.071Z",
+        "channelType": "POS",
+        "completedAt": null,
+        "originState": "Ogun",
+        "contactNumber": "8139751699",
+        "destinationLga": "Ikeja",
+        "transactionDate": "2026-10-14T00:42:56.071Z",
+        "transactionType": "Complete Leg",
+        "destinationState": "Lagos",
+        "paymentReference": "PAY-2026-08142",
+        "transactionStatus": "Successful",
+        "transactionReference": "564031956608"
+      },
+      "destinationCheck": {
+        "enforcementPoint": "Ikeja enforcement point",
+        "completionDecision": "Awaiting central validation",
+        "centralDelaySeconds": 900
+      }
+    },
+    "location": {
+      "latitude": 6.6018,
+      "longitude": 3.3515,
+      "accuracyMetres": 12
+    },
+    "loadStatus": null
+  }
+}

@@ -85,4 +85,8 @@ class DemoAuthRepository implements AuthRepository {
   @override
   Future<void> requestPasswordReset({required String email}) =>
       Future<void>.delayed(latency);
+
+  /// Nothing to end: the demo has no server.
+  @override
+  Future<void> signOut(AuthSession session) async {}
 }

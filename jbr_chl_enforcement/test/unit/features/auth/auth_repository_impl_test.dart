@@ -10,6 +10,7 @@ import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_failure.d
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/auth_session.dart';
 import 'package:jbr_chl_enforcement/features/auth/domain/entities/officer.dart';
 
+import '../../../helpers/fake_api.dart';
 import '../../../helpers/fakes.dart';
 
 class _FakeRemote implements AuthRemoteDataSource {
@@ -30,6 +31,18 @@ class _FakeRemote implements AuthRemoteDataSource {
   }
 
   String? lastResetEmail;
+
+  @override
+  Future<AuthSession> refresh(AuthSession session) async => session;
+
+  final List<AuthSession> loggedOut = [];
+
+  @override
+  Future<void> logout(AuthSession session) async {
+    loggedOut.add(session);
+    final error = this.error;
+    if (error != null) throw error;
+  }
 
   @override
   Future<void> requestPasswordReset(String email) async {
@@ -138,6 +151,23 @@ void main() {
         _dioError(DioExceptionType.badResponse, status: 404),
         AuthFailure.notAuthorized,
       ),
+      // iteime_backend's answers, as recorded.
+      (
+        _dioError(
+          DioExceptionType.badResponse,
+          status: 403,
+          body: fixture('login_not_agent'),
+        ),
+        AuthFailure.notAuthorized,
+      ),
+      (
+        _dioError(
+          DioExceptionType.badResponse,
+          status: 403,
+          body: fixture('login_deactivated'),
+        ),
+        AuthFailure.accountDisabled,
+      ),
       (
         _dioError(DioExceptionType.badResponse, status: 500),
         AuthFailure.server,
@@ -198,6 +228,23 @@ void main() {
       await expectLater(signIn(repository()), throwsA(anything));
 
       expect(secureStorage.values, isEmpty);
+    });
+  });
+
+  group('signOut', () {
+    test('ends the session on the server', () async {
+      await repository().signOut(_FakeRemote.session);
+      expect(remote.loggedOut, [_FakeRemote.session]);
+    });
+
+    test('never fails, so the device always signs out', () async {
+      remote.error = _dioError(DioExceptionType.connectionError);
+      await repository().signOut(_FakeRemote.session);
+    });
+
+    test('sends nothing without an API address', () async {
+      await repository(configured: false).signOut(_FakeRemote.session);
+      expect(remote.loggedOut, isEmpty);
     });
   });
 

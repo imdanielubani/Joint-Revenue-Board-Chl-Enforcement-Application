@@ -53,6 +53,8 @@ export interface VerificationView extends ResultView {
   reference: string;
   method: VerificationMethod;
   outcome: VerificationRecord['outcome'];
+  /** The vehicle's plate, or the plate typed when CHL didn't identify one. */
+  plate: string | null;
   /** False only when CHL could not complete the check. */
   completed: boolean;
   checkedAt: string;
@@ -78,6 +80,7 @@ export function verificationView(record: VerificationRecord): VerificationView {
     reference: record.reference,
     method: record.method,
     outcome: record.outcome,
+    plate: record.result?.vehicle?.plate ?? record.plate,
     completed: record.outcome !== 'unavailable',
     checkedAt: record.createdAt.toISOString(),
     syncStatus: record.syncStatus,
@@ -165,6 +168,7 @@ export class VerificationService {
         // Without the key, so a retry asks CHL again instead of replaying this.
         const { record } = await insertVerification(database, {
           ...base,
+          plate: identifier.method === 'plate' ? identifier.plate : undefined,
           idempotencyKey: undefined,
           outcome: 'unavailable',
         });

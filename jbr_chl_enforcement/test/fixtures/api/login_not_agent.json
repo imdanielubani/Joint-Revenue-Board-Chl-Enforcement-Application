@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "AGENT_ACCESS_DENIED",
+    "message": "Only enforcement agents can use the mobile app.",
+    "requestId": "0ef52383-9339-4e5a-ba4a-f2a268d44224"
+  }
+}

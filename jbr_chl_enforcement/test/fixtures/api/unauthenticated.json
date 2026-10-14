@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "SESSION_EXPIRED",
+    "message": "Your session has ended. Please sign in again.",
+    "requestId": "9acbb8cf-3a70-4ff6-a97a-3f600d094125"
+  }
+}

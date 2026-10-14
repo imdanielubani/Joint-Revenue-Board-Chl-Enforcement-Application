@@ -1,0 +1,155 @@
+{
+  "day": {
+    "from": "2026-10-13T23:00:00.000Z",
+    "to": "2026-10-14T23:00:00.000Z"
+  },
+  "totals": {
+    "verifications": 9,
+    "activeTrips": 2,
+    "noActiveTrips": 4,
+    "violationsIssued": 0
+  },
+  "recentVerifications": [
+    {
+      "id": "a347a696-9048-416b-9a0c-a126c766c5fe",
+      "reference": "VRF-2026-B0A1F96C",
+      "method": "plate",
+      "outcome": "unavailable",
+      "plate": "AAA503AA",
+      "completed": false,
+      "checkedAt": "2026-10-14T02:56:56.210Z",
+      "syncStatus": "live",
+      "vehicle": null,
+      "eTag": null,
+      "trip": null,
+      "location": {
+        "latitude": 6.6018,
+        "longitude": 3.3515,
+        "accuracyMetres": 12
+      },
+      "loadStatus": null
+    },
+    {
+      "id": "c6971610-fdd0-4cdb-8598-236a8856820c",
+      "reference": "VRF-2026-84501ED6",
+      "method": "rfid",
+      "outcome": "unknownTag",
+      "plate": null,
+      "completed": true,
+      "checkedAt": "2026-10-14T02:56:56.193Z",
+      "syncStatus": "live",
+      "vehicle": null,
+      "eTag": null,
+      "trip": null,
+      "location": {
+        "latitude": 6.6018,
+        "longitude": 3.3515,
+        "accuracyMetres": 12
+      },
+      "loadStatus": null
+    },
+    {
+      "id": "972a8226-413f-4bac-9e85-ec20dce2148a",
+      "reference": "VRF-2026-59BFD678",
+      "method": "plate",
+      "outcome": "vehicleNotFound",
+      "plate": "AAA000AA",
+      "completed": true,
+      "checkedAt": "2026-10-14T02:56:56.178Z",
+      "syncStatus": "live",
+      "vehicle": null,
+      "eTag": null,
+      "trip": null,
+      "location": {
+        "latitude": 6.6018,
+        "longitude": 3.3515,
+        "accuracyMetres": 12
+      },
+      "loadStatus": null
+    },
+    {
+      "id": "3c09ce2a-2e66-4440-9a29-045a5dca4c3f",
+      "reference": "VRF-2026-073AF414",
+      "method": "eTag",
+      "outcome": "found",
+      "plate": "ABC123AA",
+      "completed": true,
+      "checkedAt": "2026-10-14T02:56:56.149Z",
+      "syncStatus": "live",
+      "vehicle": {
+        "type": "12/14 tyres and its equivalent",
+        "plate": "ABC123AA"
+      },
+      "eTag": {
+        "status": "valid",
+        "belongsToPlate": null
+      },
+      "trip": {
+        "last": null,
+        "status": "active",
+        "current": {
+          "cargo": "General haulage",
+          "status": "active",
+          "channel": "Fortis",
+          "originLga": "Abeokuta South",
+          "startedAt": "2026-10-14T00:48:56.149Z",
+          "terminalId": "2070MJHU",
+          "validUntil": "2026-10-14T07:17:58.149Z",
+          "channelType": "POS",
+          "completedAt": null,
+          "originState": "Ogun",
+          "contactNumber": "8139751699",
+          "destinationLga": "Ikeja",
+          "transactionDate": "2026-10-14T00:42:56.149Z",
+          "transactionType": "Complete Leg",
+          "destinationState": "Lagos",
+          "paymentReference": "PAY-2026-08142",
+          "transactionStatus": "Successful",
+          "transactionReference": "564031956608"
+        },
+        "destinationCheck": {
+          "enforcementPoint": "Ikeja enforcement point",
+          "completionDecision": "Awaiting central validation",
+          "centralDelaySeconds": 900
+        }
+      },
+      "location": {
+        "latitude": 6.6018,
+        "longitude": 3.3515,
+        "accuracyMetres": 12
+      },
+      "loadStatus": null
+    },
+    {
+      "id": "86e6295c-3b8b-4794-86bb-12d896009f0f",
+      "reference": "VRF-2026-F7F5C1E5",
+      "method": "plate",
+      "outcome": "found",
+      "plate": "KJA555MM",
+      "completed": true,
+      "checkedAt": "2026-10-14T02:56:56.125Z",
+      "syncStatus": "live",
+      "vehicle": {
+        "type": "12/14 tyres and its equivalent",
+        "plate": "KJA555MM"
+      },
+      "eTag": {
+        "status": "mismatch",
+        "belongsToPlate": "LND482XK"
+      },
+      "trip": {
+        "last": null,
+        "status": "noActive",
+        "current": null,
+        "destinationCheck": null
+      },
+      "location": {
+        "latitude": 6.6018,
+        "longitude": 3.3515,
+        "accuracyMetres": 12
+      },
+      "loadStatus": null
+    }
+  ],
+  "unreadNotifications": 2
+}

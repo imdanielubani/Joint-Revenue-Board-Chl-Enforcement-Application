@@ -1,0 +1,26 @@
+{
+  "items": [
+    {
+      "id": "8b7b12c2-162f-40c1-b0e1-aac92b132b50",
+      "category": "someFutureCategory",
+      "title": "From a newer server",
+      "body": "Not shown by this app version.",
+      "data": null,
+      "createdAt": "2026-10-14T02:56:50.252Z",
+      "read": false
+    },
+    {
+      "id": "2a950537-71ab-46a0-aa8f-4c5e22402989",
+      "category": "incompleteVerification",
+      "title": "Review an incomplete verification",
+      "body": "CHL could not complete the verification of AAA 503 AA. Retry it when the connection is available.",
+      "data": {
+        "summary": "AAA 503 AA was not verified"
+      },
+      "createdAt": "2026-10-14T02:56:50.252Z",
+      "read": false
+    }
+  ],
+  "unread": 2,
+  "nextCursor": null
+}

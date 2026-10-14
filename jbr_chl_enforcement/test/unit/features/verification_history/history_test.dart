@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jbr_chl_enforcement/core/utils/date_formatter.dart';
@@ -249,7 +250,12 @@ void main() {
     });
 
     test('without the API the history is empty', () async {
-      expect(await const RemoteHistoryRepository().fetchHistory(), isEmpty);
+      final repository = RemoteHistoryRepository(
+        Dio(),
+        officer: () => null,
+        isConfigured: false,
+      );
+      expect(await repository.fetchHistory(), isEmpty);
     });
   });
 }

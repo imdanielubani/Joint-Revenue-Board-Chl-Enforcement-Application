@@ -1,56 +1,222 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../../app/environment/app_environment.dart';
+import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../../shared/device/location/location_adapter.dart';
+import '../../../../shared/networking/api_error.dart';
+import '../../../../shared/networking/dio_provider.dart';
 import '../../../chl_trips/domain/entities/chl_trip.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
 import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../vehicle/domain/entities/load_status.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
+import '../../domain/entities/haulage_tag.dart';
 import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/verification_request.dart';
 import '../../domain/repositories/verification_repository.dart';
+import '../models/verification_request_model.dart';
+import '../models/verification_response_model.dart';
 
-/// Verifications: sample results in demo mode, otherwise CHL's.
+/// Verifications: sample results in demo mode, otherwise the API's.
 final verificationRepositoryProvider = Provider<VerificationRepository>(
   (ref) => AppEnvironment.authDemoMode
       ? DemoVerificationRepository(now: ref.watch(clockProvider))
-      : const RemoteVerificationRepository(),
+      : RemoteVerificationRepository(
+          ref.watch(dioProvider),
+          isConfigured: AppEnvironment.hasApi,
+        ),
 );
 
-/// Verifications with the CHL API.
-// TODO(verification): call the CHL verification, trip refresh and
-// destination-check endpoints once they exist. Until then every call says
-// verification is not available.
+/// Verifications with the enforcement API, which asks CHL and records
+/// every attempt with the officer's location.
 class RemoteVerificationRepository implements VerificationRepository {
-  const RemoteVerificationRepository();
+  RemoteVerificationRepository(
+    this._dio, {
+    required this._isConfigured,
+    this._uuid = const Uuid(),
+  });
 
-  static const VerificationFailure _notAvailable = VerificationFailure(
-    'Verification is not available yet. Try again later.',
-  );
+  final Dio _dio;
+  final bool _isConfigured;
+  final Uuid _uuid;
+
+  static const String _fallback =
+      'Verification could not be completed. Please try again.';
 
   @override
   Stream<VerificationProgress> verify(
     VerificationRequest request, {
     required DeviceLocation location,
-  }) => Stream.error(_notAvailable);
+  }) async* {
+    _checkConfigured();
+    yield const StageStarted(VerificationStage.identifyingVehicle);
+    final json = await _post(
+      ApiEndpoints.verifications,
+      VerificationRequestModel.toJson(request, location),
+      // The same key on a retried request returns the first result.
+      headers: {'Idempotency-Key': _uuid.v4()},
+    );
+    final response = _read(
+      () => VerificationResponseModel.fromJson(
+        _map(json['verification']),
+        location: location,
+      ),
+    );
+    switch (response) {
+      case VehicleMissing():
+        yield const NoVehicleFound();
+      case VehicleFound(:final result):
+        // CHL answers every check at once; the stages follow each other.
+        yield VehicleIdentified(result.plate);
+        yield const StageStarted(VerificationStage.validatingETag);
+        yield const StageStarted(VerificationStage.checkingTrip);
+        yield VerificationCompleted(result);
+    }
+  }
 
   @override
-  Future<VerificationResult> refresh(VerificationResult result) =>
-      Future.error(_notAvailable);
+  Future<VerificationResult> refresh(VerificationResult result) async {
+    final json = await _post(ApiEndpoints.tripRefresh(_idOf(result)), {});
+    return _read(
+      () => VerificationResponseModel.withTrip(
+        result,
+        _map(json['trip']),
+        checkedAt: DateTime.now(),
+      ),
+    );
+  }
 
   @override
   Future<void> recordLoadStatus(
     VerificationResult result,
     LoadStatus status,
-  ) => Future.error(_notAvailable);
+  ) async {
+    final location = result.location;
+    if (location == null) {
+      throw const VerificationFailure(
+        'The verification location is missing. Verify the vehicle again.',
+      );
+    }
+    await _post(ApiEndpoints.loadStatus(_idOf(result)), {
+      'status': status.name,
+      'location': VerificationRequestModel.locationToJson(location),
+    });
+  }
 
   @override
   Future<RecordedLocation> recordDestinationLocation(
-    String transactionReference,
+    VerificationResult result,
     DeviceLocation location,
-  ) => Future.error(_notAvailable);
+  ) async {
+    final json = await _post(ApiEndpoints.destinationLocation(_idOf(result)), {
+      'location': VerificationRequestModel.locationToJson(location),
+    });
+    return _read(() {
+      final recorded = _map(json['destinationLocation']);
+      return RecordedLocation(
+        latitude: (recorded['latitude'] as num).toDouble(),
+        longitude: (recorded['longitude'] as num).toDouble(),
+        accuracyMetres:
+            (recorded['accuracyMetres'] as num?)?.toDouble() ??
+            location.accuracyMetres,
+        recordedAt: DateTime.parse(recorded['recordedAt'] as String).toLocal(),
+      );
+    });
+  }
+
+  @override
+  Future<List<HaulageTag>> resolvePlates(List<HaulageTag> tags) async {
+    final unresolved = [
+      for (final tag in tags)
+        if (tag.plate == null) tag.reference,
+    ];
+    if (!_isConfigured || unresolved.isEmpty) return tags;
+    try {
+      final json = await _post(ApiEndpoints.resolveTags, {
+        'tagReferences': unresolved,
+      });
+      final plates = <String, PlateNumber>{
+        for (final entry in json['tags'] as List<dynamic>)
+          if (entry case {
+            'tagReference': final String reference,
+            'plate': final String plate,
+          })
+            reference: ?PlateNumber.tryParse(plate),
+      };
+      return [
+        for (final tag in tags)
+          switch (plates[tag.reference]) {
+            final plate? when tag.plate == null => HaulageTag(
+              tag.reference,
+              plate: plate,
+            ),
+            _ => tag,
+          },
+      ];
+    } on Object catch (error) {
+      debugPrint('Could not resolve tag plates: $error');
+      return tags;
+    }
+  }
+
+  void _checkConfigured() {
+    if (!_isConfigured) {
+      throw const VerificationFailure(
+        'Verification is unavailable on this device. Contact your '
+        'administrator.',
+      );
+    }
+  }
+
+  String _idOf(VerificationResult result) {
+    _checkConfigured();
+    final id = result.id;
+    if (id == null) {
+      throw const VerificationFailure(
+        'This result was not recorded. Verify the vehicle again.',
+      );
+    }
+    return id;
+  }
+
+  /// Posts [body] and returns the answer; any failure becomes a
+  /// [VerificationFailure] with a message for the officer.
+  Future<Map<String, dynamic>> _post(
+    String path,
+    Map<String, dynamic> body, {
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        path,
+        data: body,
+        options: Options(headers: headers),
+      );
+      return response.data ?? const {};
+    } on DioException catch (error) {
+      throw VerificationFailure(ApiError.describe(error, fallback: _fallback));
+    }
+  }
+
+  static T _read<T>(T Function() parse) {
+    try {
+      return parse();
+    } on Object catch (error) {
+      debugPrint('Unexpected verification answer: $error');
+      throw const VerificationFailure(_fallback);
+    }
+  }
+
+  static Map<String, dynamic> _map(Object? value) {
+    if (value is! Map<String, dynamic>) {
+      throw const FormatException('Unexpected answer');
+    }
+    return value;
+  }
 }
 
 /// Sample verifications, each check taking a moment as it would over a
@@ -206,10 +372,8 @@ class DemoVerificationRepository implements VerificationRepository {
   }
 
   @override
-  Future<void> recordLoadStatus(
-    VerificationResult result,
-    LoadStatus status,
-  ) => Future<void>.delayed(stepDelay);
+  Future<void> recordLoadStatus(VerificationResult result, LoadStatus status) =>
+      Future<void>.delayed(stepDelay);
 
   @override
   Future<VerificationResult> refresh(VerificationResult result) async {
@@ -228,8 +392,11 @@ class DemoVerificationRepository implements VerificationRepository {
   }
 
   @override
+  Future<List<HaulageTag>> resolvePlates(List<HaulageTag> tags) async => tags;
+
+  @override
   Future<RecordedLocation> recordDestinationLocation(
-    String transactionReference,
+    VerificationResult result,
     DeviceLocation location,
   ) async {
     await Future<void>.delayed(stepDelay);

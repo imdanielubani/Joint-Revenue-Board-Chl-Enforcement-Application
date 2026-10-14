@@ -13,6 +13,7 @@ import 'package:jbr_chl_enforcement/features/offline_sync/domain/entities/sync_q
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/repositories/sync_repository.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/load_status.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
+import 'package:jbr_chl_enforcement/features/verification/domain/entities/haulage_tag.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_method.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/repositories/verification_repository.dart';
@@ -170,6 +171,12 @@ class FakeAuthRepository implements AuthRepository {
     final failure = resetFailure;
     if (failure != null) throw AuthException(failure);
   }
+
+  /// Sessions ended on the server.
+  final List<AuthSession> signedOut = [];
+
+  @override
+  Future<void> signOut(AuthSession session) async => signedOut.add(session);
 }
 
 /// Sync queue whose answers the test decides.
@@ -403,9 +410,16 @@ class FakeVerificationRepository implements VerificationRepository {
     return refreshed ?? result;
   }
 
+  /// What [resolvePlates] answers (the tags as read by default).
+  List<HaulageTag>? resolved;
+
+  @override
+  Future<List<HaulageTag>> resolvePlates(List<HaulageTag> tags) async =>
+      resolved ?? tags;
+
   @override
   Future<RecordedLocation> recordDestinationLocation(
-    String transactionReference,
+    VerificationResult result,
     DeviceLocation location,
   ) async {
     await recordGate?.future;

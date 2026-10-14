@@ -1,30 +1,75 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/environment/app_environment.dart';
+import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/utils/clock.dart';
+import '../../../../shared/networking/dio_provider.dart';
+import '../../../auth/domain/entities/officer.dart';
+import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
 import '../../../vehicle/domain/entities/e_tag_status.dart';
 import '../../../verification/domain/entities/verification_method.dart';
 import '../../domain/entities/verification_record.dart';
 import '../../domain/entities/verification_record_details.dart';
 import '../../domain/repositories/history_repository.dart';
+import '../models/verification_record_model.dart';
 
 /// The history: sample records in demo mode, otherwise the officer's own.
 final historyRepositoryProvider = Provider<HistoryRepository>(
   (ref) => AppEnvironment.authDemoMode
       ? DemoHistoryRepository(now: ref.watch(clockProvider))
-      : const RemoteHistoryRepository(),
+      : RemoteHistoryRepository(
+          ref.watch(dioProvider),
+          officer: () => ref.read(sessionProvider)?.officer,
+          isConfigured: AppEnvironment.hasApi,
+        ),
 );
 
-/// The officer's records on the server.
-// TODO(verification_history): read the officer's records from the CHL API
-// (and the ones saved on the phone) once they exist. Until then the history
-// is empty.
+/// The officer's records on the enforcement API, newest first.
 class RemoteHistoryRepository implements HistoryRepository {
-  const RemoteHistoryRepository();
+  const RemoteHistoryRepository(
+    this._dio, {
+    required this.officer,
+    required this._isConfigured,
+  });
 
+  final Dio _dio;
+  final bool _isConfigured;
+
+  /// The signed-in officer, who made every record listed.
+  final Officer? Function() officer;
+
+  static const int _pageSize = 100;
+
+  /// At most this many pages (records beyond them are not shown).
+  static const int _maxPages = 10;
+
+  /// Throws [DioException] when the records can't be loaded and
+  /// [FormatException] on an answer the app can't read.
   @override
-  Future<List<VerificationRecord>> fetchHistory() async => const [];
+  Future<List<VerificationRecord>> fetchHistory() async {
+    if (!_isConfigured) return const [];
+    final records = <VerificationRecord>[];
+    String? cursor;
+    for (var page = 0; page < _maxPages; page++) {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.verifications,
+        queryParameters: {
+          'period': 'all',
+          'limit': _pageSize,
+          'cursor': ?cursor,
+        },
+      );
+      final body = response.data ?? const {};
+      records.addAll(
+        VerificationRecordModel.listFromJson(body['items'], officer: officer()),
+      );
+      cursor = body['nextCursor'] as String?;
+      if (cursor == null) break;
+    }
+    return records;
+  }
 }
 
 /// Seven sample records: five today, one 17 days ago (inside the last 30

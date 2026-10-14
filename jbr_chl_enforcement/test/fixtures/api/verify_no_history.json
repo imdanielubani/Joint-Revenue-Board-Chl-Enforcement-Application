@@ -1,0 +1,32 @@
+{
+  "verification": {
+    "id": "6b1af67f-36f3-4205-a880-37ef9aae4cab",
+    "reference": "VRF-2026-60DAD4A0",
+    "method": "plate",
+    "outcome": "found",
+    "plate": "AAA001AA",
+    "completed": true,
+    "checkedAt": "2026-10-14T02:56:56.100Z",
+    "syncStatus": "live",
+    "vehicle": {
+      "type": "12/14 tyres and its equivalent",
+      "plate": "AAA001AA"
+    },
+    "eTag": {
+      "status": "valid",
+      "belongsToPlate": null
+    },
+    "trip": {
+      "last": null,
+      "status": "noHistory",
+      "current": null,
+      "destinationCheck": null
+    },
+    "location": {
+      "latitude": 6.6018,
+      "longitude": 3.3515,
+      "accuracyMetres": 12
+    },
+    "loadStatus": null
+  }
+}

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,6 +33,11 @@ class ProfileScreen extends ConsumerWidget {
   /// and returns to sign-in.
   Future<void> _signOut(BuildContext context, WidgetRef ref) async {
     if (!await confirmSignOut(context) || !context.mounted) return;
+    final session = ref.read(sessionProvider);
+    // Ended on the server in the background; the device signs out now.
+    if (session != null) {
+      unawaited(ref.read(authRepositoryProvider).signOut(session));
+    }
     ref.read(sessionProvider.notifier).end();
     try {
       await ref.read(authLocalDataSourceProvider).clearSession();

@@ -1,0 +1,19 @@
+{
+  "accessToken": "login-access-token",
+  "refreshToken": "login-refresh-token",
+  "accessTokenExpiresAt": "2026-10-14T03:26:55.979Z",
+  "sessionExpiresAt": "2026-10-15T02:56:55.979Z",
+  "agent": {
+    "id": "JRB-AG-0142",
+    "name": "Demo Officer",
+    "email": "officer@jbr.com",
+    "role": "ENFORCEMENT_AGENT",
+    "organization": "Joint Revenue Board",
+    "region": "Lagos",
+    "assignment": "Ikeja enforcement point",
+    "scope": {
+      "level": "lga",
+      "name": "Ikeja"
+    }
+  }
+}

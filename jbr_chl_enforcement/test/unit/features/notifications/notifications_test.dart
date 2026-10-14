@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jbr_chl_enforcement/features/notifications/data/repositories/notifications_repository_impl.dart';
@@ -223,7 +224,10 @@ void main() {
 
   test('without the API the inbox is empty', () async {
     expect(
-      await const RemoteNotificationsRepository().fetchNotifications(),
+      await RemoteNotificationsRepository(
+        Dio(),
+        isConfigured: false,
+      ).fetchNotifications(),
       isEmpty,
     );
   });

@@ -54,6 +54,12 @@ class SessionNotifier extends Notifier<AuthSession?> {
     }
   }
 
+  /// Replaces the session's tokens after a renewal, keeping it running.
+  void renew(AuthSession session) {
+    if (state == null) return;
+    start(session);
+  }
+
   /// Ends the session without a notice (e.g. sign-out).
   void end() {
     _cancelTimer();

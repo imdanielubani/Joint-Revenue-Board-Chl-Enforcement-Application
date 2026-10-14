@@ -1,0 +1,51 @@
+{
+  "verification": {
+    "id": "68be3890-dcbb-4527-854a-1e3ef44d88ab",
+    "reference": "VRF-2026-30CB4785",
+    "method": "qrCode",
+    "outcome": "found",
+    "plate": "LND482XK",
+    "completed": true,
+    "checkedAt": "2026-10-14T02:56:56.084Z",
+    "syncStatus": "live",
+    "vehicle": {
+      "type": "12/14 tyres and its equivalent",
+      "plate": "LND482XK"
+    },
+    "eTag": {
+      "status": "invalid",
+      "belongsToPlate": null
+    },
+    "trip": {
+      "last": {
+        "cargo": "General haulage",
+        "status": "completed",
+        "channel": "Fortis",
+        "originLga": "Abeokuta South",
+        "startedAt": "2026-10-12T18:56:56.084Z",
+        "terminalId": "2070MJHU",
+        "validUntil": "2026-10-13T06:56:56.084Z",
+        "channelType": "POS",
+        "completedAt": "2026-10-13T00:13:56.084Z",
+        "originState": "Ogun",
+        "contactNumber": "8139751699",
+        "destinationLga": "Ikeja",
+        "transactionDate": "2026-10-12T18:50:56.084Z",
+        "transactionType": "Complete Leg",
+        "destinationState": "Lagos",
+        "paymentReference": "PAY-2026-07960",
+        "transactionStatus": "Successful",
+        "transactionReference": "564031950271"
+      },
+      "status": "noActive",
+      "current": null,
+      "destinationCheck": null
+    },
+    "location": {
+      "latitude": 6.6018,
+      "longitude": 3.3515,
+      "accuracyMetres": 12
+    },
+    "loadStatus": null
+  }
+}

@@ -110,7 +110,7 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
       final reads = await ref.read(rfidReaderProvider).readTags();
       if (!mounted || request != _request) return;
       // Tags that are not JRB's are never sent to CHL.
-      final tags = [
+      var tags = [
         for (final read in reads)
           HaulageTag(
             read.reference,
@@ -119,6 +119,14 @@ class _RfidScanScreenState extends ConsumerState<RfidScanScreen> {
                 : PlateNumber.tryParse(read.plate!),
           ),
       ].where((tag) => tag.isJrb).toSet().toList();
+      // Several vehicles: show each one's plate, from CHL when the tag
+      // doesn't carry it.
+      if (tags.length > 1) {
+        tags = await ref
+            .read(verificationRepositoryProvider)
+            .resolvePlates(tags);
+        if (!mounted || request != _request) return;
+      }
       _candidates = tags.length > 1 ? tags : const [];
       _tag = tags.length == 1 ? tags.single : null;
       _show(switch (tags.length) {

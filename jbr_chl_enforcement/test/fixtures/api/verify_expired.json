@@ -1,0 +1,51 @@
+{
+  "verification": {
+    "id": "9cabc33e-33f9-402f-9a2c-607eb3d9c1c6",
+    "reference": "VRF-2026-EADEA570",
+    "method": "plate",
+    "outcome": "found",
+    "plate": "EXP900AA",
+    "completed": true,
+    "checkedAt": "2026-10-14T02:56:56.117Z",
+    "syncStatus": "live",
+    "vehicle": {
+      "type": "12/14 tyres and its equivalent",
+      "plate": "EXP900AA"
+    },
+    "eTag": {
+      "status": "valid",
+      "belongsToPlate": null
+    },
+    "trip": {
+      "last": {
+        "cargo": "General haulage",
+        "status": "expired",
+        "channel": "Fortis",
+        "originLga": "Abeokuta South",
+        "startedAt": "2026-10-11T02:56:56.117Z",
+        "terminalId": "2070MJHU",
+        "validUntil": "2026-10-11T14:56:56.117Z",
+        "channelType": "POS",
+        "completedAt": null,
+        "originState": "Ogun",
+        "contactNumber": "8139751699",
+        "destinationLga": "Ikeja",
+        "transactionDate": "2026-10-11T02:52:56.117Z",
+        "transactionType": "Complete Leg",
+        "destinationState": "Lagos",
+        "paymentReference": "PAY-2026-07211",
+        "transactionStatus": "Successful",
+        "transactionReference": "564031941180"
+      },
+      "status": "expired",
+      "current": null,
+      "destinationCheck": null
+    },
+    "location": {
+      "latitude": 6.6018,
+      "longitude": 3.3515,
+      "accuracyMetres": 12
+    },
+    "loadStatus": null
+  }
+}

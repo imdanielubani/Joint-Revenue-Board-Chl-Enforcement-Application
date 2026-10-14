@@ -20,6 +20,7 @@ class VerificationResult {
     this.destinationCheck,
     this.lastTrip,
     this.location,
+    this.id,
   });
 
   final PlateNumber plate;
@@ -44,6 +45,11 @@ class VerificationResult {
 
   /// Where the officer was when the vehicle was checked.
   final DeviceLocation? location;
+
+  /// The enforcement API's record of this verification; refreshing the
+  /// trip, the destination check and Loaded / Empty refer to it. Null for
+  /// sample results.
+  final String? id;
 }
 
 /// The destination check CHL runs for an active trip: it compares the

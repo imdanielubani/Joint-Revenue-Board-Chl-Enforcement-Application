@@ -1,32 +1,55 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/environment/app_environment.dart';
+import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/utils/clock.dart';
+import '../../../../shared/networking/dio_provider.dart';
 import '../../domain/entities/app_notification.dart';
 import '../../domain/entities/notification_type.dart';
 import '../../domain/repositories/notifications_repository.dart';
+import '../models/app_notification_model.dart';
 
 /// The inbox: sample notifications in demo mode, otherwise the server's.
 final notificationsRepositoryProvider = Provider<NotificationsRepository>(
   (ref) => AppEnvironment.authDemoMode
       ? DemoNotificationsRepository(now: ref.watch(clockProvider))
-      : const RemoteNotificationsRepository(),
+      : RemoteNotificationsRepository(
+          ref.watch(dioProvider),
+          isConfigured: AppEnvironment.hasApi,
+        ),
 );
 
-/// The officer's inbox on the server.
-// TODO(notifications): read the inbox from the CHL API and send read
-// receipts once the endpoints exist. Until then the inbox is empty.
+/// The officer's inbox on the enforcement API (the latest 100).
 class RemoteNotificationsRepository implements NotificationsRepository {
-  const RemoteNotificationsRepository();
+  const RemoteNotificationsRepository(this._dio, {required this._isConfigured});
+
+  final Dio _dio;
+  final bool _isConfigured;
+
+  /// Throws [DioException] when the inbox can't be loaded and
+  /// [FormatException] on an answer the app can't read.
+  @override
+  Future<List<AppNotification>> fetchNotifications() async {
+    if (!_isConfigured) return const [];
+    final response = await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.notifications,
+      queryParameters: {'limit': 100},
+    );
+    return AppNotificationModel.listFromJson(response.data?['items']);
+  }
 
   @override
-  Future<List<AppNotification>> fetchNotifications() async => const [];
+  Future<void> markRead(String id) async {
+    if (!_isConfigured) return;
+    await _dio.post<void>(ApiEndpoints.notificationRead(id));
+  }
 
   @override
-  Future<void> markRead(String id) async {}
-
-  @override
-  Future<void> markAllRead() async {}
+  Future<void> markAllRead() async {
+    if (!_isConfigured) return;
+    await _dio.post<void>(ApiEndpoints.notificationsReadAll);
+  }
 }
 
 /// Seven sample notifications from today and three days ago, so the inbox

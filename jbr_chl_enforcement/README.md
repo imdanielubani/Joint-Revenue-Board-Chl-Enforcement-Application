@@ -65,13 +65,30 @@ Settings are passed with `--dart-define` and read in
 
 | Define | Purpose |
 |---|---|
-| `API_BASE_URL` | Base URL of the enforcement API. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
+| `API_BASE_URL` | Base URL of the enforcement API ([`iteime_backend`](../iteime_backend/)), ending in `/api/v1`. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
 | `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 001 AA has never made a CHL trip (No Trip History); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a haulage tag read by RFID is that tag's vehicle (ABC 123 AA unless resolved otherwise) with a valid JRB E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page; any scanned code ending "-404" is Vehicle Not Found and one ending "-503" is Verification Unavailable. |
 
 ```sh
-flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng
+flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng/api/v1
 flutter run --dart-define=AUTH_DEMO=true
 ```
+
+### Running against iteime_backend on this computer
+
+Start the backend (`cd ../iteime_backend && npm run dev`, port 4000, with
+its sample CHL data), then point the app at it:
+
+| Where the app runs | `API_BASE_URL` |
+|---|---|
+| Android emulator | `http://10.0.2.2:4000/api/v1` |
+| iOS simulator, or a browser | `http://localhost:4000/api/v1` |
+| A phone on the same Wi-Fi | `http://<this computer's LAN address>:4000/api/v1` |
+
+Sign in with `officer@jbr.com` / `Demo@2026`. The sample plates are the
+same as in demo mode, and they're listed in the backend's README. Debug
+Android builds allow plain `http` (`android/app/src/debug/
+AndroidManifest.xml`); iOS allows it only to local addresses
+(`NSAllowsLocalNetworking`). Release builds need `https`.
 
 ## Previewing other devices
 
@@ -848,24 +865,47 @@ phone sizes, tablets, a foldable, landscape and 200% text.
   secure storage (Keychain / Android Keystore) and the choice is remembered;
   otherwise any saved session is removed. *Restoring it on the next launch
   is not built yet.*
-- **API contract (assumed, confirm with the backend):** `POST /auth/login`
-  with `{ "email", "password" }`, answering
-  `{ "accessToken", "refreshToken"?, "expiresIn"?, "officer": { "id", "name", "email", "region"?, "role", "agentId"?, "assignment"?, "organization"? } }`.
-  `agentId` (e.g. "JRB-AG-0142"), `assignment` and `organization` are shown
-  on Profile and Account details; anything missing shows as "—".
-  **`officer.role` is required for agent access**: without it every sign-in
-  is refused as "Agent access not authorized".
-  Parsing is in `features/auth/data/models/auth_token_model.dart`.
-  HTTP 400/401/422 mean a wrong password; HTTP 404, or 403 with
-  `{ "code": "not_authorized" }`, mean the account may not sign in at all
-  ("Agent access not authorized"); timeouts and connection errors mean no
-  connection; anything else is a server error (`auth_repository_impl.dart`).
-  **Confirm with the backend** that it tells these apart: a wrong password
-  for an agent (401) versus an account that is not an agent or does not
-  exist (403 `not_authorized` or 404). Note that this tells someone guessing
-  whether an email belongs to an agent; if that is not acceptable, the
-  backend should answer 401 for both and the app will show "Unable to sign
-  in" for both.
+- **API contract (iteime_backend):** `POST /auth/login` with
+  `{ "email", "password" }`.
+  - **The answer:**
+    `{ "accessToken", "refreshToken", "accessTokenExpiresAt", "sessionExpiresAt", "agent": { "id", "name", "email", "role", "organization"?, "region"?, "assignment"? } }`.
+  - **The agent:** `agent.id` (e.g. "JRB-AG-0142") is the agent ID shown on
+    Profile and Account details, where anything missing shows as "—".
+    **`agent.role` is required for agent access**; without it every sign-in
+    is refused as "Agent access not authorized". An older `officer` object
+    and `expiresIn` are still accepted.
+  - **Parsing** is in `features/auth/data/models/auth_token_model.dart`.
+  - **Errors** use `{ "error": { "code", "message" } }`
+    (`shared/networking/api_error.dart`):
+
+    | Answer | Means |
+    |---|---|
+    | 400 / 401 / 422 | Wrong password |
+    | 403 `AGENT_ACCESS_DENIED`, 404 | The account may not use the app ("Agent access not authorized") |
+    | 403 `ACCOUNT_DEACTIVATED` | The account is deactivated |
+    | Timeout or connection error | No connection |
+    | Anything else, including 429 for too many attempts | A server error |
+
+  - **Checked against real answers:** `test/fixtures/api/` holds answers
+    recorded from iteime_backend, and `test/unit/features/api/` checks the
+    app reads them.
+- **Tokens:**
+  - **Every request:** `AuthInterceptor`
+    (`shared/networking/interceptors/auth_interceptor.dart`) sends the
+    access token.
+  - **Renewal:** the access token lasts 30 minutes. On a 401,
+    `SessionTokenManager` (`features/auth/data/session_token_manager.dart`)
+    renews it with `POST /auth/refresh` and the request is repeated once.
+    Requests made at the same time share one renewal, and a remembered
+    session is saved with its new tokens.
+  - **Refused refresh:** if the server refuses the refresh (401 after the
+    24 hours, or 403 for a deactivated account), the session ends and the
+    "session expired" sheet shows.
+  - **No connection:** if the server can't be reached, the officer stays
+    signed in.
+- **Sign out:** ends the session on the phone at once, and on the server
+  (`POST /auth/logout`) in the background. A failed server call doesn't stop
+  the sign-out.
 - **Password reset (assumed contract):** `POST /auth/forgot-password` with
   `{ "email" }`; the response body is not used. A 404 (unknown email) is
   shown as sent, so the screen never reveals which emails have accounts;
@@ -876,8 +916,8 @@ phone sizes, tablets, a foldable, landscape and 200% text.
   `AuthFailure.accountDisabled` and shows the "Account Deactivated" sheet.
   A 403 on password reset is reported as sent, like an unknown email.
 - **Session expiry:** `SessionNotifier` (`presentation/providers/
-  session_provider.dart`) ends the session when the access token's
-  `expiresAt` passes, clears the saved session and reports
+  session_provider.dart`) ends the session when its `expiresAt` (the
+  server's `sessionExpiresAt`, 24 hours after sign-in) passes, clears the saved session and reports
   `SessionEndReason.expired`. `ChlEnforcementApp` reacts by going to sign-in
   with `LoginNotice.sessionExpired`, which shows the "session expired"
   sheet.
@@ -917,6 +957,11 @@ flutter test test/widget/features/auth         # one area
 
 - `fake_async` (dev dependency) drives timers in unit tests, such as
   session expiry.
+- `test/helpers/fake_api.dart` stands in for the network under Dio
+  (`FakeApi`), and `fixture('verify_active')` loads a recorded backend
+  answer from `test/fixtures/api/`. To record them again, run iteime_backend
+  and save each endpoint's answer under the same names, so the tests show
+  what changed.
 - `test/helpers/fakes.dart` has in-memory fakes: `FakeAuthRepository`,
   `FakePermissionAdapter`, `FakePreferencesService`,
   `FakeSecureStorageService`. Override providers with them in
@@ -951,15 +996,12 @@ flutter test test/widget/features/auth         # one area
 
 Sign-in and sessions:
 
-1. Real sign-in API address and contract (needs the backend team).
+1. The production API address (`API_BASE_URL`) for release builds.
 2. Restore a remembered session at launch (`launch_controller.dart` TODO).
-3. Server sign-out: Sign out ends the session and clears the saved copy on
-   the phone, but nothing is sent to the server yet; call the API's
-   sign-out endpoint from `ProfileScreen._signOut` once it exists. Token
-   refresh (`refresh_session.dart`).
-4. Attach the token to API requests and handle 401s
-   (`shared/networking/interceptors/`); a 401 should call
-   `SessionNotifier.expire()` so the "session expired" sheet appears.
+3. ~~Server sign-out, token refresh, tokens on requests and 401 handling~~:
+   done with iteime_backend (see "Tokens" above).
+4. A dedicated message for too many sign-in attempts (429); it shows as a
+   server error for now.
 5. Route guards so signed-out users cannot reach signed-in screens
    (`core/navigation/route_guards.dart`).
 6. Messages for disabled accounts (403) and too many attempts (429).
@@ -981,17 +1023,21 @@ Elsewhere:
 
 - Launch stages are timed placeholders; wire them to session restore and the
   offline vehicle cache.
-- Dashboard figures: `LocalDashboardRepository` returns zeros until
-  verifications are stored locally (`TODO(verification_history)`).
+- Dashboard figures come from iteime_backend (`RemoteDashboardRepository`).
+  Without an `API_BASE_URL`, `LocalDashboardRepository` shows zeros.
 - No RFID reader is ever found outside demo mode until the reader's SDK
   is chosen (`TODO(rfid)` in `rfid_reader_adapter.dart`).
-- Unread notification count is always 0 until notifications are stored
-  (`TODO(notifications)`).
+- The inbox comes from iteime_backend. Nothing sends notifications yet
+  (that comes with the ITEIME Admin Dashboard); a category this app doesn't
+  know is left out.
 - History, Notifications, Profile, SOS, the RFID, QR and OCR method pages
   and the verification result page are placeholders.
-- Verifying a plate does not call the server yet: the result page only
-  shows the plate. Plate length limits (3–10) should be confirmed against
-  the registry's rules.
+- Verification, history, dashboard and notifications use iteime_backend,
+  which uses sample CHL data until the CHL team's API documentation
+  arrives. Checks where CHL found no vehicle are kept on the server for the
+  audit trail but aren't listed in the history. Offline verifications
+  aren't queued and sent yet. Plate length limits (3–10) should be
+  confirmed against the registry's rules.
 - `pendingSyncCountProvider` always returns 0 until the offline sync queue
   exists, so the "Queued work is safe" banner does not show yet.
 - The password reset link itself (opening it and choosing a new password)
@@ -1003,6 +1049,17 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Connected to iteime_backend:
+  - Sign-in, token renewal and sign-out.
+  - Verification by plate, QR code, E-Tag and RFID, with the GPS location.
+  - Trip refresh, destination check and Loaded / Empty.
+  - Plates for several RFID tags read together.
+  - History, dashboard and notifications.
+  - `API_BASE_URL` ends in `/api/v1`. Debug Android builds allow `http` to
+    a local backend, and iOS allows it to local addresses only.
+  - The app's reading of the API is tested against answers recorded from
+    the backend.
 
 - Haulage check on the No Active Trip page: Loaded / Empty, sent to CHL
   (`recordLoadStatus`). View Last CHL Trip is always offered; without an

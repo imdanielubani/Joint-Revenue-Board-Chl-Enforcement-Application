@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/environment/app_environment.dart';
+import '../../../../shared/networking/api_error.dart';
 import '../../../../shared/networking/dio_provider.dart';
 import '../../../../shared/storage/preferences_service.dart';
 import '../../../../shared/storage/secure_storage_service.dart';
@@ -88,12 +89,25 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  /// The `code` in an error response body, lowercased, if there is one.
-  static String? _errorCode(DioException error) {
-    final body = error.response?.data;
-    final code = body is Map ? body['code'] : null;
-    return code is String ? code.toLowerCase() : null;
+  @override
+  Future<void> signOut(AuthSession session) async {
+    if (!_isConfigured) return;
+    try {
+      await _remote.logout(session);
+    } catch (error) {
+      debugPrint('Could not end the session on the server: $error');
+    }
   }
+
+  /// The error code in a response body, lowercased, if there is one.
+  static String? _errorCode(DioException error) =>
+      ApiError.code(error)?.toLowerCase();
+
+  /// Codes for an account that may not use this app.
+  static const Set<String> _notAuthorizedCodes = {
+    'not_authorized',
+    'agent_access_denied',
+  };
 
   static AuthFailure _failureFor(DioException error) {
     switch (error.type) {
@@ -108,7 +122,7 @@ class AuthRepositoryImpl implements AuthRepository {
           400 || 401 || 422 => AuthFailure.invalidCredentials,
           // No such account, or one that may not use this app.
           404 => AuthFailure.notAuthorized,
-          403 when _errorCode(error) == 'not_authorized' =>
+          403 when _notAuthorizedCodes.contains(_errorCode(error)) =>
             AuthFailure.notAuthorized,
           403 => AuthFailure.accountDisabled,
           _ => AuthFailure.server,

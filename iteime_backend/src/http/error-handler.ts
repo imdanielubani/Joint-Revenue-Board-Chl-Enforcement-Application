@@ -45,7 +45,14 @@ export function errorHandler(logger: Logger): ErrorRequestHandler {
       body = { code: 'INVALID_JSON', message: 'The request body is not valid JSON.' };
     }
 
-    if (status >= 500) logger.error({ err: error, requestId }, 'Request failed');
+    if (status >= 500) {
+      // A known failure (e.g. CHL unavailable) is expected; anything else is a bug.
+      if (error instanceof AppError || error instanceof ChlError) {
+        logger.warn({ code: body.code, requestId }, body.message);
+      } else {
+        logger.error({ err: error, requestId }, 'Request failed');
+      }
+    }
     response.status(status).json({ error: { ...body, requestId } } satisfies ErrorBody);
   };
 }

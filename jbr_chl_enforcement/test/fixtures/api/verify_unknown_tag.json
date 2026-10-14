@@ -1,0 +1,21 @@
+{
+  "verification": {
+    "id": "c6971610-fdd0-4cdb-8598-236a8856820c",
+    "reference": "VRF-2026-84501ED6",
+    "method": "rfid",
+    "outcome": "unknownTag",
+    "plate": null,
+    "completed": true,
+    "checkedAt": "2026-10-14T02:56:56.193Z",
+    "syncStatus": "live",
+    "vehicle": null,
+    "eTag": null,
+    "trip": null,
+    "location": {
+      "latitude": 6.6018,
+      "longitude": 3.3515,
+      "accuracyMetres": 12
+    },
+    "loadStatus": null
+  }
+}

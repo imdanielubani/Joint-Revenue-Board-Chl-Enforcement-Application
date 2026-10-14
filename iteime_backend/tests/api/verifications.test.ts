@@ -160,6 +160,8 @@ describe.skipIf(!testDatabaseUrl)('verification API', () => {
       expect(detail.body.verification).toMatchObject({
         outcome: 'unavailable',
         completed: false,
+        // The plate typed is kept, so the record can be shown and retried.
+        plate: 'AAA503AA',
         trip: null,
       });
     });

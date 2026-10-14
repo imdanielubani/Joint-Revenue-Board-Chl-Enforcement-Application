@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "CHL_UNAVAILABLE",
+    "message": "CHL verification could not be completed. Please retry when the service or connection is available.",
+    "details": {
+      "verificationId": "a347a696-9048-416b-9a0c-a126c766c5fe"
+    },
+    "requestId": "ed4a0d89-92a4-4194-b526-6c161fda8043"
+  }
+}

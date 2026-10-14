@@ -1,0 +1,32 @@
+{
+  "verification": {
+    "id": "86e6295c-3b8b-4794-86bb-12d896009f0f",
+    "reference": "VRF-2026-F7F5C1E5",
+    "method": "plate",
+    "outcome": "found",
+    "plate": "KJA555MM",
+    "completed": true,
+    "checkedAt": "2026-10-14T02:56:56.125Z",
+    "syncStatus": "live",
+    "vehicle": {
+      "type": "12/14 tyres and its equivalent",
+      "plate": "KJA555MM"
+    },
+    "eTag": {
+      "status": "mismatch",
+      "belongsToPlate": "LND482XK"
+    },
+    "trip": {
+      "last": null,
+      "status": "noActive",
+      "current": null,
+      "destinationCheck": null
+    },
+    "location": {
+      "latitude": 6.6018,
+      "longitude": 3.3515,
+      "accuracyMetres": 12
+    },
+    "loadStatus": null
+  }
+}

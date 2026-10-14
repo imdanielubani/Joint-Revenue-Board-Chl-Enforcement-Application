@@ -103,15 +103,19 @@ class _VerificationResultScreenState
   }
 
   Future<void> _recordLocation() async {
-    final trip = _result?.trip;
-    if (trip == null || _locationState == _LocationState.recording) return;
+    final result = _result;
+    if (result == null ||
+        result.trip == null ||
+        _locationState == _LocationState.recording) {
+      return;
+    }
     final previous = _locationState;
     setState(() => _locationState = _LocationState.recording);
     try {
       final location = await ref.read(locationReaderProvider).current();
       final recorded = await ref
           .read(verificationRepositoryProvider)
-          .recordDestinationLocation(trip.transactionReference, location);
+          .recordDestinationLocation(result, location);
       if (!mounted) return;
       setState(() {
         _recorded = recorded;
