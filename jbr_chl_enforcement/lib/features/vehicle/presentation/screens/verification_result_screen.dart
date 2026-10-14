@@ -19,6 +19,7 @@ import '../../../verification/data/repositories/verification_repository_impl.dar
 import '../../../verification/domain/repositories/verification_repository.dart';
 import '../../../verification/presentation/widgets/verification_page.dart';
 import '../../domain/entities/e_tag_status.dart';
+import '../../domain/entities/load_status.dart';
 import '../../domain/entities/verification_result.dart';
 import '../widgets/trip_details_card.dart';
 
@@ -28,10 +29,9 @@ import '../widgets/trip_details_card.dart';
 ///   details on demand) and the destination check, where the officer
 ///   records their location for CHL. Finish Verification returns to the
 ///   dashboard; Refresh Trip Status asks CHL again.
-/// - No active trip: "No Active Trip Found", and View Last CHL Trip when
-///   CHL returned an earlier trip.
-/// - No trip history: "No Trip History"; the vehicle has never made a CHL
-///   trip, so there is nothing more to show.
+/// - No active trip (or no trip ever): "No Active Trip Found", the haulage
+///   check (Loaded / Empty, sent to CHL) and View Last CHL Trip, which shows
+///   the last trip or "No Trip History".
 class VerificationResultScreen extends ConsumerStatefulWidget {
   const VerificationResultScreen({super.key, this.result});
 
@@ -66,7 +66,8 @@ class VerificationResultScreen extends ConsumerStatefulWidget {
   static String tripStatus(TripStatus status) => switch (status) {
     TripStatus.active => 'Active',
     TripStatus.noActive || TripStatus.previous => 'No Active Trip',
-    TripStatus.noHistory => 'No Trip History',
+    // The last trip page says there is no history.
+    TripStatus.noHistory => 'No Active Trip',
   };
 
   @override
@@ -156,27 +157,12 @@ class _VerificationResultScreenState
         onRefresh: _refresh,
         onFinish: finish,
       );
-    } else if (result.tripStatus == TripStatus.noHistory) {
-      body = _NoActiveTrip(
-        result: result,
-        heading: 'No Trip History',
-        description:
-            'This vehicle has never made a CHL trip, so there is no trip to '
-            'review. Check the physical facts before taking action.',
-        onViewLastTrip: null,
-        onFinish: finish,
-      );
     } else {
       body = _NoActiveTrip(
         result: result,
-        heading: 'No Active Trip Found',
-        description:
-            'No current active trip was returned. Review the latest trip and '
-            'physical facts before taking action.',
-        onViewLastTrip: result.lastTrip == null
-            ? null
-            : () => context.pushNamed(RouteNames.lastChlTrip, extra: result),
-        onFinish: finish,
+        // The last trip page shows "No Trip History" when there is none.
+        onViewLastTrip: () =>
+            context.pushNamed(RouteNames.lastChlTrip, extra: result),
       );
     }
 
@@ -298,29 +284,16 @@ class _ActiveTrip extends StatelessWidget {
   }
 }
 
-/// The page when the vehicle has no active trip: the summary, and the
-/// way to its last trip at the bottom.
+/// The page when the vehicle has no active trip: the summary, the haulage
+/// check, and the way to its last trip at the bottom.
 class _NoActiveTrip extends StatelessWidget {
-  const _NoActiveTrip({
-    required this.result,
-    required this.heading,
-    required this.description,
-    required this.onViewLastTrip,
-    required this.onFinish,
-  });
+  const _NoActiveTrip({required this.result, required this.onViewLastTrip});
 
   final VerificationResult result;
-  final String heading;
-  final String description;
-
-  /// Null when CHL returned no earlier trip.
-  final VoidCallback? onViewLastTrip;
-
-  final VoidCallback onFinish;
+  final VoidCallback onViewLastTrip;
 
   @override
   Widget build(BuildContext context) {
-    final onViewLastTrip = this.onViewLastTrip;
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -335,9 +308,16 @@ class _NoActiveTrip extends StatelessWidget {
                     color: AppColors.noTripIconFill,
                   ),
                   const SizedBox(height: 11),
-                  ScreenHeading(heading: heading, description: description),
+                  const ScreenHeading(
+                    heading: 'No Active Trip Found',
+                    description:
+                        'No current active trip was returned. Review the '
+                        'latest trip and physical facts before taking action.',
+                  ),
                   const SizedBox(height: 20),
                   _Summary(result: result),
+                  const SizedBox(height: 16),
+                  _HaulageCheck(result: result),
                 ],
               ),
             ),
@@ -355,22 +335,175 @@ class _NoActiveTrip extends StatelessWidget {
                 constraints: const BoxConstraints(
                   maxWidth: VerificationPageScaffold.maxContentWidth,
                 ),
-                // Without an earlier trip there is nothing more to see, so
-                // the check can be finished here.
-                child: onViewLastTrip != null
-                    ? ResultFilledButton(
-                        label: 'View Last CHL Trip',
-                        onPressed: onViewLastTrip,
-                      )
-                    : ResultFilledButton(
-                        label: 'Finish Verification',
-                        onPressed: onFinish,
-                      ),
+                child: ResultFilledButton(
+                  label: 'View Last CHL Trip',
+                  onPressed: onViewLastTrip,
+                ),
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+/// "Haulage check": the officer confirms whether the vehicle is carrying
+/// haulage goods (Loaded) or not (Empty); CHL enforcement applies only to a
+/// loaded vehicle. The answer is sent to CHL and can be changed.
+class _HaulageCheck extends ConsumerStatefulWidget {
+  const _HaulageCheck({required this.result});
+
+  final VerificationResult result;
+
+  @override
+  ConsumerState<_HaulageCheck> createState() => _HaulageCheckState();
+}
+
+class _HaulageCheckState extends ConsumerState<_HaulageCheck> {
+  /// What CHL has recorded.
+  LoadStatus? _recorded;
+
+  /// Being sent.
+  LoadStatus? _sending;
+
+  Future<void> _record(LoadStatus status) async {
+    if (_sending != null || status == _recorded) return;
+    setState(() => _sending = status);
+    try {
+      await ref
+          .read(verificationRepositoryProvider)
+          .recordLoadStatus(widget.result, status);
+      if (!mounted) return;
+      setState(() => _recorded = status);
+    } on VerificationFailure catch (failure) {
+      if (mounted) showAppToast(context, failure.message);
+    } on Object {
+      if (mounted) {
+        showAppToast(
+          context,
+          'The haulage check could not be sent. Check the connection and '
+          'try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sending = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final recorded = _recorded;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: resultCardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            header: true,
+            child: const Text(
+              'Haulage check',
+              style: TextStyle(
+                fontFamily: AppTypography.fontFamily,
+                fontSize: 15,
+                fontWeight: AppTypography.bold,
+                letterSpacing: 0,
+                color: AppColors.forest,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Is this vehicle carrying haulage goods? CHL enforcement applies '
+            'only to a loaded vehicle.',
+            style: TextStyle(
+              fontFamily: AppTypography.fontFamily,
+              fontSize: 12,
+              fontWeight: AppTypography.regular,
+              letterSpacing: 0,
+              height: 18 / 12,
+              color: AppColors.ink,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              for (final status in LoadStatus.values) ...[
+                if (status.index > 0) const SizedBox(width: 10),
+                Expanded(
+                  child: _LoadChoice(
+                    status: status,
+                    selected: status == recorded,
+                    sending: status == _sending,
+                    onPressed: _sending == null ? () => _record(status) : null,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          if (recorded != null) ...[
+            const SizedBox(height: 12),
+            Semantics(
+              liveRegion: true,
+              child: Text(switch (recorded) {
+                LoadStatus.loaded =>
+                  'Recorded: carrying haulage goods. CHL enforcement '
+                      'applies.',
+                LoadStatus.empty =>
+                  'Recorded: not carrying haulage goods. No CHL '
+                      'enforcement is needed.',
+              }, style: ResultTextStyles.small),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Loaded or Empty: green when it is the recorded answer.
+class _LoadChoice extends StatelessWidget {
+  const _LoadChoice({
+    required this.status,
+    required this.selected,
+    required this.sending,
+    required this.onPressed,
+  });
+
+  final LoadStatus status;
+  final bool selected;
+  final bool sending;
+
+  /// Null while an answer is being sent.
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = sending ? 'Sending…' : status.label;
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(48),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        backgroundColor: selected ? AppColors.green : AppColors.surface,
+        foregroundColor: selected ? Colors.white : AppColors.forest,
+        disabledBackgroundColor: selected ? AppColors.green : AppColors.surface,
+        disabledForegroundColor: selected ? Colors.white : AppColors.inkHalf,
+        side: BorderSide(
+          color: selected ? AppColors.green : AppColors.cardBorder,
+          width: 1.5,
+        ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+        ),
+        textStyle: ResultTextStyles.button.copyWith(fontSize: 14),
+      ),
+      // Read out as the chosen answer.
+      child: Semantics(
+        selected: selected,
+        child: Text(label, textAlign: TextAlign.center),
+      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import '../../../../shared/device/location/location_adapter.dart';
 import '../../../chl_trips/domain/entities/chl_trip.dart';
 import '../../../chl_trips/domain/entities/trip_status.dart';
 import '../../../vehicle/domain/entities/e_tag_status.dart';
+import '../../../vehicle/domain/entities/load_status.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
 import '../../domain/entities/plate_number.dart';
 import '../../domain/entities/verification_request.dart';
@@ -38,6 +39,12 @@ class RemoteVerificationRepository implements VerificationRepository {
   @override
   Future<VerificationResult> refresh(VerificationResult result) =>
       Future.error(_notAvailable);
+
+  @override
+  Future<void> recordLoadStatus(
+    VerificationResult result,
+    LoadStatus status,
+  ) => Future.error(_notAvailable);
 
   @override
   Future<RecordedLocation> recordDestinationLocation(
@@ -197,6 +204,12 @@ class DemoVerificationRepository implements VerificationRepository {
       completedAt: started.add(const Duration(hours: 5, minutes: 17)),
     );
   }
+
+  @override
+  Future<void> recordLoadStatus(
+    VerificationResult result,
+    LoadStatus status,
+  ) => Future<void>.delayed(stepDelay);
 
   @override
   Future<VerificationResult> refresh(VerificationResult result) async {

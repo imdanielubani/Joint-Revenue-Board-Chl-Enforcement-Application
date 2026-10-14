@@ -11,6 +11,7 @@ import 'package:jbr_chl_enforcement/features/notifications/domain/entities/app_n
 import 'package:jbr_chl_enforcement/features/notifications/domain/repositories/notifications_repository.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/entities/sync_queue_item.dart';
 import 'package:jbr_chl_enforcement/features/offline_sync/domain/repositories/sync_repository.dart';
+import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/load_status.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_method.dart';
 import 'package:jbr_chl_enforcement/features/verification/domain/entities/verification_request.dart';
@@ -355,6 +356,23 @@ class FakeVerificationRepository implements VerificationRepository {
   Completer<void>? recordGate;
   final List<DeviceLocation> recordedLocations = [];
   DateTime recordedAt = DateTime(2026, 10, 6, 0, 50);
+
+  /// Every load status sent; [loadGate] holds the answer until completed,
+  /// and [loadError] is thrown when set.
+  final List<LoadStatus> loadStatuses = [];
+  Completer<void>? loadGate;
+  Object? loadError;
+
+  @override
+  Future<void> recordLoadStatus(
+    VerificationResult result,
+    LoadStatus status,
+  ) async {
+    loadStatuses.add(status);
+    await loadGate?.future;
+    final error = loadError;
+    if (error != null) throw error;
+  }
 
   void emit(VerificationProgress progress) => _current!.add(progress);
 

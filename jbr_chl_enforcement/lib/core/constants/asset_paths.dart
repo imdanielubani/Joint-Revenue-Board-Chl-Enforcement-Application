@@ -91,6 +91,8 @@ abstract final class AssetPaths {
   static const String iconProcessingStepDone = '$resultDir/step_done.svg';
   static const String iconResultVerified = '$resultDir/verified.svg';
   static const String iconResultNoTrip = '$resultDir/no_trip.svg';
+  static const String iconResultNoTripHistory =
+      '$resultDir/no_trip_history.svg';
   static const String iconResultNotFound = '$resultDir/not_found.svg';
   static const String iconResultUnavailable = '$resultDir/unavailable.svg';
   static const String iconResultPlateKeyboard = '$resultDir/plate_keyboard.svg';

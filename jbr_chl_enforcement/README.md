@@ -396,11 +396,19 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   shows as running. Without a location nothing is sent: GPS off,
   permission refused or no fix each say what to do in a toast, and the
   officer goes back a step (`verification_location.dart`).
-- **No Trip History:** a vehicle CHL knows but that has never made a CHL
-  trip (`TripStatus.noHistory`) shows "No Trip History" on the no-active
-  page layout, with CHL trip status "No Trip History" and Finish
-  Verification; no last trip is offered or made up. History names it "No
-  trip history" and the No active trip filter includes it. No design yet.
+- **No Trip History:** a vehicle with no active trip always offers View
+  Last CHL Trip. When CHL returned no earlier trip (including a vehicle
+  that has never made one, `TripStatus.noHistory`), the Last CHL trip page
+  shows the "No Trip History" empty state ("CHL returned no previous trip
+  for this vehicle.") with Return To Verification; nothing is made up.
+  History names a never-travelled vehicle "No trip history" and the No
+  active trip filter includes it.
+- **Haulage check (Loaded/Empty):** on the No Active Trip page the officer
+  confirms whether the vehicle is carrying haulage goods (Loaded / Empty);
+  CHL enforcement applies only to a loaded vehicle. The answer is sent to
+  CHL (`VerificationRepository.recordLoadStatus`, `LoadStatus`), shows as
+  "Recorded: …" and can be changed; a failed send says why. No design yet
+  (built from the result cards).
 - **Vehicle Not Found** (`/verify/result`, with a `VehicleNotFound`): the
   brown search icon, "Vehicle Not Found", "Checked just now" (then "Checked
   5 min ago", then the time), the plate as entered (spaced, "ABC 123 AA"), vehicle identity "Not
@@ -445,9 +453,9 @@ processing** (`/verify/processing`, with a `VerificationRequest`: a
   updated.").
 - **Result, no active trip:** the amber warning, "No Active Trip Found",
   the same summary (CHL trip status "No Active Trip"; a result with only
-  an earlier trip reads the same), and **View Last CHL Trip** at the
-  bottom when CHL returned an earlier trip (`VerificationResult.lastTrip`).
-  Without one, Finish Verification takes its place (no design).
+  an earlier trip, or none ever, reads the same), the haulage check, and
+  **View Last CHL Trip** at the bottom (the last trip, or No Trip
+  History).
 - **Last CHL trip** (`/verify/result/last-trip`, with the
   `VerificationResult`): "Only the most recent historical trip is shown.
   This is not an active trip.", then the trip card as for an active trip
@@ -996,6 +1004,11 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Haulage check on the No Active Trip page: Loaded / Empty, sent to CHL
+  (`recordLoadStatus`). View Last CHL Trip is always offered; without an
+  earlier trip the Last CHL trip page shows the designed "No Trip History"
+  empty state with Return To Verification (replacing the result page's
+  own No Trip History and its Finish Verification).
 - Restored the officer card file, which had stray characters typed at its
   start.
 - From the requirements document: GPS is read before every verification

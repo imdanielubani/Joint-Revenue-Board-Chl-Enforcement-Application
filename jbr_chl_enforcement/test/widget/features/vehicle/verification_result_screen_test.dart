@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +15,7 @@ import 'package:jbr_chl_enforcement/features/notifications/presentation/provider
 import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/chl_trip.dart';
 import 'package:jbr_chl_enforcement/features/chl_trips/domain/entities/trip_status.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/e_tag_status.dart';
+import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/load_status.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/domain/entities/verification_result.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/presentation/screens/last_chl_trip_screen.dart';
 import 'package:jbr_chl_enforcement/features/vehicle/presentation/screens/verification_result_screen.dart';
@@ -436,49 +440,130 @@ void main() {
       expect(_row('E-Tag validity: Invalid JRB E-Tag'), findsOneWidget);
     });
 
-    testWidgets('a vehicle that has never made a trip: No Trip History', (
-      tester,
-    ) async {
-      final base = sampleNoTripResult(_now);
-      await _pump(
+    for (final (name, status) in [
+      ('no earlier trip returned', TripStatus.noActive),
+      ('a vehicle that has never made a trip', TripStatus.noHistory),
+    ]) {
+      testWidgets('$name: View Last CHL Trip shows No Trip History', (
         tester,
-        result: VerificationResult(
-          plate: base.plate,
-          vehicleType: base.vehicleType,
-          eTagStatus: base.eTagStatus,
-          tripStatus: TripStatus.noHistory,
-          checkedAt: _now,
-        ),
-      );
+      ) async {
+        final base = sampleNoTripResult(_now);
+        await _pump(
+          tester,
+          result: VerificationResult(
+            plate: base.plate,
+            vehicleType: base.vehicleType,
+            eTagStatus: base.eTagStatus,
+            tripStatus: status,
+            checkedAt: _now,
+          ),
+        );
 
-      // The heading and the summary's CHL trip status.
-      expect(find.text('No Trip History'), findsNWidgets(2));
+        expect(find.text('No Active Trip Found'), findsOneWidget);
+        expect(_row('CHL trip status: No Active Trip'), findsOneWidget);
+        expect(find.text('Finish Verification'), findsNothing);
+
+        await tester.tap(find.text('View Last CHL Trip'));
+        await tester.pumpAndSettle();
+        expect(find.text('Last CHL trip'), findsOneWidget);
+        // The heading and the empty state.
+        expect(find.text('No Trip History'), findsNWidgets(2));
+        expect(
+          find.text('CHL returned no previous trip for this vehicle.'),
+          findsOneWidget,
+        );
+        // Nothing is made up.
+        expect(find.text('Current trip'), findsNothing);
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(find.text('Return To Verification'));
+        await tester.pumpAndSettle();
+        expect(find.text('No Active Trip Found'), findsOneWidget);
+      });
+    }
+  });
+
+  group('haulage check', () {
+    Future<FakeVerificationRepository> open(WidgetTester tester) async {
+      final harness = await _pump(
+        tester,
+        result: sampleNoTripResult(_now, withLastTrip: true),
+      );
+      await _reveal(tester, find.text('Haulage check'));
+      return harness.repository;
+    }
+
+    testWidgets('asks whether the vehicle is carrying goods', (tester) async {
+      await open(tester);
+
       expect(
         find.text(
-          'This vehicle has never made a CHL trip, so there is no trip to '
-          'review. Check the physical facts before taking action.',
+          'Is this vehicle carrying haulage goods? CHL enforcement applies '
+          'only to a loaded vehicle.',
         ),
         findsOneWidget,
       );
-      expect(_row('CHL trip status: No Trip History'), findsOneWidget);
-      // Nothing is made up: no last trip is offered.
-      expect(find.text('View Last CHL Trip'), findsNothing);
-      expect(find.text('No Active Trip Found'), findsNothing);
-
-      await tester.tap(find.text('Finish Verification'));
-      await tester.pumpAndSettle();
-      expect(find.text('dashboard page'), findsOneWidget);
+      expect(find.text('Loaded'), findsOneWidget);
+      expect(find.text('Empty'), findsOneWidget);
+      expect(find.textContaining('Recorded:'), findsNothing);
     });
 
-    testWidgets('without an earlier trip, the check can be finished', (
-      tester,
-    ) async {
-      await _pump(tester, result: sampleNoTripResult(_now));
+    testWidgets('Loaded is sent to CHL and shown', (tester) async {
+      final repository = await open(tester);
+      repository.loadGate = Completer<void>();
 
-      expect(find.text('View Last CHL Trip'), findsNothing);
-      await tester.tap(find.text('Finish Verification'));
+      await tester.tap(find.text('Loaded'));
+      await tester.pump();
+      expect(find.text('Sending…'), findsOneWidget);
+      expect(repository.loadStatuses, [LoadStatus.loaded]);
+
+      repository.loadGate!.complete();
       await tester.pumpAndSettle();
-      expect(find.text('dashboard page'), findsOneWidget);
+      expect(
+        find.text('Recorded: carrying haulage goods. CHL enforcement applies.'),
+        findsOneWidget,
+      );
+      expect(
+        tester.getSemantics(find.text('Loaded')).flagsCollection.isSelected,
+        Tristate.isTrue,
+      );
+    });
+
+    testWidgets('the answer can be changed', (tester) async {
+      final repository = await open(tester);
+
+      await tester.tap(find.text('Loaded'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Empty'));
+      await tester.pumpAndSettle();
+
+      expect(repository.loadStatuses, [LoadStatus.loaded, LoadStatus.empty]);
+      expect(
+        find.text(
+          'Recorded: not carrying haulage goods. No CHL enforcement is '
+          'needed.',
+        ),
+        findsOneWidget,
+      );
+
+      // The same answer again is not sent again.
+      await tester.tap(find.text('Empty'));
+      await tester.pumpAndSettle();
+      expect(repository.loadStatuses, hasLength(2));
+    });
+
+    testWidgets('a failed send says why and records nothing', (tester) async {
+      final repository = await open(tester);
+      repository.loadError = const VerificationFailure(
+        'CHL is not responding.',
+      );
+
+      await tester.tap(find.text('Empty'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('CHL is not responding.'), findsOneWidget);
+      expect(find.textContaining('Recorded:'), findsNothing);
+      await _toastGone(tester);
     });
   });
 
@@ -616,7 +701,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('There is no earlier trip to show.'), findsOneWidget);
+      expect(find.text('No Trip History'), findsNWidgets(2));
+      expect(find.text('Return To Verification'), findsOneWidget);
     });
   });
 

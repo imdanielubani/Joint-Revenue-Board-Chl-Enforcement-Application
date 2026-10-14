@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/asset_paths.dart';
 import '../../../../core/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/ui/widgets/empty_state.dart';
 import '../../../notifications/presentation/widgets/notifications_bell.dart';
 import '../../../verification/presentation/widgets/verification_page.dart';
@@ -12,7 +15,8 @@ import '../widgets/trip_details_card.dart';
 /// "Last CHL trip": the vehicle's most recent earlier trip, opened from a
 /// result with no active trip. It is historical, so there is no countdown
 /// and its status stays as CHL reported it. Return To Result goes back;
-/// Return to Dashboard ends the check.
+/// Return to Dashboard ends the check. When CHL returned no earlier trip it
+/// says "No Trip History", with Return To Verification.
 class LastChlTripScreen extends StatelessWidget {
   const LastChlTripScreen({super.key, this.result});
 
@@ -25,15 +29,20 @@ class LastChlTripScreen extends StatelessWidget {
     final result = this.result;
     final trip = result?.lastTrip;
     void toDashboard() => context.goNamed(RouteNames.dashboard);
+    void backToResult() => context.canPop()
+        ? context.pop()
+        : context.goNamed(RouteNames.verificationResult, extra: result);
 
     return VerificationPageScaffold(
       title: 'Last CHL trip',
       trailing: const NotificationsBell(),
-      body: result == null || trip == null
+      body: result == null
           ? const EmptyState(
               title: 'Last CHL trip',
               message: 'There is no earlier trip to show.',
             )
+          : trip == null
+          ? _NoTripHistory(onReturn: backToResult)
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
               children: [
@@ -61,12 +70,7 @@ class LastChlTripScreen extends StatelessWidget {
                       const SizedBox(height: 24),
                       ResultFilledButton(
                         label: 'Return To Result',
-                        onPressed: () => context.canPop()
-                            ? context.pop()
-                            : context.goNamed(
-                                RouteNames.verificationResult,
-                                extra: result,
-                              ),
+                        onPressed: backToResult,
                       ),
                       const SizedBox(height: 10),
                       ResultTextButton(
@@ -78,6 +82,97 @@ class LastChlTripScreen extends StatelessWidget {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// "No Trip History": CHL returned no earlier trip for the vehicle, so
+/// nothing is shown or made up.
+class _NoTripHistory extends StatelessWidget {
+  const _NoTripHistory({required this.onReturn});
+
+  final VoidCallback onReturn;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, box) => SingleChildScrollView(
+        // Capped in width first, so the height is measured at the width the
+        // content really has.
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: VerificationPageScaffold.maxContentWidth + 32,
+              minHeight: box.maxHeight,
+            ),
+            child: IntrinsicHeight(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const VerificationHeading(
+                      heading: 'No Trip History',
+                      description:
+                          'CHL returned no previous trip for this vehicle.',
+                    ),
+                    const SizedBox(height: 24),
+                    Expanded(
+                      child: Center(
+                        child: Semantics(
+                          container: true,
+                          liveRegion: true,
+                          label: 'No Trip History',
+                          excludeSemantics: true,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 76,
+                                height: 76,
+                                padding: const EdgeInsets.only(top: 2),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.greenTint,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: SvgPicture.asset(
+                                  AssetPaths.iconResultNoTripHistory,
+                                  width: 30,
+                                  height: 30,
+                                  excludeFromSemantics: true,
+                                ),
+                              ),
+                              const SizedBox(height: 22),
+                              const Text(
+                                'No Trip History',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: AppTypography.fontFamily,
+                                  fontSize: 16,
+                                  fontWeight: AppTypography.regular,
+                                  letterSpacing: 0,
+                                  height: 24.8 / 16,
+                                  color: AppColors.forest,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ResultFilledButton(
+                      label: 'Return To Verification',
+                      onPressed: onReturn,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

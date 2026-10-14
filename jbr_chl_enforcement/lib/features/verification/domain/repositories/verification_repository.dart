@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../../shared/device/location/location_adapter.dart';
+import '../../../vehicle/domain/entities/load_status.dart';
 import '../../../vehicle/domain/entities/verification_result.dart';
 import '../entities/plate_number.dart';
 import '../entities/verification_request.dart';
@@ -20,6 +21,10 @@ abstract class VerificationRepository {
 
   /// Asks CHL again for the trip of an earlier [result].
   Future<VerificationResult> refresh(VerificationResult result);
+
+  /// Sends whether the vehicle of [result], which has no active trip, is
+  /// carrying haulage goods, as the officer confirmed.
+  Future<void> recordLoadStatus(VerificationResult result, LoadStatus status);
 
   /// Sends the officer's [location] for the destination check of the trip
   /// with [transactionReference]; returns it as CHL received it.
