@@ -22,13 +22,19 @@ export type VerificationOutcome = (typeof verificationOutcomes)[number];
 export const verificationMethods = ['rfid', 'qr', 'manual_plate', 'ocr_plate'] as const;
 export type VerificationMethod = (typeof verificationMethods)[number];
 
-/** Why a CHL call did not produce an answer. None of these is a business outcome. */
+/**
+ * Why a CHL call did not produce an answer. None of these is a business
+ * outcome: a failed call is never "no active trip", "vehicle not found" or
+ * "invalid credentials" (SRD §26.2, §33.2; acceptance criterion 12).
+ */
 export type ChlFailureKind =
-  /** Network error, timeout, or 5xx: CHL could not be asked. Never "no active trip" (SRD §26.2). */
+  /** Network error or 5xx: CHL could not be asked. */
   | 'unavailable'
-  /** CHL refused our credentials or the caller's. */
+  /** CHL did not answer within CHL_TIMEOUT_MS. */
+  | 'timeout'
+  /** CHL refused ITEIME's own server-to-server credentials. */
   | 'unauthorized'
   /** CHL answered with something that doesn't match the agreed contract. */
   | 'invalid_response'
-  /** No CHL base URL / contract is configured yet. */
+  /** No CHL identity provider / contract is configured. */
   | 'not_configured';

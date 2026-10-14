@@ -36,22 +36,25 @@ each links to the question that has to settle it.
 | X9  | **Error code style.** The app expects upper-case codes (`CHL_UNAVAILABLE`, `VALIDATION_ERROR`); the Phase 1 backend emits lower-case codes (`validation_failed`).                                                                                                     | Q-REP-7, ADR-0009 |
 | X10 | **Where the supervisor view lives.** SRD §3.1 and §7.2 put a supervisor dashboard in the mobile application's scope. MON §2 provides the same metrics in the web Monitoring Dashboard.                                                                                | Q-ROL-9           |
 
-## Decisions needed before Phase 3
+## Decisions needed before Phase 4
 
-Phase 3 (core platform services) can start with test doubles for CHL. These
-answers shape it, in priority order:
+Answered before Phase 3 (14 Oct 2026, project owner): Q-REP-1 (`backend/` is
+the only backend), Q-REP-7 (keep the mobile contract; ADR-0009), ADRs
+0005–0009 approved, and interim decisions on Q-CHL-2 and Q-CHL-3 (ADR-0010).
 
-1. ~~**Q-REP-1 / ADR-0004:** confirm that `backend/` is the canonical ITEIME
-   backend.~~ **Answered** on 14 Oct 2026: `backend/` is the only, main
-   backend.
-2. **Q-REP-7 / ADR-0009:** keep the existing mobile `/api/v1` contract, or let it change?
-3. **Q-CHL-2:** does CHL issue agent tokens, or does ITEIME issue its own after
-   CHL verifies the credentials? This decides the design of the auth module.
-4. **Q-CHL-7:** which system holds the record of verification attempts and violations?
-5. **Q-ROL-1:** at least the agent, supervisor and system-administrator
-   permissions, to build RBAC against.
-6. **Q-OPS-2:** must the audit log be append-only or tamper-evident?
-7. Approval of the proposed ADRs 0005–0009.
+Phase 4 business modules need, in priority order:
+
+1. **Q-CHL-1, Q-CHL-6, Q-CHL-13:** the CHL API contract, before any real CHL
+   adapter or verification flow. Until then only the labelled fake exists.
+2. **Q-CHL-7:** which system holds the record of verification attempts and
+   violations.
+3. **Q-ROL-1, Q-ROL-5, Q-ROL-7:** the permission matrix and scope rules beyond
+   the confirmed grants already implemented.
+4. **Q-SYN-2, Q-SYN-5:** idempotency key format and retention, before any
+   write that the offline queue retries.
+5. **Q-OPS-2:** must the audit trail be tamper-evident (beyond the append-only
+   trigger now in place)?
+6. **Q-OPS-6:** confirm the two numbers assumed in Phase 3.
 
 ---
 
@@ -96,7 +99,7 @@ page) with closure authority (§22), but no role definition.
 
 Its "Approved by" field and approval list are empty.
 
-### Q-REP-7: Keep the existing mobile API contract?
+### Q-REP-7: Keep the existing mobile API contract? (answered)
 
 The Flutter app calls an `/api/v1` contract
 (`jbr_chl_enforcement/lib/core/constants/api_endpoints.dart`): `/auth/*`,
@@ -106,6 +109,10 @@ served this contract; `backend/` serves none of it today, so **the app has no
 working backend in this repository**. Should Phase 3/4 keep this contract,
 including its error codes (X9), or may it change, with matching app changes?
 See [ADR-0009](../decisions/0009-api-conventions-and-mobile-contract.md).
+
+- **Answered (project owner, 14 Oct 2026):** keep the contract, with
+  UPPER_SNAKE error codes (ADR-0009 accepted). Phase 3 implements its auth
+  part: `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/forgot-password`.
 
 ### Q-REP-8: Has CHL answered the API request?
 
@@ -137,12 +144,25 @@ its own after CHL verifies the credentials (REQ §8 Q1)? What are the token
 formats and lifetimes? Is the 24-hour session enforced by CHL or by ITEIME
 (SRD §5.3; REQ §3.1)?
 
+- **Interim decision (project owner, 14 Oct 2026; ADR-0010):** ITEIME issues
+  its own sessions after CHL confirms the credentials, and enforces the
+  24-hour limit itself. The CHL side of the question is still open; a real
+  adapter replaces the fake once CHL answers.
+
 ### Q-CHL-3: Account deactivation
 
 How does CHL signal a deactivated account, so that access is denied at once
 (SRD §3.1, §5.3, acceptance criterion 2)? A webhook or event (REQ G13), or a
 check on each refresh (REQ A6)? And when CHL can't be reached, should the
 session continue or end?
+
+- **Interim decision (project owner, 14 Oct 2026; ADR-0010):** each refresh
+  re-checks the account. If CHL can't be reached, the refresh is refused (503)
+  and the session kept. A deactivated account ends every session of that
+  account.
+- **Still open:** this is not "immediate" (SRD §5.3). Deactivation takes effect
+  within the access-token lifetime (30 minutes). Immediate denial needs a CHL
+  event or webhook.
 
 ### Q-CHL-4: Who hosts the mobile API? (X1)
 
@@ -236,6 +256,10 @@ automatic close after confirmed payment do (SRD §21–22)?
 Do dashboard users sign in through CHL (MON §1), and how long do their
 sessions last?
 
+- **Interim:** monitoring users sign in through the same CHL identity
+  provider with `client: "monitoring"`, under the same 24-hour limit as the
+  mobile app, until this is answered.
+
 ### Q-ROL-4: Raw RFID identifiers
 
 Who may see raw RFID identifiers ("privileged audit-identifier exposure needs
@@ -265,6 +289,12 @@ Enforcement national (T12), cross-state coordination (T12.4)?
 ### Q-ROL-9: Where does the supervisor view live? (X10)
 
 In the mobile app (SRD §7.2), the Monitoring Dashboard (MON §2), or both?
+
+Related: Phase 3 lets only `ENFORCEMENT_AGENT` sign in to the mobile app
+(recorded decision, REQ §3.1), while the SRD cover page lists Principal
+Officers, Supervisors and System Administrators as primary users of the
+application. If supervisors must use the app, the mobile client's roles
+change.
 
 ## 4. Case management (ITEIME)
 
@@ -509,3 +539,11 @@ fixture uses a 23:00Z–23:00Z window.)
 
 Which Node.js LTS does the deployment environment support? Prisma 7 needs
 22.18 or later; development used Node 24.
+
+### Q-OPS-6: Two values assumed in Phase 3
+
+No source sets these, so Phase 3 chose conservative defaults (ADR-0010).
+Please confirm or change them:
+
+- access-token lifetime: 30 minutes (`ACCESS_TOKEN_TTL_MINUTES`, 5–120);
+- sign-in and forgot-password attempts: 10 per IP per 15 minutes.

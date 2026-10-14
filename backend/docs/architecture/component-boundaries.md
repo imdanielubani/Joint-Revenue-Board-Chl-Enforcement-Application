@@ -27,8 +27,12 @@ routes → controller → service → repository → Prisma (ITEIME database)
   tables.
 - Small modules may merge layers.
 
-**What exists today:** `src/modules/health`, `src/integrations/chl` (types
-only), and `src/routes/v1` (empty). Everything below is a proposal.
+**What exists today (Phase 3):** `health`; `auth` (sessions, sign-in,
+refresh, logout, forgot password); `access-control` (client surfaces,
+confirmed grants, scope check); `audit` (append-only trail and its read
+route); `integrations/chl` (boundary guard, identity interface, the
+unconfigured client and the labelled FAKE provider); `src/routes/v1`
+(shared, monitoring). Every business domain below is still a proposal.
 
 ## Maturity scale
 

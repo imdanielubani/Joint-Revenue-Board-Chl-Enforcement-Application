@@ -12,7 +12,8 @@ describe('parseConfig', () => {
       corsOrigins: [],
       trustProxy: false,
       rateLimitPerMinute: 300,
-      chl: { baseUrl: undefined, timeoutMs: 10_000 },
+      chl: { baseUrl: undefined, timeoutMs: 10_000, identityProvider: 'none' },
+      auth: { accessTokenTtlMinutes: 30, sessionTtlHours: 24 },
     });
   });
 
@@ -33,6 +34,23 @@ describe('parseConfig', () => {
 
   it('requires DATABASE_URL in production', () => {
     expect(() => parseConfig({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL/);
+  });
+
+  it('refuses the fake CHL identity provider in production', () => {
+    expect(() =>
+      parseConfig({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://u:p@db/x',
+        CHL_IDENTITY_PROVIDER: 'fake',
+      }),
+    ).toThrow(/CHL_IDENTITY_PROVIDER/);
+    expect(parseConfig({ CHL_IDENTITY_PROVIDER: 'fake' }).chl.identityProvider).toBe('fake');
+  });
+
+  it('caps a sign-in at 24 hours (SRD §5.3)', () => {
+    expect(() => parseConfig({ SESSION_TTL_HOURS: '25' })).toThrow(/SESSION_TTL_HOURS/);
+    expect(parseConfig({ SESSION_TTL_HOURS: '8' }).auth.sessionTtlHours).toBe(8);
+    expect(() => parseConfig({ CHL_IDENTITY_PROVIDER: 'real' })).toThrow(/CHL_IDENTITY_PROVIDER/);
   });
 
   it('requires https for CHL in production', () => {

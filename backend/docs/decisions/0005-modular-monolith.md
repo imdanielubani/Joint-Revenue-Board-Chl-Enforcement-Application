@@ -1,8 +1,7 @@
 # ADR-0005: Start as a modular monolith
 
-- **Status:** proposed
-- **Approval:** awaiting review. `CLAUDE.md` §3 and the Phase 2 instructions
-  both prefer this, unless requirements justify otherwise.
+- **Status:** accepted
+- **Approval:** approved by the project owner on 14 Oct 2026 (before Phase 3).
 
 ## Context
 

@@ -1,9 +1,10 @@
 # Data model proposal
 
-**Phase 2: proposal for review. Not a schema.** No Prisma models or migrations
-are created from this document until the ownership decisions it depends on are
-answered and the model is approved. `prisma/schema.prisma` still has no
-models.
+**Phase 2 proposal, partly implemented in Phase 3.** Only the platform
+entities `Session` and `AuditEvent` exist as Prisma models (migration
+`20261014120000_platform_sessions_audit`). Every other entity here is still
+a proposal: no business table is created until its ownership questions are
+answered and the model is approved.
 
 Labels **[C] [R] [P] [Q]** are explained in
 [system-context.md](system-context.md#how-to-read-the-labels). For each entity:
@@ -40,6 +41,10 @@ Labels **[C] [R] [P] [Q]** are explained in
 
 #### AuditEvent
 
+**Implemented (Phase 3).** As below, plus CHECK constraints on `actorType`
+and `outcome`, and a trigger that refuses UPDATE and DELETE. Not tamper-proof:
+a database owner can drop the trigger or truncate the table (Q-OPS-2).
+
 - **Purpose:** an append-only record of security-relevant and business actions
   ([C] SRD §28; T2.7, T11.6, T18.2; MON §12.4 "no editing or deleting").
 - **Confirmed:** who acted, when, and what action ([C] T18.2); administrators
@@ -55,6 +60,9 @@ Labels **[C] [R] [P] [Q]** are explained in
 
 #### IdempotencyRecord
 
+**Not implemented: blocked** on Q-SYN-2 and Q-SYN-5 (key format,
+retention). No Phase 3 endpoint is retried by the offline queue.
+
 - **Purpose:** makes offline and retried writes safe ([C] SRD §33.2 "avoid
   duplicate submission").
 - **Inferred:** `principalId` plus `key` (unique together), `operation`,
@@ -63,7 +71,12 @@ Labels **[C] [R] [P] [Q]** are explained in
   conflict.
 - **Unresolved:** the key format and the retention window (Q-SYN-2, Q-SYN-5).
 
-#### Session (conditional)
+#### Session
+
+**Implemented (Phase 3)**, after the project owner chose ITEIME-issued
+sessions ([ADR-0010](../decisions/0010-iteime-sessions-and-chl-identity-provider.md)).
+Stores a principal snapshot (name, email, role, organization, scope) for
+authorization and audit, not as an account record. Holds no CHL tokens.
 
 - **Purpose:** only if ITEIME issues its own tokens (Q-CHL-2).
 - **Confirmed:** access and refresh tokens; absolute 24-hour expiry; denial on
@@ -469,8 +482,7 @@ The transition table is a Phase 3 input that needs approval (Q-CAS-1).
 1. Review this proposal and the ADRs.
 2. Answer the blocking questions: at least Q-CHL-7, Q-REP-7, Q-CAS-1 and
    Q-OPS-2.
-3. Phase 3 adds only the **platform** tables (`AuditEvent`,
-   `IdempotencyRecord`, and `Session` if Q-CHL-2 calls for it) as reviewed
-   Prisma migrations.
+3. Done in Phase 3: the **platform** tables `Session` and `AuditEvent`, as one
+   reviewed migration. `IdempotencyRecord` waits for Q-SYN-2.
 4. Business tables arrive module by module in Phase 4, each in its own
    reviewed migration.

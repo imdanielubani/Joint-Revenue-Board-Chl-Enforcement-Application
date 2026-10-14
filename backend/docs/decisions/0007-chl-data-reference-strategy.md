@@ -1,7 +1,7 @@
 # ADR-0007: How ITEIME stores references to CHL data
 
-- **Status:** proposed
-- **Approval:** awaiting review. Caching needs CHL's agreement (Q-CHL-14).
+- **Status:** accepted
+- **Approval:** approved by the project owner on 14 Oct 2026 (before Phase 3). Any cache still needs CHL agreement (Q-CHL-14).
 
 ## Context
 

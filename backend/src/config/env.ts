@@ -27,6 +27,14 @@ const envSchema = z
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(300),
     CHL_BASE_URL: optionalString.pipe(z.url({ protocol: /^https?$/ }).optional()),
     CHL_TIMEOUT_MS: z.coerce.number().int().min(100).max(60_000).default(10_000),
+    // Which CHL identity provider signs agents in (ADR-0010). "fake" is a
+    // labelled test double for tests and local development; never production.
+    CHL_IDENTITY_PROVIDER: z.enum(['none', 'fake']).default('none'),
+    // Access tokens are refreshed by the client. The access-token lifetime is
+    // not stated in the sources (assumption, documented in ADR-0010).
+    ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().min(5).max(120).default(30),
+    // A sign-in lasts at most 24 hours (SRD §5.3).
+    SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(24).default(24),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === 'production' && !env.DATABASE_URL) {
@@ -34,6 +42,13 @@ const envSchema = z
         code: 'custom',
         path: ['DATABASE_URL'],
         message: 'is required when NODE_ENV=production',
+      });
+    }
+    if (env.NODE_ENV === 'production' && env.CHL_IDENTITY_PROVIDER === 'fake') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['CHL_IDENTITY_PROVIDER'],
+        message: 'the fake provider is not allowed when NODE_ENV=production',
       });
     }
     if (env.NODE_ENV === 'production' && env.CHL_BASE_URL?.startsWith('http://')) {
@@ -56,6 +71,11 @@ export interface Config {
   chl: {
     baseUrl: string | undefined;
     timeoutMs: number;
+    identityProvider: 'none' | 'fake';
+  };
+  auth: {
+    accessTokenTtlMinutes: number;
+    sessionTtlHours: number;
   };
 }
 
@@ -103,7 +123,15 @@ export function parseConfig(source: NodeJS.ProcessEnv): Config {
     corsOrigins,
     trustProxy,
     rateLimitPerMinute: env.RATE_LIMIT_PER_MINUTE,
-    chl: { baseUrl: env.CHL_BASE_URL, timeoutMs: env.CHL_TIMEOUT_MS },
+    chl: {
+      baseUrl: env.CHL_BASE_URL,
+      timeoutMs: env.CHL_TIMEOUT_MS,
+      identityProvider: env.CHL_IDENTITY_PROVIDER,
+    },
+    auth: {
+      accessTokenTtlMinutes: env.ACCESS_TOKEN_TTL_MINUTES,
+      sessionTtlHours: env.SESSION_TTL_HOURS,
+    },
   };
 }
 

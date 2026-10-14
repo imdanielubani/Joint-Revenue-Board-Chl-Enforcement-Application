@@ -10,13 +10,21 @@ because none is known (Q-CHL-1).
 
 ## Implemented today
 
-| Method and path     | Behaviour (verified by tests and `docs/api/openapi.yaml`)                                           |
-| ------------------- | --------------------------------------------------------------------------------------------------- |
-| `GET /health/live`  | 200 `{"status":"ok"}`. Checks no dependencies                                                       |
-| `GET /health/ready` | 200 `{"status":"ready","checks":{"database":"up"}}`, or 503 with `down` or `not_configured`         |
-| `/api/v1/*`         | The router exists, with no routes: every path answers 404 `not_found`, in the standard error format |
+| Method and path                       | Behaviour (verified by tests and `docs/api/openapi.yaml`)                                                 |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `GET /health/live`                    | 200 `{"status":"ok"}`. Checks no dependencies                                                             |
+| `GET /health/ready`                   | 200 `{"status":"ready","checks":{"database":"up"}}`, or 503 with `down` or `not_configured`               |
+| `POST /api/v1/auth/login`             | Sign-in through the CHL identity provider; `client` = `mobile` (default; agents only) or `monitoring`     |
+| `POST /api/v1/auth/refresh`           | Rotates tokens after re-checking the account with CHL; 503 and the session kept if CHL is down            |
+| `POST /api/v1/auth/logout`            | Ends the session (204)                                                                                    |
+| `POST /api/v1/auth/forgot-password`   | Hands over to CHL password recovery (202 whether or not the account exists)                               |
+| `GET /api/v1/me`                      | The signed-in user from the server-side session                                                           |
+| `GET /api/v1/monitoring/audit-events` | Complete audit trail; monitoring sessions with `audit:read:all` (System Administrator); other methods 405 |
+| any other path                        | 404 `NOT_FOUND`, in the standard error format                                                             |
 
-Everything else in this document is a proposal.
+Sign-in is **simulated**: the only identity providers are "none" (503
+`CHL_NOT_CONFIGURED`) and the labelled FAKE (ADR-0010). Everything else in
+this document is a proposal.
 
 ## Operation routing
 
@@ -179,7 +187,6 @@ answered); `/admin/config/*`; `/admin/conversations` (deferred, Q-NOT-2).
 
 ## OpenAPI alignment
 
-`docs/api/openapi.yaml` lists only `GET /health/live` and `GET /health/ready`.
-That matches the implemented routes (checked by
-`tests/contract/openapi.test.ts`). Every endpoint group in this document is a
+`docs/api/openapi.yaml` lists exactly the implemented routes above and every
+error code (checked by `tests/contract/openapi.test.ts`). Every endpoint group in this document is a
 proposal and is deliberately **not** in the OpenAPI file.

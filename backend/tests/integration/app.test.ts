@@ -61,7 +61,7 @@ describe('unknown routes and bad requests', () => {
     expect(res.status).toBe(404);
     expect(res.body).toEqual({
       error: {
-        code: 'not_found',
+        code: 'NOT_FOUND',
         message: 'The requested resource does not exist.',
         requestId: res.headers['x-request-id'],
       },
@@ -74,7 +74,7 @@ describe('unknown routes and bad requests', () => {
       .set('Content-Type', 'application/json')
       .send('{"plate": ');
     expect(res.status).toBe(400);
-    expect(res.body.error.code).toBe('malformed_json');
+    expect(res.body.error.code).toBe('MALFORMED_JSON');
   });
 
   it('answers an oversized JSON body with 413', async () => {
@@ -83,7 +83,7 @@ describe('unknown routes and bad requests', () => {
       .set('Content-Type', 'application/json')
       .send(JSON.stringify({ notes: 'x'.repeat(200 * 1024) }));
     expect(res.status).toBe(413);
-    expect(res.body.error.code).toBe('payload_too_large');
+    expect(res.body.error.code).toBe('PAYLOAD_TOO_LARGE');
   });
 
   it('rate-limits API requests with the standard error body', async () => {
@@ -92,7 +92,7 @@ describe('unknown routes and bad requests', () => {
     await request(app).get('/api/v1/x');
     const res = await request(app).get('/api/v1/x');
     expect(res.status).toBe(429);
-    expect(res.body.error.code).toBe('rate_limited');
+    expect(res.body.error.code).toBe('RATE_LIMITED');
   });
 
   it('does not rate-limit health probes', async () => {

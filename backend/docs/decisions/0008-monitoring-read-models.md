@@ -1,7 +1,7 @@
 # ADR-0008: Monitoring read models
 
-- **Status:** proposed
-- **Approval:** awaiting review. Depends on Q-CHL-5 (X2).
+- **Status:** accepted
+- **Approval:** approved by the project owner on 14 Oct 2026 (before Phase 3). Q-CHL-5 (X2) remains open.
 
 ## Context
 

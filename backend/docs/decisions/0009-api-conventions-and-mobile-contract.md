@@ -1,7 +1,7 @@
 # ADR-0009: API conventions and the existing mobile contract
 
-- **Status:** proposed; needs a decision on Q-REP-7
-- **Approval:** awaiting review.
+- **Status:** accepted
+- **Approval:** approved by the project owner on 14 Oct 2026 (before Phase 3); answers Q-REP-7. Implemented in Phase 3.
 
 ## Context
 

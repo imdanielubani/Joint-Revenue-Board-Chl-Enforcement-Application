@@ -1,8 +1,7 @@
 # ADR-0006: The CHL integration boundary
 
-- **Status:** proposed
-- **Approval:** awaiting review. Depends on the CHL contract (Q-CHL-1,
-  Q-CHL-2).
+- **Status:** accepted
+- **Approval:** approved by the project owner on 14 Oct 2026 (before Phase 3). The CHL contract itself is still awaited (Q-CHL-1, Q-CHL-2).
 
 ## Context
 

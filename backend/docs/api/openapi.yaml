@@ -1,16 +1,29 @@
 openapi: 3.1.0
 info:
   title: ITEIME Enforcement Engine API
-  version: 0.1.0
+  version: 0.2.0
   description: |
     The ITEIME Enforcement Engine backend. This document lists only endpoints
-    that are implemented; business endpoints under /api/v1 are added as their
-    modules are built. Conventions: docs/api/api-conventions.md.
+    that are implemented; business endpoints are added as their modules are
+    built. Conventions: docs/api/api-conventions.md. Client boundaries:
+    docs/architecture/api-boundaries.md.
 
     Every response carries an X-Request-ID header. Errors use the Error schema.
+
+    **CHL integration status.** CHL's API contract is not available. Sign-in
+    uses a configurable CHL identity provider: "none" (sign-in answers 503
+    CHL_NOT_CONFIGURED) or "fake" (synthetic accounts for development and
+    tests only, refused in production). When the fake is active, every
+    response carries `X-ITEIME-Fake-CHL: true`.
 servers:
   - url: http://localhost:4000
     description: Local development
+tags:
+  - name: Health
+  - name: Auth
+    description: Shared by every client. The session records which client signed in.
+  - name: Monitoring
+    description: Read-only surface for the Monitoring Dashboard. Monitoring sessions only.
 paths:
   /health/live:
     get:
@@ -73,7 +86,232 @@ paths:
                 status: not_ready
                 checks:
                   database: down
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      summary: Sign in with CHL credentials
+      description: |
+        CHL confirms the credentials (SRD §5.1); ITEIME issues its own session
+        (ADR-0010). `client` defaults to "mobile", the existing app contract,
+        which only enforcement agents may use. "monitoring" is for
+        supervisors, Principal Officers and System Administrators (MON §1).
+        A sign-in lasts at most 24 hours (SRD §5.3). Limited to 10 attempts
+        per IP per 15 minutes.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              additionalProperties: false
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                password:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                client:
+                  type: string
+                  enum: [mobile, monitoring]
+                  default: mobile
+      responses:
+        '200':
+          description: |
+            Signed in. The profile is under `agent` for the mobile client and
+            under `user` for other clients.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Tokens'
+                  - type: object
+                    properties:
+                      agent:
+                        $ref: '#/components/schemas/Profile'
+                      user:
+                        $ref: '#/components/schemas/Profile'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: INVALID_CREDENTIALS
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: ACCOUNT_DEACTIVATED, AGENT_ACCESS_DENIED (mobile) or CLIENT_ACCESS_DENIED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ChlUnavailable'
+  /api/v1/auth/refresh:
+    post:
+      operationId: refresh
+      summary: Exchange a refresh token for new tokens
+      description: |
+        Re-checks the account with CHL. The refresh token is single-use; the
+        session's 24-hour end never moves. If CHL can't be reached, answers
+        503 and keeps the session, so the client can retry (Q-CHL-3 decision).
+        A deactivated account ends every session of that account.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              additionalProperties: false
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: New tokens.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tokens'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/SessionExpired'
+        '403':
+          description: ACCOUNT_DEACTIVATED, AGENT_ACCESS_DENIED or CLIENT_ACCESS_DENIED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          $ref: '#/components/responses/ChlUnavailable'
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      summary: End the current session
+      tags: [Auth]
+      responses:
+        '204':
+          description: The session has ended.
+        '401':
+          $ref: '#/components/responses/SessionExpired'
+  /api/v1/auth/forgot-password:
+    post:
+      operationId: forgotPassword
+      summary: Start CHL's password recovery
+      description: |
+        Hands over to CHL's password-recovery process (SRD §5.2). The answer is
+        the same whether or not the account exists.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              additionalProperties: false
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '202':
+          description: Accepted. No body.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ChlUnavailable'
+  /api/v1/me:
+    get:
+      operationId: getMe
+      summary: The signed-in user
+      description: From the server-side session (a snapshot of CHL's account at sign-in or the last refresh).
+      tags: [Auth]
+      responses:
+        '200':
+          description: The signed-in user.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user, client, sessionExpiresAt]
+                properties:
+                  user:
+                    $ref: '#/components/schemas/Profile'
+                  client:
+                    type: string
+                    enum: [mobile, monitoring]
+                  sessionExpiresAt:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/SessionExpired'
+  /api/v1/monitoring/audit-events:
+    get:
+      operationId: listAuditEvents
+      summary: The complete audit trail
+      description: |
+        For System Administrators only (SRD §4.4, §28; MON §12). Newest first,
+        cursor paginated. Reading the trail is itself audited. The monitoring
+        surface is read-only: any other method answers 405.
+      tags: [Monitoring]
+      parameters:
+        - {
+            name: limit,
+            in: query,
+            schema: { type: integer, minimum: 1, maximum: 100, default: 20 },
+          }
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: action, in: query, schema: { type: string } }
+        - { name: actorId, in: query, schema: { type: string } }
+        - { name: outcome, in: query, schema: { type: string, enum: [success, failure, denied] } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+      responses:
+        '200':
+          description: A page of audit events.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, nextCursor]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditEvent'
+                  nextCursor:
+                    type: [string, 'null']
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/SessionExpired'
+        '403':
+          description: CLIENT_ACCESS_DENIED (not a monitoring session) or FORBIDDEN (no permission)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: An opaque access token from login or refresh.
   headers:
     RequestId:
       description: |
@@ -81,6 +319,31 @@ components:
         of [A-Za-z0-9._:-], otherwise a generated UUID.
       schema:
         type: string
+  responses:
+    ValidationError:
+      description: VALIDATION_ERROR or MALFORMED_JSON. `details` lists `{field, message}`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    SessionExpired:
+      description: UNAUTHENTICATED (no token) or SESSION_EXPIRED (unknown, revoked or expired).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: RATE_LIMITED
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ChlUnavailable:
+      description: CHL_UNAVAILABLE (CHL failed or timed out) or CHL_NOT_CONFIGURED.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     DependencyStatus:
       type: string
@@ -97,6 +360,119 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/DependencyStatus'
+    Tokens:
+      type: object
+      required: [accessToken, refreshToken, accessTokenExpiresAt, sessionExpiresAt]
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        accessTokenExpiresAt:
+          type: string
+          format: date-time
+        sessionExpiresAt:
+          type: string
+          format: date-time
+    Scope:
+      type: object
+      required: [level, ref, name]
+      properties:
+        level:
+          type: string
+          enum:
+            [enforcement_location, enforcement_zone, ward, lga, state, region, subregion, national]
+        ref:
+          type: string
+          description: CHL's identifier for the area.
+        name:
+          type: string
+    Profile:
+      type: object
+      required: [id, name, email, role, organization, region, assignment, scope]
+      properties:
+        id:
+          type: string
+          description: CHL account ID.
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: [string, 'null']
+          enum: [ENFORCEMENT_AGENT, SUPERVISOR, PRINCIPAL_OFFICER, SYSTEM_ADMINISTRATOR, null]
+        organization:
+          type: [string, 'null']
+        region:
+          type: [string, 'null']
+        assignment:
+          type: [string, 'null']
+        scope:
+          oneOf:
+            - $ref: '#/components/schemas/Scope'
+            - type: 'null'
+    AuditEvent:
+      type: object
+      required: [id, occurredAt, actor, action, outcome, target, requestId, ip, details]
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        actor:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [principal, system, anonymous]
+            id:
+              type: [string, 'null']
+            role:
+              type: [string, 'null']
+        action:
+          type: string
+        outcome:
+          type: string
+          enum: [success, failure, denied]
+        target:
+          oneOf:
+            - type: object
+              properties:
+                type:
+                  type: string
+                id:
+                  type: [string, 'null']
+            - type: 'null'
+        requestId:
+          type: [string, 'null']
+        ip:
+          type: [string, 'null']
+        details:
+          description: Redacted context.
+    ErrorCode:
+      type: string
+      enum:
+        - VALIDATION_ERROR
+        - MALFORMED_JSON
+        - BAD_REQUEST
+        - UNAUTHENTICATED
+        - INVALID_CREDENTIALS
+        - SESSION_EXPIRED
+        - FORBIDDEN
+        - ACCOUNT_DEACTIVATED
+        - AGENT_ACCESS_DENIED
+        - CLIENT_ACCESS_DENIED
+        - NOT_FOUND
+        - METHOD_NOT_ALLOWED
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_ENCODING
+        - RATE_LIMITED
+        - INTERNAL_ERROR
+        - CHL_UNAVAILABLE
+        - CHL_NOT_CONFIGURED
+        - SERVICE_UNAVAILABLE
     Error:
       description: The body of every error response (4xx and 5xx).
       type: object
@@ -107,15 +483,7 @@ components:
           required: [code, message, requestId]
           properties:
             code:
-              type: string
-              description: Stable, machine-readable error code.
-              examples:
-                - not_found
-                - validation_failed
-                - malformed_json
-                - payload_too_large
-                - rate_limited
-                - internal_error
+              $ref: '#/components/schemas/ErrorCode'
             message:
               type: string
               description: Safe to show to a user. Never contains internal details.
@@ -123,3 +491,5 @@ components:
               type: string
             details:
               description: Optional structured details, such as validation failures.
+security:
+  - bearerAuth: []

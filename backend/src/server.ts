@@ -1,7 +1,11 @@
 import { createApp } from './app.js';
 import { ConfigError, loadConfig } from './config/env.js';
 import { createLogger } from './config/logger.js';
+import { prismaPersistence, unconfiguredPersistence } from './database/persistence.js';
 import { createDatabase, databaseCheck } from './database/prisma.js';
+import { createIdentityClient } from './integrations/chl/index.js';
+import { AuditService } from './modules/audit/audit.service.js';
+import { AuthService } from './modules/auth/auth.service.js';
 
 function start(): void {
   let config;
@@ -19,10 +23,26 @@ function start(): void {
   const db = config.databaseUrl ? createDatabase(config.databaseUrl) : undefined;
   if (!db)
     logger.warn('DATABASE_URL is not set; readiness will report the database as not configured');
-  if (!config.chl.baseUrl)
-    logger.warn('CHL_BASE_URL is not set; the CHL integration is not configured');
+  if (config.chl.identityProvider === 'fake') {
+    logger.warn(
+      'CHL_IDENTITY_PROVIDER=fake: sign-in uses the FAKE CHL identity provider (synthetic accounts, not CHL)',
+    );
+  } else {
+    logger.warn('No CHL identity provider is configured; sign-in answers 503 CHL_NOT_CONFIGURED');
+  }
 
-  const app = createApp({ config, logger, readinessChecks: [databaseCheck(db)] });
+  const persistence = db ? prismaPersistence(db) : unconfiguredPersistence();
+  const identity = createIdentityClient(config, logger);
+  const audit = new AuditService(persistence.audit);
+  const auth = new AuthService(identity, persistence, audit, config.auth);
+
+  const app = createApp({
+    config,
+    logger,
+    readinessChecks: [databaseCheck(db)],
+    services: { auth, audit },
+    chlIdentityKind: identity.kind,
+  });
   const server = app.listen(config.port, () => {
     logger.info({ port: config.port, nodeEnv: config.nodeEnv }, 'iteime-backend listening');
   });

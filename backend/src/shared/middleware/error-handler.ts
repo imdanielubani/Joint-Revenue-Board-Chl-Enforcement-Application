@@ -8,7 +8,6 @@ interface HttpLikeError {
   status?: unknown;
   statusCode?: unknown;
   type?: unknown;
-  expose?: unknown;
 }
 
 /** Body-parser and similar errors carry a 4xx status and a type. */
@@ -17,16 +16,27 @@ function fromHttpError(err: HttpLikeError): AppError | undefined {
   if (typeof status !== 'number' || status < 400 || status >= 500) return undefined;
   switch (err.type) {
     case 'entity.parse.failed':
-      return new AppError(400, 'malformed_json', 'The request body is not valid JSON.');
+      return new AppError('MALFORMED_JSON');
     case 'entity.too.large':
-      return new AppError(413, 'payload_too_large', 'The request body is too large.');
+      return new AppError('PAYLOAD_TOO_LARGE');
     case 'encoding.unsupported':
     case 'charset.unsupported':
-      return new AppError(415, 'unsupported_encoding', 'The request encoding is not supported.');
+      return new AppError('UNSUPPORTED_ENCODING');
     default:
-      return new AppError(status, 'bad_request', 'The request could not be processed.');
+      return new AppError('BAD_REQUEST');
   }
 }
+
+/** Validation issues as `{field, message}`, the shape the mobile app reads. */
+export function validationDetails(err: ZodError, prefix?: string) {
+  return err.issues.map((issue) => ({
+    field: [prefix, ...issue.path.map(String)].filter(Boolean).join('.'),
+    message: issue.message,
+  }));
+}
+
+// Expected upstream outages: worth a warning, not an error with a stack trace.
+const upstreamCodes = new Set(['CHL_UNAVAILABLE', 'CHL_NOT_CONFIGURED']);
 
 /**
  * Turns any error into the standard error body. Unexpected errors are logged
@@ -43,19 +53,16 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, req, res, next) 
   if (err instanceof AppError) {
     appError = err;
   } else if (err instanceof ZodError) {
-    appError = new AppError(
-      400,
-      'validation_failed',
-      'The request is invalid.',
-      err.issues.map((issue) => ({ path: issue.path.join('.'), message: issue.message })),
-    );
+    appError = new AppError('VALIDATION_ERROR', { details: validationDetails(err) });
   } else {
     appError =
       (typeof err === 'object' && err !== null && fromHttpError(err as HttpLikeError)) ||
-      new AppError(500, 'internal_error', 'An unexpected error occurred.');
+      new AppError('INTERNAL_ERROR');
   }
 
-  if (appError.status >= 500) {
+  if (upstreamCodes.has(appError.code)) {
+    req.log.warn({ code: appError.code, cause: appError.cause }, 'upstream unavailable');
+  } else if (appError.status >= 500) {
     req.log.error({ err }, 'request failed');
   }
 
