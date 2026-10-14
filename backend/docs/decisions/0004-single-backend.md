@@ -1,9 +1,9 @@
 # ADR-0004: `backend/` is the only ITEIME backend
 
-- **Status:** proposed; needs confirmation (Q-REP-1)
-- **Approval:** evidenced by the repository owner's commit `d3f5652` (14 Oct
-  2026), which removed `iteime_backend/`. Explicit confirmation is still
-  requested.
+- **Status:** accepted
+- **Approval:** confirmed by the project owner on 14 Oct 2026: `backend/` is
+  the only backend and the main backend. Also evidenced by the owner's commit
+  `d3f5652`, which removed `iteime_backend/`.
 - **Supersedes:** the "two backends" consequence of
   [ADR-0001](0001-fresh-foundation-in-backend.md).
 

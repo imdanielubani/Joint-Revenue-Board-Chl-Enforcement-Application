@@ -181,6 +181,9 @@ To also check readiness against a real PostgreSQL server, set
 
 Newest first.
 
+- **ADR-0004 accepted.** The project owner confirmed that `backend/` is the
+  only backend and the main backend (Q-REP-1 answered).
+
 - **Phase 2 architecture and data model (documentation only).**
   - New documents: API boundaries for each client, a data-model proposal (ER
     and state diagrams), and ADRs 0004–0009 (all proposed).

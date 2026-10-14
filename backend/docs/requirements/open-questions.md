@@ -41,7 +41,9 @@ each links to the question that has to settle it.
 Phase 3 (core platform services) can start with test doubles for CHL. These
 answers shape it, in priority order:
 
-1. **Q-REP-1 / ADR-0004:** confirm that `backend/` is the canonical ITEIME backend.
+1. ~~**Q-REP-1 / ADR-0004:** confirm that `backend/` is the canonical ITEIME
+   backend.~~ **Answered** on 14 Oct 2026: `backend/` is the only, main
+   backend.
 2. **Q-REP-7 / ADR-0009:** keep the existing mobile `/api/v1` contract, or let it change?
 3. **Q-CHL-2:** does CHL issue agent tokens, or does ITEIME issue its own after
    CHL verifies the credentials? This decides the design of the auth module.
@@ -55,16 +57,17 @@ answers shape it, in priority order:
 
 ## 1. Repository and source documents
 
-### Q-REP-1: Which backend is canonical? (partly answered)
+### Q-REP-1: Which backend is canonical? (answered)
 
+- **Answer (project owner, 14 Oct 2026):** `backend/` is the only backend and
+  the main backend. Recorded in [ADR-0004](../decisions/0004-single-backend.md).
 - **Question:** confirm that `backend/` is the ITEIME backend going forward.
 - **Evidence:** commit `d3f5652` ("Backend Project Structure Setup", by the
   repository owner, 14 Oct 2026) deleted `iteime_backend/` and committed
   `backend/CLAUDE.md`. `backend/` is now the only backend in the repository.
   The deleted code is still in history at `d654c84`.
-- **Remaining:** explicit confirmation, and whether the mobile contract
-  `iteime_backend` served must be preserved (Q-REP-7). See
-  [ADR-0004](../decisions/0004-single-backend.md).
+- **Remaining:** whether the mobile contract that `iteime_backend` served must
+  be preserved is a separate question (Q-REP-7).
 
 ### Q-REP-2: The PRD is not in the workspace
 

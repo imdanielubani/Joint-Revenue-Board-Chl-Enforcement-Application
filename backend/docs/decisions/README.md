@@ -16,7 +16,7 @@ review. It does not take effect until it is accepted.
 | [0001](0001-fresh-foundation-in-backend.md)         | Build the Phase 1 foundation fresh in `backend/` | accepted; partly superseded by 0004 |
 | [0002](0002-prisma-with-pg-adapter.md)              | Prisma 7 with the node-postgres driver adapter   | accepted                            |
 | [0003](0003-unversioned-health-endpoints.md)        | Unversioned liveness and readiness endpoints     | accepted                            |
-| [0004](0004-single-backend.md)                      | `backend/` is the only ITEIME backend            | proposed (confirm)                  |
+| [0004](0004-single-backend.md)                      | `backend/` is the only ITEIME backend            | accepted                            |
 | [0005](0005-modular-monolith.md)                    | Start as a modular monolith                      | proposed                            |
 | [0006](0006-chl-integration-boundary.md)            | The CHL integration boundary                     | proposed                            |
 | [0007](0007-chl-data-reference-strategy.md)         | How ITEIME stores references to CHL data         | proposed                            |

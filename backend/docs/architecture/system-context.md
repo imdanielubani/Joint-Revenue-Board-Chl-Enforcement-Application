@@ -121,8 +121,8 @@ the primary sources:
   tension with T6, T11.4 and T15.5 (X7, Q-CHL-15).
 - **[R]** The Monitoring Dashboard reads both ITEIME and CHL. MON says CHL
   (X2, Q-CHL-5).
-- **[R]** `iteime_backend/` was removed in commit `d3f5652`; `backend/` is the
-  only backend (Q-REP-1, [ADR-0004](../decisions/0004-single-backend.md)).
+- **[R] Confirmed by the project owner (14 Oct 2026):** `backend/` is the
+  only, main backend; `iteime_backend/` was removed in commit `d3f5652` (Q-REP-1, [ADR-0004](../decisions/0004-single-backend.md)).
 
 ## Out of scope for ITEIME
 
