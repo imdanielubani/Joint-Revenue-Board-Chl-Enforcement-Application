@@ -1,0 +1,93 @@
+import { pino } from 'pino';
+import request from 'supertest';
+import { describe, expect, it } from 'vitest';
+
+import { createApp } from '../src/app.js';
+import { MockChlAdapter } from '../src/chl/mock/mock-adapter.js';
+import type { Database } from '../src/db/pool.js';
+
+const logger = pino({ level: 'silent' });
+
+function database(up: boolean): Database {
+  return {
+    ping: async () => {
+      if (!up) throw new Error('connection refused');
+    },
+    close: async () => {},
+  };
+}
+
+describe('health', () => {
+  it('GET /health: the process is running', async () => {
+    const app = createApp({ logger, chl: new MockChlAdapter() });
+    const response = await request(app).get('/health');
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ status: 'ok' });
+  });
+
+  it('GET /health/ready: ready with CHL up and no database yet', async () => {
+    const app = createApp({ logger, chl: new MockChlAdapter() });
+    const response = await request(app).get('/health/ready');
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      status: 'ready',
+      checks: { chl: { adapter: 'mock', status: 'up' }, database: { status: 'notConfigured' } },
+    });
+  });
+
+  it('not ready when CHL is down', async () => {
+    const app = createApp({ logger, chl: new MockChlAdapter({ available: false }) });
+    const response = await request(app).get('/health/ready');
+    expect(response.status).toBe(503);
+    expect(response.body.checks.chl).toMatchObject({ status: 'down' });
+  });
+
+  it('not ready when the database is down; ready when it answers', async () => {
+    const chl = new MockChlAdapter();
+    const down = await request(createApp({ logger, chl, database: database(false) })).get(
+      '/health/ready',
+    );
+    expect(down.status).toBe(503);
+    expect(down.body.checks.database).toEqual({ status: 'down', error: 'connection refused' });
+
+    const up = await request(createApp({ logger, chl, database: database(true) })).get(
+      '/health/ready',
+    );
+    expect(up.status).toBe(200);
+    expect(up.body.checks.database).toEqual({ status: 'up' });
+  });
+});
+
+describe('errors and request IDs', () => {
+  const app = createApp({ logger, chl: new MockChlAdapter() });
+
+  it('an unknown route answers 404 in the JSON error format', async () => {
+    const response = await request(app).get('/nope');
+    expect(response.status).toBe(404);
+    expect(response.body.error).toMatchObject({
+      code: 'ROUTE_NOT_FOUND',
+      message: 'This route does not exist.',
+    });
+    expect(response.body.error.requestId).toBe(response.headers['x-request-id']);
+  });
+
+  it("keeps the caller's request ID", async () => {
+    const response = await request(app).get('/health').set('X-Request-Id', 'abc-123');
+    expect(response.headers['x-request-id']).toBe('abc-123');
+  });
+
+  it('a body that is not JSON answers 400', async () => {
+    const response = await request(app)
+      .post('/health')
+      .set('Content-Type', 'application/json')
+      .send('{"broken":');
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('INVALID_JSON');
+  });
+
+  it('sends security headers and hides the framework', async () => {
+    const response = await request(app).get('/health');
+    expect(response.headers['x-powered-by']).toBeUndefined();
+    expect(response.headers['x-content-type-options']).toBe('nosniff');
+  });
+});

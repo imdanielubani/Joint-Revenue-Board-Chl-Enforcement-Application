@@ -1,13 +1,22 @@
 # Joint Revenue Board – CHL Enforcement
 
-Mobile enforcement app for Android and iPhone, built with Flutter.
+| Folder | What it is |
+|---|---|
+| [`jbr_chl_enforcement/`](jbr_chl_enforcement/) | The mobile enforcement app for Android and iPhone (Flutter). [Developer guide](jbr_chl_enforcement/README.md) |
+| [`iteime_backend/`](iteime_backend/) | The ITEIME Enforcement Engine backend (Node.js, Express, TypeScript, PostgreSQL). It connects to the existing CHL backend and serves the mobile app. [Developer guide](iteime_backend/README.md) |
 
-The app lives in [`jbr_chl_enforcement/`](jbr_chl_enforcement/). Start with
-its [developer guide](jbr_chl_enforcement/README.md): setup, configuration,
-architecture, screens, testing, conventions and the change log.
+Mobile app:
 
 ```sh
 cd jbr_chl_enforcement
 flutter pub get
 flutter run
+```
+
+Backend:
+
+```sh
+cd iteime_backend
+npm install
+npm run dev
 ```
