@@ -29,6 +29,30 @@ android {
         multiDexEnabled = true
     }
 
+    // Each flavor names its app (resValue), which AGP 9 needs switched on.
+    buildFeatures {
+        resValues = true
+    }
+
+    // One app per backend, installable side by side; pick with --flavor.
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "CHL Enforcement Dev")
+        }
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            resValue("string", "app_name", "CHL Enforcement Staging")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "CHL Enforcement")
+        }
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")

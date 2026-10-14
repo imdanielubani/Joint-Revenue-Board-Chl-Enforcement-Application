@@ -1,0 +1,39 @@
+# Runs the production image with its own PostgreSQL, configured like
+# staging (sample CHL data), to try a deployment on one machine:
+#
+#   docker compose up --build
+#   curl http://localhost:4000/health/ready
+#
+# Not for real deployments: those use a managed database and the settings
+# in deploy/staging.env or deploy/production.env.
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: iteime
+      POSTGRES_PASSWORD: iteime-local-only
+      POSTGRES_DB: iteime
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U iteime -d iteime']
+      interval: 5s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: staging
+      PORT: 4000
+      LOG_LEVEL: info
+      DATABASE_URL: postgresql://iteime:iteime-local-only@db:5432/iteime
+      CHL_ADAPTER: mock
+      CORS_ORIGINS: '*'
+    ports:
+      - '4000:4000'
+
+volumes:
+  db-data:

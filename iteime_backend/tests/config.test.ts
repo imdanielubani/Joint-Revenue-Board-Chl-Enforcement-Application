@@ -58,6 +58,57 @@ describe('loadConfig', () => {
     );
   });
 
+  describe('deployments (APP_ENV)', () => {
+    const production = { DATABASE_URL, NODE_ENV: 'production' };
+
+    it('development by default: any browser origin, private-network proxies', () => {
+      expect(loadConfig({ DATABASE_URL })).toMatchObject({
+        appEnv: 'development',
+        corsOrigins: '*',
+        trustProxy: 'loopback, linklocal, uniquelocal',
+      });
+    });
+
+    it('staging may use the sample CHL; no browser origins unless listed', () => {
+      expect(loadConfig({ ...production, APP_ENV: 'staging' })).toMatchObject({
+        appEnv: 'staging',
+        corsOrigins: [],
+        chl: { adapter: 'mock' },
+      });
+    });
+
+    it('staging and production run with NODE_ENV=production', () => {
+      expect(() => loadConfig({ DATABASE_URL, APP_ENV: 'staging' })).toThrow(
+        /NODE_ENV must be production when APP_ENV=staging/,
+      );
+    });
+
+    it('production never uses the sample CHL', () => {
+      expect(() => loadConfig({ ...production, APP_ENV: 'production' })).toThrow(
+        /CHL_ADAPTER must be http when APP_ENV=production/,
+      );
+      const config = loadConfig({
+        ...production,
+        APP_ENV: 'production',
+        CHL_ADAPTER: 'http',
+        CHL_BASE_URL: 'https://chl.example.gov.ng/api',
+      });
+      expect(config.appEnv).toBe('production');
+    });
+
+    it('reads proxy hops and origin lists', () => {
+      const config = loadConfig({
+        ...production,
+        APP_ENV: 'staging',
+        TRUST_PROXY: '1',
+        CORS_ORIGINS: 'https://a.jrb.gov.ng, https://b.jrb.gov.ng',
+      });
+      expect(config.trustProxy).toBe(1);
+      expect(config.corsOrigins).toEqual(['https://a.jrb.gov.ng', 'https://b.jrb.gov.ng']);
+      expect(loadConfig({ DATABASE_URL, TRUST_PROXY: 'false' }).trustProxy).toBe(false);
+    });
+  });
+
   it('rejects nonsense with a readable message', () => {
     expect(() => loadConfig({ DATABASE_URL, PORT: 'abc' })).toThrow(/Invalid configuration: PORT/);
     expect(() => loadConfig({ DATABASE_URL, CHL_ADAPTER: 'soap' })).toThrow(/CHL_ADAPTER/);

@@ -51,32 +51,72 @@ set up (platform 15.5 and the permission macros below).
 ```sh
 cd jbr_chl_enforcement
 flutter pub get
-flutter run                       # connected phone or emulator
-flutter run -d chrome             # browser, with a simulated phone frame
+flutter run --flavor dev --dart-define-from-file=config/dev.json
+flutter run --flavor dev --dart-define=AUTH_DEMO=true    # sample data, no backend
+flutter run -d chrome --dart-define-from-file=config/dev.json \
+  --dart-define=API_BASE_URL=http://localhost:4000/api/v1  # browser
 ```
 
-App ID: `com.jrb.chlenforcement` (Android and iOS). Display name:
-**CHL Enforcement**.
+Android needs `--flavor` (dev, staging or prod): a plain `flutter run`
+fails. See [Environments](#environments-dev-staging-and-production).
+
+App ID: `com.jrb.chlenforcement` (`.dev` and `.staging` added for those
+flavors on Android). Display name: **CHL Enforcement**.
+
+## Environments: dev, staging and production
+
+Each build talks to one backend. On Android, each flavor is its own app,
+so all three can be installed on one phone.
+
+| Flavor | Backend | Android app ID | App name | Banner |
+|---|---|---|---|---|
+| `dev` | iteime_backend on this computer (`config/dev.json`: `http://10.0.2.2:4000/api/v1`, the Android emulator's address for this computer) | `com.jrb.chlenforcement.dev` | CHL Enforcement Dev | DEV |
+| `staging` | The staging server (`config/staging.json`) | `com.jrb.chlenforcement.staging` | CHL Enforcement Staging | STAGING |
+| `prod` | The production server (`config/prod.json`) | `com.jrb.chlenforcement` | CHL Enforcement | none |
+
+```sh
+flutter run --flavor dev --dart-define-from-file=config/dev.json
+flutter build apk --flavor staging --release --dart-define-from-file=config/staging.json
+flutter build appbundle --flavor prod --release --dart-define-from-file=config/prod.json
+```
+
+- **Banner:** dev and staging builds show a red DEV or STAGING banner in
+  the top corner of every screen (`FlavorBanner` in `lib/app/app.dart`).
+- **Addresses to fill in:** `config/staging.json` and `config/prod.json`
+  have an empty `API_BASE_URL` until the servers exist. Until then those
+  builds show "Sign-in is unavailable. Contact your administrator."
+- **HTTPS:** release builds use the API only over `https`; an `http`
+  address counts as not set (`AppEnvironment.hasApi`).
+- **Where it's set:** Android flavors are in
+  `android/app/build.gradle.kts`, which also sets each app name.
+  `AppEnvironment.flavor` comes from `--flavor`, or else from `APP_ENV` in
+  the config file.
+- **iOS** has no Xcode schemes per flavor yet. iOS builds take the
+  environment from the config file alone (leave out `--flavor`), and all
+  three share one bundle ID, so only one installs at a time. To install
+  them side by side, on a Mac in Xcode:
+  - duplicate the Debug and Release configurations as `Debug-dev`,
+    `Release-staging` and so on;
+  - add `dev`, `staging` and `prod` schemes using them;
+  - set a bundle ID suffix and display name per configuration.
 
 ## Build-time configuration
 
-Settings are passed with `--dart-define` and read in
-`lib/app/environment/app_environment.dart`.
+Settings are passed with `--dart-define` or `--dart-define-from-file`, and
+read in `lib/app/environment/app_environment.dart`.
 
 | Define | Purpose |
 |---|---|
-| `API_BASE_URL` | Base URL of the enforcement API ([`iteime_backend`](../iteime_backend/)), ending in `/api/v1`. Without it, sign-in shows "Sign-in is unavailable. Contact your administrator." |
-| `AUTH_DEMO=true` | Debug builds only. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 001 AA has never made a CHL trip (No Trip History); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a haulage tag read by RFID is that tag's vehicle (ABC 123 AA unless resolved otherwise) with a valid JRB E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page; any scanned code ending "-404" is Vehicle Not Found and one ending "-503" is Verification Unavailable. |
-
-```sh
-flutter run --dart-define=API_BASE_URL=https://api.example.gov.ng/api/v1
-flutter run --dart-define=AUTH_DEMO=true
-```
+| `APP_ENV` | `dev`, `staging` or `prod`; set by `config/<flavor>.json`. `--flavor` takes precedence where the platform has flavors. |
+| `API_BASE_URL` | Base URL of the enforcement API ([`iteime_backend`](../iteime_backend/)), ending in `/api/v1`; set by `config/<flavor>.json`. Without it, or with `http` in a release build, sign-in shows "Sign-in is unavailable. Contact your administrator." |
+| `AUTH_DEMO=true` | Debug builds only, and never with the prod flavor. Signs in against a local demo account instead of the API, so the screens can be tried before the backend exists. Never active in release builds. Demo accounts: `officer@jbr.com` / `Demo@2026` is the enforcement agent and signs in; `officer@jbr.com` with any other password shows "Unable to sign in" (wrong password). Any other email, `clerk@jbr.com` included and whatever the password, shows "Agent access not authorized" (`clerk@jbr.com` / `Demo@2026` gets there through the role check, the others are refused at sign-in). Defined in `lib/features/auth/data/repositories/demo_auth_repository.dart`. The dashboard also shows a sample day (`DemoDashboardRepository`), and two sample records wait in the sync queue; CHL "acknowledges" them 3 seconds after Sync now (`DemoSyncRepository`). The notification inbox holds seven sample notifications, four unread, loading in under a second so the skeleton shows (`DemoNotificationsRepository`). The history holds seven sample records: six in the last 30 days, one older (`DemoHistoryRepository`). Verifications take under a second per check: AAA 000 AA is not a known vehicle (Vehicle Not Found); AAA 001 AA has never made a CHL trip (No Trip History); AAA 503 AA cannot be verified (Verification Unavailable); LND 482 XK has no active trip (invalid E-Tag) and a completed last trip; any other plate, and a scanned QR code, is ABC 123 AA's active trip (Abeokuta South, Ogun → Ikeja, Lagos) with no E-Tag; a haulage tag read by RFID is that tag's vehicle (ABC 123 AA unless resolved otherwise) with a valid JRB E-Tag (`DemoVerificationRepository`). A scanned code starting "ETAG" is an E-Tag and opens the E-Tag receipt page; any scanned code ending "-404" is Vehicle Not Found and one ending "-503" is Verification Unavailable. |
 
 ### Running against iteime_backend on this computer
 
 Start the backend (`cd ../iteime_backend && npm run dev`, port 4000, with
-its sample CHL data), then point the app at it:
+its sample CHL data). `config/dev.json` already points the Android
+emulator at it. Elsewhere, override the address; a `--dart-define` given
+after the file wins:
 
 | Where the app runs | `API_BASE_URL` |
 |---|---|
@@ -1049,6 +1089,16 @@ Elsewhere:
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Dev, staging and production:
+  - Android flavors install side by side, each with its own app ID and
+    name.
+  - `config/<flavor>.json` sets each flavor's API address.
+  - A DEV or STAGING banner shows on test builds.
+  - Release builds use the API only over `https`.
+  - Demo data is never available in the prod flavor.
+  - iOS takes the environment from the config file, until Xcode schemes
+    are added on a Mac.
 
 - Connected to iteime_backend:
   - Sign-in, token renewal and sign-out.

@@ -16,9 +16,12 @@ const database = createDatabase(config.databaseUrl);
 const applied = await runMigrations(database);
 if (applied.length) logger.info({ applied }, 'Database migrated');
 
-const app = createApp({ logger, chl, database, session: config.session });
+const app = createApp({ logger, chl, database, session: config.session, http: config });
 const server = app.listen(config.port, () => {
-  logger.info({ port: config.port, chlAdapter: chl.name }, 'iteime_backend is listening');
+  logger.info(
+    { port: config.port, environment: config.appEnv, chlAdapter: chl.name },
+    'iteime_backend is listening',
+  );
 });
 
 /** Finishes in-flight requests, then closes the database, on Ctrl+C or a stop signal. */

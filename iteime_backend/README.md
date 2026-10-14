@@ -25,10 +25,11 @@ issuance, tariffs or trip rules.
 4. [The CHL adapter](#the-chl-adapter)
 5. [Database](#database)
 6. [Mobile API v1](#mobile-api-v1)
-7. [Testing](#testing)
-8. [Conventions](#conventions)
-9. [Roadmap](#roadmap)
-10. [Change log](#change-log)
+7. [Environments and deployment](#environments-and-deployment)
+8. [Testing](#testing)
+9. [Conventions](#conventions)
+10. [Roadmap](#roadmap)
+11. [Change log](#change-log)
 
 ## Getting started
 
@@ -55,20 +56,23 @@ Settings come from environment variables (a `.env` file in development; see
 [`.env.example`](.env.example)). They are checked at start-up
 (`src/config/env.ts`); a wrong value stops the server with a readable message.
 
-| Variable                   | Default       | Meaning                                                                 |
-| -------------------------- | ------------- | ----------------------------------------------------------------------- |
-| `NODE_ENV`                 | `development` | `development`, `test` or `production`                                   |
-| `PORT`                     | `4000`        | HTTP port                                                               |
-| `LOG_LEVEL`                | `info`        | Pino level (`silent` to turn logs off)                                  |
-| `DATABASE_URL`             | —             | PostgreSQL connection string (required)                                 |
-| `CHL_ADAPTER`              | `mock`        | `mock` (sample CHL data) or `http` (the real CHL backend)               |
-| `CHL_BASE_URL`             | —             | The CHL API address; required when `CHL_ADAPTER=http`                   |
-| `CHL_API_KEY`              | —             | Server-to-server credential issued by the CHL team                      |
-| `CHL_TIMEOUT_MS`           | `10000`       | How long to wait for CHL before calling it unavailable                  |
-| `CHL_MOCK_DELAY_MS`        | `0`           | Mock only: delay per call, to imitate a network                         |
-| `ACCESS_TOKEN_TTL_MINUTES` | `30`          | How long an access token lasts before the app refreshes it              |
-| `SESSION_TTL_HOURS`        | `24`          | How long a sign-in lasts at most (1–24; SRD §5.3)                       |
-| `TEST_DATABASE_URL`        | —             | Tests only: a database whose name ends in `_test`, emptied by the tests |
+| Variable                   | Default                            | Meaning                                                                                                                   |
+| -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`                 | `development`                      | `development`, `test` or `production`                                                                                     |
+| `APP_ENV`                  | `development`                      | Which deployment: `development`, `staging` or `production` (see below)                                                    |
+| `PORT`                     | `4000`                             | HTTP port                                                                                                                 |
+| `LOG_LEVEL`                | `info`                             | Pino level (`silent` to turn logs off)                                                                                    |
+| `DATABASE_URL`             | —                                  | PostgreSQL connection string (required)                                                                                   |
+| `CHL_ADAPTER`              | `mock`                             | `mock` (sample CHL data) or `http` (the real CHL backend)                                                                 |
+| `CHL_BASE_URL`             | —                                  | The CHL API address; required when `CHL_ADAPTER=http`                                                                     |
+| `CHL_API_KEY`              | —                                  | Server-to-server credential issued by the CHL team                                                                        |
+| `CHL_TIMEOUT_MS`           | `10000`                            | How long to wait for CHL before calling it unavailable                                                                    |
+| `CHL_MOCK_DELAY_MS`        | `0`                                | Mock only: delay per call, to imitate a network                                                                           |
+| `ACCESS_TOKEN_TTL_MINUTES` | `30`                               | How long an access token lasts before the app refreshes it                                                                |
+| `SESSION_TTL_HOURS`        | `24`                               | How long a sign-in lasts at most (1–24; SRD §5.3)                                                                         |
+| `TEST_DATABASE_URL`        | —                                  | Tests only: a database whose name ends in `_test`, emptied by the tests                                                   |
+| `TRUST_PROXY`              | private-network proxies            | Which proxies' `X-Forwarded-For` to believe: a hop count (`1` behind one load balancer), `true`/`false`, or a list        |
+| `CORS_ORIGINS`             | any in development, none elsewhere | Browser origins allowed to call the API (the admin dashboards), comma separated, or `*`. The mobile app doesn't need CORS |
 
 Logs are JSON (readable in development) and never include passwords, tokens,
 API keys or the `Authorization` header.
@@ -256,6 +260,58 @@ on it, and `message` is safe to show:
 }
 ```
 
+## Environments and deployment
+
+There is one image for every deployment; they differ only in their
+settings.
+
+|                        | Development                   | Staging                                        | Production                                                   |
+| ---------------------- | ----------------------------- | ---------------------------------------------- | ------------------------------------------------------------ |
+| Where                  | This computer (`npm run dev`) | A server, for testers                          | A server, for officers                                       |
+| `APP_ENV` / `NODE_ENV` | `development` / `development` | `staging` / `production`                       | `production` / `production`                                  |
+| Database               | Local `iteimedb`              | Its own, never production's                    | Its own                                                      |
+| CHL                    | Sample data (`mock`)          | Sample data, then CHL's test (sandbox) address | The real CHL (`http`); the server refuses to start otherwise |
+| Settings               | `.env`                        | `deploy/staging.env.example`                   | `deploy/production.env.example`                              |
+| Mobile app             | `--flavor dev`                | `--flavor staging`                             | `--flavor prod`                                              |
+
+The server checks these rules at start-up:
+
+- Staging and production need `NODE_ENV=production`.
+- Production needs `CHL_ADAPTER=http`.
+
+`/health` and `/health/ready` include `environment`, so you can always see
+which deployment answered.
+
+**Image.** `Dockerfile` builds a small image that runs as a non-root user,
+with production dependencies only and a health check.
+
+```sh
+docker build -t iteime-backend .
+docker run --env-file deploy/staging.env -p 4000:4000 iteime-backend
+```
+
+To try the image with its own PostgreSQL on one machine, run
+`docker compose up --build` (`compose.yaml`, set up like staging).
+
+**Deploying, for staging or production:**
+
+1. Create the database; managed databases usually need
+   `?sslmode=require` in `DATABASE_URL`.
+2. Fill in the settings from `deploy/<environment>.env.example`, in the
+   hosting platform's secret settings. Real `deploy/*.env` files are never
+   committed.
+3. Put the server behind HTTPS (a load balancer or reverse proxy), and set
+   `TRUST_PROXY` to the number of proxies in front (usually `1`).
+4. Run the image. It migrates the database at start-up. With the image's
+   automatic migration off, run `npm run migrate:prod` before starting.
+5. Point the load balancer's health check at `/health/ready`, which answers
+   503 while CHL or the database is down.
+6. Give the mobile team the address, ending in `/api/v1`, for
+   `config/staging.json` or `config/prod.json`.
+
+Each deployment logs JSON to standard output, for the platform's log
+collector.
+
 ## Testing
 
 `npm test` runs every test, and the tests never reach the real CHL:
@@ -288,11 +344,21 @@ createdb iteimedb_test   # once
 3. ✅ Mobile API v1.
 4. ✅ Connect the mobile app to the mobile API.
 5. Fill in `HttpChlAdapter` from the CHL API documentation.
-6. Push notifications, and violations with the enforcement module.
+6. Choose the hosting and create the staging and production deployments.
+7. Push notifications, and violations with the enforcement module.
 
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Staging and production:
+  - `APP_ENV` names the deployment, and is checked at start-up: production
+    can't use the sample CHL data.
+  - `TRUST_PROXY` for load balancers, and `CORS_ORIGINS` for the
+    dashboards (none allowed outside development unless listed).
+  - Health answers include `environment`.
+  - Dockerfile, `compose.yaml`, settings templates in `deploy/`, and
+    `npm run migrate:prod`.
 
 - Connected to the mobile app.
   - Each verification answer now includes `plate`, also when CHL was

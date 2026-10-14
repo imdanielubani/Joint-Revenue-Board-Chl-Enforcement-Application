@@ -22,6 +22,8 @@ export interface AppDependencies {
   /** The clock (tests fix it). */
   now?: () => Date;
   session?: Config['session'];
+  /** Defaults suit development and tests. */
+  http?: Pick<Config, 'appEnv' | 'trustProxy' | 'corsOrigins'>;
   loginRateLimit?: ApiDependencies['loginRateLimit'];
 }
 
@@ -40,11 +42,17 @@ export function createApp(dependencies: AppDependencies): Express {
 
   const app = express();
   app.disable('x-powered-by');
-  // Client addresses come from X-Forwarded-For only via a proxy on a private network.
-  app.set('trust proxy', 'loopback, linklocal, uniquelocal');
+  const http = dependencies.http ?? {
+    appEnv: 'development',
+    trustProxy: 'loopback, linklocal, uniquelocal',
+    corsOrigins: '*',
+  };
+  // Client addresses come from X-Forwarded-For only via the proxies trusted.
+  app.set('trust proxy', http.trustProxy);
 
   app.use(helmet());
-  app.use(cors());
+  // The mobile app doesn't need CORS; browsers (the dashboards) get only the origins allowed.
+  app.use(cors({ origin: http.corsOrigins === '*' ? true : http.corsOrigins }));
   app.use(express.json({ limit: '1mb' }));
   app.use(
     pinoHttp({
@@ -60,7 +68,7 @@ export function createApp(dependencies: AppDependencies): Express {
     }),
   );
 
-  app.use('/health', healthRouter(dependencies));
+  app.use('/health', healthRouter({ ...dependencies, environment: http.appEnv }));
   app.use(
     '/api/v1',
     apiV1Router({

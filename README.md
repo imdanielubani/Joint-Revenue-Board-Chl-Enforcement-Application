@@ -10,8 +10,12 @@ Mobile app:
 ```sh
 cd jbr_chl_enforcement
 flutter pub get
-flutter run
+flutter run --flavor dev --dart-define-from-file=config/dev.json
 ```
+
+Each environment (dev, staging, production) has its own app flavor and
+backend deployment; see the app's "Environments" section and the backend's
+"Environments and deployment".
 
 Backend:
 

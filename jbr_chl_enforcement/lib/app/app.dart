@@ -6,6 +6,7 @@ import '../core/navigation/route_names.dart';
 import '../core/theme/app_theme.dart';
 import '../features/auth/presentation/providers/session_provider.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
+import 'environment/app_environment.dart';
 
 class ChlEnforcementApp extends ConsumerWidget {
   const ChlEnforcementApp({super.key});
@@ -28,6 +29,31 @@ class ChlEnforcementApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
       routerConfig: router,
+      builder: (context, child) =>
+          FlavorBanner(label: AppEnvironment.flavor.bannerLabel, child: child),
+    );
+  }
+}
+
+/// "DEV" or "STAGING" across the top corner of every screen, so a test
+/// build is never mistaken for the real one. Nothing for production.
+class FlavorBanner extends StatelessWidget {
+  const FlavorBanner({super.key, required this.label, this.child});
+
+  final String label;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = child ?? const SizedBox.shrink();
+    if (label.isEmpty) return content;
+    return Banner(
+      message: label,
+      location: BannerLocation.topEnd,
+      textDirection: TextDirection.ltr,
+      layoutDirection: TextDirection.ltr,
+      color: const Color(0xCCB3261E),
+      child: content,
     );
   }
 }

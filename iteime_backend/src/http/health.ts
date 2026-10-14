@@ -10,11 +10,15 @@ type CheckResult = { status: 'up' } | { status: 'down'; error: string };
  * GET /health/ready: the backend can serve requests: CHL and the database
  * both answer. 503 when either is down.
  */
-export function healthRouter(dependencies: { chl: ChlAdapter; database: Database }): Router {
+export function healthRouter(dependencies: {
+  chl: ChlAdapter;
+  database: Database;
+  environment: string;
+}): Router {
   const router = Router();
 
   router.get('/', (_request, response) => {
-    response.json({ status: 'ok' });
+    response.json({ status: 'ok', environment: dependencies.environment });
   });
 
   router.get('/ready', async (_request, response) => {
@@ -26,6 +30,7 @@ export function healthRouter(dependencies: { chl: ChlAdapter; database: Database
     const ready = chl.status === 'up' && database.status === 'up';
     response.status(ready ? 200 : 503).json({
       status: ready ? 'ready' : 'notReady',
+      environment: dependencies.environment,
       checks: { chl: { adapter: dependencies.chl.name, ...chl }, database },
     });
   });

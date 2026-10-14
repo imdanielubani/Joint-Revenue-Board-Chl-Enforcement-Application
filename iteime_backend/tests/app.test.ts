@@ -26,7 +26,7 @@ describe('health', () => {
     const app = createApp({ logger, chl: new MockChlAdapter(), database: database() });
     const response = await request(app).get('/health');
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ status: 'ok' });
+    expect(response.body).toEqual({ status: 'ok', environment: 'development' });
   });
 
   it('GET /health/ready: ready when CHL and the database answer', async () => {
@@ -35,6 +35,7 @@ describe('health', () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       status: 'ready',
+      environment: 'development',
       checks: { chl: { adapter: 'mock', status: 'up' }, database: { status: 'up' } },
     });
   });
@@ -97,5 +98,29 @@ describe('errors and request IDs', () => {
     const response = await request(app).get('/health');
     expect(response.headers['x-powered-by']).toBeUndefined();
     expect(response.headers['x-content-type-options']).toBe('nosniff');
+  });
+});
+
+describe('CORS (browsers: the admin dashboards)', () => {
+  const origin = 'https://dashboard.jrb.gov.ng';
+
+  it('development allows any origin', async () => {
+    const app = createApp({ logger, chl: new MockChlAdapter(), database: database() });
+    const response = await request(app).get('/health').set('Origin', origin);
+    expect(response.headers['access-control-allow-origin']).toBe(origin);
+  });
+
+  it('elsewhere, only the origins listed', async () => {
+    const app = createApp({
+      logger,
+      chl: new MockChlAdapter(),
+      database: database(),
+      http: { appEnv: 'staging', trustProxy: 1, corsOrigins: [origin] },
+    });
+    const allowed = await request(app).get('/health').set('Origin', origin);
+    expect(allowed.headers['access-control-allow-origin']).toBe(origin);
+    expect(allowed.body.environment).toBe('staging');
+    const other = await request(app).get('/health').set('Origin', 'https://evil.example');
+    expect(other.headers['access-control-allow-origin']).toBeUndefined();
   });
 });
