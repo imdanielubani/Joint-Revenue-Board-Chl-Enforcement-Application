@@ -996,6 +996,8 @@ Elsewhere:
 
 Newest first. Add a line for every change.
 
+- Restored the officer card file, which had stray characters typed at its
+  start.
 - From the requirements document: GPS is read before every verification
   and sent with it (none starts without it); No Trip History for a vehicle
   that has never made a CHL trip (demo: AAA 001 AA); repeated RFID scans
