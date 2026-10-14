@@ -14,12 +14,14 @@ const schema = z
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
-    DATABASE_URL: optionalString,
+    DATABASE_URL: optionalString.pipe(z.string({ error: 'DATABASE_URL is required' })),
     CHL_ADAPTER: z.enum(['mock', 'http']).default('mock'),
     CHL_BASE_URL: optionalString.pipe(z.url().optional()),
     CHL_API_KEY: optionalString,
     CHL_TIMEOUT_MS: z.coerce.number().int().min(1).default(10_000),
     CHL_MOCK_DELAY_MS: z.coerce.number().int().min(0).default(0),
+    ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().min(1).default(30),
+    SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(24).default(24),
   })
   .superRefine((env, context) => {
     if (env.CHL_ADAPTER === 'http' && !env.CHL_BASE_URL) {
@@ -36,7 +38,13 @@ export interface Config {
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
   logLevel: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace' | 'silent';
-  databaseUrl?: string;
+  databaseUrl: string;
+  session: {
+    /** How long an access token lasts before the app refreshes it. */
+    accessTokenTtlMinutes: number;
+    /** How long a sign-in lasts at most (SRD §5.3: 24 hours). */
+    sessionTtlHours: number;
+  };
   chl: {
     adapter: 'mock' | 'http';
     baseUrl?: string;
@@ -61,6 +69,10 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Config {
     port: env.PORT,
     logLevel: env.LOG_LEVEL,
     databaseUrl: env.DATABASE_URL,
+    session: {
+      accessTokenTtlMinutes: env.ACCESS_TOKEN_TTL_MINUTES,
+      sessionTtlHours: env.SESSION_TTL_HOURS,
+    },
     chl: {
       adapter: env.CHL_ADAPTER,
       baseUrl: env.CHL_BASE_URL,

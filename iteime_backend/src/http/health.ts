@@ -3,15 +3,14 @@ import { Router } from 'express';
 import type { ChlAdapter } from '../chl/adapter.js';
 import type { Database } from '../db/pool.js';
 
-type CheckResult =
-  { status: 'up' } | { status: 'down'; error: string } | { status: 'notConfigured' };
+type CheckResult = { status: 'up' } | { status: 'down'; error: string };
 
 /**
  * GET /health: the process is running (for load balancers).
- * GET /health/ready: the backend can serve requests: CHL answers and the
- * database (when configured) answers. 503 when either is down.
+ * GET /health/ready: the backend can serve requests: CHL and the database
+ * both answer. 503 when either is down.
  */
-export function healthRouter(dependencies: { chl: ChlAdapter; database?: Database }): Router {
+export function healthRouter(dependencies: { chl: ChlAdapter; database: Database }): Router {
   const router = Router();
 
   router.get('/', (_request, response) => {
@@ -22,9 +21,9 @@ export function healthRouter(dependencies: { chl: ChlAdapter; database?: Databas
     const { chl: adapter, database: db } = dependencies;
     const [chl, database] = await Promise.all([
       check(() => adapter.healthCheck()),
-      db ? check(() => db.ping()) : Promise.resolve<CheckResult>({ status: 'notConfigured' }),
+      check(() => db.ping()),
     ]);
-    const ready = chl.status === 'up' && database.status !== 'down';
+    const ready = chl.status === 'up' && database.status === 'up';
     response.status(ready ? 200 : 503).json({
       status: ready ? 'ready' : 'notReady',
       checks: { chl: { adapter: dependencies.chl.name, ...chl }, database },

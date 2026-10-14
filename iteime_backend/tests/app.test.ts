@@ -8,8 +8,12 @@ import type { Database } from '../src/db/pool.js';
 
 const logger = pino({ level: 'silent' });
 
-function database(up: boolean): Database {
+/** A stand-in database: these tests only need it to answer, or not. */
+function database(up = true): Database {
+  const fail = () => Promise.reject(new Error('not used in these tests'));
   return {
+    query: fail,
+    transaction: fail,
     ping: async () => {
       if (!up) throw new Error('connection refused');
     },
@@ -19,24 +23,28 @@ function database(up: boolean): Database {
 
 describe('health', () => {
   it('GET /health: the process is running', async () => {
-    const app = createApp({ logger, chl: new MockChlAdapter() });
+    const app = createApp({ logger, chl: new MockChlAdapter(), database: database() });
     const response = await request(app).get('/health');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ status: 'ok' });
   });
 
-  it('GET /health/ready: ready with CHL up and no database yet', async () => {
-    const app = createApp({ logger, chl: new MockChlAdapter() });
+  it('GET /health/ready: ready when CHL and the database answer', async () => {
+    const app = createApp({ logger, chl: new MockChlAdapter(), database: database() });
     const response = await request(app).get('/health/ready');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       status: 'ready',
-      checks: { chl: { adapter: 'mock', status: 'up' }, database: { status: 'notConfigured' } },
+      checks: { chl: { adapter: 'mock', status: 'up' }, database: { status: 'up' } },
     });
   });
 
   it('not ready when CHL is down', async () => {
-    const app = createApp({ logger, chl: new MockChlAdapter({ available: false }) });
+    const app = createApp({
+      logger,
+      chl: new MockChlAdapter({ available: false }),
+      database: database(),
+    });
     const response = await request(app).get('/health/ready');
     expect(response.status).toBe(503);
     expect(response.body.checks.chl).toMatchObject({ status: 'down' });
@@ -59,7 +67,7 @@ describe('health', () => {
 });
 
 describe('errors and request IDs', () => {
-  const app = createApp({ logger, chl: new MockChlAdapter() });
+  const app = createApp({ logger, chl: new MockChlAdapter(), database: database() });
 
   it('an unknown route answers 404 in the JSON error format', async () => {
     const response = await request(app).get('/nope');

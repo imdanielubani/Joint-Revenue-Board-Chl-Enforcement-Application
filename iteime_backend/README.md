@@ -23,29 +23,31 @@ issuance, tariffs or trip rules.
 2. [Configuration](#configuration)
 3. [Project structure](#project-structure)
 4. [The CHL adapter](#the-chl-adapter)
-5. [API](#api)
-6. [Testing](#testing)
-7. [Conventions](#conventions)
-8. [Roadmap](#roadmap)
-9. [Change log](#change-log)
+5. [Database](#database)
+6. [Mobile API v1](#mobile-api-v1)
+7. [Testing](#testing)
+8. [Conventions](#conventions)
+9. [Roadmap](#roadmap)
+10. [Change log](#change-log)
 
 ## Getting started
 
 ```sh
 cd iteime_backend
 npm install
-cp .env.example .env    # defaults use the mock CHL; no database needed yet
-npm run dev             # http://localhost:4000/health
+cp .env.example .env    # set DATABASE_URL to your PostgreSQL database
+npm run dev             # migrates the database, then http://localhost:4000/health/ready
 ```
 
-| Script                            | What it does                                                |
-| --------------------------------- | ----------------------------------------------------------- |
-| `npm run dev`                     | Runs `src/server.ts` and restarts on changes                |
-| `npm run build`                   | Compiles to `dist/`                                         |
-| `npm start`                       | Runs the compiled server                                    |
-| `npm test`                        | Runs the tests once (`npm run test:watch` to keep watching) |
-| `npm run typecheck`               | Type-checks everything, tests included                      |
-| `npm run lint` / `npm run format` | ESLint / Prettier                                           |
+| Script                            | What it does                                                                  |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| `npm run dev`                     | Runs `src/server.ts` and restarts on changes                                  |
+| `npm run build`                   | Compiles to `dist/`                                                           |
+| `npm start`                       | Runs the compiled server                                                      |
+| `npm run migrate`                 | Brings the database schema up to date (the server also does this at start-up) |
+| `npm test`                        | Runs the tests once (`npm run test:watch` to keep watching)                   |
+| `npm run typecheck`               | Type-checks everything, tests included                                        |
+| `npm run lint` / `npm run format` | ESLint / Prettier                                                             |
 
 ## Configuration
 
@@ -53,17 +55,20 @@ Settings come from environment variables (a `.env` file in development; see
 [`.env.example`](.env.example)). They are checked at start-up
 (`src/config/env.ts`); a wrong value stops the server with a readable message.
 
-| Variable            | Default       | Meaning                                                        |
-| ------------------- | ------------- | -------------------------------------------------------------- |
-| `NODE_ENV`          | `development` | `development`, `test` or `production`                          |
-| `PORT`              | `4000`        | HTTP port                                                      |
-| `LOG_LEVEL`         | `info`        | Pino level (`silent` to turn logs off)                         |
-| `DATABASE_URL`      | —             | PostgreSQL connection string; optional until the database step |
-| `CHL_ADAPTER`       | `mock`        | `mock` (sample CHL data) or `http` (the real CHL backend)      |
-| `CHL_BASE_URL`      | —             | The CHL API address; required when `CHL_ADAPTER=http`          |
-| `CHL_API_KEY`       | —             | Server-to-server credential issued by the CHL team             |
-| `CHL_TIMEOUT_MS`    | `10000`       | How long to wait for CHL before calling it unavailable         |
-| `CHL_MOCK_DELAY_MS` | `0`           | Mock only: delay per call, to imitate a network                |
+| Variable                   | Default       | Meaning                                                                 |
+| -------------------------- | ------------- | ----------------------------------------------------------------------- |
+| `NODE_ENV`                 | `development` | `development`, `test` or `production`                                   |
+| `PORT`                     | `4000`        | HTTP port                                                               |
+| `LOG_LEVEL`                | `info`        | Pino level (`silent` to turn logs off)                                  |
+| `DATABASE_URL`             | —             | PostgreSQL connection string (required)                                 |
+| `CHL_ADAPTER`              | `mock`        | `mock` (sample CHL data) or `http` (the real CHL backend)               |
+| `CHL_BASE_URL`             | —             | The CHL API address; required when `CHL_ADAPTER=http`                   |
+| `CHL_API_KEY`              | —             | Server-to-server credential issued by the CHL team                      |
+| `CHL_TIMEOUT_MS`           | `10000`       | How long to wait for CHL before calling it unavailable                  |
+| `CHL_MOCK_DELAY_MS`        | `0`           | Mock only: delay per call, to imitate a network                         |
+| `ACCESS_TOKEN_TTL_MINUTES` | `30`          | How long an access token lasts before the app refreshes it              |
+| `SESSION_TTL_HOURS`        | `24`          | How long a sign-in lasts at most (1–24; SRD §5.3)                       |
+| `TEST_DATABASE_URL`        | —             | Tests only: a database whose name ends in `_test`, emptied by the tests |
 
 Logs are JSON (readable in development) and never include passwords, tokens,
 API keys or the `Authorization` header.
@@ -82,11 +87,13 @@ src/
     index.ts           createChlAdapter(): mock or http, from the settings
     mock/              MockChlAdapter and its sample data
     http/              HttpChlAdapter (real CHL) and its HTTP client
-  domain/plate.ts      Plate normalisation (SRD §11)
-  db/pool.ts           PostgreSQL connection
-  http/                Health routes and the JSON error handler
-  lib/                 Logger and AppError
-tests/                 Vitest tests, mirroring src/
+  domain/              Plate rules (SRD §11); what the app is shown of a CHL answer
+  db/                  PostgreSQL pool, transactions, migrations and their runner
+  repositories/        SQL: sessions, verifications, notifications, audit events
+  services/            AuthService (sign-in, sessions) and VerificationService
+  http/                /api/v1 routes, sign-in check, validation, health, errors
+  lib/                 Logger, AppError, tokens
+tests/                 Vitest tests; tests/api/ runs against TEST_DATABASE_URL
 ```
 
 ## The CHL adapter
@@ -156,30 +163,112 @@ token, timeouts and error mapping. Each call throws `ChlNotImplementedError`
 until it is filled in from CHL's API documentation (`TODO(chl)`); switching to
 the real CHL then changes nothing outside `src/chl/http/`.
 
-## API
+## Database
 
-| Method | Path            | Answer                                                                                                       |
-| ------ | --------------- | ------------------------------------------------------------------------------------------------------------ |
-| GET    | `/health`       | `200 {"status":"ok"}` while the process runs                                                                 |
-| GET    | `/health/ready` | `200` when CHL answers and the database (if configured) answers, else `503`; each check's status in `checks` |
+PostgreSQL holds what ITEIME itself owns; everything about vehicles, tags and
+trips stays in CHL. The schema is in `src/db/migrations.ts` as numbered steps.
+The server applies new steps at start-up, each step once, under a lock, so
+several servers can start together. A step that has been applied is never
+edited; changes go in a new step.
 
-Every response carries an `X-Request-Id` header (the caller's, if sent).
-Errors use one JSON shape:
+| Table                   | What it holds                                                                                                                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `agent_sessions`        | Signed-in sessions. Tokens are stored only as SHA-256 hashes.                                                                                                                                 |
+| `verifications`         | Every verification attempt, whatever its outcome, with the agent, method, identifier processed, GPS, what the app was shown, sync status and Loaded/Empty. This is the audit trail (SRD §28). |
+| `destination_locations` | Locations sent for a trip's destination check                                                                                                                                                 |
+| `notifications`         | Each agent's notifications inbox                                                                                                                                                              |
+| `audit_events`          | Sign-ins (successful or not), sign-outs, password-reset requests                                                                                                                              |
+
+## Mobile API v1
+
+All paths start with `/api/v1`. Everything except the first three needs
+`Authorization: Bearer <accessToken>`. Bodies and answers are JSON, and dates
+are ISO 8601.
+
+| Method | Path                                                 | What it does                                                                                                                                                                       |
+| ------ | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/auth/login`                                        | `{email, password, device?}` → tokens and the agent's profile. Only enforcement agents get in (`AGENT_ACCESS_DENIED` otherwise). 10 attempts per 15 minutes per address and email. |
+| POST   | `/auth/refresh`                                      | `{refreshToken}` → new tokens; the old refresh token stops working. Checks with CHL that the account is still active.                                                              |
+| POST   | `/auth/forgot-password`                              | `{email}` → 202, the same answer whether or not the account exists                                                                                                                 |
+| POST   | `/auth/logout`                                       | Ends the session (204)                                                                                                                                                             |
+| GET    | `/me`                                                | The agent's profile, from CHL                                                                                                                                                      |
+| GET    | `/dashboard`                                         | Today's totals (Lagos day), the 5 latest verifications, unread notifications                                                                                                       |
+| POST   | `/verifications`                                     | Verify a vehicle (see below) → 201                                                                                                                                                 |
+| GET    | `/verifications?period=30d\|all&limit=20&cursor=`    | The agent's history, newest first; `nextCursor` for the next page                                                                                                                  |
+| GET    | `/verifications/:id`                                 | One verification, with the agent and destination-check locations                                                                                                                   |
+| POST   | `/verifications/:id/trip/refresh`                    | The vehicle's trip now (Refresh Trip Status)                                                                                                                                       |
+| POST   | `/verifications/:id/destination-location`            | `{location}` → sends the agent's GPS for the active trip's destination check                                                                                                       |
+| POST   | `/verifications/:id/load-status`                     | `{status: "loaded"\|"empty", location}` for a vehicle without an active trip                                                                                                       |
+| POST   | `/rfid/resolve-tags`                                 | `{tagReferences: [...]}` → each tag's plate, for several tags read together                                                                                                        |
+| GET    | `/etags/:reference/receipt`                          | The E-Tag receipt                                                                                                                                                                  |
+| GET    | `/reference-data`                                    | States, LGAs, vehicle types, enforcement points                                                                                                                                    |
+| GET    | `/notifications?limit=&cursor=`                      | The agent's notifications and unread count                                                                                                                                         |
+| GET    | `/notifications/unread-count`                        | `{unread}`                                                                                                                                                                         |
+| POST   | `/notifications/:id/read`, `/notifications/read-all` | Mark read                                                                                                                                                                          |
+
+**Sessions.** An access token lasts 30 minutes, and the app refreshes it with
+the refresh token. A sign-in ends 24 hours after it starts, whatever is
+refreshed. When CHL reports the account deactivated, every session of that
+agent ends. If CHL can't be reached to ask, the agent stays signed in.
+
+**Verifying.** `POST /verifications`:
 
 ```json
 {
-  "error": { "code": "ROUTE_NOT_FOUND", "message": "This route does not exist.", "requestId": "…" }
+  "method": "plate",
+  "plate": "ABC 123 AA",
+  "location": { "latitude": 6.6018, "longitude": 3.3515, "accuracyMetres": 12 }
 }
 ```
 
-The mobile API (`/api/v1`) comes next; see the roadmap.
+- `method` is `plate`, `qrCode` or `eTag` (with `reference`), or `rfid` (with
+  `tagReference`). `location` is required.
+- The answer has `outcome`: `found` (with `vehicle`, `eTag` and `trip`),
+  `vehicleNotFound` or `unknownTag`. The raw identifier and CHL's internal IDs
+  are never sent back.
+- When CHL can't complete the check, the answer is **503 `CHL_UNAVAILABLE`**,
+  never a result. The attempt is still recorded (`details.verificationId`) as
+  not completed.
+- Send an `Idempotency-Key` header to retry safely. The same key returns the
+  first result (200) without asking CHL again. A CHL-unavailable attempt
+  doesn't keep its key, so retrying it really retries.
+- Checks made offline are sent later with `capturedAt` (up to 7 days old).
+  They are recorded at that time with `syncStatus: "offline"`.
+
+**Health.** `GET /health` answers `200` while the process runs.
+`GET /health/ready` answers `200` when both CHL and the database answer,
+otherwise `503`.
+
+**Errors.** Every response carries an `X-Request-Id` header (the caller's, if
+sent). Every error has the same shape. `code` is stable, so the app can rely
+on it, and `message` is safe to show:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Some fields are missing or not valid.",
+    "details": [{ "field": "location", "message": "…" }],
+    "requestId": "…"
+  }
+}
+```
 
 ## Testing
 
-`npm test` runs every test. The CHL HTTP client is tested against a real
-local HTTP server (timeouts, 5xx, 404, 401, bad JSON, unreachable CHL); the
-mock adapter is tested for every sample scenario; the app is tested with
-supertest. Tests never reach the real CHL.
+`npm test` runs every test, and the tests never reach the real CHL:
+
+- The CHL HTTP client runs against a real local HTTP server: timeouts, 5xx,
+  404, 401, bad JSON, unreachable CHL.
+- The mock adapter is tested for every sample scenario.
+- The API is tested with supertest against a real PostgreSQL database, the
+  one in `TEST_DATABASE_URL`. That database is wiped, so its name must end
+  in `_test`; the tests refuse to run otherwise. Without `TEST_DATABASE_URL`
+  the database tests are skipped.
+
+```sh
+createdb iteimedb_test   # once
+```
 
 ## Conventions
 
@@ -192,17 +281,30 @@ supertest. Tests never reach the real CHL.
 ## Roadmap
 
 1. ✅ Foundation and the CHL adapter (mock + HTTP skeleton).
-2. Database: verification records (audit trail with GPS), sessions, haulage
-   checks, notifications; migrations.
-3. Mobile API v1: auth, verifications (all methods, multiple tags), trip
-   refresh, destination location, load status, dashboard, history,
-   notifications.
+2. ✅ Database: sessions, verification records (audit trail with GPS),
+   destination checks, Loaded/Empty, notifications, audit events; migrations.
+3. ✅ Mobile API v1.
 4. Connect the mobile app to the mobile API.
 5. Fill in `HttpChlAdapter` from the CHL API documentation.
+6. Push notifications, and violations with the enforcement module.
 
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Database and the mobile API v1:
+  - PostgreSQL schema and migrations (run at start-up or with
+    `npm run migrate`): sessions, verifications, destination checks,
+    notifications, audit events.
+  - Sign-in through CHL for enforcement agents only, with rotating tokens
+    stored as hashes, 24-hour sessions, a deactivated-account check and
+    sign-in rate limiting.
+  - Verification by plate, QR, E-Tag or RFID. Every attempt is recorded with
+    GPS, and "CHL unavailable" is never shown as a result. Safe retries,
+    offline sync, trip refresh, destination check, Loaded/Empty, several
+    tags at once, E-Tag receipt, reference data, dashboard, history and
+    notifications.
+  - `DATABASE_URL` is now required. 83 tests.
 
 - Foundation: Express 5 + TypeScript project, settings, logging, JSON errors,
   request IDs, security headers, `/health` and `/health/ready`, PostgreSQL
