@@ -294,6 +294,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Signing in shows the design's "Login successful" notification ("Welcome
+  back. Your monitoring workspace is ready.") over the dashboard it opens on;
+  it dismisses itself like other confirmations, and replaces a "Logged out
+  successfully" notification still on screen.
 - Overview sample data now follows the filters: 90 days of sample field
   records (verifications, the violations they led to, and demand notices) in
   `mocks/mock-records.ts`, from a fixed seed, and every Overview figure is

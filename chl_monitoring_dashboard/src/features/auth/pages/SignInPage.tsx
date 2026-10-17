@@ -18,6 +18,10 @@ const SIGN_IN_TOASTS = {
   expired: 'session-expired',
 } as const
 
+const SIGNED_IN_TOAST = 'signed-in'
+/** The "Logged out successfully" notification (use-sign-out), cleared once signed back in. */
+const SIGNED_OUT_TOAST = 'signed-out'
+
 export function SignInPage() {
   const { signIn, endReason, clearEndReason } = useSession()
   const { showToast, dismissToast } = useToast()
@@ -75,8 +79,15 @@ export function SignInPage() {
     dismissToast(...Object.values(SIGN_IN_TOASTS))
     setSubmitting(true)
     try {
-      // Once signed in, <RedirectIfSignedIn> moves on to the right page.
+      // Once signed in, <RedirectIfSignedIn> moves on to the right page; the design's
+      // "Login successful" notification comes along and shows over the dashboard.
       await signIn({ ...parsed.data, remember: data.get('remember') === 'on' })
+      dismissToast(SIGNED_OUT_TOAST)
+      showToast({
+        key: SIGNED_IN_TOAST,
+        title: 'Login successful',
+        lines: ['Welcome back. Your monitoring workspace is ready.'],
+      })
     } catch (error) {
       setSubmitting(false)
       const clearPassword = () => {

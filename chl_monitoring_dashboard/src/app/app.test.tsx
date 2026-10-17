@@ -75,6 +75,46 @@ describe('signing in', () => {
     expect(screen.queryByText('Sign-in error')).not.toBeInTheDocument()
   })
 
+  it('confirms a successful sign-in with the "Login successful" notification on the dashboard', async () => {
+    renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Operational overview' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Login successful')).toBeInTheDocument()
+    expect(
+      screen.getByText('Welcome back. Your monitoring workspace is ready.'),
+    ).toBeInTheDocument()
+  })
+
+  it('clears the "Logged out successfully" notification on signing back in', async () => {
+    // Start already signed in, so the only notification is the one signing out shows.
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+    const user = userEvent.setup()
+
+    await user.click(
+      within(await screen.findByRole('complementary', { name: 'Sidebar' })).getByRole('button', {
+        name: 'Log out',
+      }),
+    )
+    expect(await screen.findByText('Logged out successfully')).toBeInTheDocument()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Operational overview' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Login successful')).toBeInTheDocument()
+    expect(screen.queryByText('Logged out successfully')).not.toBeInTheDocument()
+  })
+
   it('clears the "Sign-in error" notification once a later attempt succeeds', async () => {
     renderApp('/sign-in')
     const user = userEvent.setup()
