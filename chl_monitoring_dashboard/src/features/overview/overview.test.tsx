@@ -28,6 +28,40 @@ describe('overview page', () => {
     expect(await screen.findByText(/National scope · Last 7 days/)).toBeInTheDocument()
   })
 
+  it('narrows the page to an area within the user’s own', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Monitoring scope: National overview' }),
+    )
+    const search = screen.getByRole('combobox', { name: 'Find an area' })
+    // The whole tree is listed once it loads, indented under the country.
+    expect(await screen.findByRole('option', { name: /Ikeja LGA/ })).toBeInTheDocument()
+
+    await userEvent.type(search, 'ikeja{Enter}')
+    expect(router.state.location.search).toContain('scope=la-ikeja')
+    expect(await screen.findByText(/Ikeja LGA scope · Last 14 days/)).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Monitoring scope: Ikeja LGA overview' }),
+    ).toHaveFocus()
+  })
+
+  it('opens on the area named in the address', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview?scope=loc_ojota')
+    expect(await screen.findByText(/Ojota enforcement point scope/)).toBeInTheDocument()
+    // A single enforcement point has no other locations to compare.
+    const performance = await card('Enforcement performance & corporate monitoring')
+    expect(within(performance).getAllByRole('tab')).toHaveLength(1)
+  })
+
+  it('ignores an area in the address the user may not see', async () => {
+    signInAs('supervisor@jrb.gov.ng')
+    renderApp('/overview?scope=kn')
+    expect(await screen.findByText(/Lagos state scope/)).toBeInTheDocument()
+  })
+
   it('groups the metrics by agent, location or organization', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')

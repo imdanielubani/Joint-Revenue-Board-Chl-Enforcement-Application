@@ -1,0 +1,133 @@
+.picker {
+  position: relative;
+}
+
+/* As the design's dropdown: green semibold text and a chevron, no box. */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  height: 31px;
+  padding: 0 6px 0 3px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.trigger:hover,
+.trigger[aria-expanded='true'] {
+  background: rgb(19 120 54 / 0.06);
+}
+
+.triggerText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trigger img {
+  flex-shrink: 0;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 6px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+  box-shadow: var(--menu-shadow);
+  font-family: var(--font-ui);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+
+.search:focus-within {
+  border-color: var(--color-primary);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+
+.search input::placeholder {
+  color: rgb(9 9 11 / 0.5);
+}
+
+.list {
+  max-height: 320px;
+  margin: 6px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 7px 10px;
+  border-radius: 6px;
+  color: var(--card-title);
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.active {
+  background: var(--card-bg);
+}
+
+.selected,
+.selected.active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.optionName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.optionLevel {
+  flex-shrink: 0;
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-regular);
+}
+
+.empty {
+  padding: 12px 10px;
+  color: var(--card-muted);
+  font-size: 12px;
+}

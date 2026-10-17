@@ -294,6 +294,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: the area control lists every area within the user's own, from
+  CHL's area tree (region, subregion, state, LGA, ward, zone, enforcement
+  point), indented by level and searchable. The choice is kept in the address;
+  an area the user may not see is ignored. On a single enforcement point the
+  performance card shows agents only. Sample area tree in
+  `mocks/mock-areas-api.ts`; backend path `/api/v1/areas` (provisional).
 - Overview: each recent-activity record says whether CHL answered it live or
   the phone checked it offline, how much later an offline record reached CHL,
   and its sync status (Synced, Evidence pending). Search finds "offline", and

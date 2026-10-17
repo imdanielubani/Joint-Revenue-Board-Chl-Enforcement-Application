@@ -191,10 +191,6 @@
   background: rgb(19 120 54 / 0.06);
 }
 
-.scopeSelect {
-  color: var(--color-primary);
-}
-
 .rangeSelect {
   color: #6e7c88;
 }

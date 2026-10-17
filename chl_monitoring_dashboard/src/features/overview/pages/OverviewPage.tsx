@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
+import { useAreas } from '@/features/geography/areas.queries'
 import { downloadCsv } from '@/shared/lib/csv'
 import { formatDateTime } from '@/shared/lib/format'
 import { StatePanel } from '@/shared/ui/StatePanel'
@@ -31,7 +32,8 @@ const DEFAULT_RANGE: OverviewRange = '14d'
 /** The Overview: the user's enforcement operations at a glance, for one area and period. */
 export function OverviewPage() {
   const user = useCurrentUser()
-  const scopes = useMemo(() => scopeOptions(user), [user])
+  const areas = useAreas()
+  const scopes = useMemo(() => scopeOptions(user, areas.data), [user, areas.data])
 
   const [first] = scopes
   if (!first) {
@@ -42,24 +44,19 @@ export function OverviewPage() {
       />
     )
   }
-  return (
-    <OverviewContent
-      scopes={scopes}
-      fallbackScope={first}
-      showLocations={coversSeveralLocations(user)}
-    />
-  )
+  return <OverviewContent scopes={scopes} fallbackScope={first} areasPending={areas.isPending} />
 }
 
 function OverviewContent({
   scopes,
   fallbackScope,
-  showLocations,
+  areasPending,
 }: {
   scopes: readonly ScopeOption[]
   /** The area shown when the address names none, or one the user may not see. */
   fallbackScope: ScopeOption
-  showLocations: boolean
+  /** True until CHL's area tree has loaded; until then only the user's own areas are known. */
+  areasPending: boolean
 }) {
   const link = useModuleLink()
   const { showToast } = useToast()
@@ -67,7 +64,11 @@ function OverviewContent({
 
   // The area and period live in the address, so a refresh or a shared link keeps them.
   const requestedScope = searchParams.get('scope')
-  const scope = scopes.find((option) => option.value === requestedScope) ?? fallbackScope
+  const found = scopes.find((option) => option.value === requestedScope)
+  const scope = found ?? fallbackScope
+  // An area deeper than the user's own is only known once the area tree arrives:
+  // wait for it rather than briefly loading the wrong area.
+  const waitingForAreas = !found && requestedScope !== null && areasPending
   const requestedRange = searchParams.get('range')
   const range = OVERVIEW_RANGES.find((option) => option === requestedRange) ?? DEFAULT_RANGE
 
@@ -81,7 +82,7 @@ function OverviewContent({
       { replace: true },
     )
 
-  const query = useOverview({ scope: scope.value, range })
+  const query = useOverview({ scope: scope.value, range }, { enabled: !waitingForAreas })
   const overview = query.data
 
   const exportRecords = (data: Overview) => {
@@ -178,7 +179,7 @@ function OverviewContent({
           <PerformanceCard
             agents={overview.agents}
             locations={overview.locations}
-            showLocations={showLocations}
+            showLocations={coversSeveralLocations(scope.level)}
           />
           <InsightCardsRow overview={overview} />
           <AttentionCardsRow overview={overview} />

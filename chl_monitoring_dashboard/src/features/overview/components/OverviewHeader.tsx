@@ -10,6 +10,7 @@ import {
   type OverviewRange,
 } from '../overview.schemas'
 import type { ScopeOption } from '../scope-options'
+import { AreaPicker } from './AreaPicker'
 import styles from './OverviewHeader.module.css'
 
 interface HeroProps {
@@ -98,36 +99,12 @@ export function OverviewFilterBar({
   period,
   checkedAt,
 }: FilterBarProps) {
-  const scopeId = useId()
   const rangeId = useId()
   return (
     <div className={styles.filters}>
       <div className={styles.filterGroup}>
         <img src={assetUrl('overview/scope-globe.svg')} alt="" width={17} height={17} />
-        <label className="visually-hidden" htmlFor={scopeId}>
-          Monitoring scope
-        </label>
-        <span className={styles.selectWrap}>
-          <select
-            id={scopeId}
-            className={`${styles.select} ${styles.scopeSelect}`}
-            value={scope}
-            onChange={(event) => onScopeChange(event.target.value)}
-          >
-            {scopes.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <img
-            className={styles.chevron}
-            src={assetUrl('overview/filter-chevron.svg')}
-            alt=""
-            width={13}
-            height={13}
-          />
-        </span>
+        <AreaPicker options={scopes} value={scope} onChange={onScopeChange} />
 
         <span className={styles.divider} aria-hidden="true" />
 

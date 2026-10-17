@@ -11,10 +11,11 @@ export const overviewKeys = {
  * The Overview's figures for one area and period; refreshed every minute. While
  * another area or period loads, the previous figures stay on screen.
  */
-export function useOverview(filters: OverviewFilters) {
+export function useOverview(filters: OverviewFilters, { enabled = true } = {}) {
   return useQuery({
     queryKey: overviewKeys.detail(filters),
     queryFn: () => overviewApi.getOverview(filters),
+    enabled,
     placeholderData: keepPreviousData,
     refetchInterval: 60_000,
   })
