@@ -246,7 +246,11 @@ export type ActivityRecord = z.infer<typeof activityRecordSchema>
 
 /** Which slice of the data the Overview shows. */
 export interface OverviewFilters {
-  /** "national", or the id of one of the user's areas. */
+  /** The id of the area reported on, within the user's own. */
   scope: string
   range: OverviewRange
+  /** Only this agent's activity, by recorded agent ID; null for all agents. */
+  agentId: string | null
+  /** Only the activity of this organization's agents; null for all. */
+  organization: string | null
 }

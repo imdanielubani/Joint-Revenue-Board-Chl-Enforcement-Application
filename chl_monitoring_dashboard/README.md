@@ -294,6 +294,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: organization and agent filters in the filter row, kept in the
+  address with "Clear" to remove them. Choosing an organization limits the
+  agent list (and drops an agent outside it); an agent or organization the
+  user cannot see is ignored. The summary line names the filter. Agents are
+  matched by recorded ID. Sample agents in `mocks/mock-agents-api.ts`; backend
+  path `/api/v1/agents` (provisional). The page's filters now live in
+  `use-overview-filters.ts`.
 - Overview: the area control lists every area within the user's own, from
   CHL's area tree (region, subregion, state, LGA, ward, zone, enforcement
   point), indented by level and searchable. The choice is kept in the address;

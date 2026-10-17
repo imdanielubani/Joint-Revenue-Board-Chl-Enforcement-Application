@@ -35,7 +35,12 @@ describe('statuses and outcomes', () => {
   })
 
   it('accepts an overview with states it does not know, rather than failing', async () => {
-    const overview = await mockOverviewApi.getOverview({ scope: 'national', range: '14d' })
+    const overview = await mockOverviewApi.getOverview({
+      scope: 'ng',
+      range: '14d',
+      agentId: null,
+      organization: null,
+    })
     const [first] = overview.recentActivity
     const changed = {
       ...overview,

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { useSearchParams } from 'react-router'
 import { paths } from '@/config/paths'
+import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { downloadCsv } from '@/shared/lib/csv'
@@ -22,12 +22,11 @@ import {
   sourceLabel,
   syncStatusLabel,
 } from '../overview-display'
-import { OVERVIEW_RANGES, type Overview, type OverviewRange } from '../overview.schemas'
+import type { Overview } from '../overview.schemas'
 import { coversSeveralLocations, scopeOptions, type ScopeOption } from '../scope-options'
 import { useModuleLink } from '../use-module-link'
+import { useOverviewFilters } from '../use-overview-filters'
 import styles from './OverviewPage.module.css'
-
-const DEFAULT_RANGE: OverviewRange = '14d'
 
 /** The Overview: the user's enforcement operations at a glance, for one area and period. */
 export function OverviewPage() {
@@ -60,29 +59,12 @@ function OverviewContent({
 }) {
   const link = useModuleLink()
   const { showToast } = useToast()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const agents = useAgents()
+  const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: agents.data })
+  const { scope, filters } = filter
+  const range = filters.range
 
-  // The area and period live in the address, so a refresh or a shared link keeps them.
-  const requestedScope = searchParams.get('scope')
-  const found = scopes.find((option) => option.value === requestedScope)
-  const scope = found ?? fallbackScope
-  // An area deeper than the user's own is only known once the area tree arrives:
-  // wait for it rather than briefly loading the wrong area.
-  const waitingForAreas = !found && requestedScope !== null && areasPending
-  const requestedRange = searchParams.get('range')
-  const range = OVERVIEW_RANGES.find((option) => option === requestedRange) ?? DEFAULT_RANGE
-
-  const setFilter = (key: 'scope' | 'range', value: string) =>
-    setSearchParams(
-      (params) => {
-        const next = new URLSearchParams(params)
-        next.set(key, value)
-        return next
-      },
-      { replace: true },
-    )
-
-  const query = useOverview({ scope: scope.value, range }, { enabled: !waitingForAreas })
+  const query = useOverview(filters, { enabled: !filter.waiting })
   const overview = query.data
 
   const exportRecords = (data: Overview) => {
@@ -139,10 +121,19 @@ function OverviewContent({
           <OverviewFilterBar
             scopes={scopes}
             scope={scope.value}
-            onScopeChange={(value) => setFilter('scope', value)}
+            onScopeChange={filter.setScope}
             range={range}
-            onRangeChange={(value) => setFilter('range', value)}
+            onRangeChange={filter.setRange}
             period={overview?.period}
+            people={{
+              organizations: filter.organizations,
+              organization: filters.organization,
+              onOrganizationChange: filter.setOrganization,
+              agents: filter.agentOptions,
+              agentId: filters.agentId,
+              onAgentChange: filter.setAgent,
+              onClear: filter.clearPeopleFilters,
+            }}
             checkedAt={query.dataUpdatedAt}
           />
         </div>
@@ -150,6 +141,13 @@ function OverviewContent({
           <ScopeStrip
             scopeName={scope.name}
             range={range}
+            focus={
+              filter.agent
+                ? `Agent: ${filter.agent.name}`
+                : filters.organization
+                  ? `Organization: ${filters.organization}`
+                  : undefined
+            }
             reportingLocations={overview.reportingLocations}
             locationsLink={link('geography', paths.geography)}
           />

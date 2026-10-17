@@ -62,6 +62,31 @@ describe('overview page', () => {
     expect(await screen.findByText(/Lagos state scope/)).toBeInTheDocument()
   })
 
+  it('filters by organization and agent, and clears them', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+
+    await userEvent.selectOptions(await screen.findByLabelText('Organization'), 'Zone 1')
+    expect(router.state.location.search).toContain('org=Zone+1')
+    expect(await screen.findByText(/Organization: Zone 1/)).toBeInTheDocument()
+
+    await userEvent.selectOptions(screen.getByLabelText('Agent'), 'JRB-AG-0142')
+    expect(router.state.location.search).toContain('agent=JRB-AG-0142')
+    expect(await screen.findByText(/Agent: Tunde Okafor/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    expect(router.state.location.search).not.toMatch(/agent=|org=/)
+    expect(screen.getByLabelText('Agent')).toHaveValue('')
+  })
+
+  it('ignores an agent or organization in the address the user cannot see', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview?agent=JRB-AG-9999&org=Elsewhere')
+    expect(await screen.findByLabelText('Agent')).toHaveValue('')
+    expect(screen.getByLabelText('Organization')).toHaveValue('')
+    expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument()
+  })
+
   it('groups the metrics by agent, location or organization', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')

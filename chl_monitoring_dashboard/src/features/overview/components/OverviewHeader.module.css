@@ -327,3 +327,30 @@
     flex-wrap: wrap;
   }
 }
+
+/* Agent and organization filters: grey until one is chosen, then green like the area. */
+.peopleIcon {
+  color: #6e7c88;
+}
+
+.activeSelect {
+  color: var(--color-primary);
+}
+
+.clearFilters {
+  margin-left: 4px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.clearFilters:hover {
+  background: rgb(19 120 54 / 0.06);
+}

@@ -10,6 +10,8 @@ import {
   type OverviewRange,
 } from '../overview.schemas'
 import type { ScopeOption } from '../scope-options'
+import type { Agent } from '@/features/agents/agents.api'
+import { MaskIcon } from '@/shared/ui/MaskIcon'
 import { AreaPicker } from './AreaPicker'
 import styles from './OverviewHeader.module.css'
 
@@ -78,6 +80,18 @@ export function OverviewHero({ refreshing, onRefresh, onExport }: HeroProps) {
   )
 }
 
+/** The agent and organization filters. */
+export interface PeopleFilter {
+  organizations: readonly string[]
+  organization: string | null
+  onOrganizationChange(organization: string | null): void
+  /** The agents to choose from: those of the chosen organization, if any. */
+  agents: readonly Agent[]
+  agentId: string | null
+  onAgentChange(agentId: string | null): void
+  onClear(): void
+}
+
 interface FilterBarProps {
   scopes: readonly ScopeOption[]
   scope: string
@@ -85,6 +99,7 @@ interface FilterBarProps {
   range: OverviewRange
   onRangeChange(range: OverviewRange): void
   period: Overview['period'] | undefined
+  people: PeopleFilter
   /** When the figures on screen were fetched (ms); 0 before the first answer. */
   checkedAt: number
 }
@@ -97,9 +112,13 @@ export function OverviewFilterBar({
   range,
   onRangeChange,
   period,
+  people,
   checkedAt,
 }: FilterBarProps) {
   const rangeId = useId()
+  const organizationId = useId()
+  const agentId = useId()
+  const filtered = people.agentId !== null || people.organization !== null
   return (
     <div className={styles.filters}>
       <div className={styles.filterGroup}>
@@ -134,6 +153,80 @@ export function OverviewFilterBar({
           />
         </span>
         {period && <span className={styles.period}>{formatPeriod(period.from, period.to)}</span>}
+
+        {people.agents.length > 0 && (
+          <>
+            <span className={styles.divider} aria-hidden="true" />
+            <MaskIcon className={styles.peopleIcon} src="overview/kpi-agents.svg" size={17} />
+            {people.organizations.length > 0 && (
+              <>
+                <label className="visually-hidden" htmlFor={organizationId}>
+                  Organization
+                </label>
+                <span className={styles.selectWrap}>
+                  <select
+                    id={organizationId}
+                    className={
+                      people.organization
+                        ? `${styles.select} ${styles.activeSelect}`
+                        : `${styles.select} ${styles.rangeSelect}`
+                    }
+                    value={people.organization ?? ''}
+                    onChange={(event) => people.onOrganizationChange(event.target.value || null)}
+                  >
+                    <option value="">All organizations</option>
+                    {people.organizations.map((organization) => (
+                      <option key={organization} value={organization}>
+                        {organization}
+                      </option>
+                    ))}
+                  </select>
+                  <img
+                    className={styles.chevron}
+                    src={assetUrl('overview/filter-chevron.svg')}
+                    alt=""
+                    width={13}
+                    height={13}
+                  />
+                </span>
+              </>
+            )}
+            <label className="visually-hidden" htmlFor={agentId}>
+              Agent
+            </label>
+            <span className={styles.selectWrap}>
+              <select
+                id={agentId}
+                className={
+                  people.agentId
+                    ? `${styles.select} ${styles.activeSelect}`
+                    : `${styles.select} ${styles.rangeSelect}`
+                }
+                value={people.agentId ?? ''}
+                onChange={(event) => people.onAgentChange(event.target.value || null)}
+              >
+                <option value="">All agents</option>
+                {people.agents.map((agent) => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.name} · {agent.id}
+                  </option>
+                ))}
+              </select>
+              <img
+                className={styles.chevron}
+                src={assetUrl('overview/filter-chevron.svg')}
+                alt=""
+                width={13}
+                height={13}
+              />
+            </span>
+            {filtered && (
+              <button type="button" className={styles.clearFilters} onClick={people.onClear}>
+                Clear
+              </button>
+            )}
+          </>
+        )}
       </div>
       {checkedAt > 0 && (
         <p className={styles.checked}>
@@ -148,6 +241,8 @@ export function OverviewFilterBar({
 interface ScopeStripProps {
   scopeName: string
   range: OverviewRange
+  /** What else narrows the figures: "Agent: Tunde Okafor", "Organization: Zone 1". */
+  focus?: string | undefined
   reportingLocations: number
   /** The geographical monitoring page, when the user may open it. */
   locationsLink?: string
@@ -157,6 +252,7 @@ interface ScopeStripProps {
 export function ScopeStrip({
   scopeName,
   range,
+  focus,
   reportingLocations,
   locationsLink,
 }: ScopeStripProps) {
@@ -169,7 +265,8 @@ export function ScopeStrip({
       <div className={styles.stripText}>
         <p className={styles.stripTitle}>Monitoring &amp; corporate dashboard</p>
         <p className={styles.stripMeta}>
-          {scopeName} scope · {RANGE_LABELS[range]} · {locations}.
+          {scopeName} scope · {RANGE_LABELS[range]} · {focus ? `${focus} · ` : ''}
+          {locations}.
         </p>
       </div>
       {locationsLink && (
