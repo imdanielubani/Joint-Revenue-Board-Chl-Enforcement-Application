@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { SESSION_STORAGE_KEY } from '@/features/auth/session'
+import { mockAuthApi } from '@/mocks/mock-auth-api'
 import { MOCK_PASSWORD } from '@/mocks/mock-users'
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -230,6 +231,25 @@ describe('signed in', () => {
     expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/sign-in')
     expect(localStorage.length + sessionStorage.length).toBe(0)
+
+    const toast = screen.getByRole('status')
+    expect(toast).toHaveTextContent('Logged out successfully')
+    expect(toast).toHaveTextContent(
+      'You have logged out of this workspace. Sign in again when you’re ready.',
+    )
+  })
+
+  it('confirms the sign-out at once, without waiting for the backend', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview', {
+      authApi: { ...mockAuthApi, signOut: () => new Promise<void>(() => {}) },
+    })
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: 'Sign out' }))
+
+    expect(await screen.findByText('Logged out successfully')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
   })
 
   it('keeps a signed-in user off the sign-in page', async () => {

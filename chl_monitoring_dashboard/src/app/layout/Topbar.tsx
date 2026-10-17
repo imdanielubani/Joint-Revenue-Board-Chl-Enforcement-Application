@@ -2,12 +2,13 @@ import { Link } from 'react-router'
 import { env } from '@/config/env'
 import { paths } from '@/config/paths'
 import { ROLE_LABELS } from '@/features/auth/auth.schemas'
-import { useCurrentUser, useSession } from '@/features/auth/session-context'
+import { useCurrentUser } from '@/features/auth/session-context'
+import { useSignOut } from '@/features/auth/use-sign-out'
 import styles from './Topbar.module.css'
 
 export function Topbar() {
   const user = useCurrentUser()
-  const { signOut } = useSession()
+  const signOut = useSignOut()
 
   return (
     <header className={styles.topbar}>

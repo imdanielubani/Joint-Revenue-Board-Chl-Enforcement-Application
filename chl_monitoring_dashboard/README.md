@@ -190,6 +190,11 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   (`sessionStorage`). Either way it ends at 24 hours, and survives reloads.
 - Signing in or out in one tab applies to the others. Signing out clears
   every cached answer.
+- **Signing out** (`useSignOut()` in `features/auth/use-sign-out.ts`, used
+  by the top bar) ends the session at once, shows the "Logged out
+  successfully" notification over the sign-in page, then tells the backend;
+  the notification never waits for the backend. A session that expires
+  shows "Your session has ended" on the sign-in page instead.
 - **Modules:** the backend says which modules each user may open
   (`user.modules`). The menu shows only those, and opening another one shows
   "No access". **Areas:** the user's areas (`user.scopes`) come from CHL;
@@ -234,6 +239,10 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- "Logged out successfully" notification built to the design, shown when
+  the user signs out (`useSignOut()`), at once and without waiting for the
+  backend. 50 tests.
 
 - "Account deactivated" notification built to the design: shown on sign-in
   for a deactivated CHL account, with "Contact CHL support" leading to the
