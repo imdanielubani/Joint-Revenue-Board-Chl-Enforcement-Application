@@ -1,8 +1,8 @@
 import { useId, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import shieldIcon from '@/assets/auth/shield-icon.svg'
 import { paths } from '@/config/paths'
 import { isApiError } from '@/shared/api/api-error'
+import { assetUrl } from '@/shared/lib/asset-url'
 import { signInSchema } from '../auth.schemas'
 import { AuthLayout } from '../components/AuthLayout'
 import styles from '../components/form.module.css'
@@ -77,7 +77,7 @@ export function SignInPage() {
             name="email"
             type="email"
             autoComplete="username"
-            placeholder="danielubani@jbrchl.gov.test"
+            placeholder="Enter Your Email Address"
             aria-invalid={Boolean(fieldErrors.email)}
             aria-describedby={fieldErrors.email ? `${id}-email-error` : undefined}
             required
@@ -138,7 +138,7 @@ export function SignInPage() {
       </form>
 
       <p className={styles.roleNote}>
-        <img src={shieldIcon} width={15} height={15} alt="" />
+        <img src={assetUrl('auth/shield-icon.svg')} width={15} height={15} alt="" />
         Your CHL role determines which records and locations you can access
       </p>
 

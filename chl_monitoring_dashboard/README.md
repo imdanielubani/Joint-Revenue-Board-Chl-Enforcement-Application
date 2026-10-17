@@ -154,8 +154,10 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   the tokens in `styles/tokens.css`, which hold the design's colours, type,
   radii and sizes. Fonts are self-hosted (`styles/fonts.ts`): Poppins for
   text, Geist for inputs, Inter for captions.
-- **Images** from the design live in `src/assets/` (`brand/` for the JRB
-  logo, `auth/` for the sign-in pages).
+- **Images** from the design live in `public/assets/` (`brand/` for the
+  JRB logo, `auth/` for the sign-in pages). They are served as they are, so
+  code refers to them by URL with `assetUrl('brand/jrb-logo.png')`
+  (`shared/lib/asset-url.ts`), never by importing them.
 
 ## Sessions and access
 
@@ -196,6 +198,9 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Moved the images to `public/assets/`, referenced through `assetUrl()`.
+  The email field's placeholder is now "Enter Your Email Address".
 
 - Sign-in page built to the design: the brand panel (logo, hero, dotted map)
   and the form panel ("Welcome back", email, password with Show/Hide, "Keep

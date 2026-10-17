@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import mapDots from '@/assets/auth/map-dots.png'
+import { assetUrl } from '@/shared/lib/asset-url'
 import { JrbLogo } from '@/shared/ui/JrbLogo'
 import styles from './AuthLayout.module.css'
 
@@ -15,7 +15,7 @@ export function AuthLayout({ eyebrow, title, description, children }: AuthLayout
   return (
     <div className={styles.page}>
       <aside className={styles.brandPanel}>
-        <img className={styles.map} src={mapDots} alt="" />
+        <img className={styles.map} src={assetUrl('auth/map-dots.png')} alt="" />
         <div className={styles.brandContent}>
           <div className={styles.brand}>
             <JrbLogo />
