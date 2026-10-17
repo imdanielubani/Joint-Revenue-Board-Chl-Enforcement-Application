@@ -6,12 +6,23 @@ import styles from './AuthLayout.module.css'
 interface AuthLayoutProps {
   eyebrow: string
   title: string
-  description: string
+  description: ReactNode
+  /** Shown above the heading, such as a back link. */
+  before?: ReactNode
+  /** Sits 18px above centre, as the sign-in design does; other pages are centred. */
+  raised?: boolean
   children: ReactNode
 }
 
 /** The signed-out pages: the brand panel on the left, the form panel on the right. */
-export function AuthLayout({ eyebrow, title, description, children }: AuthLayoutProps) {
+export function AuthLayout({
+  eyebrow,
+  title,
+  description,
+  before,
+  raised = false,
+  children,
+}: AuthLayoutProps) {
   return (
     <div className={styles.page}>
       <aside className={styles.brandPanel}>
@@ -41,8 +52,9 @@ export function AuthLayout({ eyebrow, title, description, children }: AuthLayout
         </div>
       </aside>
 
-      <main className={styles.formPanel}>
+      <main className={raised ? `${styles.formPanel} ${styles.raised}` : styles.formPanel}>
         <div className={styles.formColumn}>
+          {before}
           <header className={styles.header}>
             <p className={styles.eyebrow}>{eyebrow}</p>
             <h1 className={styles.title}>{title}</h1>

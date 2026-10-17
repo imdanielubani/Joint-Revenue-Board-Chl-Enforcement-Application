@@ -16,9 +16,8 @@ export interface AuthApi {
   /** New tokens for the same session; the session's end time does not move. */
   refresh(refreshToken: string): Promise<Tokens>
   signOut(refreshToken: string): Promise<void>
-  /** Starts the existing CHL forgot-password process. */
-  requestPasswordReset(email: string): Promise<void>
 }
+// Passwords are reset in CHL itself; the sign-in help page points users there.
 
 // The paths are provisional until the backend's API is agreed.
 const httpAuthApi: AuthApi = {
@@ -38,12 +37,6 @@ const httpAuthApi: AuthApi = {
     request('/api/v1/admin/auth/sign-out', z.unknown(), {
       method: 'POST',
       body: { refreshToken },
-    }).then(() => undefined),
-  requestPasswordReset: (email) =>
-    request('/api/v1/admin/auth/forgot-password', z.unknown(), {
-      method: 'POST',
-      body: { email },
-      auth: false,
     }).then(() => undefined),
 }
 

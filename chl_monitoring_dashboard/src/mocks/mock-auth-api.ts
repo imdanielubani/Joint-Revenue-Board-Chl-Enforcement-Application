@@ -28,7 +28,4 @@ export const mockAuthApi: AuthApi = {
   async signOut() {
     await delay()
   },
-  async requestPasswordReset() {
-    await delay()
-  },
 }

@@ -101,11 +101,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Sits slightly above centre, as in the design. */
-  padding: var(--space-6) var(--space-4) calc(var(--space-6) + 36px);
+  padding: var(--space-6) var(--space-4);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-panel);
   background: var(--color-surface);
+}
+
+/* 36px more at the bottom lifts the content 18px above centre. */
+.raised {
+  padding-bottom: calc(var(--space-6) + 36px);
 }
 
 .formColumn {

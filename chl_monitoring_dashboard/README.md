@@ -58,15 +58,16 @@ on sample data. Sign in with any sample account; the password is
 Settings are read from `VITE_` variables and checked at start-up in
 `src/config/env.ts`. Copy `.env.example` to `.env.local` (ignored by git).
 
-| Setting             | Default       | Meaning                                                 |
-| ------------------- | ------------- | ------------------------------------------------------- |
-| `VITE_APP_ENV`      | `development` | `development`, `staging` or `production`                |
-| `VITE_USE_MOCKS`    | `true`        | Run on the sample data in `src/mocks/`                  |
-| `VITE_API_BASE_URL` | empty         | The backend's address; required when sample data is off |
+| Setting             | Default       | Meaning                                                                                              |
+| ------------------- | ------------- | ---------------------------------------------------------------------------------------------------- |
+| `VITE_APP_ENV`      | `development` | `development`, `staging` or `production`                                                             |
+| `VITE_USE_MOCKS`    | `true`        | Run on the sample data in `src/mocks/`                                                               |
+| `VITE_API_BASE_URL` | empty         | The backend's address; required when sample data is off                                              |
+| `VITE_SUPPORT_URL`  | empty         | Where "Contact CHL Support" leads: an `https://` page or a `mailto:` address; required in production |
 
 The dashboard refuses to start if production is set to sample data, if
-sample data is off without a backend address, or if staging or production
-use `http` instead of `https`. Outside production, the top bar shows the
+sample data is off without a backend address, if staging or production
+use `http` instead of `https`, or if production has no support contact. Outside production, the top bar shows the
 environment, and "Sample data" while it is on.
 
 ## Project structure
@@ -88,7 +89,7 @@ src/
     env.ts                 Settings, checked with zod at start-up
     paths.ts               Every route's address
   features/                One folder per module
-    auth/                  Sign-in, forgot password, profile, the 24-hour
+    auth/                  Sign-in, sign-in help, profile, the 24-hour
                            session, route guards
     overview/              Summary figures and recent activity
     command-centre/        Activity feed, cases needing attention, field reports
@@ -185,8 +186,12 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 - Pending with the backend: the auth paths in `features/auth/auth.api.ts`
   are provisional. Tokens are kept in browser storage for now; if the
   backend can use httpOnly cookies, they should move there.
-- "Need help signing in?" shows a short note for now; it should point to
-  JRB's support contact once there is one.
+- **Passwords are reset in CHL, never in the dashboard.** "Forgotten
+  Password?" and "Need help signing in?" on the sign-in page open the
+  sign-in help page (`/forgot-password`), which explains this and offers
+  "Contact CHL Support" (`VITE_SUPPORT_URL`: a page opens in a new tab, an
+  email address opens the mail app). Until it is set, the button says the
+  support contact hasn't been set up yet.
 
 ## Conventions
 
@@ -203,6 +208,17 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Sign-in help page built to the design ("Get Sign-in help"): back link,
+  the explanation that passwords are reset through CHL, "Contact CHL
+  Support", the role note and "Need help signing in?".
+  - It replaces the provisional password-reset form; the unused
+    `requestPasswordReset` call was removed from the API layer.
+  - New setting `VITE_SUPPORT_URL` for "Contact CHL Support" (required in
+    production).
+  - "Need help signing in?" on the sign-in page now opens this page; the
+    role note and help link are one shared component (`AuthHelp`).
+  - 38 tests.
 
 - The favicon is now the JRB shield mark (`.ico` plus 16 and 32 px PNGs and
   a 180 px Apple touch icon), replacing the Vite logo; the browser theme

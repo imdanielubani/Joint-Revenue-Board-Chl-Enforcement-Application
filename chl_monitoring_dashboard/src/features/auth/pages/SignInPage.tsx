@@ -2,8 +2,8 @@ import { useId, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { isApiError } from '@/shared/api/api-error'
-import { assetUrl } from '@/shared/lib/asset-url'
 import { signInSchema } from '../auth.schemas'
+import { AuthHelp } from '../components/AuthHelp'
 import { AuthLayout } from '../components/AuthLayout'
 import styles from '../components/form.module.css'
 import { useSession } from '../session-context'
@@ -15,7 +15,6 @@ export function SignInPage() {
   const id = useId()
 
   const [showPassword, setShowPassword] = useState(false)
-  const [showHelp, setShowHelp] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -54,6 +53,7 @@ export function SignInPage() {
       eyebrow="Secure access"
       title="Welcome back"
       description="Sign in with your existing CHL credentials to continue."
+      raised
     >
       <form className={styles.form} onSubmit={onSubmit} noValidate>
         {endReason === 'expired' && (
@@ -137,28 +137,7 @@ export function SignInPage() {
         </button>
       </form>
 
-      <p className={styles.roleNote}>
-        <img src={assetUrl('auth/shield-icon.svg')} width={15} height={15} alt="" />
-        Your CHL role determines which records and locations you can access
-      </p>
-
-      <div className={styles.help}>
-        <button
-          type="button"
-          className={styles.helpButton}
-          aria-expanded={showHelp}
-          aria-controls={`${id}-help`}
-          onClick={() => setShowHelp((shown) => !shown)}
-        >
-          Need help signing in?
-        </button>
-        {showHelp && (
-          <p id={`${id}-help`} className={styles.helpText}>
-            Use the email address and password of your CHL account. If you still can&apos;t sign in,
-            contact your CHL administrator.
-          </p>
-        )}
-      </div>
+      <AuthHelp helpTo={paths.forgotPassword} />
     </AuthLayout>
   )
 }

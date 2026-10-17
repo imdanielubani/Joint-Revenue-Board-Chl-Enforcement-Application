@@ -78,18 +78,62 @@ describe('signing in', () => {
     expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
   })
 
-  it('opens the forgotten-password page', async () => {
+  it('opens sign-in help from "Forgotten Password?"', async () => {
     const { router } = renderApp('/sign-in')
     const user = userEvent.setup()
 
     await user.click(await screen.findByRole('link', { name: 'Forgotten Password?' }))
 
-    expect(await screen.findByRole('heading', { name: 'Reset your password' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Get Sign-in help' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/forgot-password')
   })
 
-  it('shows sign-in help on request', async () => {
-    renderApp('/sign-in')
+  it('opens sign-in help from "Need help signing in?"', async () => {
+    const { router } = renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('link', { name: 'Need help signing in?' }))
+
+    expect(await screen.findByRole('heading', { name: 'Get Sign-in help' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/forgot-password')
+  })
+})
+
+describe('sign-in help', () => {
+  it('explains that passwords are reset through CHL', async () => {
+    renderApp('/forgot-password')
+
+    expect(
+      await screen.findByText(/Password resets are handled through your existing CHL account/),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+  })
+
+  it('goes back to sign-in', async () => {
+    const { router } = renderApp('/forgot-password')
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('link', { name: 'Back to sign in' }))
+
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/sign-in')
+  })
+
+  it('says so when no support contact is set up', async () => {
+    renderApp('/forgot-password')
+    const user = userEvent.setup()
+    const contact = await screen.findByRole('button', { name: 'Contact CHL Support' })
+
+    await user.click(contact)
+
+    expect(contact).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('status')).toHaveTextContent(
+      "The CHL support contact hasn't been set up yet.",
+    )
+  })
+
+  it('shows a short note under "Need help signing in?"', async () => {
+    renderApp('/forgot-password')
     const user = userEvent.setup()
     const help = await screen.findByRole('button', { name: 'Need help signing in?' })
 
