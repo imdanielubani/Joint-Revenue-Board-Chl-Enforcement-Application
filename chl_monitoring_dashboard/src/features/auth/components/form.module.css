@@ -164,15 +164,6 @@
   cursor: progress;
 }
 
-.notice {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-muted);
-  color: var(--color-text);
-  font-size: var(--font-size-xs);
-  line-height: 18px;
-}
-
 .roleNote {
   display: flex;
   align-items: flex-start;

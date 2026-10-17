@@ -153,10 +153,15 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   design's notification in the top-right corner (`shared/ui/toast/`).
   - `variant: 'success'` (default, green): dismisses itself after 6 seconds
     or with its close button; announced politely.
+  - `variant: 'warning'` (amber): stays until dismissed; announced
+    politely.
   - `variant: 'error'` (red): stays until dismissed; announced at once.
-  - `icon`: `check` (success default), `warning` (error default) or
-    `account`.
-  - `action: { label, to }` adds a link under the text; following it
+  - Success sits 36px from the top and 32px from the right; warning and
+    error sit 41px and 34px, as their designs place them.
+  - `icon`: `check` (success default), `clock` (warning default),
+    `warning` (error default) or `account`.
+  - `action: { label, to }` adds a link under the text; `action: { label,
+onSelect }` (no `to`) is a button acting on the current page. Either
     dismisses the notification. `key` replaces an earlier notification with
     the same key instead of stacking another, and `dismissToast(key)`
     removes it.
@@ -183,8 +188,12 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 
 - Sign-in goes through the existing CHL authentication, via the backend.
 - **A session lasts 24 hours from sign-in**, like the mobile app's. Renewing
-  the access token doesn't extend it. When it ends, the user is signed out
-  and the sign-in page says so.
+  the access token doesn't extend it. When it ends (or the backend refuses
+  a renewal), the user is taken to the sign-in page, which shows the amber
+  "Session expired" notification once. Its "Sign in again" puts the cursor
+  in the form (email, or password if the email is filled) rather than
+  reloading the page, so after signing in the user returns to the page
+  they were on.
 - On a 401, the HTTP client renews the access token once (one renewal at a
   time, however many requests failed) and retries. If renewal fails, the
   session ends.
@@ -197,7 +206,7 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   by the top bar) ends the session at once, shows the "Logged out
   successfully" notification over the sign-in page, then tells the backend;
   the notification never waits for the backend. A session that expires
-  shows "Your session has ended" on the sign-in page instead.
+  shows "Session expired" instead.
 - **Modules:** the backend says which modules each user may open
   (`user.modules`). The menu shows only those, and opening another one shows
   "No access". **Areas:** the user's areas (`user.scopes`) come from CHL;
@@ -250,6 +259,15 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- "Session expired" notification built to the design, replacing the
+  message inside the sign-in form; shown once when a session runs out.
+  - "Sign in again" puts the cursor in the sign-in form and keeps the page
+    to return to after signing in.
+  - Notifications gained an amber `warning` variant (clock icon, stays until
+    dismissed) and on-page button actions; warning and error notifications
+    sit 41px from the top and 34px from the right, as designed.
+  - The unused notice style was removed. 59 tests.
 
 - "Sign-in error" notification built to the design, replacing the error
   message inside the sign-in form.

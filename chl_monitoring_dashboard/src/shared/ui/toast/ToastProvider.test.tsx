@@ -96,4 +96,30 @@ describe('ToastProvider', () => {
     act(() => link.click())
     expect(screen.queryByText('Oops')).not.toBeInTheDocument()
   })
+
+  it('keeps warnings until dismissed and announces them politely', () => {
+    vi.useFakeTimers()
+    renderToasts({ label: 'Show', toast: { variant: 'warning', title: 'Session expired' } })
+
+    click('Show')
+    act(() => vi.advanceTimersByTime(TOAST_DURATION_MS * 10))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Session expired')
+  })
+
+  it('runs an on-page action as a button, then dismisses the notification', () => {
+    const onSelect = vi.fn()
+    renderToasts({
+      label: 'Show',
+      toast: { variant: 'warning', title: 'Later', action: { label: 'Do it', onSelect } },
+    })
+
+    click('Show')
+    expect(screen.queryByRole('link', { name: 'Do it' })).not.toBeInTheDocument()
+    click('Do it')
+
+    expect(onSelect).toHaveBeenCalledOnce()
+    expect(screen.queryByText('Later')).not.toBeInTheDocument()
+  })
 })

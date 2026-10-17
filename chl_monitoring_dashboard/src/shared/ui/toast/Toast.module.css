@@ -36,11 +36,25 @@
   border-color: var(--color-success-strong);
 }
 
-/* The design's error notification: a finer border, sitting 7px lower (43px from the top). */
-.error {
-  margin-top: 7px;
+/*
+ * Error and warning notifications: a finer border, and placed as the sign-in
+ * error and session-expired designs place them, 41px from the top and 34px
+ * from the right (success notifications sit at 36px and 32px).
+ */
+.error,
+.warning {
+  position: relative;
+  left: -2px;
+  margin-top: 5px;
   border-width: 0.8px 0.8px 0.8px 4px;
+}
+
+.error {
   border-color: var(--color-danger-strong);
+}
+
+.warning {
+  border-color: var(--color-warning-strong);
 }
 
 .icon {
@@ -82,6 +96,17 @@
   line-height: 16px;
   text-decoration: underline;
   text-underline-position: from-font;
+}
+
+/* The same look when the action is a button rather than a link. */
+.actionButton {
+  border: 0;
+  padding-inline: 0;
+  padding-top: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .action:hover {

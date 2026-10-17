@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { isApiError } from '@/shared/api/api-error'
@@ -15,12 +15,34 @@ type FieldErrors = Partial<Record<'email' | 'password', string>>
 const SIGN_IN_TOASTS = {
   error: 'sign-in-error',
   deactivated: AUTH_ERROR_CODES.accountDeactivated,
+  expired: 'session-expired',
 } as const
 
 export function SignInPage() {
-  const { signIn, endReason } = useSession()
+  const { signIn, endReason, clearEndReason } = useSession()
   const { showToast, dismissToast } = useToast()
   const id = useId()
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+
+  // A session that ran out (24 hours, or a renewal the backend refused) is announced once,
+  // with the design's "Session expired" notification; signing out yourself is not.
+  useEffect(() => {
+    if (endReason !== 'expired') return
+    showToast({
+      key: SIGN_IN_TOASTS.expired,
+      variant: 'warning',
+      title: 'Session expired',
+      lines: ['Your session has ended. Please sign in again to continue.'],
+      // Already on the sign-in page: put the cursor where the user should type next.
+      // Not a link, so the page they were on is kept for after they sign in.
+      action: {
+        label: 'Sign in again',
+        onSelect: () => (emailRef.current?.value ? passwordRef.current : emailRef.current)?.focus(),
+      },
+    })
+    clearEndReason()
+  }, [endReason, clearEndReason, showToast])
 
   const [showPassword, setShowPassword] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
@@ -102,17 +124,12 @@ export function SignInPage() {
       raised
     >
       <form className={styles.form} onSubmit={onSubmit} noValidate>
-        {endReason === 'expired' && (
-          <p className={styles.notice} role="status">
-            Your session has ended. Sign in again to continue.
-          </p>
-        )}
-
         <div className={styles.field}>
           <label className={styles.label} htmlFor={`${id}-email`}>
             Email Address
           </label>
           <input
+            ref={emailRef}
             id={`${id}-email`}
             className={styles.input}
             name="email"
@@ -136,6 +153,7 @@ export function SignInPage() {
           </label>
           <div className={styles.passwordRow}>
             <input
+              ref={passwordRef}
               id={`${id}-password`}
               className={styles.input}
               name="password"

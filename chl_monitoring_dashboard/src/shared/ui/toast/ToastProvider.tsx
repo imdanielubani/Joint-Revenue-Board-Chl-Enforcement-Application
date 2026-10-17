@@ -3,9 +3,11 @@ import { Link } from 'react-router'
 import { assetUrl } from '@/shared/lib/asset-url'
 import {
   ToastContext,
+  type ToastAction,
   type ToastContextValue,
   type ToastIcon,
   type ToastInput,
+  type ToastVariant,
 } from './toast-context'
 import styles from './Toast.module.css'
 
@@ -14,8 +16,15 @@ export const TOAST_DURATION_MS = 6000
 
 const ICON_FILES: Record<ToastIcon, string> = {
   check: 'toast/check-circle.svg',
+  clock: 'toast/clock.svg',
   warning: 'toast/warning-circle.svg',
   account: 'toast/account-error.svg',
+}
+
+const DEFAULT_ICONS: Record<ToastVariant, ToastIcon> = {
+  success: 'check',
+  warning: 'clock',
+  error: 'warning',
 }
 
 interface ToastItem extends ToastInput {
@@ -23,9 +32,9 @@ interface ToastItem extends ToastInput {
 }
 
 /**
- * Shows notifications in the top-right corner. Errors are announced at once
- * and stay until dismissed; success notifications are announced politely
- * and dismiss themselves. Lives inside the router so actions can be links.
+ * Shows notifications in the top-right corner. Errors are announced at once;
+ * success and warning notifications are announced politely. Only success
+ * notifications dismiss themselves. Lives inside the router so actions can be links.
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
@@ -78,6 +87,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   )
 }
 
+/** A link when the action goes to another page, a button when it acts on this one. */
+function ToastActionControl({ action, onDone }: { action: ToastAction; onDone: () => void }) {
+  const select = () => {
+    onDone()
+    action.onSelect?.()
+  }
+  if (action.to !== undefined) {
+    return (
+      <Link className={styles.action} to={action.to} onClick={select}>
+        {action.label}
+      </Link>
+    )
+  }
+  return (
+    <button type="button" className={`${styles.action} ${styles.actionButton}`} onClick={select}>
+      {action.label}
+    </button>
+  )
+}
+
 interface ToastProps {
   toast: ToastItem
   /** Stable across renders, so each toast's timer runs once from when it appeared. */
@@ -87,7 +116,7 @@ interface ToastProps {
 function Toast({ toast, onDismiss }: ToastProps) {
   const { id, variant = 'success' } = toast
   useEffect(() => {
-    if (variant === 'error') return
+    if (variant !== 'success') return
     const timer = window.setTimeout(() => onDismiss(id), TOAST_DURATION_MS)
     return () => window.clearTimeout(timer)
   }, [id, variant, onDismiss])
@@ -96,7 +125,7 @@ function Toast({ toast, onDismiss }: ToastProps) {
     <div className={`${styles.toast} ${styles[variant]}`}>
       <img
         className={styles.icon}
-        src={assetUrl(ICON_FILES[toast.icon ?? (variant === 'error' ? 'warning' : 'check')])}
+        src={assetUrl(ICON_FILES[toast.icon ?? DEFAULT_ICONS[variant]])}
         width={23}
         height={23}
         alt=""
@@ -108,11 +137,7 @@ function Toast({ toast, onDismiss }: ToastProps) {
             {line}
           </p>
         ))}
-        {toast.action && (
-          <Link className={styles.action} to={toast.action.to} onClick={() => onDismiss(id)}>
-            {toast.action.label}
-          </Link>
-        )}
+        {toast.action && <ToastActionControl action={toast.action} onDone={() => onDismiss(id)} />}
       </div>
       <button
         type="button"

@@ -112,9 +112,11 @@ export function SessionProvider({ children, api = defaultAuthApi }: SessionProvi
     return () => window.removeEventListener('storage', onStorage)
   }, [queryClient])
 
+  const clearEndReason = useCallback(() => setEndReason(null), [])
+
   const value = useMemo<SessionContextValue>(
-    () => ({ session, user: session?.user ?? null, endReason, signIn, signOut }),
-    [session, endReason, signIn, signOut],
+    () => ({ session, user: session?.user ?? null, endReason, clearEndReason, signIn, signOut }),
+    [session, endReason, clearEndReason, signIn, signOut],
   )
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>

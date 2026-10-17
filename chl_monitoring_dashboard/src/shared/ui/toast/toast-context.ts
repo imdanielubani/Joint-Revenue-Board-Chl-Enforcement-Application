@@ -1,19 +1,31 @@
 import { createContext, useContext } from 'react'
 
-export type ToastVariant = 'success' | 'error'
+/**
+ * success (green): confirms something; dismisses itself, announced politely.
+ * warning (amber): needs the user's attention, not urgent; stays until dismissed, announced politely.
+ * error (red): something failed; stays until dismissed, announced at once.
+ */
+export type ToastVariant = 'success' | 'warning' | 'error'
 
-/** The icon beside the title. Defaults: `check` for success, `warning` for errors. */
-export type ToastIcon = 'check' | 'warning' | 'account'
+/** The icon beside the title. Defaults: `check` for success, `clock` for warning, `warning` for error. */
+export type ToastIcon = 'check' | 'clock' | 'warning' | 'account'
+
+/**
+ * The underlined action under the text. With `to` it is a link to another page; without,
+ * a button that runs `onSelect` on the current page. Either way it dismisses the notification.
+ */
+export type ToastAction =
+  | { label: string; to: string; onSelect?: () => void }
+  | { label: string; to?: undefined; onSelect: () => void }
 
 export interface ToastInput {
-  /** Success notifications dismiss themselves; error ones stay until dismissed. */
   variant?: ToastVariant
   icon?: ToastIcon
   title: string
   /** One paragraph per entry, under the title. */
   lines?: string[]
   /** A link under the text, such as "Contact CHL support". */
-  action?: { label: string; to: string }
+  action?: ToastAction
   /** Showing a toast with the same key replaces the earlier one instead of stacking. */
   key?: string
 }

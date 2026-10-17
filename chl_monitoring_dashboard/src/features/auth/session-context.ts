@@ -13,6 +13,8 @@ export interface SessionContextValue {
   user: User | null
   /** Why the last session ended, so the sign-in page can say so. */
   endReason: SignOutReason | null
+  /** Marks the end reason as shown, so it is said once rather than on every visit. */
+  clearEndReason(): void
   signIn(options: SignInOptions): Promise<void>
   signOut(): Promise<void>
 }
