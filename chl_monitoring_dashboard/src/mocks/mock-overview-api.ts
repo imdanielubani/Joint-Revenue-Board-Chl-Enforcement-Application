@@ -47,8 +47,10 @@ const OFFLINE_DELAY_MS = 47 * 60_000
 const EVIDENCE_PENDING_RECORD = 7
 
 function recentActivity(lastDay: string): ActivityRecord[] {
-  // 10:18 WAT on the last day of the period, then every 23 minutes earlier.
-  const latest = new Date(`${lastDay}T09:18:00Z`).getTime()
+  // 10:18 WAT on the last day of the period (or a few minutes ago, if that is
+  // still to come today), then every 23 minutes earlier.
+  const now = Date.now()
+  const latest = Math.min(new Date(`${lastDay}T09:18:00Z`).getTime(), now - 4 * 60_000)
   const repeats = Math.ceil(RECORD_COUNT / SAMPLE_RECORDS.length)
   const samples = Array.from({ length: repeats }, () => SAMPLE_RECORDS)
     .flat()
@@ -69,7 +71,9 @@ function recentActivity(lastDay: string): ActivityRecord[] {
       location: { name: 'Ojota enforcement point', area: 'Lagos', code: 'LOS-04' },
       source: offline ? 'offline' : 'live',
       syncStatus: index === EVIDENCE_PENDING_RECORD ? 'evidence_pending' : 'synced',
-      receivedAt: new Date(recordedAt + (offline ? OFFLINE_DELAY_MS : 0)).toISOString(),
+      receivedAt: new Date(
+        Math.min(recordedAt + (offline ? OFFLINE_DELAY_MS : 0), now),
+      ).toISOString(),
     }
   })
 }
@@ -91,6 +95,7 @@ export const mockOverviewApi: OverviewApi = {
     await delay()
     const days = periodDays({ from, to })
 
+    const records = recentActivity(to)
     const overview: Overview = {
       period: { from, to },
       reportingLocations: 8,
@@ -171,10 +176,16 @@ export const mockOverviewApi: OverviewApi = {
           { plate: 'ENU-388-MN', reports: 3, agents: 2, area: 'Lagos', followUp: 'none' },
         ],
       },
-      recentActivity: recentActivity(to),
+      recentActivity: records,
+      latestReceivedAt: latestOf(records.map((record) => record.receivedAt)),
     }
     return overview
   },
+}
+
+function latestOf(times: (string | null)[]): string | null {
+  const known = times.filter((time): time is string => time !== null)
+  return known.length === 0 ? null : known.reduce((a, b) => (a > b ? a : b))
 }
 
 /** Figures in table order: verifications, violations issued, unresolved, escalated, repeat alerts. */

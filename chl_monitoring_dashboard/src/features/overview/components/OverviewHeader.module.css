@@ -399,3 +399,20 @@
   font-size: 10px;
   font-weight: var(--font-weight-medium);
 }
+
+/* Right of the filters: when field data last arrived, and when the page last checked. */
+.freshness {
+  display: flex;
+  margin-left: auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+}
+
+.fieldDelayed {
+  color: var(--status-amber-text);
+}
+
+.delayedDot {
+  background: var(--amber);
+}

@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import type { Agent } from '@/features/agents/agents.api'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { formatPeriod, lagosDay } from '@/shared/lib/dates'
-import { formatClock } from '@/shared/lib/format'
+import { formatClock, formatShortDateTime } from '@/shared/lib/format'
 import { MaskIcon } from '@/shared/ui/MaskIcon'
 import { customPeriodProblem, type Period } from '../overview-period'
 import { OVERVIEW_RANGES, RANGE_LABELS, type OverviewRange } from '../overview.schemas'
@@ -100,6 +100,8 @@ interface FilterBarProps {
   people: PeopleFilter
   /** When the figures on screen were fetched (ms); 0 before the first answer. */
   checkedAt: number
+  /** When CHL last received a field record for these figures; null when none came. */
+  latestReceivedAt: string | null | undefined
 }
 
 /** The area and period the page reports on, and when its figures were last checked. */
@@ -113,6 +115,7 @@ export function OverviewFilterBar({
   onCustomPeriodChange,
   people,
   checkedAt,
+  latestReceivedAt,
 }: FilterBarProps) {
   const rangeId = useId()
   const organizationId = useId()
@@ -232,12 +235,64 @@ export function OverviewFilterBar({
         )}
       </div>
       {checkedAt > 0 && (
-        <p className={styles.checked}>
-          <span className={styles.checkedDot} aria-hidden="true" />
-          Last checked {formatClock(checkedAt)}
-        </p>
+        <div className={styles.freshness}>
+          {latestReceivedAt !== undefined && (
+            <FieldDataFreshness receivedAt={latestReceivedAt} checkedAt={checkedAt} />
+          )}
+          <p className={styles.checked}>
+            <span className={styles.checkedDot} aria-hidden="true" />
+            Last checked {formatClock(checkedAt)}
+          </p>
+        </div>
       )}
     </div>
+  )
+}
+
+/** After this long without a field record, the time is shown in amber. */
+const FIELD_DATA_DELAY_MS = 2 * 60 * 60_000
+
+/**
+ * When CHL last received a record from the field. Records made offline reach
+ * CHL later, so the figures may not include everything that has happened.
+ */
+function FieldDataFreshness({
+  receivedAt,
+  checkedAt,
+}: {
+  receivedAt: string | null
+  checkedAt: number
+}) {
+  const explanation =
+    'When CHL last received a record from the field for these figures. Records made offline arrive later, so recent activity may still be on its way.'
+  if (!receivedAt) {
+    return (
+      <p className={`${styles.checked} ${styles.fieldDelayed}`} title={explanation}>
+        <span className={`${styles.checkedDot} ${styles.delayedDot}`} aria-hidden="true" />
+        No field records received
+      </p>
+    )
+  }
+  const received = new Date(receivedAt)
+  const delayed = checkedAt - received.getTime() > FIELD_DATA_DELAY_MS
+  const time =
+    lagosDay(received) === lagosDay(new Date(checkedAt))
+      ? formatClock(received)
+      : formatShortDateTime(received)
+  return (
+    <p
+      className={delayed ? `${styles.checked} ${styles.fieldDelayed}` : styles.checked}
+      title={explanation}
+    >
+      <span
+        className={delayed ? `${styles.checkedDot} ${styles.delayedDot}` : styles.checkedDot}
+        aria-hidden="true"
+      />
+      <span>
+        Field data received <time dateTime={received.toISOString()}>{time}</time>
+        {delayed && ' · may be delayed'}
+      </span>
+    </p>
   )
 }
 

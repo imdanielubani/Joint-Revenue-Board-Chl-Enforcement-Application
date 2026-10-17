@@ -59,6 +59,22 @@ describe('overview page', () => {
     expect(screen.queryByLabelText('From')).not.toBeInTheDocument()
   })
 
+  it('says when field data last reached CHL, apart from when the page checked', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+    const received = await screen.findByText(/Field data received/)
+    expect(received).not.toHaveTextContent('may be delayed')
+    expect(screen.getByText(/Last checked \d{2}:\d{2} WAT/)).toBeInTheDocument()
+  })
+
+  it('warns that field data may be delayed when the latest record is old', async () => {
+    signInAs('admin@jrb.gov.ng')
+    // A period that ended a while ago: its latest record is days old.
+    renderApp('/overview?range=custom&from=2026-10-01&to=2026-10-10')
+    const received = await screen.findByText(/Field data received/)
+    expect(received).toHaveTextContent('Field data received 10 Oct, 10:18 AM · may be delayed')
+  })
+
   it('falls back to the last 14 days for dates that make no sense', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview?range=custom&from=2026-10-12&to=2026-10-01')

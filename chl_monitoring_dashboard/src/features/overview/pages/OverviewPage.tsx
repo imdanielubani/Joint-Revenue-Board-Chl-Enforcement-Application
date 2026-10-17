@@ -137,6 +137,7 @@ function OverviewContent({
               onClear: filter.clearPeopleFilters,
             }}
             checkedAt={query.dataUpdatedAt}
+            latestReceivedAt={overview?.latestReceivedAt}
           />
         </div>
         {overview && (

@@ -294,6 +294,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: beside "Last checked", the time CHL last received a field record
+  for the figures ("Field data received 10:18 WAT"). It turns amber with "may
+  be delayed" when that record is more than 2 hours older than the check, and
+  says so when no field records came. Hovering explains that offline records
+  arrive later. The overview answer gains `latestReceivedAt`.
 - Overview: "Custom range" in the period list shows From and To date fields,
   starting from the period on screen. Dates are Lagos days; a pair that is out
   of order, incomplete or in the future is explained under the fields and not

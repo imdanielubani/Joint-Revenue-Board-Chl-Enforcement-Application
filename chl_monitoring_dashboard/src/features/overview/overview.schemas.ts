@@ -196,6 +196,11 @@ export const overviewSchema = z.object({
   period: z.object({ from: day, to: day }),
   /** Locations in scope that sent data during the period. */
   reportingLocations: count,
+  /**
+   * When CHL last received a field record in this area and period; null when
+   * none arrived. Field data can be delayed, so this is not "now" (SRD 13).
+   */
+  latestReceivedAt: z.string().nullable(),
   kpis: z.object({
     totalVerifications: count,
     activeTripResults: count,
