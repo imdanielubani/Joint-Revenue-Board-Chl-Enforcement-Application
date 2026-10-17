@@ -1,27 +1,165 @@
 .page {
   display: grid;
-  min-height: 100%;
-  place-items: center;
-  padding: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  min-height: 100vh;
+  padding: 16px;
+  background: var(--color-bg);
 }
 
-.card {
-  width: 100%;
-  max-width: 420px;
-  padding: var(--space-6);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+/* Brand panel */
+
+.brandPanel {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-panel);
+  background: var(--gradient-brand);
+  color: var(--color-on-brand);
+}
+
+.map {
+  position: absolute;
+  top: 309px;
+  left: -130px;
+  width: 799px;
+  max-width: none;
+  height: 799px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.brandContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 33px 25px 30px 28px;
 }
 
 .brand {
-  color: var(--color-primary);
-  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brandName {
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
+  line-height: 24px;
+  letter-spacing: -0.4px;
+}
+
+.brandTagline {
+  color: var(--color-on-brand-muted);
+  font-size: var(--font-size-xs);
+  line-height: 16px;
+}
+
+/* Centred between the brand and the footer, as in the design. */
+.hero {
+  max-width: 512px;
+  margin-block: auto;
+  padding-bottom: 48px;
+}
+
+.heroEyebrow {
+  color: var(--color-brand-accent);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: 16px;
+  letter-spacing: 1.92px;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  padding-top: 20px;
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-semibold);
+  line-height: 51.84px;
+  letter-spacing: -1.92px;
+}
+
+.heroText {
+  max-width: 455px;
+  padding-top: 20px;
+  font-size: var(--font-size-md);
+  line-height: 28px;
+}
+
+.brandFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  color: var(--color-on-brand-subtle);
+  font-size: var(--font-size-xs);
+  line-height: 16px;
+}
+
+/* Form panel */
+
+.formPanel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Sits slightly above centre, as in the design. */
+  padding: var(--space-6) var(--space-4) calc(var(--space-6) + 36px);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.formColumn {
+  width: 100%;
+  max-width: 420px;
+}
+
+.header {
+  padding-top: 32px;
+}
+
+.eyebrow {
+  color: var(--color-primary-strong);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: 16px;
+  letter-spacing: 1.44px;
+  text-transform: uppercase;
 }
 
 .title {
-  margin: var(--space-2) 0 var(--space-5);
-  font-size: var(--font-size-xl);
+  padding-top: 12px;
+  color: var(--color-text);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: 45px;
+  letter-spacing: -1.05px;
+}
+
+.description {
+  padding-top: 8px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 24px;
+}
+
+/* Narrow screens: the form alone. */
+@media (max-width: 960px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .brandPanel {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 0;
+  }
+
+  .formPanel {
+    border: 0;
+    border-radius: 0;
+  }
 }

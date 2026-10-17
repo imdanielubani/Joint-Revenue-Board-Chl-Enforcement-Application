@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import { SESSION_STORAGE_KEY } from '@/features/auth/session'
 import { MOCK_PASSWORD } from '@/mocks/mock-users'
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -9,9 +10,9 @@ describe('signing in', () => {
     const { router } = renderApp('/violations')
     const user = userEvent.setup()
 
-    await user.type(await screen.findByLabelText('Email'), 'admin@jrb.gov.ng')
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
     await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
-    await user.click(screen.getByRole('button', { name: 'Sign in' }))
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
     expect(await screen.findByRole('heading', { name: 'Violations & Cases' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/violations')
@@ -21,9 +22,9 @@ describe('signing in', () => {
     renderApp('/sign-in')
     const user = userEvent.setup()
 
-    await user.type(await screen.findByLabelText('Email'), 'admin@jrb.gov.ng')
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
     await user.type(screen.getByLabelText('Password'), 'wrong')
-    await user.click(screen.getByRole('button', { name: 'Sign in' }))
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'The email or password is incorrect.',
@@ -34,7 +35,7 @@ describe('signing in', () => {
     renderApp('/sign-in')
     const user = userEvent.setup()
 
-    await user.click(await screen.findByRole('button', { name: 'Sign in' }))
+    await user.click(await screen.findByRole('button', { name: 'Sign In' }))
 
     expect(screen.getByText('Enter a valid email address.')).toBeInTheDocument()
     expect(screen.getByText('Enter your password.')).toBeInTheDocument()
@@ -49,6 +50,53 @@ describe('signing in', () => {
     expect(password).toHaveAttribute('type', 'text')
     await user.click(screen.getByRole('button', { name: 'Hide password' }))
     expect(password).toHaveAttribute('type', 'password')
+  })
+  it('keeps the session for this tab only, unless "Keep me signed in" is ticked', async () => {
+    renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+
+    await screen.findByRole('heading', { name: 'Overview' })
+    expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).not.toBeNull()
+    expect(localStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
+  })
+
+  it('keeps the session across browser restarts when "Keep me signed in" is ticked', async () => {
+    renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
+    await user.click(screen.getByRole('checkbox', { name: 'Keep me signed in' }))
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+
+    await screen.findByRole('heading', { name: 'Overview' })
+    expect(localStorage.getItem(SESSION_STORAGE_KEY)).not.toBeNull()
+    expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
+  })
+
+  it('opens the forgotten-password page', async () => {
+    const { router } = renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('link', { name: 'Forgotten Password?' }))
+
+    expect(await screen.findByRole('heading', { name: 'Reset your password' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/forgot-password')
+  })
+
+  it('shows sign-in help on request', async () => {
+    renderApp('/sign-in')
+    const user = userEvent.setup()
+    const help = await screen.findByRole('button', { name: 'Need help signing in?' })
+
+    expect(help).toHaveAttribute('aria-expanded', 'false')
+    await user.click(help)
+    expect(help).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText(/contact your CHL administrator/)).toBeInTheDocument()
   })
 })
 
@@ -84,9 +132,9 @@ describe('signed in', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Sign out' }))
 
-    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/sign-in')
-    expect(localStorage.length).toBe(0)
+    expect(localStorage.length + sessionStorage.length).toBe(0)
   })
 
   it('keeps a signed-in user off the sign-in page', async () => {

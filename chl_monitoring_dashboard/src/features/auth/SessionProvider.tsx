@@ -2,9 +2,19 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { setAuthHandlers } from '@/shared/api/auth-bridge'
 import { authApi as defaultAuthApi, type AuthApi } from './auth.api'
-import type { Session, SignInInput } from './auth.schemas'
-import { clearSession, loadSession, saveSession, SESSION_STORAGE_KEY } from './session'
-import { SessionContext, type SessionContextValue, type SignOutReason } from './session-context'
+import {
+  clearSession,
+  loadSession,
+  saveSession,
+  SESSION_STORAGE_KEY,
+  type StoredSession,
+} from './session'
+import {
+  SessionContext,
+  type SessionContextValue,
+  type SignInOptions,
+  type SignOutReason,
+} from './session-context'
 
 interface SessionProviderProps {
   children: ReactNode
@@ -12,21 +22,22 @@ interface SessionProviderProps {
 }
 
 /**
- * Holds the signed-in session: remembers it across reloads, renews the
- * access token when the backend asks, and signs out when the 24 hours end.
+ * Holds the signed-in session: keeps it across reloads, renews the access
+ * token when the backend asks, and signs out when the 24 hours end.
  */
 export function SessionProvider({ children, api = defaultAuthApi }: SessionProviderProps) {
   const queryClient = useQueryClient()
-  const [session, setSession] = useState<Session | null>(() => loadSession())
+  const [stored, setStored] = useState<StoredSession | null>(() => loadSession())
   const [endReason, setEndReason] = useState<SignOutReason | null>(null)
-  const sessionRef = useRef(session)
+  const storedRef = useRef(stored)
   const refreshing = useRef<Promise<string | null> | null>(null)
+  const session = stored?.session ?? null
 
-  const update = useCallback((next: Session | null) => {
-    sessionRef.current = next
+  const update = useCallback((next: StoredSession | null) => {
+    storedRef.current = next
     if (next) saveSession(next)
     else clearSession()
-    setSession(next)
+    setStored(next)
   }, [])
 
   const end = useCallback(
@@ -40,16 +51,16 @@ export function SessionProvider({ children, api = defaultAuthApi }: SessionProvi
   )
 
   const signIn = useCallback(
-    async (input: SignInInput) => {
-      const next = await api.signIn(input)
+    async ({ remember, ...credentials }: SignInOptions) => {
+      const next = await api.signIn(credentials)
       setEndReason(null)
-      update(next)
+      update({ session: next, remember })
     },
     [api, update],
   )
 
   const signOut = useCallback(async () => {
-    const current = sessionRef.current
+    const current = storedRef.current?.session
     end('signed_out')
     // Best effort: the session is already gone on this side.
     if (current) await api.signOut(current.refreshToken).catch(() => undefined)
@@ -58,14 +69,14 @@ export function SessionProvider({ children, api = defaultAuthApi }: SessionProvi
   // The HTTP client reads the token and asks for renewals through this bridge.
   useEffect(() => {
     setAuthHandlers({
-      getAccessToken: () => sessionRef.current?.accessToken ?? null,
+      getAccessToken: () => storedRef.current?.session.accessToken ?? null,
       refreshAccessToken: () => {
         refreshing.current ??= (async () => {
-          const current = sessionRef.current
+          const current = storedRef.current
           if (!current) return null
           try {
-            const tokens = await api.refresh(current.refreshToken)
-            update({ ...current, ...tokens })
+            const tokens = await api.refresh(current.session.refreshToken)
+            update({ ...current, session: { ...current.session, ...tokens } })
             return tokens.accessToken
           } catch {
             end('expired')
@@ -93,8 +104,8 @@ export function SessionProvider({ children, api = defaultAuthApi }: SessionProvi
     const onStorage = (event: StorageEvent) => {
       if (event.key !== SESSION_STORAGE_KEY) return
       const next = loadSession()
-      sessionRef.current = next
-      setSession(next)
+      storedRef.current = next
+      setStored(next)
       if (!next) queryClient.clear()
     }
     window.addEventListener('storage', onStorage)

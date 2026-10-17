@@ -1,17 +1,56 @@
 import type { ReactNode } from 'react'
+import mapDots from '@/assets/auth/map-dots.png'
+import { JrbLogo } from '@/shared/ui/JrbLogo'
 import styles from './AuthLayout.module.css'
 
-/** The frame around the signed-out pages. */
-export function AuthLayout({ title, children }: { title: string; children: ReactNode }) {
+interface AuthLayoutProps {
+  eyebrow: string
+  title: string
+  description: string
+  children: ReactNode
+}
+
+/** The signed-out pages: the brand panel on the left, the form panel on the right. */
+export function AuthLayout({ eyebrow, title, description, children }: AuthLayoutProps) {
   return (
-    <main className={styles.page}>
-      <section className={styles.card} aria-labelledby="auth-title">
-        <p className={styles.brand}>CHL Monitoring Dashboard</p>
-        <h1 id="auth-title" className={styles.title}>
-          {title}
-        </h1>
-        {children}
-      </section>
-    </main>
+    <div className={styles.page}>
+      <aside className={styles.brandPanel}>
+        <img className={styles.map} src={mapDots} alt="" />
+        <div className={styles.brandContent}>
+          <div className={styles.brand}>
+            <JrbLogo />
+            <div>
+              <p className={styles.brandName}>JRB CHL</p>
+              <p className={styles.brandTagline}>MONITORING DASHBOARD</p>
+            </div>
+          </div>
+
+          <div className={styles.hero}>
+            <p className={styles.heroEyebrow}>Enforcement monitoring</p>
+            <p className={styles.heroTitle}>Monitoring &amp; Command for haulage enforcement.</p>
+            <p className={styles.heroText}>
+              Monitor vehicle verifications, review outstanding cases and understand field activity
+              across your assigned locations.
+            </p>
+          </div>
+
+          <div className={styles.brandFooter}>
+            <span>JOINT REVENUE BOARD</span>
+            <span>CHL MONITORING</span>
+          </div>
+        </div>
+      </aside>
+
+      <main className={styles.formPanel}>
+        <div className={styles.formColumn}>
+          <header className={styles.header}>
+            <p className={styles.eyebrow}>{eyebrow}</p>
+            <h1 className={styles.title}>{title}</h1>
+            <p className={styles.description}>{description}</p>
+          </header>
+          {children}
+        </div>
+      </main>
+    </div>
   )
 }

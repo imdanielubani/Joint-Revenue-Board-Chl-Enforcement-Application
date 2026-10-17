@@ -23,6 +23,9 @@ export function renderApp(path: string, options: { authApi?: AuthApi } = {}) {
 export function signInAs(email: string) {
   const user = MOCK_USERS.find((candidate) => candidate.email === email)
   if (!user) throw new Error(`No sample user ${email}`)
-  saveSession({ accessToken: 'access', refreshToken: 'refresh', user, expiresAt: sessionExpiry() })
+  saveSession({
+    session: { accessToken: 'access', refreshToken: 'refresh', user, expiresAt: sessionExpiry() },
+    remember: true,
+  })
   return user
 }

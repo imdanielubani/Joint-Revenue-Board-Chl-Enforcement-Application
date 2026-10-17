@@ -3,12 +3,17 @@ import type { Session, SignInInput, User } from './auth.schemas'
 
 export type SignOutReason = 'signed_out' | 'expired'
 
+export interface SignInOptions extends SignInInput {
+  /** "Keep me signed in": keep the session after the browser is closed (still 24 hours at most). */
+  remember: boolean
+}
+
 export interface SessionContextValue {
   session: Session | null
   user: User | null
   /** Why the last session ended, so the sign-in page can say so. */
   endReason: SignOutReason | null
-  signIn(input: SignInInput): Promise<void>
+  signIn(options: SignInOptions): Promise<void>
   signOut(): Promise<void>
 }
 

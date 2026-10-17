@@ -151,7 +151,11 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 - **Times are shown in Lagos time** (`shared/lib/format.ts`), whatever the
   viewer's clock.
 - **Styling:** CSS Modules next to each component; every value comes from
-  the tokens in `styles/tokens.css`, which will take the design's values.
+  the tokens in `styles/tokens.css`, which hold the design's colours, type,
+  radii and sizes. Fonts are self-hosted (`styles/fonts.ts`): Poppins for
+  text, Geist for inputs, Inter for captions.
+- **Images** from the design live in `src/assets/` (`brand/` for the JRB
+  logo, `auth/` for the sign-in pages).
 
 ## Sessions and access
 
@@ -162,15 +166,20 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 - On a 401, the HTTP client renews the access token once (one renewal at a
   time, however many requests failed) and retries. If renewal fails, the
   session ends.
-- The session is remembered across reloads, and signing in or out in one tab
-  applies to the others. Signing out clears every cached answer.
+- **"Keep me signed in"** keeps the session after the browser is closed
+  (`localStorage`). Unticked, the session ends with the browser tab
+  (`sessionStorage`). Either way it ends at 24 hours, and survives reloads.
+- Signing in or out in one tab applies to the others. Signing out clears
+  every cached answer.
 - **Modules:** the backend says which modules each user may open
   (`user.modules`). The menu shows only those, and opening another one shows
   "No access". **Areas:** the user's areas (`user.scopes`) come from CHL;
   the backend filters the data to them.
 - Pending with the backend: the auth paths in `features/auth/auth.api.ts`
-  are provisional. Tokens are kept in `localStorage` for now; if the backend
-  can use httpOnly cookies, they should move there.
+  are provisional. Tokens are kept in browser storage for now; if the
+  backend can use httpOnly cookies, they should move there.
+- "Need help signing in?" shows a short note for now; it should point to
+  JRB's support contact once there is one.
 
 ## Conventions
 
@@ -187,6 +196,19 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Sign-in page built to the design: the brand panel (logo, hero, dotted map)
+  and the form panel ("Welcome back", email, password with Show/Hide, "Keep
+  me signed in", "Forgotten Password?", the role note and "Need help signing
+  in?").
+  - Design tokens now hold the design's values; Poppins, Geist and Inter are
+    self-hosted.
+  - "Keep me signed in" chooses between keeping the session after the
+    browser closes and ending it with the tab; the 24-hour limit applies
+    either way.
+  - The forgotten-password page uses the same layout until its design
+    arrives. Narrow screens show the form alone.
+  - 29 tests.
 
 - Project structure: one folder per module in `src/features/`, with
   `app/`, `config/`, `shared/`, `mocks/` and `styles/`.
