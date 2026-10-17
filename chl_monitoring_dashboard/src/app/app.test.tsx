@@ -16,7 +16,7 @@ describe('signing in', () => {
     await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    expect(await screen.findByRole('heading', { name: 'Violations & Cases' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Violations & cases' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/violations')
   })
 
@@ -87,7 +87,7 @@ describe('signing in', () => {
     await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Operational overview' })).toBeInTheDocument()
     expect(screen.queryByText('Sign-in error')).not.toBeInTheDocument()
   })
 
@@ -171,7 +171,7 @@ describe('signing in', () => {
     await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    await screen.findByRole('heading', { name: 'Overview' })
+    await screen.findByRole('heading', { name: 'Operational overview' })
     expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).not.toBeNull()
     expect(localStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
   })
@@ -185,7 +185,7 @@ describe('signing in', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Keep me signed in' }))
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    await screen.findByRole('heading', { name: 'Overview' })
+    await screen.findByRole('heading', { name: 'Operational overview' })
     expect(localStorage.getItem(SESSION_STORAGE_KEY)).not.toBeNull()
     expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
   })
@@ -258,7 +258,7 @@ describe('signed in', () => {
     signInAs('admin@jrb.gov.ng')
     const { router } = renderApp('/')
 
-    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Operational overview' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/overview')
   })
 
@@ -267,8 +267,8 @@ describe('signed in', () => {
     renderApp('/overview')
 
     const menu = await screen.findByRole('navigation', { name: 'Main' })
-    expect(within(menu).getByRole('link', { name: 'Violations' })).toBeInTheDocument()
-    expect(within(menu).queryByRole('link', { name: 'History & Audit' })).not.toBeInTheDocument()
+    expect(within(menu).getByRole('link', { name: /^Violations & cases/ })).toBeInTheDocument()
+    expect(within(menu).queryByRole('link', { name: 'History & audit' })).not.toBeInTheDocument()
   })
 
   it('refuses a module the user may not open', async () => {
@@ -283,7 +283,7 @@ describe('signed in', () => {
     const { router } = renderApp('/overview')
     const user = userEvent.setup()
 
-    await user.click(await screen.findByRole('button', { name: 'Sign out' }))
+    await user.click(await screen.findByRole('button', { name: 'Log out' }))
 
     expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/sign-in')
@@ -303,7 +303,7 @@ describe('signed in', () => {
     })
     const user = userEvent.setup()
 
-    await user.click(await screen.findByRole('button', { name: 'Sign out' }))
+    await user.click(await screen.findByRole('button', { name: 'Log out' }))
 
     expect(await screen.findByText('Logged out successfully')).toBeInTheDocument()
     // The sign-in page loads on first use, so it may arrive just after the notification.
@@ -314,7 +314,7 @@ describe('signed in', () => {
     signInAs('admin@jrb.gov.ng')
     const { router } = renderApp('/sign-in')
 
-    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Operational overview' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/overview')
   })
 })

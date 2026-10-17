@@ -79,8 +79,45 @@
   --shadow-button: 0 2px 1.5px rgb(13 92 25 / 0.06);
   --radius-toast: 12px;
 
+  /* Signed-in frame: sidebar */
+  --sidebar-bg: #132c1d;
+  --sidebar-card-bg: #1b3826;
+  --sidebar-line: #355540;
+  --sidebar-tile-bg: #244c32;
+  --sidebar-tile-border: #3c6248;
+  --sidebar-workspace-icon: #b9e6c6;
+  --sidebar-label: #a0bbaa;
+  --sidebar-text: #d0e1d5;
+  --sidebar-icon: #b1cfbb;
+  --sidebar-active-bg: #24623c;
+  --sidebar-active-bar: #96dfad;
+  --sidebar-hover-bg: rgb(255 255 255 / 0.06);
+  --sidebar-strong-text: #edf7f0;
+  --sidebar-muted-text: #afc7b7;
+  --sidebar-online: #8fd5a5;
+  --sidebar-attention: #dba64f;
+  --sidebar-count-bg: #31533d;
+  --sidebar-count-text: #e5f5ea;
+  --sidebar-logout: #f7b7b2;
+  --sidebar-avatar-bg: #315b3f;
+  --sidebar-avatar-border: #244a31;
+  --sidebar-user-name: #f4faf6;
+
+  /* Signed-in frame: top bar */
+  --topbar-control-bg: #f8fbf8;
+  --topbar-control-border: #dde3dc;
+  --topbar-tile-bg: #edf5ef;
+  --topbar-tile-border: #deebe2;
+  --topbar-field-border: #e2e8f0;
+  --topbar-button-border: #e8edf0;
+  --topbar-avatar-bg: #e6efe9;
+  --topbar-avatar-border: #d6e4db;
+  --topbar-avatar-text: #245b37;
+  --menu-shadow: 0 14px 40px rgb(23 32 51 / 0.13);
+
   /* Layout */
   --control-height: 46px;
-  --sidebar-width: 260px;
+  --sidebar-width: 254px;
+  --sidebar-width-collapsed: 80px;
   --topbar-height: 64px;
 }

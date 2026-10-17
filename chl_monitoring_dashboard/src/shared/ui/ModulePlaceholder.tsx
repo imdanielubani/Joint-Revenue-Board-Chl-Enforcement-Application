@@ -1,17 +1,14 @@
-import { PageHeader } from './PageHeader'
 import { StatePanel } from './StatePanel'
 
-interface ModulePlaceholderProps {
-  title: string
-  description: string
-}
-
-/** Stands in for a module's screen until it is built from the design. */
-export function ModulePlaceholder({ title, description }: ModulePlaceholderProps) {
+/**
+ * Stands in for a module's screen until it is built from the design. The page's title
+ * is in the top bar, so this shows only what the module will hold.
+ */
+export function ModulePlaceholder({ description }: { description: string }) {
   return (
-    <>
-      <PageHeader title={title} description={description} />
-      <StatePanel kind="empty" message="This screen will be built from the design." />
-    </>
+    <StatePanel
+      kind="empty"
+      message={`${description} This screen will be built from the design.`}
+    />
   )
 }

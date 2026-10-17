@@ -11,7 +11,7 @@ export function ProfilePage() {
 
   return (
     <>
-      <PageHeader title="Profile" description="Your access details, as assigned in CHL." />
+      <PageHeader title="Access details" description="Your access details, as assigned in CHL." />
       <dl className={styles.details}>
         <dt>Name</dt>
         <dd>{user.name}</dd>

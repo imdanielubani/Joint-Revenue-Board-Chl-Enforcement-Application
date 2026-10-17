@@ -72,14 +72,15 @@ export const routes: RouteObject[] = [
                 Component: m.ForgotPasswordPage,
               })),
           },
-          {
-            path: paths.support,
-            lazy: () =>
-              import('@/features/auth/pages/SupportPage').then((m) => ({
-                Component: m.SupportPage,
-              })),
-          },
         ],
+      },
+      // CHL support is open whether or not the user is signed in (the top bar's Help leads here).
+      {
+        path: paths.support,
+        lazy: () =>
+          import('@/features/auth/pages/SupportPage').then((m) => ({
+            Component: m.SupportPage,
+          })),
       },
       {
         element: <RequireAuth />,
@@ -94,6 +95,17 @@ export const routes: RouteObject[] = [
                   import('@/features/auth/pages/ProfilePage').then((m) => ({
                     Component: m.ProfilePage,
                   })),
+              },
+              {
+                path: paths.settings,
+                lazy: () =>
+                  import('@/features/auth/pages/SettingsPage').then((m) => ({
+                    Component: m.SettingsPage,
+                  })),
+              },
+              {
+                path: paths.search,
+                lazy: () => import('./pages/SearchPage').then((m) => ({ Component: m.SearchPage })),
               },
               ...MODULES.map<RouteObject>((module) => ({
                 path: module.path,

@@ -5,6 +5,8 @@ export const paths = {
   forgotPassword: '/forgot-password',
   support: '/support',
   profile: '/profile',
+  settings: '/settings',
+  search: '/search',
   overview: '/overview',
   commandCentre: '/command-centre',
   geography: '/geography',

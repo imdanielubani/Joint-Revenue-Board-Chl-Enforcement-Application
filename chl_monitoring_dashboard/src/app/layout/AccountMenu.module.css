@@ -1,0 +1,94 @@
+.menu {
+  position: absolute;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  width: 264px;
+  padding: 6px;
+  border: 1px solid var(--topbar-field-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: var(--menu-shadow);
+}
+
+/* Under the top bar's profile button: 7px below the bar, 22px in from its right edge. */
+.below {
+  top: calc(100% + 7px);
+  right: 22px;
+}
+
+/* Above the sidebar's user button. */
+.above {
+  bottom: calc(100% + 8px);
+  left: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--topbar-field-border);
+}
+
+.name {
+  color: var(--color-heading);
+  font-size: var(--font-size-button);
+  font-weight: var(--font-weight-semibold);
+  line-height: normal;
+}
+
+.role {
+  color: var(--color-text-slate);
+  font-size: var(--font-size-overline);
+  line-height: normal;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  padding-top: 5px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-heading);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  line-height: normal;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: var(--color-bg);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+/* Profile and Settings icons are slate in the design. */
+.itemIcon {
+  color: var(--color-text-slate);
+}
+
+.separator {
+  margin-top: 5px;
+  border-top: 1px solid var(--topbar-field-border);
+}
+
+.logout {
+  color: var(--color-danger-strong);
+}

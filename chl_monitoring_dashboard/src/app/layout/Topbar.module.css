@@ -1,64 +1,280 @@
 .topbar {
+  position: relative;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  min-height: var(--topbar-height);
-  padding: 0 var(--space-6);
+  gap: 16px;
+  height: var(--topbar-height);
+  padding: 6px 17px 10px 20px;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 20px;
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
 }
 
-.badges,
-.end {
+/* Left: sidebar toggle, page icon, breadcrumb and title */
+
+.start {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 21px;
+  min-width: 0;
 }
 
-.badge {
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
-  color: var(--color-warning);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
-}
-
-.iconLink {
-  font-size: var(--font-size-sm);
-}
-
-.user {
-  display: grid;
-  color: inherit;
-  text-align: right;
-  text-decoration: none;
-}
-
-.name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.role {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
-}
-
-.signOut {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: var(--font-size-sm);
+.toggle {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--topbar-control-border);
+  border-radius: 8px;
+  background: var(--topbar-control-bg);
   cursor: pointer;
 }
 
-@media (max-width: 900px) {
-  .topbar {
-    padding: var(--space-2) var(--space-4);
+.toggle:hover {
+  border-color: var(--color-primary);
+}
+
+/* The same arrow, pointing the other way, to expand the sidebar. */
+.mirrored {
+  transform: scaleX(-1);
+}
+
+.tile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 43px;
+  height: 43px;
+  border: var(--border-width) solid var(--topbar-tile-border);
+  border-radius: 12px;
+  background: var(--topbar-tile-bg);
+  color: var(--color-primary);
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-slate);
+  font-size: var(--font-size-overline);
+  line-height: 13.2px;
+  white-space: nowrap;
+}
+
+.title {
+  overflow: hidden;
+  color: var(--color-heading);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: 18.2px;
+  letter-spacing: -0.2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Right: search, help, notifications and the profile */
+
+.end {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 15px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 301px;
+  height: 40px;
+  padding: 0 12px;
+  border: var(--border-width) solid var(--topbar-field-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+}
+
+.search:focus-within {
+  border-color: var(--color-primary);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-heading);
+  font-size: var(--font-size-xs);
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-slate);
+  opacity: 1;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iconButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: var(--border-width) solid var(--topbar-button-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.iconButton:hover {
+  border-color: var(--color-primary);
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border: var(--border-width) solid var(--color-surface);
+  border-radius: 9px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 9px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.divider {
+  width: 1px;
+  height: 32px;
+  margin: 0 3px;
+  background: var(--topbar-field-border);
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile:hover,
+.profile[aria-expanded='true'] {
+  background: var(--color-bg);
+}
+
+.avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: var(--border-width) solid var(--topbar-avatar-border);
+  border-radius: 50%;
+  background: var(--topbar-avatar-bg);
+  color: var(--topbar-avatar-text);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: normal;
+}
+
+.profileText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profileName {
+  color: var(--color-heading);
+  font-size: var(--font-size-xs);
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.profileRole {
+  color: var(--color-text-slate);
+  font-size: var(--font-size-2xs);
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.chevron {
+  margin-left: 3px;
+}
+
+.toggle:focus-visible,
+.iconButton:focus-visible,
+.profile:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Narrower screens: the search narrows, then the profile's text and the search go. */
+@media (max-width: 1280px) {
+  .search {
+    width: 220px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .profileText,
+  .chevron {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .search,
+  .crumbs,
+  .tile {
+    display: none;
+  }
+
+  .start {
+    gap: 12px;
+  }
+
+  .end {
+    gap: 8px;
   }
 }

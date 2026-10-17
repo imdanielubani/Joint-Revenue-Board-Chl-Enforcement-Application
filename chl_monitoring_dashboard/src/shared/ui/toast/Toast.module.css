@@ -1,6 +1,7 @@
+/* 36px from the top on the sign-in pages; the signed-in frame moves it under its top bar. */
 .stack {
   position: fixed;
-  top: 36px;
+  top: var(--toast-top, 36px);
   right: 32px;
   z-index: 100;
   width: 390px;

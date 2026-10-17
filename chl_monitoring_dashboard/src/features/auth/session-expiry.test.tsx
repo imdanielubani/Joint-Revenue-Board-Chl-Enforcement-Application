@@ -24,7 +24,7 @@ describe('session expiry', { timeout: 20_000 }, () => {
     signInExpiringIn(4000)
     const { router } = renderApp('/violations')
 
-    expect(await screen.findByRole('heading', { name: 'Violations & Cases' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Violations & cases' })).toBeInTheDocument()
 
     const toast = await screen.findByText('Session expired', {}, { timeout: 8000 })
     expect(router.state.location.pathname).toBe('/sign-in')
@@ -49,7 +49,7 @@ describe('session expiry', { timeout: 20_000 }, () => {
     await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    expect(await screen.findByRole('heading', { name: 'Violations & Cases' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Violations & cases' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/violations')
   })
 
@@ -79,7 +79,7 @@ describe('session expiry', { timeout: 20_000 }, () => {
     renderApp('/overview')
     const user = userEvent.setup()
 
-    await user.click(await screen.findByRole('button', { name: 'Sign out' }))
+    await user.click(await screen.findByRole('button', { name: 'Log out' }))
 
     expect(await screen.findByText('Logged out successfully')).toBeInTheDocument()
     expect(screen.queryByText('Session expired')).not.toBeInTheDocument()

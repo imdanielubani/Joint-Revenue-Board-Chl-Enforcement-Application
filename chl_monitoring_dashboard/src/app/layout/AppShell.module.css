@@ -1,18 +1,34 @@
+/* As in the design: 16px around, 15px on the left; 13px between the sidebar and the
+   top bar, 20px when the sidebar is collapsed. */
 .shell {
-  display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr;
-  min-height: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  min-height: 100vh;
+  padding: 16px 16px 16px 15px;
+  background: var(--color-bg);
+}
+
+.collapsed {
+  gap: 20px;
 }
 
 .body {
   display: flex;
-  min-width: 0;
+  flex: 1;
   flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* The top bar stays in view as the page scrolls. */
+.body > header {
+  position: sticky;
+  top: 16px;
 }
 
 .main {
   flex: 1;
-  padding: var(--space-5) var(--space-6);
   outline: none;
 }
 
@@ -20,7 +36,7 @@
   position: absolute;
   top: var(--space-2);
   left: var(--space-2);
-  z-index: 10;
+  z-index: 60;
   padding: var(--space-2) var(--space-3);
   background: var(--color-surface);
   transform: translateY(-200%);
@@ -30,12 +46,16 @@
   transform: none;
 }
 
-@media (max-width: 900px) {
-  .shell {
-    grid-template-columns: 1fr;
-  }
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgb(19 44 29 / 0.35);
+}
 
-  .main {
-    padding: var(--space-4);
+@media (max-width: 768px) {
+  .shell {
+    gap: 0;
+    padding: 12px;
   }
 }

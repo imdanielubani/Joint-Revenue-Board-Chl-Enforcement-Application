@@ -82,8 +82,9 @@ src/
     App.tsx                Providers and the router
     AppProviders.tsx       Query cache and session (tests pass their own)
     routes.tsx             Every route; each module loads as its own bundle
-    modules.ts             The modules: key, menu label, address, menu section
-    layout/                The signed-in frame: AppShell, Sidebar, Topbar
+    modules.ts             The modules: key, menu label, page title, address, section, icon
+    layout/                The signed-in frame: AppShell, Sidebar, Topbar, AccountMenu,
+                           page titles (page-meta.ts)
     pages/                 Home redirect, not found, crash page
   config/
     env.ts                 Settings, checked with zod at start-up
@@ -173,9 +174,27 @@ onSelect }` (no `to`) is a button acting on the current page. Either
   the tokens in `styles/tokens.css`, which hold the design's colours, type,
   radii and sizes. Fonts are self-hosted (`styles/fonts.ts`): Poppins for
   text, Geist for inputs, Inter for captions.
+- **The signed-in frame** (`app/layout/`), as designed:
+  - **Sidebar:** the brand, the workspace card (from the user's areas), the
+    menu in three sections (Workspace, Enforcement, Monitoring) with the
+    current page highlighted, a marker on "Violations & cases" when cases need
+    attention and the unread count on "Notifications", then Log out and the
+    user (opening the account menu). The top bar's arrow collapses it to
+    icons (80px); the choice is remembered in this browser. On screens 768px
+    or narrower it slides over the page instead.
+  - **Top bar:** the page's icon, breadcrumb and title (the page's `h1`), a
+    search of all records (to `/search`), Help (CHL support), the bell with
+    the unread count, and the profile, which opens the account menu (Profile,
+    Settings, Log out; keyboard: arrows, Home, End, Escape).
+  - Menu icons use the design's SVGs as masks (`MaskIcon`), so one file
+    serves the active, inactive and top-bar colours.
+  - The counts come from `features/notifications` and `features/violations`
+    (sample data until the backend is connected), refreshed every minute.
+  - Settings and search results are placeholders until they are designed.
 - **Images** from the design live in `public/assets/` (`brand/` for the
   JRB logo, `auth/` for the sign-in pages, `support/` for the support form,
-  `toast/` for notifications). They are served as they are, so
+  `toast/` for notifications, `shell/` for the top bar and sidebar, `nav/`
+  for the menu). They are served as they are, so
   code refers to them by URL with `assetUrl('brand/jrb-logo.png')`
   (`shared/lib/asset-url.ts`), never by importing them.
 - **Favicon:** the JRB shield mark, cropped from the brand logo, in
@@ -272,6 +291,17 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Sidebar, top bar and account menu built to the design (expanded,
+  collapsed, and menu open), replacing the provisional frame.
+  - Modules renamed and regrouped as in the design (Workspace, Enforcement,
+    Monitoring); the Overview's title is "Operational overview".
+  - Unread notifications and cases needing attention, from the API layer.
+  - New Settings and search results pages (placeholders); CHL support is
+    reachable while signed in, with "Back to dashboard".
+  - Notifications on signed-in pages start under the top bar. "System
+    Administrator" is the administrator's role label. Manrope added for the
+    sidebar's section labels. 90 tests.
 
 - Inactivity timeout and session warnings.
   - Signed out after 45 minutes without activity in any tab, with an "Are
