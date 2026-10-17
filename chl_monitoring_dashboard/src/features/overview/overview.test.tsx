@@ -1,22 +1,88 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import { summarize } from '@/mocks/mock-overview-api'
+import { mockRecords } from '@/mocks/mock-records'
+import { addDays, formatPeriod, lagosDay } from '@/shared/lib/dates'
+import { formatDelay, formatShortDateTime } from '@/shared/lib/format'
 import { renderApp, signInAs } from '@/test/render-app'
+import { plural } from './overview-display'
+import { presetPeriod } from './overview-period'
+import type { OverviewFilters, PresetRange } from './overview.schemas'
 
 /** One of the page's cards, found by its title. */
 const card = (title: string) => screen.findByRole('region', { name: title })
 
+/** What the sample data should show for these filters: the figures the page must match. */
+function expected(
+  overrides: Partial<Omit<OverviewFilters, 'range'>> & { range?: PresetRange } = {},
+) {
+  const today = lagosDay()
+  const range = overrides.range ?? '14d'
+  return summarize(mockRecords(today), {
+    scope: 'ng',
+    agentId: null,
+    organization: null,
+    ...presetPeriod(range, today),
+    ...overrides,
+    range,
+  })
+}
+
+const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
+
 describe('overview page', () => {
   it('shows the headline figures with links into the modules', async () => {
+    const sample = expected()
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')
 
     const figures = await screen.findByRole('list', { name: 'Headline figures' })
     const total = within(figures).getByText('Total agent verifications').closest('li')!
-    expect(within(total).getByText('27')).toBeInTheDocument()
+    expect(within(total).getByText(String(sample.kpis.totalVerifications))).toBeInTheDocument()
     expect(within(total).getByRole('link')).toHaveAttribute('href', '/verifications')
-    expect(within(figures).getByText('4 agents with issued violations')).toBeInTheDocument()
-    expect(screen.getByText(/National scope · Last 14 days · 8 reporting/)).toBeInTheDocument()
+    expect(
+      within(figures).getByText(
+        `${plural(sample.kpis.agentsWithViolations, 'agent')} with issued violations`,
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        new RegExp(`National scope · Last 14 days · ${sample.reportingLocations} reporting`),
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('counts the figures again for each area, period, organization and agent', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+    const figures = await screen.findByRole('list', { name: 'Headline figures' })
+    const total = () => within(figures).getByText('Total agent verifications').closest('li')!
+
+    await userEvent.selectOptions(screen.getByLabelText('Date range'), '90d')
+    const ninety = expected({ range: '90d' })
+    expect(
+      await within(total()).findByText(String(ninety.kpis.totalVerifications)),
+    ).toBeInTheDocument()
+
+    await userEvent.selectOptions(await screen.findByLabelText('Organization'), 'Zone 2')
+    const zone2 = expected({ range: '90d', organization: 'Zone 2' })
+    expect(
+      await within(total()).findByText(String(zone2.kpis.totalVerifications)),
+    ).toBeInTheDocument()
+    expect(zone2.kpis.totalVerifications).toBeLessThan(ninety.kpis.totalVerifications)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    await userEvent.click(screen.getByRole('button', { name: /^Monitoring scope/ }))
+    await userEvent.type(
+      screen.getByRole('combobox', { name: 'Find an area' }),
+      'lagos state{Enter}',
+    )
+    const lagos = expected({ range: '90d', scope: 'la' })
+    expect(
+      await within(total()).findByText(String(lagos.kpis.totalVerifications)),
+    ).toBeInTheDocument()
+    expect(lagos.kpis.totalVerifications).toBeLessThan(ninety.kpis.totalVerifications)
   })
 
   it('keeps the chosen period in the address', async () => {
@@ -29,30 +95,35 @@ describe('overview page', () => {
   })
 
   it('reports on dates the user picks', async () => {
+    const today = lagosDay()
+    const from = addDays(today, -17)
+    const to = addDays(today, -8)
     signInAs('admin@jrb.gov.ng')
     const { router } = renderApp('/overview')
 
     await userEvent.selectOptions(await screen.findByLabelText('Date range'), 'custom')
     // The custom range starts from the period already on screen.
-    const from = screen.getByLabelText('From')
-    const to = screen.getByLabelText('To')
+    const fromField = screen.getByLabelText('From')
+    const toField = screen.getByLabelText('To')
     expect(router.state.location.search).toMatch(/range=custom&from=\d{4}-\d{2}-\d{2}&to=/)
 
-    await userEvent.clear(from)
-    await userEvent.type(from, '2026-10-01')
-    await userEvent.clear(to)
-    await userEvent.type(to, '2026-10-10')
-    expect(router.state.location.search).toContain('from=2026-10-01')
-    expect(router.state.location.search).toContain('to=2026-10-10')
-    expect(await screen.findByText(/National scope · 1–10 Oct, 2026 ·/)).toBeInTheDocument()
+    await userEvent.clear(fromField)
+    await userEvent.type(fromField, from)
+    await userEvent.clear(toField)
+    await userEvent.type(toField, to)
+    expect(router.state.location.search).toContain(`from=${from}`)
+    expect(router.state.location.search).toContain(`to=${to}`)
+    expect(
+      await screen.findByText(new RegExp(`National scope · ${formatPeriod(from, to)} ·`)),
+    ).toBeInTheDocument()
 
     // Dates the wrong way round are explained, not applied.
-    await userEvent.clear(from)
-    await userEvent.type(from, '2026-10-12')
+    await userEvent.clear(fromField)
+    await userEvent.type(fromField, addDays(to, 2))
     expect(screen.getByRole('alert')).toHaveTextContent(
       'The start date must be on or before the end date.',
     )
-    expect(router.state.location.search).toContain('from=2026-10-01')
+    expect(router.state.location.search).toContain(`from=${from}`)
 
     await userEvent.selectOptions(screen.getByLabelText('Date range'), '7d')
     expect(router.state.location.search).not.toMatch(/from=|to=/)
@@ -68,11 +139,24 @@ describe('overview page', () => {
   })
 
   it('warns that field data may be delayed when the latest record is old', async () => {
+    const today = lagosDay()
+    const from = addDays(today, -40)
+    const to = addDays(today, -20)
+    const latest = summarize(mockRecords(today), {
+      scope: 'ng',
+      range: 'custom',
+      from,
+      to,
+      agentId: null,
+      organization: null,
+    }).latestReceivedAt
     signInAs('admin@jrb.gov.ng')
-    // A period that ended a while ago: its latest record is days old.
-    renderApp('/overview?range=custom&from=2026-10-01&to=2026-10-10')
+    // A period that ended weeks ago: its latest record is old.
+    renderApp(`/overview?range=custom&from=${from}&to=${to}`)
     const received = await screen.findByText(/Field data received/)
-    expect(received).toHaveTextContent('Field data received 10 Oct, 10:18 AM · may be delayed')
+    expect(received).toHaveTextContent(
+      `Field data received ${formatShortDateTime(latest)} · may be delayed`,
+    )
   })
 
   it('falls back to the last 14 days for dates that make no sense', async () => {
@@ -122,10 +206,20 @@ describe('overview page', () => {
     await userEvent.selectOptions(await screen.findByLabelText('Organization'), 'Zone 1')
     expect(router.state.location.search).toContain('org=Zone+1')
     expect(await screen.findByText(/Organization: Zone 1/)).toBeInTheDocument()
+    // Only Zone 1's agents are offered.
+    expect(
+      within(screen.getByLabelText('Agent'))
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['All agents', 'Tunde Okafor · JRB-AG-0142', 'Grace Bello · JRB-AG-0143'])
 
     await userEvent.selectOptions(screen.getByLabelText('Agent'), 'JRB-AG-0142')
     expect(router.state.location.search).toContain('agent=JRB-AG-0142')
     expect(await screen.findByText(/Agent: Tunde Okafor/)).toBeInTheDocument()
+
+    // Another organization drops an agent who is not in it.
+    await userEvent.selectOptions(screen.getByLabelText('Organization'), 'Zone 2')
+    expect(router.state.location.search).not.toContain('agent=')
 
     await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
     expect(router.state.location.search).not.toMatch(/agent=|org=/)
@@ -141,77 +235,122 @@ describe('overview page', () => {
   })
 
   it('groups the metrics by agent, location or organization', async () => {
+    const sample = expected()
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')
 
     const performance = await card('Enforcement performance & corporate monitoring')
-    expect(
-      await within(performance).findByRole('table', { name: 'Enforcement metrics by agent' }),
-    ).toBeInTheDocument()
+    const byAgent = await within(performance).findByRole('table', {
+      name: 'Enforcement metrics by agent',
+    })
+    expect(within(byAgent).getAllByRole('row')).toHaveLength(sample.agents.length + 1)
 
     await userEvent.click(within(performance).getByRole('tab', { name: /By location/ }))
     const byLocation = within(performance).getByRole('table', {
       name: 'Enforcement metrics by location',
     })
-    expect(within(byLocation).getByText('Kano-Zaria Exp')).toBeInTheDocument()
+    for (const location of sample.locations) {
+      expect(within(byLocation).getByText(location.name)).toBeInTheDocument()
+    }
 
     await userEvent.click(within(performance).getByRole('tab', { name: 'Corporate summary' }))
     const byOrganization = within(performance).getByRole('table', {
       name: 'Enforcement metrics by organization',
     })
-    // The four sample agents all belong to Zone 1.
-    const [, row] = within(byOrganization).getAllByRole('row')
+    // Each organization's row adds up its agents' figures.
+    const zone1 = sample.agents.filter((agent) => agent.organization === 'Zone 1')
+    const sum = (
+      key: 'verifications' | 'violationsIssued' | 'unresolved' | 'escalated' | 'repeatAlerts',
+    ) => String(zone1.reduce((total, agent) => total + agent[key], 0))
+    const row = within(byOrganization).getByText('Zone 1').closest('tr')!
     expect(
-      within(row!)
+      within(row)
         .getAllByRole('cell')
         .map((cell) => cell.textContent),
-    ).toEqual(['Zone 1', '4', '27', '30', '15', '7', '3'])
+    ).toEqual([
+      'Zone 1',
+      String(zone1.length),
+      sum('verifications'),
+      sum('violationsIssued'),
+      sum('unresolved'),
+      sum('escalated'),
+      sum('repeatAlerts'),
+    ])
   })
 
   it('searches, sorts and pages the recent activity register', async () => {
+    const records = expected().recentActivity
+    const plate = records[0]!.plate
+    const withPlate = records.filter((record) => record.plate === plate).length
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')
 
     const recent = await card('Recent activity')
-    expect(await within(recent).findByText('Showing 1–10 of 68 records')).toBeInTheDocument()
-    expect(within(recent).getByText('Page 1 / 7')).toBeInTheDocument()
+    expect(
+      await within(recent).findByText(`Showing 1–10 of ${records.length} records`),
+    ).toBeInTheDocument()
+    expect(
+      within(recent).getByText(`Page 1 / ${Math.ceil(records.length / 10)}`),
+    ).toBeInTheDocument()
 
     await userEvent.click(within(recent).getByRole('button', { name: 'Next page' }))
-    expect(within(recent).getByText('Showing 11–20 of 68 records')).toBeInTheDocument()
+    expect(within(recent).getByText(/^Showing 11–/)).toBeInTheDocument()
 
-    await userEvent.type(within(recent).getByLabelText('Search records'), 'IBD-640')
-    expect(within(recent).getByText('Showing 1–7 of 7 records')).toBeInTheDocument()
+    await userEvent.type(within(recent).getByLabelText('Search records'), plate)
+    expect(
+      within(recent).getByText(`Showing 1–${Math.min(10, withPlate)} of ${withPlate} records`),
+    ).toBeInTheDocument()
 
     await userEvent.clear(within(recent).getByLabelText('Search records'))
     await userEvent.click(within(recent).getByRole('button', { name: 'Vehicle Plate' }))
+    const first = [...records].sort((a, b) => collator.compare(a.plate, b.plate))[0]!.plate
     const firstRow = within(recent).getAllByRole('row')[1]!
-    expect(within(firstRow).getByText('AAA-001-AB')).toBeInTheDocument()
+    expect(within(firstRow).getByText(first)).toBeInTheDocument()
   })
 
   it('marks records checked offline and their sync status', async () => {
+    const records = expected().recentActivity
+    const offline = records.filter((record) => record.source === 'offline')
+    const example = offline[0]!
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')
 
     const recent = await card('Recent activity')
-    const rows = await within(recent).findAllByRole('row')
-    // Row 4 was checked offline and sent 47 minutes later; row 8 still has evidence to upload.
-    expect(within(rows[4]!).getByText('Offline')).toBeInTheDocument()
-    expect(within(rows[4]!).getByText('received 47 min later')).toBeInTheDocument()
-    expect(within(rows[1]!).getByText('Live check')).toBeInTheDocument()
-    expect(within(rows[8]!).getByText('Evidence pending')).toBeInTheDocument()
-
+    await within(recent).findByText(/^Showing 1–/)
     await userEvent.type(within(recent).getByLabelText('Search records'), 'offline')
-    expect(within(recent).getByText('Showing 1–10 of 17 records')).toBeInTheDocument()
+    expect(
+      within(recent).getByText(
+        `Showing 1–${Math.min(10, offline.length)} of ${offline.length} records`,
+      ),
+    ).toBeInTheDocument()
+
+    await userEvent.clear(within(recent).getByLabelText('Search records'))
+    await userEvent.type(within(recent).getByLabelText('Search records'), example.reference)
+    const row = within(recent).getAllByRole('row')[1]!
+    expect(within(row).getByText('Offline')).toBeInTheDocument()
+    expect(
+      within(row).getByText(`received ${formatDelay(example.recordedAt, example.receivedAt!)}`),
+    ).toBeInTheDocument()
+    expect(
+      within(row).getByText(
+        example.syncStatus === 'evidence_pending' ? 'Evidence pending' : 'Synced',
+      ),
+    ).toBeInTheDocument()
   })
 
   it('lists only escalated cases on the Escalated tab', async () => {
+    const { cases } = expected()
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')
 
-    const cases = await card('Cases requiring attention')
-    expect(await within(cases).findByText('KJA-482XY')).toBeInTheDocument()
-    await userEvent.click(within(cases).getByRole('tab', { name: /Escalated/ }))
-    expect(within(cases).queryByText('Payment Pending')).not.toBeInTheDocument()
-    expect(within(cases).getAllByText('Escalated', { selector: 'span' }).length).toBeGreaterThan(1)
+    const card_ = await card('Cases requiring attention')
+    expect(await within(card_).findByText(cases.items[0]!.id)).toBeInTheDocument()
+    await userEvent.click(within(card_).getByRole('tab', { name: /Escalated/ }))
+    const panel = within(card_).getByRole('tabpanel')
+    const escalated = cases.items.filter((item) => item.status === 'escalated').slice(0, 4)
+    expect(within(panel).getAllByRole('listitem')).toHaveLength(escalated.length)
+    for (const item of escalated) {
+      expect(within(panel).getByText(item.id)).toBeInTheDocument()
+    }
   })
 })

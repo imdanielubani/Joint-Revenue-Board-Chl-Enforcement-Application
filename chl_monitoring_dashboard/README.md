@@ -294,6 +294,15 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview sample data now follows the filters: 90 days of sample field
+  records (verifications, the violations they led to, and demand notices) in
+  `mocks/mock-records.ts`, from a fixed seed, and every Overview figure is
+  counted from the records that match the area, period, organization and
+  agent (`summarize` in `mocks/mock-overview-api.ts`). The cards always agree
+  with one another; a repeat-vehicle alert needs three qualifying reports.
+  The sample agents are now in two organizations (Zone 1, Zone 2) so the
+  filter has a choice. The figures differ from the design's placeholder
+  numbers, which did not add up.
 - Overview: beside "Last checked", the time CHL last received a field record
   for the figures ("Field data received 10:18 WAT"). It turns amber with "may
   be delayed" when that record is more than 2 hours older than the check, and
