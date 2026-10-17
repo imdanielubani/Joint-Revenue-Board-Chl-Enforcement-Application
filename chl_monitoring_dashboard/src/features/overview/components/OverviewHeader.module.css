@@ -185,6 +185,8 @@
   font-weight: var(--font-weight-semibold);
   appearance: none;
   cursor: pointer;
+  /* As wide as the chosen option, not the longest one. */
+  field-sizing: content;
 }
 
 .select:hover {
@@ -353,4 +355,47 @@
 
 .clearFilters:hover {
   background: rgb(19 120 54 / 0.06);
+}
+
+/* Custom range: two small date fields beside the period list. */
+.customRange {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  color: #94a0ad;
+  font-size: 10px;
+}
+
+.dateInput {
+  height: 27px;
+  padding: 0 6px;
+  border: 0.8px solid #dfe6e9;
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: #6e7c88;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.dateInput:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.dateInput[aria-invalid='true'] {
+  border-color: var(--color-danger-strong);
+}
+
+/* Under the date fields, so the row does not shift while the user types. */
+.rangeProblem {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  white-space: nowrap;
+  color: var(--color-danger);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
 }

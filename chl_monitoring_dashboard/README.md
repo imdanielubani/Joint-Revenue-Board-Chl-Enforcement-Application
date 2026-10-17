@@ -294,6 +294,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: "Custom range" in the period list shows From and To date fields,
+  starting from the period on screen. Dates are Lagos days; a pair that is out
+  of order, incomplete or in the future is explained under the fields and not
+  applied. The dates are kept in the address (nonsense dates fall back to the
+  last 14 days), the summary line shows them, and every request now carries the
+  period's first and last day. The filter dropdowns are as wide as their
+  choice.
 - Overview: organization and agent filters in the filter row, kept in the
   address with "Clear" to remove them. Choosing an organization limits the
   agent list (and drops an agent outside it); an agent or organization the

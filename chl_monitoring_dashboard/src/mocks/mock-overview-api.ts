@@ -1,13 +1,13 @@
 import type { OverviewApi } from '@/features/overview/overview.api'
 import {
-  RANGE_DAYS,
   type ActionStatus,
   type ActivityRecord,
   type Overview,
   type VerificationMethod,
   type VerificationOutcome,
 } from '@/features/overview/overview.schemas'
-import { addDays, lagosDay } from '@/shared/lib/dates'
+import { periodDays } from '@/features/overview/overview-period'
+import { addDays } from '@/shared/lib/dates'
 import { delay } from './delay'
 
 /** The design's sample week: 27 verifications, from the day activity started. */
@@ -87,11 +87,9 @@ function dailyVerifications(from: string, days: number) {
  * period; only the dates follow the chosen period.
  */
 export const mockOverviewApi: OverviewApi = {
-  async getOverview({ range }) {
+  async getOverview({ from, to }) {
     await delay()
-    const days = RANGE_DAYS[range]
-    const to = lagosDay()
-    const from = addDays(to, -(days - 1))
+    const days = periodDays({ from, to })
 
     const overview: Overview = {
       period: { from, to },

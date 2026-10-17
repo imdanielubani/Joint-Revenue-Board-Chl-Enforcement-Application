@@ -9,9 +9,9 @@ export interface OverviewApi {
 
 // The path is provisional until the backend's API is agreed.
 const httpOverviewApi: OverviewApi = {
-  getOverview: ({ scope, range, agentId, organization }) =>
+  getOverview: ({ scope, range, from, to, agentId, organization }) =>
     request('/api/v1/overview', overviewSchema, {
-      query: { scope, range, agent: agentId, organization },
+      query: { scope, range, from, to, agent: agentId, organization },
     }),
 }
 

@@ -9,8 +9,12 @@ export type Open<T extends string> = T | (string & {})
 
 const open = <T extends string>() => z.custom<Open<T>>((value) => typeof value === 'string')
 
-/** The periods the Overview can report on, newest last. */
-export const OVERVIEW_RANGES = ['today', '7d', '14d', '30d', '90d'] as const
+/** The ready-made periods, each ending today. */
+export const PRESET_RANGES = ['today', '7d', '14d', '30d', '90d'] as const
+export type PresetRange = (typeof PRESET_RANGES)[number]
+
+/** The periods the Overview can report on: the presets, or dates the user picks. */
+export const OVERVIEW_RANGES = [...PRESET_RANGES, 'custom'] as const
 export type OverviewRange = (typeof OVERVIEW_RANGES)[number]
 
 export const RANGE_LABELS: Record<OverviewRange, string> = {
@@ -19,9 +23,10 @@ export const RANGE_LABELS: Record<OverviewRange, string> = {
   '14d': 'Last 14 days',
   '30d': 'Last 30 days',
   '90d': 'Last 90 days',
+  custom: 'Custom range',
 }
 
-export const RANGE_DAYS: Record<OverviewRange, number> = {
+export const RANGE_DAYS: Record<PresetRange, number> = {
   today: 1,
   '7d': 7,
   '14d': 14,
@@ -249,6 +254,9 @@ export interface OverviewFilters {
   /** The id of the area reported on, within the user's own. */
   scope: string
   range: OverviewRange
+  /** The first and last day reported on, in Lagos time; set for presets too. */
+  from: string
+  to: string
   /** Only this agent's activity, by recorded agent ID; null for all agents. */
   agentId: string | null
   /** Only the activity of this organization's agents; null for all. */

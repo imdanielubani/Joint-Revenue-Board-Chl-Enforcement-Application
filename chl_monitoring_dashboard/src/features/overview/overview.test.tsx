@@ -28,6 +28,43 @@ describe('overview page', () => {
     expect(await screen.findByText(/National scope · Last 7 days/)).toBeInTheDocument()
   })
 
+  it('reports on dates the user picks', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+
+    await userEvent.selectOptions(await screen.findByLabelText('Date range'), 'custom')
+    // The custom range starts from the period already on screen.
+    const from = screen.getByLabelText('From')
+    const to = screen.getByLabelText('To')
+    expect(router.state.location.search).toMatch(/range=custom&from=\d{4}-\d{2}-\d{2}&to=/)
+
+    await userEvent.clear(from)
+    await userEvent.type(from, '2026-10-01')
+    await userEvent.clear(to)
+    await userEvent.type(to, '2026-10-10')
+    expect(router.state.location.search).toContain('from=2026-10-01')
+    expect(router.state.location.search).toContain('to=2026-10-10')
+    expect(await screen.findByText(/National scope · 1–10 Oct, 2026 ·/)).toBeInTheDocument()
+
+    // Dates the wrong way round are explained, not applied.
+    await userEvent.clear(from)
+    await userEvent.type(from, '2026-10-12')
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The start date must be on or before the end date.',
+    )
+    expect(router.state.location.search).toContain('from=2026-10-01')
+
+    await userEvent.selectOptions(screen.getByLabelText('Date range'), '7d')
+    expect(router.state.location.search).not.toMatch(/from=|to=/)
+    expect(screen.queryByLabelText('From')).not.toBeInTheDocument()
+  })
+
+  it('falls back to the last 14 days for dates that make no sense', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview?range=custom&from=2026-10-12&to=2026-10-01')
+    expect(await screen.findByText(/National scope · Last 14 days/)).toBeInTheDocument()
+  })
+
   it('narrows the page to an area within the user’s own', async () => {
     signInAs('admin@jrb.gov.ng')
     const { router } = renderApp('/overview')

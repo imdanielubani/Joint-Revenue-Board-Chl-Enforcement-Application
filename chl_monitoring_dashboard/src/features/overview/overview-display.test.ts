@@ -38,6 +38,8 @@ describe('statuses and outcomes', () => {
     const overview = await mockOverviewApi.getOverview({
       scope: 'ng',
       range: '14d',
+      from: '2026-10-01',
+      to: '2026-10-14',
       agentId: null,
       organization: null,
     })

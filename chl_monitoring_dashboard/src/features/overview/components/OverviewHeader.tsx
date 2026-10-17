@@ -1,17 +1,13 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { Link } from 'react-router'
-import { assetUrl } from '@/shared/lib/asset-url'
-import { formatPeriod } from '@/shared/lib/dates'
-import { formatClock } from '@/shared/lib/format'
-import {
-  OVERVIEW_RANGES,
-  RANGE_LABELS,
-  type Overview,
-  type OverviewRange,
-} from '../overview.schemas'
-import type { ScopeOption } from '../scope-options'
 import type { Agent } from '@/features/agents/agents.api'
+import { assetUrl } from '@/shared/lib/asset-url'
+import { formatPeriod, lagosDay } from '@/shared/lib/dates'
+import { formatClock } from '@/shared/lib/format'
 import { MaskIcon } from '@/shared/ui/MaskIcon'
+import { customPeriodProblem, type Period } from '../overview-period'
+import { OVERVIEW_RANGES, RANGE_LABELS, type OverviewRange } from '../overview.schemas'
+import type { ScopeOption } from '../scope-options'
 import { AreaPicker } from './AreaPicker'
 import styles from './OverviewHeader.module.css'
 
@@ -98,7 +94,9 @@ interface FilterBarProps {
   onScopeChange(scope: string): void
   range: OverviewRange
   onRangeChange(range: OverviewRange): void
-  period: Overview['period'] | undefined
+  /** The days reported on: shown beside a preset, editable for a custom range. */
+  period: Period
+  onCustomPeriodChange(period: Period): void
   people: PeopleFilter
   /** When the figures on screen were fetched (ms); 0 before the first answer. */
   checkedAt: number
@@ -112,6 +110,7 @@ export function OverviewFilterBar({
   range,
   onRangeChange,
   period,
+  onCustomPeriodChange,
   people,
   checkedAt,
 }: FilterBarProps) {
@@ -152,7 +151,11 @@ export function OverviewFilterBar({
             height={13}
           />
         </span>
-        {period && <span className={styles.period}>{formatPeriod(period.from, period.to)}</span>}
+        {range === 'custom' ? (
+          <CustomRange value={period} onChange={onCustomPeriodChange} />
+        ) : (
+          <span className={styles.period}>{formatPeriod(period.from, period.to)}</span>
+        )}
 
         {people.agents.length > 0 && (
           <>
@@ -238,9 +241,69 @@ export function OverviewFilterBar({
   )
 }
 
+/**
+ * From and to dates for a custom range. A date is only applied once the pair
+ * makes sense; until then the problem is said under the fields.
+ */
+function CustomRange({ value, onChange }: { value: Period; onChange(period: Period): void }) {
+  const fromId = useId()
+  const toId = useId()
+  const [draft, setDraft] = useState(value)
+  // When the applied dates change from outside (the address, a preset), show them.
+  const [applied, setApplied] = useState(value)
+  if (applied.from !== value.from || applied.to !== value.to) {
+    setApplied(value)
+    setDraft(value)
+  }
+  const today = lagosDay()
+  const problem = customPeriodProblem(draft.from, draft.to, today)
+
+  const change = (next: Period) => {
+    setDraft(next)
+    if (customPeriodProblem(next.from, next.to, today) === null) onChange(next)
+  }
+
+  return (
+    <span className={styles.customRange}>
+      <label className="visually-hidden" htmlFor={fromId}>
+        From
+      </label>
+      <input
+        id={fromId}
+        type="date"
+        className={styles.dateInput}
+        value={draft.from}
+        max={draft.to || today}
+        aria-invalid={problem !== null}
+        onChange={(event) => change({ ...draft, from: event.target.value })}
+      />
+      <span aria-hidden="true">–</span>
+      <label className="visually-hidden" htmlFor={toId}>
+        To
+      </label>
+      <input
+        id={toId}
+        type="date"
+        className={styles.dateInput}
+        value={draft.to}
+        min={draft.from || undefined}
+        max={today}
+        aria-invalid={problem !== null}
+        onChange={(event) => change({ ...draft, to: event.target.value })}
+      />
+      {problem && (
+        <span className={styles.rangeProblem} role="alert">
+          {problem}
+        </span>
+      )}
+    </span>
+  )
+}
+
 interface ScopeStripProps {
   scopeName: string
-  range: OverviewRange
+  /** "Last 14 days", or the dates of a custom range. */
+  periodText: string
   /** What else narrows the figures: "Agent: Tunde Okafor", "Organization: Zone 1". */
   focus?: string | undefined
   reportingLocations: number
@@ -251,7 +314,7 @@ interface ScopeStripProps {
 /** "Monitoring & corporate dashboard": what the figures below cover. */
 export function ScopeStrip({
   scopeName,
-  range,
+  periodText,
   focus,
   reportingLocations,
   locationsLink,
@@ -265,7 +328,7 @@ export function ScopeStrip({
       <div className={styles.stripText}>
         <p className={styles.stripTitle}>Monitoring &amp; corporate dashboard</p>
         <p className={styles.stripMeta}>
-          {scopeName} scope · {RANGE_LABELS[range]} · {focus ? `${focus} · ` : ''}
+          {scopeName} scope · {periodText} · {focus ? `${focus} · ` : ''}
           {locations}.
         </p>
       </div>

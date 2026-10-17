@@ -1,15 +1,24 @@
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import type { Agent } from '@/features/agents/agents.api'
-import { OVERVIEW_RANGES, type OverviewFilters, type OverviewRange } from './overview.schemas'
+import { lagosDay } from '@/shared/lib/dates'
+import { customPeriodProblem, presetPeriod, type Period } from './overview-period'
+import {
+  OVERVIEW_RANGES,
+  type OverviewFilters,
+  type OverviewRange,
+  type PresetRange,
+} from './overview.schemas'
 import type { ScopeOption } from './scope-options'
 
-export const DEFAULT_RANGE: OverviewRange = '14d'
+export const DEFAULT_RANGE: PresetRange = '14d'
 
 /** The address parameters the Overview keeps its filters in. */
 export const FILTER_PARAMS = {
   scope: 'scope',
   range: 'range',
+  from: 'from',
+  to: 'to',
   agent: 'agent',
   organization: 'org',
 } as const
@@ -40,8 +49,20 @@ export function useOverviewFilters({ scopes, fallbackScope, areasPending, agents
   // wait for it rather than briefly loading the wrong area.
   const waiting = !found && requestedScope !== null && areasPending
 
-  const requestedRange = params.get(FILTER_PARAMS.range)
-  const range = OVERVIEW_RANGES.find((option) => option === requestedRange) ?? DEFAULT_RANGE
+  // A custom period needs real dates, in order and not in the future; otherwise
+  // the default period is shown.
+  const today = lagosDay()
+  const requestedRange = OVERVIEW_RANGES.find(
+    (option) => option === params.get(FILTER_PARAMS.range),
+  )
+  const requestedFrom = params.get(FILTER_PARAMS.from) ?? ''
+  const requestedTo = params.get(FILTER_PARAMS.to) ?? ''
+  const customOk =
+    requestedRange === 'custom' && customPeriodProblem(requestedFrom, requestedTo, today) === null
+  const range: OverviewRange =
+    requestedRange && (requestedRange !== 'custom' || customOk) ? requestedRange : DEFAULT_RANGE
+  const period: Period =
+    range === 'custom' ? { from: requestedFrom, to: requestedTo } : presetPeriod(range, today)
 
   const organizations = useMemo(
     () =>
@@ -84,7 +105,7 @@ export function useOverviewFilters({ scopes, fallbackScope, areasPending, agents
     [setParams],
   )
 
-  const filters: OverviewFilters = { scope: scope.value, range, agentId, organization }
+  const filters: OverviewFilters = { scope: scope.value, range, ...period, agentId, organization }
 
   return {
     filters,
@@ -95,7 +116,20 @@ export function useOverviewFilters({ scopes, fallbackScope, areasPending, agents
     agentOptions,
     agent: agents?.find((agent) => agent.id === agentId) ?? null,
     setScope: (value: string) => update({ [FILTER_PARAMS.scope]: value }),
-    setRange: (value: OverviewRange) => update({ [FILTER_PARAMS.range]: value }),
+    /** A preset period; "custom" keeps the current dates, to adjust from there. */
+    setRange: (value: OverviewRange) =>
+      update({
+        [FILTER_PARAMS.range]: value,
+        [FILTER_PARAMS.from]: value === 'custom' ? period.from : null,
+        [FILTER_PARAMS.to]: value === 'custom' ? period.to : null,
+      }),
+    /** Dates the user picked; check them with customPeriodProblem first. */
+    setCustomPeriod: (next: Period) =>
+      update({
+        [FILTER_PARAMS.range]: 'custom',
+        [FILTER_PARAMS.from]: next.from,
+        [FILTER_PARAMS.to]: next.to,
+      }),
     setAgent: (value: string | null) => update({ [FILTER_PARAMS.agent]: value }),
     /** A new organization also clears an agent who is not in it. */
     setOrganization: (value: string | null) => {

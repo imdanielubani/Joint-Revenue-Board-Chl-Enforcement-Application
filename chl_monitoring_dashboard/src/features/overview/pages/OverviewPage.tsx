@@ -25,6 +25,7 @@ import {
 import type { Overview } from '../overview.schemas'
 import { coversSeveralLocations, scopeOptions, type ScopeOption } from '../scope-options'
 import { useModuleLink } from '../use-module-link'
+import { periodLabel } from '../overview-period'
 import { useOverviewFilters } from '../use-overview-filters'
 import styles from './OverviewPage.module.css'
 
@@ -124,7 +125,8 @@ function OverviewContent({
             onScopeChange={filter.setScope}
             range={range}
             onRangeChange={filter.setRange}
-            period={overview?.period}
+            period={filters}
+            onCustomPeriodChange={filter.setCustomPeriod}
             people={{
               organizations: filter.organizations,
               organization: filters.organization,
@@ -140,7 +142,7 @@ function OverviewContent({
         {overview && (
           <ScopeStrip
             scopeName={scope.name}
-            range={range}
+            periodText={periodLabel(range, filters)}
             focus={
               filter.agent
                 ? `Agent: ${filter.agent.name}`
