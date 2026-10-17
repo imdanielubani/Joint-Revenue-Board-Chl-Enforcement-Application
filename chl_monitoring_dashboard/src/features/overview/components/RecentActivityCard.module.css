@@ -40,3 +40,37 @@
   color: var(--color-text-subtle);
   font-size: 12px;
 }
+
+/* Under the time: "Live check · Synced" or "[Offline] received 47 min later · Synced". */
+.sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 16px;
+}
+
+.sync > span + span::before {
+  margin-right: 4px;
+  content: '·';
+}
+
+.sync > .offline + span::before {
+  content: none;
+}
+
+.offline {
+  padding: 0 5px;
+  border: 1px solid #f5d9a8;
+  border-radius: 4px;
+  background: var(--status-warning-bg);
+  color: var(--status-amber-text);
+  font-weight: var(--font-weight-medium);
+  line-height: 14px;
+}
+
+.syncPending {
+  color: var(--status-amber-text);
+}

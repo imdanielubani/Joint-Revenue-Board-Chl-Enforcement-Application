@@ -294,6 +294,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: each recent-activity record says whether CHL answered it live or
+  the phone checked it offline, how much later an offline record reached CHL,
+  and its sync status (Synced, Evidence pending). Search finds "offline", and
+  the export includes these columns.
 - Overview: the Cancelled case status is shown, and statuses, results and
   methods the dashboard does not know yet (ones CHL adds later) show as they
   come, as a grey label, instead of stopping the page from loading.

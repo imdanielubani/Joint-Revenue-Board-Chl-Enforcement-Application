@@ -4,7 +4,11 @@ import {
   METHOD_LABELS,
   METHOD_TAGS,
   OUTCOME_LABELS,
+  SOURCE_LABELS,
+  SYNC_STATUS_LABELS,
   type ActionStatus,
+  type RecordSource,
+  type SyncStatus,
   type FollowUp,
   type Open,
   type VerificationMethod,
@@ -91,6 +95,14 @@ export function methodStyle(method: Open<VerificationMethod>): { icon?: string; 
   return isKnown(METHOD_STYLES, method)
     ? METHOD_STYLES[method]
     : { color: 'var(--status-neutral-dot)' }
+}
+
+export function sourceLabel(source: Open<RecordSource>): string {
+  return isKnown(SOURCE_LABELS, source) ? SOURCE_LABELS[source] : humanize(source)
+}
+
+export function syncStatusLabel(status: Open<SyncStatus>): string {
+  return isKnown(SYNC_STATUS_LABELS, status) ? SYNC_STATUS_LABELS[status] : humanize(status)
 }
 
 export function followUpLabel(followUp: Open<FollowUp>): string {

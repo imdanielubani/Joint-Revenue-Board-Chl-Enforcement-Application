@@ -40,6 +40,11 @@ const SAMPLE_RECORDS: [
 
 const RECORD_COUNT = 68
 const CANCELLED_RECORD = 12
+/** Every fourth record was checked offline and reached CHL later. */
+const OFFLINE_EVERY = 4
+const OFFLINE_DELAY_MS = 47 * 60_000
+/** One offline record still has photographs to upload. */
+const EVIDENCE_PENDING_RECORD = 7
 
 function recentActivity(lastDay: string): ActivityRecord[] {
   // 10:18 WAT on the last day of the period, then every 23 minutes earlier.
@@ -49,6 +54,8 @@ function recentActivity(lastDay: string): ActivityRecord[] {
     .flat()
     .slice(0, RECORD_COUNT)
   return samples.map(([plate, method, result, agent, actionStatus], index) => {
+    const recordedAt = latest - index * 23 * 60_000
+    const offline = index % OFFLINE_EVERY === OFFLINE_EVERY - 1
     return {
       id: `rec_${index + 1}`,
       plate,
@@ -56,10 +63,13 @@ function recentActivity(lastDay: string): ActivityRecord[] {
       method,
       result,
       agent: { id: agent.id, name: agent.name },
-      recordedAt: new Date(latest - index * 23 * 60_000).toISOString(),
+      recordedAt: new Date(recordedAt).toISOString(),
       // One case on the second page was cancelled, so that status shows too.
       actionStatus: index === CANCELLED_RECORD ? 'cancelled' : actionStatus,
       location: { name: 'Ojota enforcement point', area: 'Lagos', code: 'LOS-04' },
+      source: offline ? 'offline' : 'live',
+      syncStatus: index === EVIDENCE_PENDING_RECORD ? 'evidence_pending' : 'synced',
+      receivedAt: new Date(recordedAt + (offline ? OFFLINE_DELAY_MS : 0)).toISOString(),
     }
   })
 }

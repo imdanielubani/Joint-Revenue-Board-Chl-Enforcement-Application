@@ -76,6 +76,22 @@ describe('overview page', () => {
     expect(within(firstRow).getByText('AAA-001-AB')).toBeInTheDocument()
   })
 
+  it('marks records checked offline and their sync status', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+
+    const recent = await card('Recent activity')
+    const rows = await within(recent).findAllByRole('row')
+    // Row 4 was checked offline and sent 47 minutes later; row 8 still has evidence to upload.
+    expect(within(rows[4]!).getByText('Offline')).toBeInTheDocument()
+    expect(within(rows[4]!).getByText('received 47 min later')).toBeInTheDocument()
+    expect(within(rows[1]!).getByText('Live check')).toBeInTheDocument()
+    expect(within(rows[8]!).getByText('Evidence pending')).toBeInTheDocument()
+
+    await userEvent.type(within(recent).getByLabelText('Search records'), 'offline')
+    expect(within(recent).getByText('Showing 1–10 of 17 records')).toBeInTheDocument()
+  })
+
   it('lists only escalated cases on the Escalated tab', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')

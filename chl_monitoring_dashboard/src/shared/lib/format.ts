@@ -62,6 +62,20 @@ export function formatClock(value: number | Date): string {
   return `${clockFormat.format(value)} WAT`
 }
 
+/**
+ * How long after `from` something happened: "2 min later", "3 h later",
+ * "2 days later"; "at once" within a minute.
+ */
+export function formatDelay(from: string | Date, to: string | Date): string {
+  const minutes = Math.floor((new Date(to).getTime() - new Date(from).getTime()) / 60_000)
+  if (!Number.isFinite(minutes) || minutes < 1) return 'at once'
+  if (minutes < 60) return `${minutes} min later`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} h later`
+  const days = Math.floor(hours / 24)
+  return `${days} day${days === 1 ? '' : 's'} later`
+}
+
 export function formatNumber(value: number): string {
   return numberFormat.format(value)
 }

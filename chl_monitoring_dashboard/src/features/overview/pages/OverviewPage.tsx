@@ -14,7 +14,13 @@ import { PerformanceCard } from '../components/PerformanceCard'
 import { RecentActivityCard } from '../components/RecentActivityCard'
 import { VerificationActivityCard } from '../components/VerificationActivityCard'
 import { useOverview } from '../overview.queries'
-import { actionStatusLabel, methodTag, outcomeLabel } from '../overview-display'
+import {
+  actionStatusLabel,
+  methodTag,
+  outcomeLabel,
+  sourceLabel,
+  syncStatusLabel,
+} from '../overview-display'
 import { OVERVIEW_RANGES, type Overview, type OverviewRange } from '../overview.schemas'
 import { coversSeveralLocations, scopeOptions, type ScopeOption } from '../scope-options'
 import { useModuleLink } from '../use-module-link'
@@ -92,6 +98,9 @@ function OverviewContent({
         'Location',
         'Area',
         'Location code',
+        'Checked',
+        'Sync status',
+        'Received by CHL (WAT)',
       ],
       ...data.recentActivity.map((record) => [
         record.plate,
@@ -105,6 +114,9 @@ function OverviewContent({
         record.location.name,
         record.location.area,
         record.location.code,
+        record.source ? sourceLabel(record.source) : 'Not supplied',
+        record.syncStatus ? syncStatusLabel(record.syncStatus) : 'Not supplied',
+        record.receivedAt ? formatDateTime(record.receivedAt) : 'Not supplied',
       ]),
     ])
     showToast({

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { paths } from '@/config/paths'
-import { formatShortDateTime } from '@/shared/lib/format'
+import { formatDelay, formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
@@ -12,6 +12,8 @@ import {
   methodTag,
   outcomeLabel,
   outcomeStyle,
+  sourceLabel,
+  syncStatusLabel,
 } from '../overview-display'
 import type { ActivityRecord } from '../overview.schemas'
 import { useModuleLink } from '../use-module-link'
@@ -29,7 +31,32 @@ const searchText = (row: ActivityRecord) =>
     row.location.name,
     row.location.area,
     row.location.code,
+    row.source ? sourceLabel(row.source) : '',
+    row.syncStatus ? syncStatusLabel(row.syncStatus) : '',
   ].join(' ')
+
+/**
+ * Under the time: whether CHL answered live or the phone checked offline, when
+ * an offline record reached CHL, and its synchronization status.
+ */
+function RecordSync({ record }: { record: ActivityRecord }) {
+  const { source, syncStatus, receivedAt, recordedAt } = record
+  if (!source && !syncStatus) return null
+  const offline = source === 'offline'
+  return (
+    <span className={styles.sync}>
+      {source && (
+        <span className={offline ? styles.offline : undefined}>{sourceLabel(source)}</span>
+      )}
+      {offline && receivedAt && <span>received {formatDelay(recordedAt, receivedAt)}</span>}
+      {syncStatus && (
+        <span className={syncStatus === 'synced' ? undefined : styles.syncPending}>
+          {syncStatusLabel(syncStatus)}
+        </span>
+      )}
+    </span>
+  )
+}
 
 /** "Recent activity": the latest timed records, as a searchable register. */
 export function RecentActivityCard({ records }: { records: readonly ActivityRecord[] }) {
@@ -85,7 +112,10 @@ export function RecentActivityCard({ records }: { records: readonly ActivityReco
         key: 'recordedAt',
         header: 'Date and time (WAT)',
         render: (row) => (
-          <time dateTime={row.recordedAt}>{formatShortDateTime(row.recordedAt)}</time>
+          <span className={styles.stack}>
+            <time dateTime={row.recordedAt}>{formatShortDateTime(row.recordedAt)}</time>
+            <RecordSync record={row} />
+          </span>
         ),
         sortValue: (row) => new Date(row.recordedAt).getTime(),
       },

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   formatClock,
   formatDateTime,
+  formatDelay,
   formatNumber,
   formatPercent,
   formatShortDateTime,
@@ -40,5 +41,16 @@ describe('formatPercent', () => {
   it('shows one decimal, and 0.0% without a total', () => {
     expect(formatPercent(9, 27)).toBe('33.3%')
     expect(formatPercent(0, 0)).toBe('0.0%')
+  })
+})
+
+describe('formatDelay', () => {
+  it('says how much later something arrived', () => {
+    const at = '2026-10-14T09:00:00Z'
+    expect(formatDelay(at, '2026-10-14T09:00:30Z')).toBe('at once')
+    expect(formatDelay(at, '2026-10-14T09:47:00Z')).toBe('47 min later')
+    expect(formatDelay(at, '2026-10-14T12:10:00Z')).toBe('3 h later')
+    expect(formatDelay(at, '2026-10-15T10:00:00Z')).toBe('1 day later')
+    expect(formatDelay(at, '2026-10-17T10:00:00Z')).toBe('3 days later')
   })
 })

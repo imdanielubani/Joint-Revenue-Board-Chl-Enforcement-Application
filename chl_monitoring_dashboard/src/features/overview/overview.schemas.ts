@@ -97,6 +97,25 @@ export const ACTION_STATUS_LABELS: Record<ActionStatus, string> = {
   cancelled: 'Cancelled',
 }
 
+/**
+ * How a verification was answered: "live" by CHL at the time, or "offline" on
+ * the phone from cached data and sent once the connection returned (SRD 6.1).
+ */
+export type RecordSource = 'live' | 'offline'
+
+export const SOURCE_LABELS: Record<RecordSource, string> = {
+  live: 'Live check',
+  offline: 'Offline',
+}
+
+/** The synchronization status stored with a received record (SRD 6.5, 13). */
+export type SyncStatus = 'synced' | 'evidence_pending'
+
+export const SYNC_STATUS_LABELS: Record<SyncStatus, string> = {
+  synced: 'Synced',
+  evidence_pending: 'Evidence pending',
+}
+
 /** Whether a repeat vehicle's reports have been acted on. */
 export type FollowUp = 'none' | 'partial'
 
@@ -160,6 +179,11 @@ const activityRecordSchema = z.object({
   recordedAt: z.string(),
   actionStatus: open<ActionStatus>(),
   location: z.object({ name: z.string(), area: z.string(), code: z.string() }),
+  /** Live or offline; null when the device did not say. */
+  source: open<RecordSource>().nullable(),
+  syncStatus: open<SyncStatus>().nullable(),
+  /** When CHL received the record: later than recordedAt when it was made offline. */
+  receivedAt: z.string().nullable(),
 })
 
 export const overviewSchema = z.object({
