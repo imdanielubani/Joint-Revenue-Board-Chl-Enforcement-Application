@@ -48,3 +48,8 @@
   background: var(--status-info-bg);
   color: var(--card-title);
 }
+
+.neutral {
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-text);
+}

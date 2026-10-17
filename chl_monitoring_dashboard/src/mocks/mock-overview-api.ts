@@ -39,6 +39,7 @@ const SAMPLE_RECORDS: [
 ]
 
 const RECORD_COUNT = 68
+const CANCELLED_RECORD = 12
 
 function recentActivity(lastDay: string): ActivityRecord[] {
   // 10:18 WAT on the last day of the period, then every 23 minutes earlier.
@@ -56,7 +57,8 @@ function recentActivity(lastDay: string): ActivityRecord[] {
       result,
       agent: { id: agent.id, name: agent.name },
       recordedAt: new Date(latest - index * 23 * 60_000).toISOString(),
-      actionStatus,
+      // One case on the second page was cancelled, so that status shows too.
+      actionStatus: index === CANCELLED_RECORD ? 'cancelled' : actionStatus,
       location: { name: 'Ojota enforcement point', area: 'Lagos', code: 'LOS-04' },
     }
   })

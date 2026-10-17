@@ -134,6 +134,9 @@
   --status-danger-bg: #fff0ef;
   --status-danger-text: #dc2626;
   --status-info-bg: #e3f4ff;
+  --status-neutral-bg: #f4f4f5;
+  --status-neutral-text: #52525b;
+  --status-neutral-dot: #a1a1aa;
   --amber: #b77922;
   --chart-line: #27bd80;
   --method-rfid: #17694f;

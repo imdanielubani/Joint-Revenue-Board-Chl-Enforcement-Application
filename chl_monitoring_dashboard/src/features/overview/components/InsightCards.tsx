@@ -4,8 +4,8 @@ import { paths } from '@/config/paths'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { formatNumber, formatPercent } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
-import { METHOD_STYLES, plural, share } from '../overview-display'
-import { METHOD_LABELS, METHOD_TAGS, type Overview } from '../overview.schemas'
+import { methodLabel, methodStyle, methodTag, plural, share } from '../overview-display'
+import type { Overview } from '../overview.schemas'
 import { useModuleLink } from '../use-module-link'
 import styles from './InsightCards.module.css'
 
@@ -91,7 +91,7 @@ export function MethodCard({ methods }: { methods: Overview['methods'] }) {
                 cy={DONUT_SIZE / 2}
                 r={DONUT_RADIUS}
                 fill="none"
-                stroke={METHOD_STYLES[arc.method].color}
+                stroke={methodStyle(arc.method).color}
                 strokeWidth={DONUT_STROKE}
                 strokeLinecap={arcs.length > 1 ? 'round' : 'butt'}
                 strokeDasharray={`${arc.drawn} ${DONUT_LENGTH}`}
@@ -109,7 +109,7 @@ export function MethodCard({ methods }: { methods: Overview['methods'] }) {
         </div>
         <div className={styles.mostUsed}>
           <p className={styles.overline}>Most used method</p>
-          <p className={styles.mostUsedName}>{top ? METHOD_TAGS[top.method] : '—'}</p>
+          <p className={styles.mostUsedName}>{top ? methodTag(top.method) : '—'}</p>
           <p className={styles.mostUsedShare}>
             {top ? (
               <>
@@ -124,39 +124,42 @@ export function MethodCard({ methods }: { methods: Overview['methods'] }) {
       </div>
 
       <ul className={styles.tiles}>
-        {methods.map(({ method, count }) => (
-          <li key={method}>
-            <MaybeLink
-              className={styles.tile}
-              to={link('verifications', `${paths.verifications}?method=${method}`)}
-            >
-              <span className={styles.tileHead}>
-                <img src={assetUrl(METHOD_STYLES[method].icon)} alt="" width={14} height={14} />
-                <span className={styles.tileName}>{METHOD_LABELS[method]}</span>
-                <img
-                  className={styles.tileArrow}
-                  src={assetUrl('overview/tile-arrow.svg')}
-                  alt=""
-                  width={12}
-                  height={12}
-                />
-              </span>
-              <span className={styles.tileFigures}>
-                <span className={styles.tileValue}>{formatNumber(count)}</span>
-                <span className={styles.tileShare}>{formatPercent(count, total)}</span>
-              </span>
-              <span className={styles.track}>
-                <span
-                  className={styles.fill}
-                  style={{
-                    width: `${share(count, total)}%`,
-                    background: METHOD_STYLES[method].color,
-                  }}
-                />
-              </span>
-            </MaybeLink>
-          </li>
-        ))}
+        {methods.map(({ method, count }) => {
+          const { icon, color } = methodStyle(method)
+          return (
+            <li key={method}>
+              <MaybeLink
+                className={styles.tile}
+                to={link('verifications', `${paths.verifications}?method=${method}`)}
+              >
+                <span className={styles.tileHead}>
+                  {icon && <img src={assetUrl(icon)} alt="" width={14} height={14} />}
+                  <span className={styles.tileName}>{methodLabel(method)}</span>
+                  <img
+                    className={styles.tileArrow}
+                    src={assetUrl('overview/tile-arrow.svg')}
+                    alt=""
+                    width={12}
+                    height={12}
+                  />
+                </span>
+                <span className={styles.tileFigures}>
+                  <span className={styles.tileValue}>{formatNumber(count)}</span>
+                  <span className={styles.tileShare}>{formatPercent(count, total)}</span>
+                </span>
+                <span className={styles.track}>
+                  <span
+                    className={styles.fill}
+                    style={{
+                      width: `${share(count, total)}%`,
+                      background: color,
+                    }}
+                  />
+                </span>
+              </MaybeLink>
+            </li>
+          )
+        })}
       </ul>
     </DashboardCard>
   )

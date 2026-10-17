@@ -1,5 +1,14 @@
 import { z } from 'zod'
 
+/**
+ * A value from a known list, or one CHL adds later. Unknown values are kept
+ * and shown as they come rather than rejected: the backend may return states
+ * the dashboard does not know yet (SRD 8.3, "any additional internal states").
+ */
+export type Open<T extends string> = T | (string & {})
+
+const open = <T extends string>() => z.custom<Open<T>>((value) => typeof value === 'string')
+
 /** The periods the Overview can report on, newest last. */
 export const OVERVIEW_RANGES = ['today', '7d', '14d', '30d', '90d'] as const
 export type OverviewRange = (typeof OVERVIEW_RANGES)[number]
@@ -75,6 +84,7 @@ export const ACTION_STATUSES = [
   'payment_pending',
   'escalated',
   'resolved',
+  'cancelled',
 ] as const
 export type ActionStatus = (typeof ACTION_STATUSES)[number]
 
@@ -84,7 +94,11 @@ export const ACTION_STATUS_LABELS: Record<ActionStatus, string> = {
   payment_pending: 'Payment Pending',
   escalated: 'Escalated',
   resolved: 'Resolved',
+  cancelled: 'Cancelled',
 }
+
+/** Whether a repeat vehicle's reports have been acted on. */
+export type FollowUp = 'none' | 'partial'
 
 const count = z.number().int().nonnegative()
 /** A calendar day, "2026-10-14". */
@@ -121,7 +135,7 @@ const caseSchema = z.object({
   id: z.string(),
   plate: z.string(),
   category: z.string(),
-  status: z.enum(['payment_pending', 'escalated']),
+  status: open<ActionStatus>(),
   area: z.string(),
 })
 
@@ -130,7 +144,7 @@ const repeatVehicleSchema = z.object({
   reports: count,
   agents: count,
   area: z.string(),
-  followUp: z.enum(['none', 'partial']),
+  followUp: open<FollowUp>(),
 })
 
 const activityRecordSchema = z.object({
@@ -139,12 +153,12 @@ const activityRecordSchema = z.object({
   /** The verification's reference, "VR-24861". */
   reference: z.string(),
   /** Absent when the field device did not say how the vehicle was identified. */
-  method: z.enum(VERIFICATION_METHODS).nullable(),
+  method: open<VerificationMethod>().nullable(),
   /** Absent when no verification result was supplied. */
-  result: z.enum(VERIFICATION_OUTCOMES).nullable(),
+  result: open<VerificationOutcome>().nullable(),
   agent: z.object({ id: z.string(), name: z.string() }),
   recordedAt: z.string(),
-  actionStatus: z.enum(ACTION_STATUSES),
+  actionStatus: open<ActionStatus>(),
   location: z.object({ name: z.string(), area: z.string(), code: z.string() }),
 })
 
@@ -173,10 +187,10 @@ export const overviewSchema = z.object({
    * keeps enough history.
    */
   previousDailyVerifications: z.array(count).nullable(),
-  outcomes: z.array(z.object({ outcome: z.enum(VERIFICATION_OUTCOMES), count })),
+  outcomes: z.array(z.object({ outcome: open<VerificationOutcome>(), count })),
   agents: z.array(agentRowSchema),
   locations: z.array(locationRowSchema),
-  methods: z.array(z.object({ method: z.enum(VERIFICATION_METHODS), count })),
+  methods: z.array(z.object({ method: open<VerificationMethod>(), count })),
   violationCategories: z.array(z.object({ category: z.string(), count })),
   payments: z.object({
     received: count,

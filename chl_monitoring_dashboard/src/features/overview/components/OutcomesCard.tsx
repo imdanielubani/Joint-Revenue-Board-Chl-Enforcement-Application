@@ -2,7 +2,8 @@ import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { formatNumber, formatPercent } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
-import { OUTCOME_LABELS, type Overview } from '../overview.schemas'
+import { outcomeLabel } from '../overview-display'
+import type { Overview } from '../overview.schemas'
 import { useModuleLink } from '../use-module-link'
 import styles from './OutcomesCard.module.css'
 
@@ -26,7 +27,7 @@ export function OutcomesCard({ outcomes }: { outcomes: Overview['outcomes'] }) {
             const content = (
               <>
                 <span>
-                  <span className={styles.name}>{OUTCOME_LABELS[outcome]}</span>
+                  <span className={styles.name}>{outcomeLabel(outcome)}</span>
                   <span className={styles.share}>{formatPercent(count, total)}</span>
                 </span>
                 <span className={styles.count}>{formatNumber(count)}</span>

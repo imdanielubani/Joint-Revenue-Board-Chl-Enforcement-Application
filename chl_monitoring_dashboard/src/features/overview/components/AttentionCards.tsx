@@ -7,8 +7,14 @@ import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
-import { plural, share } from '../overview-display'
-import type { Overview } from '../overview.schemas'
+import {
+  actionStatusLabel,
+  actionStatusTone,
+  followUpLabel,
+  plural,
+  share,
+} from '../overview-display'
+import type { CaseItem, Overview } from '../overview.schemas'
 import { useModuleLink } from '../use-module-link'
 import styles from './AttentionCards.module.css'
 
@@ -104,6 +110,28 @@ export function LocationActivityCard({ locations }: { locations: Overview['locat
 
 type CaseView = 'unresolved' | 'escalated'
 
+/**
+ * A case's status pill. Escalated and Payment Pending carry the design's icons;
+ * any other status (Cancelled, or one CHL adds later) shows as returned.
+ */
+function CaseStatus({ status }: { status: CaseItem['status'] }) {
+  if (status === 'escalated') {
+    return (
+      <StatusLabel tone="danger" icon="overview/status-escalated.svg">
+        Escalated
+      </StatusLabel>
+    )
+  }
+  if (status === 'payment_pending') {
+    return (
+      <StatusLabel tone="amber" icon="overview/status-pending.svg">
+        Payment Pending
+      </StatusLabel>
+    )
+  }
+  return <StatusLabel tone={actionStatusTone(status)}>{actionStatusLabel(status)}</StatusLabel>
+}
+
 /** "Cases requiring attention": unresolved cases, or only the escalated ones. */
 export function CasesCard({ cases }: { cases: Overview['cases'] }) {
   const link = useModuleLink()
@@ -147,15 +175,7 @@ export function CasesCard({ cases }: { cases: Overview['cases'] }) {
                 >
                   <span className={styles.caseHead}>
                     <span className={styles.plate}>{item.plate}</span>
-                    {item.status === 'escalated' ? (
-                      <StatusLabel tone="danger" icon="overview/status-escalated.svg">
-                        Escalated
-                      </StatusLabel>
-                    ) : (
-                      <StatusLabel tone="amber" icon="overview/status-pending.svg">
-                        Payment Pending
-                      </StatusLabel>
-                    )}
+                    <CaseStatus status={item.status} />
                   </span>
                   <span className={styles.caseCategory}>
                     {item.category}
@@ -245,27 +265,25 @@ export function RepeatVehiclesCard({ repeat }: { repeat: Overview['repeatVehicle
                     <span className={styles.small}>
                       {plural(item.agents, 'agent')} · {item.area}
                     </span>
-                    {item.followUp === 'none' ? (
-                      <span className={`${styles.followUp} ${styles.followUpNone}`}>
-                        <img
-                          src={assetUrl('overview/timer-none.svg')}
-                          alt=""
-                          width={11}
-                          height={11}
-                        />
-                        No follow-up recorded
-                      </span>
-                    ) : (
-                      <span className={styles.followUp}>
-                        <img
-                          src={assetUrl('overview/timer-partial.svg')}
-                          alt=""
-                          width={11}
-                          height={11}
-                        />
-                        Partial follow-up
-                      </span>
-                    )}
+                    <span
+                      className={
+                        item.followUp === 'none'
+                          ? `${styles.followUp} ${styles.followUpNone}`
+                          : styles.followUp
+                      }
+                    >
+                      <img
+                        src={assetUrl(
+                          item.followUp === 'none'
+                            ? 'overview/timer-none.svg'
+                            : 'overview/timer-partial.svg',
+                        )}
+                        alt=""
+                        width={11}
+                        height={11}
+                      />
+                      {followUpLabel(item.followUp)}
+                    </span>
                   </span>
                 </MaybeLink>
               </li>

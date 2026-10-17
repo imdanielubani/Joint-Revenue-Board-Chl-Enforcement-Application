@@ -14,14 +14,8 @@ import { PerformanceCard } from '../components/PerformanceCard'
 import { RecentActivityCard } from '../components/RecentActivityCard'
 import { VerificationActivityCard } from '../components/VerificationActivityCard'
 import { useOverview } from '../overview.queries'
-import {
-  ACTION_STATUS_LABELS,
-  METHOD_TAGS,
-  OUTCOME_LABELS,
-  OVERVIEW_RANGES,
-  type Overview,
-  type OverviewRange,
-} from '../overview.schemas'
+import { actionStatusLabel, methodTag, outcomeLabel } from '../overview-display'
+import { OVERVIEW_RANGES, type Overview, type OverviewRange } from '../overview.schemas'
 import { coversSeveralLocations, scopeOptions, type ScopeOption } from '../scope-options'
 import { useModuleLink } from '../use-module-link'
 import styles from './OverviewPage.module.css'
@@ -102,12 +96,12 @@ function OverviewContent({
       ...data.recentActivity.map((record) => [
         record.plate,
         record.reference,
-        record.method ? METHOD_TAGS[record.method] : 'Not supplied',
-        record.result ? OUTCOME_LABELS[record.result] : 'Not supplied',
+        record.method ? methodTag(record.method) : 'Not supplied',
+        record.result ? outcomeLabel(record.result) : 'Not supplied',
         record.agent.name,
         record.agent.id,
         formatDateTime(record.recordedAt),
-        ACTION_STATUS_LABELS[record.actionStatus],
+        actionStatusLabel(record.actionStatus),
         record.location.name,
         record.location.area,
         record.location.code,

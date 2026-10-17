@@ -6,13 +6,14 @@ import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { RowActions, type RowAction } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { ACTION_STATUS_TONES, OUTCOME_STYLES } from '../overview-display'
 import {
-  ACTION_STATUS_LABELS,
-  METHOD_TAGS,
-  OUTCOME_LABELS,
-  type ActivityRecord,
-} from '../overview.schemas'
+  actionStatusLabel,
+  actionStatusTone,
+  methodTag,
+  outcomeLabel,
+  outcomeStyle,
+} from '../overview-display'
+import type { ActivityRecord } from '../overview.schemas'
 import { useModuleLink } from '../use-module-link'
 import styles from './RecentActivityCard.module.css'
 
@@ -20,11 +21,11 @@ const searchText = (row: ActivityRecord) =>
   [
     row.plate,
     row.reference,
-    row.method ? METHOD_TAGS[row.method] : '',
-    row.result ? OUTCOME_LABELS[row.result] : '',
+    row.method ? methodTag(row.method) : '',
+    row.result ? outcomeLabel(row.result) : '',
     row.agent.name,
     row.agent.id,
-    ACTION_STATUS_LABELS[row.actionStatus],
+    actionStatusLabel(row.actionStatus),
     row.location.name,
     row.location.area,
     row.location.code,
@@ -52,22 +53,22 @@ export function RecentActivityCard({ records }: { records: readonly ActivityReco
         header: 'Verification method',
         render: (row) =>
           row.method ? (
-            <span className={styles.tag}>{METHOD_TAGS[row.method]}</span>
+            <span className={styles.tag}>{methodTag(row.method)}</span>
           ) : (
             <span className={styles.missing}>Not supplied</span>
           ),
-        sortValue: (row) => (row.method ? METHOD_TAGS[row.method] : ''),
+        sortValue: (row) => (row.method ? methodTag(row.method) : ''),
       },
       {
         key: 'result',
         header: 'Verification result',
         render: (row) =>
           row.result ? (
-            <StatusLabel {...OUTCOME_STYLES[row.result]}>{OUTCOME_LABELS[row.result]}</StatusLabel>
+            <StatusLabel {...outcomeStyle(row.result)}>{outcomeLabel(row.result)}</StatusLabel>
           ) : (
             <span className={styles.missing}>Not supplied</span>
           ),
-        sortValue: (row) => (row.result ? OUTCOME_LABELS[row.result] : ''),
+        sortValue: (row) => (row.result ? outcomeLabel(row.result) : ''),
       },
       {
         key: 'agent',
@@ -92,11 +93,11 @@ export function RecentActivityCard({ records }: { records: readonly ActivityReco
         key: 'actionStatus',
         header: 'Action status',
         render: (row) => (
-          <StatusLabel tone={ACTION_STATUS_TONES[row.actionStatus]}>
-            {ACTION_STATUS_LABELS[row.actionStatus]}
+          <StatusLabel tone={actionStatusTone(row.actionStatus)}>
+            {actionStatusLabel(row.actionStatus)}
           </StatusLabel>
         ),
-        sortValue: (row) => ACTION_STATUS_LABELS[row.actionStatus],
+        sortValue: (row) => actionStatusLabel(row.actionStatus),
       },
       {
         key: 'location',

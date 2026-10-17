@@ -294,6 +294,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: the Cancelled case status is shown, and statuses, results and
+  methods the dashboard does not know yet (ones CHL adds later) show as they
+  come, as a grey label, instead of stopping the page from loading.
 - Overview page built to the design: banner with Refresh and Export records,
   area and period filters (kept in the address), the summary strip, eight
   headline figures, the daily verification chart, verification outcomes,

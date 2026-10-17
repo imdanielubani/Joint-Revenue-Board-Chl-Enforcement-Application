@@ -4,9 +4,10 @@ import styles from './StatusLabel.module.css'
 
 /**
  * The label's colours. "amber" is the softer warning used for expired trips
- * and pending payments; "warning" the brighter one.
+ * and pending payments; "warning" the brighter one. "neutral" is for cancelled
+ * records, and for states the dashboard does not know yet.
  */
-export type StatusTone = 'success' | 'warning' | 'amber' | 'danger' | 'info'
+export type StatusTone = 'success' | 'warning' | 'amber' | 'danger' | 'info' | 'neutral'
 
 interface StatusLabelProps {
   tone: StatusTone
