@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react'
 import type { AuthApi } from '@/features/auth/auth.api'
 import { SessionProvider } from '@/features/auth/SessionProvider'
 import { createQueryClient } from '@/shared/api/query-client'
+import { ToastProvider } from '@/shared/ui/toast/ToastProvider'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -15,7 +16,9 @@ export function AppProviders({ children, queryClient, authApi }: AppProvidersPro
   const [client] = useState(() => queryClient ?? createQueryClient())
   return (
     <QueryClientProvider client={client}>
-      <SessionProvider api={authApi}>{children}</SessionProvider>
+      <SessionProvider api={authApi}>
+        <ToastProvider>{children}</ToastProvider>
+      </SessionProvider>
     </QueryClientProvider>
   )
 }

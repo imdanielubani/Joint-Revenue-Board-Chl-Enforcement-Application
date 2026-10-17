@@ -119,17 +119,14 @@ describe('sign-in help', () => {
     expect(router.state.location.pathname).toBe('/sign-in')
   })
 
-  it('says so when no support contact is set up', async () => {
-    renderApp('/forgot-password')
+  it('opens CHL support', async () => {
+    const { router } = renderApp('/forgot-password')
     const user = userEvent.setup()
-    const contact = await screen.findByRole('button', { name: 'Contact CHL Support' })
 
-    await user.click(contact)
+    await user.click(await screen.findByRole('link', { name: 'Contact CHL Support' }))
 
-    expect(contact).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('status')).toHaveTextContent(
-      "The CHL support contact hasn't been set up yet.",
-    )
+    expect(await screen.findByRole('heading', { name: 'How can we help?' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/support')
   })
 
   it('shows a short note under "Need help signing in?"', async () => {

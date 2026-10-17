@@ -64,6 +64,13 @@ export const routes: RouteObject[] = [
                 Component: m.ForgotPasswordPage,
               })),
           },
+          {
+            path: paths.support,
+            lazy: () =>
+              import('@/features/auth/pages/SupportPage').then((m) => ({
+                Component: m.SupportPage,
+              })),
+          },
         ],
       },
       {

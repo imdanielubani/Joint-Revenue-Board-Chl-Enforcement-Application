@@ -21,6 +21,10 @@
   --color-text-muted: #68726c;
   --color-text-subtle: #909a93;
   --color-placeholder: rgb(23 32 27 / 0.3);
+  --color-heading: #172033;
+  --color-ink: #1a0c21;
+  --color-ink-placeholder: rgb(26 12 33 / 0.5);
+  --color-text-slate: #64748b;
   --color-on-brand: #ffffff;
   --color-on-brand-muted: rgb(255 255 255 / 0.65);
   --color-on-brand-subtle: rgb(255 255 255 / 0.45);
@@ -30,6 +34,7 @@
   --color-danger-bg: #fef3f2;
   --color-warning: #b54708;
   --color-success: #067647;
+  --color-success-strong: #15803d;
   --color-focus: #137836;
 
   /* Type */
@@ -49,6 +54,7 @@
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -67,6 +73,9 @@
   --radius-pill: 100px;
   --border-width: 1.5px;
   --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.06);
+  --shadow-toast: 0 10px 35px rgb(23 32 51 / 0.14);
+  --shadow-button: 0 2px 1.5px rgb(13 92 25 / 0.06);
+  --radius-toast: 12px;
 
   /* Layout */
   --control-height: 46px;

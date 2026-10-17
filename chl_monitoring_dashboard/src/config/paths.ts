@@ -3,6 +3,7 @@ export const paths = {
   home: '/',
   signIn: '/sign-in',
   forgotPassword: '/forgot-password',
+  support: '/support',
   profile: '/profile',
   overview: '/overview',
   commandCentre: '/command-centre',

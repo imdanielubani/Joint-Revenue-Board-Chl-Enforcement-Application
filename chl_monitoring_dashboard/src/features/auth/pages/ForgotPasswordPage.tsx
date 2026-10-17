@@ -1,10 +1,9 @@
 import { Link } from 'react-router'
-import { env } from '@/config/env'
 import { paths } from '@/config/paths'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { AuthHelp } from '../components/AuthHelp'
 import { AuthLayout } from '../components/AuthLayout'
-import { ContactSupport } from '../components/ContactSupport'
+import { BackToSignIn } from '../components/BackToSignIn'
 import styles from '../components/form.module.css'
 
 /**
@@ -14,12 +13,7 @@ import styles from '../components/form.module.css'
 export function ForgotPasswordPage() {
   return (
     <AuthLayout
-      before={
-        <Link className={styles.backLink} to={paths.signIn}>
-          <img src={assetUrl('auth/arrow-left.svg')} width={16} height={16} alt="" />
-          Back to sign in
-        </Link>
-      }
+      before={<BackToSignIn />}
       eyebrow="Secure access"
       title="Get Sign-in help"
       description={
@@ -34,7 +28,10 @@ export function ForgotPasswordPage() {
       }
     >
       <div className={styles.supportActions}>
-        <ContactSupport url={env.supportUrl} />
+        <Link className={styles.supportButton} to={paths.support}>
+          Contact CHL Support
+          <img src={assetUrl('auth/arrow-right.svg')} width={18} height={18} alt="" />
+        </Link>
       </div>
       <AuthHelp />
     </AuthLayout>

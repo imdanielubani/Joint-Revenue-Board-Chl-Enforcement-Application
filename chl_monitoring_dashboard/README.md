@@ -58,16 +58,15 @@ on sample data. Sign in with any sample account; the password is
 Settings are read from `VITE_` variables and checked at start-up in
 `src/config/env.ts`. Copy `.env.example` to `.env.local` (ignored by git).
 
-| Setting             | Default       | Meaning                                                                                              |
-| ------------------- | ------------- | ---------------------------------------------------------------------------------------------------- |
-| `VITE_APP_ENV`      | `development` | `development`, `staging` or `production`                                                             |
-| `VITE_USE_MOCKS`    | `true`        | Run on the sample data in `src/mocks/`                                                               |
-| `VITE_API_BASE_URL` | empty         | The backend's address; required when sample data is off                                              |
-| `VITE_SUPPORT_URL`  | empty         | Where "Contact CHL Support" leads: an `https://` page or a `mailto:` address; required in production |
+| Setting             | Default       | Meaning                                                 |
+| ------------------- | ------------- | ------------------------------------------------------- |
+| `VITE_APP_ENV`      | `development` | `development`, `staging` or `production`                |
+| `VITE_USE_MOCKS`    | `true`        | Run on the sample data in `src/mocks/`                  |
+| `VITE_API_BASE_URL` | empty         | The backend's address; required when sample data is off |
 
 The dashboard refuses to start if production is set to sample data, if
 sample data is off without a backend address, if staging or production
-use `http` instead of `https`, or if production has no support contact. Outside production, the top bar shows the
+use `http` instead of `https`. Outside production, the top bar shows the
 environment, and "Sample data" while it is on.
 
 ## Project structure
@@ -89,7 +88,7 @@ src/
     env.ts                 Settings, checked with zod at start-up
     paths.ts               Every route's address
   features/                One folder per module
-    auth/                  Sign-in, sign-in help, profile, the 24-hour
+    auth/                  Sign-in, sign-in help, CHL support, profile, the 24-hour
                            session, route guards
     overview/              Summary figures and recent activity
     command-centre/        Activity feed, cases needing attention, field reports
@@ -149,6 +148,10 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   retry network and server errors twice, never a 4xx.
 - **Every data screen** shows loading, empty, error and "last updated"
   states (`StatePanel`, `LastUpdated`).
+- **Notifications:** `useToast().showToast({ title, lines })` shows the
+  design's notification in the top-right corner (`shared/ui/toast/`). It
+  dismisses itself after 6 seconds or with its close button, and screen
+  readers announce it.
 - **Times are shown in Lagos time** (`shared/lib/format.ts`), whatever the
   viewer's clock.
 - **Styling:** CSS Modules next to each component; every value comes from
@@ -156,7 +159,8 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   radii and sizes. Fonts are self-hosted (`styles/fonts.ts`): Poppins for
   text, Geist for inputs, Inter for captions.
 - **Images** from the design live in `public/assets/` (`brand/` for the
-  JRB logo, `auth/` for the sign-in pages). They are served as they are, so
+  JRB logo, `auth/` for the sign-in pages, `support/` for the support form,
+  `toast/` for notifications). They are served as they are, so
   code refers to them by URL with `assetUrl('brand/jrb-logo.png')`
   (`shared/lib/asset-url.ts`), never by importing them.
 - **Favicon:** the JRB shield mark, cropped from the brand logo, in
@@ -189,9 +193,14 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 - **Passwords are reset in CHL, never in the dashboard.** "Forgotten
   Password?" and "Need help signing in?" on the sign-in page open the
   sign-in help page (`/forgot-password`), which explains this and offers
-  "Contact CHL Support" (`VITE_SUPPORT_URL`: a page opens in a new tab, an
-  email address opens the mail app). Until it is set, the button says the
-  support contact hasn't been set up yet.
+  "Contact CHL Support".
+- **CHL support** (`/support`): a signed-out form (full name, CHL email
+  address, issue type, message of up to 2000 characters, all required) that
+  sends the request to CHL support by email through the backend
+  (`features/auth/support.api.ts`; the path is provisional). On success the
+  form clears and an "Email sent" notification appears. On sample data the
+  notification adds "Success preview only — no email has been sent.", which
+  is true there. A failure keeps what was typed and says why.
 
 ## Conventions
 
@@ -208,6 +217,18 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- CHL support page built to the design ("How can we help?"), opened by
+  "Contact CHL Support" on the sign-in help page.
+  - Full name, CHL email address, issue type and message (with a 0/2000
+    counter and a message box that grows from 112 to 280 px); every field
+    checked before sending; Submit with the send icon.
+  - "Email sent" notification as designed, from a new shared toast system
+    (`shared/ui/toast/`); on sample data it says no email was sent.
+  - Replaces the `VITE_SUPPORT_URL` setting, now removed.
+  - The signed-out frame is split into `AuthShell` and `AuthLayout`;
+    "Back to sign in" is one shared component. Poppins Bold added.
+  - 42 tests.
 
 - Sign-in help page built to the design ("Get Sign-in help"): back link,
   the explanation that passwords are reset through CHL, "Contact CHL

@@ -3,26 +3,16 @@ import { assetUrl } from '@/shared/lib/asset-url'
 import { JrbLogo } from '@/shared/ui/JrbLogo'
 import styles from './AuthLayout.module.css'
 
-interface AuthLayoutProps {
-  eyebrow: string
-  title: string
-  description: ReactNode
-  /** Shown above the heading, such as a back link. */
-  before?: ReactNode
+interface AuthShellProps {
   /** Sits 18px above centre, as the sign-in design does; other pages are centred. */
   raised?: boolean
+  /** A 460px column (the support form) instead of 420px. */
+  wide?: boolean
   children: ReactNode
 }
 
-/** The signed-out pages: the brand panel on the left, the form panel on the right. */
-export function AuthLayout({
-  eyebrow,
-  title,
-  description,
-  before,
-  raised = false,
-  children,
-}: AuthLayoutProps) {
+/** The signed-out frame: the brand panel on the left, the content panel on the right. */
+export function AuthShell({ raised = false, wide = false, children }: AuthShellProps) {
   return (
     <div className={styles.page}>
       <aside className={styles.brandPanel}>
@@ -53,16 +43,42 @@ export function AuthLayout({
       </aside>
 
       <main className={raised ? `${styles.formPanel} ${styles.raised}` : styles.formPanel}>
-        <div className={styles.formColumn}>
-          {before}
-          <header className={styles.header}>
-            <p className={styles.eyebrow}>{eyebrow}</p>
-            <h1 className={styles.title}>{title}</h1>
-            <p className={styles.description}>{description}</p>
-          </header>
+        <div className={wide ? `${styles.formColumn} ${styles.wide}` : styles.formColumn}>
           {children}
         </div>
       </main>
     </div>
+  )
+}
+
+interface AuthLayoutProps {
+  eyebrow: string
+  title: string
+  description: ReactNode
+  /** Shown above the heading, such as a back link. */
+  before?: ReactNode
+  raised?: boolean
+  children: ReactNode
+}
+
+/** The signed-out frame with the "SECURE ACCESS" heading block. */
+export function AuthLayout({
+  eyebrow,
+  title,
+  description,
+  before,
+  raised = false,
+  children,
+}: AuthLayoutProps) {
+  return (
+    <AuthShell raised={raised}>
+      {before}
+      <header className={styles.header}>
+        <p className={styles.eyebrow}>{eyebrow}</p>
+        <h1 className={styles.title}>{title}</h1>
+        <p className={styles.description}>{description}</p>
+      </header>
+      {children}
+    </AuthShell>
   )
 }
