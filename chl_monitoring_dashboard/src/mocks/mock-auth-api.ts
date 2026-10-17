@@ -28,7 +28,11 @@ export const mockAuthApi: AuthApi = {
     }
     const user = MOCK_USERS.find((candidate) => candidate.email === address)
     if (!user || password !== MOCK_PASSWORD) {
-      throw new ApiError(401, 'invalid_credentials', 'The email or password is incorrect.')
+      throw new ApiError(
+        401,
+        AUTH_ERROR_CODES.invalidCredentials,
+        'The email or password is incorrect.',
+      )
     }
     return { ...newTokens(), user, expiresAt: sessionExpiry() }
   },

@@ -1,16 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { assetUrl } from '@/shared/lib/asset-url'
-import { ToastContext, type ToastContextValue, type ToastInput } from './toast-context'
+import {
+  ToastContext,
+  type ToastContextValue,
+  type ToastIcon,
+  type ToastInput,
+} from './toast-context'
 import styles from './Toast.module.css'
 
 /** How long a success notification stays before it dismisses itself. */
 export const TOAST_DURATION_MS = 6000
 
-const ICONS = {
-  success: 'toast/check-circle.svg',
-  error: 'toast/account-error.svg',
-} as const
+const ICON_FILES: Record<ToastIcon, string> = {
+  check: 'toast/check-circle.svg',
+  warning: 'toast/warning-circle.svg',
+  account: 'toast/account-error.svg',
+}
 
 interface ToastItem extends ToastInput {
   id: number
@@ -38,7 +44,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     ])
   }, [])
 
-  const value = useMemo<ToastContextValue>(() => ({ showToast }), [showToast])
+  const dismissToast = useCallback((...keys: string[]) => {
+    setToasts((current) => current.filter((toast) => !toast.key || !keys.includes(toast.key)))
+  }, [])
+
+  const value = useMemo<ToastContextValue>(
+    () => ({ showToast, dismissToast }),
+    [showToast, dismissToast],
+  )
   const errors = toasts.filter((toast) => toast.variant === 'error')
   const others = toasts.filter((toast) => toast.variant !== 'error')
 
@@ -81,7 +94,13 @@ function Toast({ toast, onDismiss }: ToastProps) {
 
   return (
     <div className={`${styles.toast} ${styles[variant]}`}>
-      <img className={styles.icon} src={assetUrl(ICONS[variant])} width={23} height={23} alt="" />
+      <img
+        className={styles.icon}
+        src={assetUrl(ICON_FILES[toast.icon ?? (variant === 'error' ? 'warning' : 'check')])}
+        width={23}
+        height={23}
+        alt=""
+      />
       <div className={styles.body}>
         <p className={styles.title}>{toast.title}</p>
         {toast.lines?.map((line, index) => (

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { SESSION_STORAGE_KEY } from '@/features/auth/session'
 import { mockAuthApi } from '@/mocks/mock-auth-api'
+import { ApiError } from '@/shared/api/api-error'
 import { MOCK_PASSWORD } from '@/mocks/mock-users'
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -19,7 +20,7 @@ describe('signing in', () => {
     expect(router.state.location.pathname).toBe('/violations')
   })
 
-  it('says when the email or password is wrong', async () => {
+  it('shows the "Sign-in error" notification for wrong details', async () => {
     renderApp('/sign-in')
     const user = userEvent.setup()
 
@@ -27,9 +28,67 @@ describe('signing in', () => {
     await user.type(screen.getByLabelText('Password'), 'wrong')
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The email or password is incorrect.',
+    const toast = await screen.findByRole('alert')
+    expect(toast).toHaveTextContent('Sign-in error')
+    expect(toast).toHaveTextContent('We couldn’t sign you in. Check your details and try again.')
+    expect(within(toast).getByRole('link', { name: 'Get sign-in help' })).toHaveAttribute(
+      'href',
+      '/forgot-password',
     )
+    // The password is cleared; the email stays.
+    expect(screen.getByLabelText('Password')).toHaveValue('')
+    expect(screen.getByLabelText('Email Address')).toHaveValue('admin@jrb.gov.ng')
+  })
+
+  it('says what went wrong when the server cannot be reached, keeping the password', async () => {
+    renderApp('/sign-in', {
+      authApi: {
+        ...mockAuthApi,
+        signIn: () =>
+          Promise.reject(new ApiError(0, 'network_error', 'The server could not be reached.')),
+      },
+    })
+    const user = userEvent.setup()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+
+    const toast = await screen.findByRole('alert')
+    expect(toast).toHaveTextContent('Sign-in error')
+    expect(toast).toHaveTextContent('The server could not be reached.')
+    expect(toast).not.toHaveTextContent('Check your details')
+    expect(screen.getByLabelText('Password')).toHaveValue(MOCK_PASSWORD)
+  })
+
+  it('goes to sign-in help from the "Sign-in error" notification', async () => {
+    const { router } = renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), 'wrong')
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+    await user.click(await screen.findByRole('link', { name: 'Get sign-in help' }))
+
+    expect(await screen.findByRole('heading', { name: 'Get Sign-in help' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/forgot-password')
+    expect(screen.queryByText('Sign-in error')).not.toBeInTheDocument()
+  })
+
+  it('clears the "Sign-in error" notification once a later attempt succeeds', async () => {
+    renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'admin@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), 'wrong')
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+    await screen.findByText('Sign-in error')
+
+    await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+
+    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument()
+    expect(screen.queryByText('Sign-in error')).not.toBeInTheDocument()
   })
 
   it('shows the "Account deactivated" notification for a deactivated account', async () => {
@@ -80,9 +139,7 @@ describe('signing in', () => {
     await user.type(screen.getByLabelText('Password'), 'wrong')
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The email or password is incorrect.',
-    )
+    expect(await screen.findByRole('alert')).toHaveTextContent('Sign-in error')
     expect(screen.queryByText('Account deactivated')).not.toBeInTheDocument()
   })
 

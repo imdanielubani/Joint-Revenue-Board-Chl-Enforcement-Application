@@ -154,9 +154,12 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   - `variant: 'success'` (default, green): dismisses itself after 6 seconds
     or with its close button; announced politely.
   - `variant: 'error'` (red): stays until dismissed; announced at once.
+  - `icon`: `check` (success default), `warning` (error default) or
+    `account`.
   - `action: { label, to }` adds a link under the text; following it
     dismisses the notification. `key` replaces an earlier notification with
-    the same key instead of stacking another.
+    the same key instead of stacking another, and `dismissToast(key)`
+    removes it.
   - The provider sits in the root route, inside the router, so actions can
     be links and notifications survive page changes.
 - **Times are shown in Lagos time** (`shared/lib/format.ts`), whatever the
@@ -202,6 +205,14 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 - Pending with the backend: the auth paths in `features/auth/auth.api.ts`
   are provisional. Tokens are kept in browser storage for now; if the
   backend can use httpOnly cookies, they should move there.
+- **Failed sign-in** shows the red "Sign-in error" notification with a
+  "Get sign-in help" link (to `/forgot-password`), not a message in the
+  form. Wrong details (`invalid_credentials`, HTTP 401) get the design's
+  wording, "We couldn’t sign you in. Check your details and try again.",
+  and a cleared password. Any other failure (no connection, too many
+  attempts, a server fault) shows the actual reason and keeps the password.
+  A new attempt clears the last attempt's notification, so none is left
+  over after signing in.
 - **Deactivated accounts:** when sign-in is refused with the code
   `account_deactivated` (HTTP 403, `AUTH_ERROR_CODES`), the sign-in page
   shows the red "Account deactivated" notification with a "Contact CHL
@@ -239,6 +250,15 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- "Sign-in error" notification built to the design, replacing the error
+  message inside the sign-in form.
+  - Wrong details use the design's wording and clear the password; other
+    failures say what happened and keep it.
+  - Notifications gained per-notification icons (the new warning icon is
+    the error default) and `dismissToast(key)`; a new attempt clears the
+    last one's notification.
+  - The unused form alert style was removed. 53 tests.
 
 - "Logged out successfully" notification built to the design, shown when
   the user signs out (`useSignOut()`), at once and without waiting for the

@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 /** Error codes the backend returns on sign-in that the dashboard treats specially. */
 export const AUTH_ERROR_CODES = {
+  /** The email or password is wrong (HTTP 401). */
+  invalidCredentials: 'invalid_credentials',
   /** The CHL account exists but has been deactivated (HTTP 403). */
   accountDeactivated: 'account_deactivated',
 } as const

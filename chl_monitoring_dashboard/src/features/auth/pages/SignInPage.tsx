@@ -11,14 +11,19 @@ import { useSession } from '../session-context'
 
 type FieldErrors = Partial<Record<'email' | 'password', string>>
 
+/** The sign-in notifications, keyed so a new attempt can clear the last one's. */
+const SIGN_IN_TOASTS = {
+  error: 'sign-in-error',
+  deactivated: AUTH_ERROR_CODES.accountDeactivated,
+} as const
+
 export function SignInPage() {
   const { signIn, endReason } = useSession()
-  const { showToast } = useToast()
+  const { showToast, dismissToast } = useToast()
   const id = useId()
 
   const [showPassword, setShowPassword] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -40,21 +45,27 @@ export function SignInPage() {
     }
 
     setFieldErrors({})
-    setFormError(null)
+    // A new attempt replaces any notification left from the last one.
+    dismissToast(...Object.values(SIGN_IN_TOASTS))
     setSubmitting(true)
     try {
       // Once signed in, <RedirectIfSignedIn> moves on to the right page.
       await signIn({ ...parsed.data, remember: data.get('remember') === 'on' })
     } catch (error) {
       setSubmitting(false)
-      if (isApiError(error) && error.code === AUTH_ERROR_CODES.accountDeactivated) {
-        // The design shows this as a notification with a way to CHL support, and the
-        // password cleared; the email stays so the user can see which account it was.
+      const clearPassword = () => {
         const password = form.elements.namedItem('password')
         if (password instanceof HTMLInputElement) password.value = ''
+      }
+
+      if (isApiError(error) && error.code === AUTH_ERROR_CODES.accountDeactivated) {
+        // The design shows this with a way to CHL support, and the password cleared;
+        // the email stays so the user can see which account it was.
+        clearPassword()
         showToast({
-          key: AUTH_ERROR_CODES.accountDeactivated,
+          key: SIGN_IN_TOASTS.deactivated,
           variant: 'error',
+          icon: 'account',
           title: 'Account deactivated',
           lines: [
             'Your account is deactivated. Your CHL administrator can help you restore access.',
@@ -63,7 +74,23 @@ export function SignInPage() {
         })
         return
       }
-      setFormError(isApiError(error) ? error.message : 'Sign-in failed. Try again.')
+
+      // Wrong details get the design's wording and a cleared password. Any other failure
+      // (no connection, too many attempts, a server fault) says what actually happened,
+      // and keeps the password, since the details may well be right.
+      const wrongDetails = isApiError(error) && error.code === AUTH_ERROR_CODES.invalidCredentials
+      if (wrongDetails) clearPassword()
+      showToast({
+        key: SIGN_IN_TOASTS.error,
+        variant: 'error',
+        title: 'Sign-in error',
+        lines: [
+          isApiError(error) && !wrongDetails
+            ? error.message
+            : 'We couldn’t sign you in. Check your details and try again.',
+        ],
+        action: { label: 'Get sign-in help', to: paths.forgotPassword },
+      })
     }
   }
 
@@ -78,11 +105,6 @@ export function SignInPage() {
         {endReason === 'expired' && (
           <p className={styles.notice} role="status">
             Your session has ended. Sign in again to continue.
-          </p>
-        )}
-        {formError && (
-          <p className={styles.alert} role="alert">
-            {formError}
           </p>
         )}
 
