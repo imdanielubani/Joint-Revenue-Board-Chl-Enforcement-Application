@@ -1,0 +1,95 @@
+import type { RouteObject } from 'react-router'
+import { paths } from '@/config/paths'
+import type { ModuleKey } from '@/features/auth/auth.schemas'
+import { RedirectIfSignedIn, RequireAuth, RequireModule } from '@/features/auth/guards'
+import { AppShell } from './layout/AppShell'
+import { MODULES } from './modules'
+import { HomeRedirect } from './pages/HomeRedirect'
+import { NotFoundPage } from './pages/NotFoundPage'
+import { RouteErrorPage } from './pages/RouteErrorPage'
+
+type LazyPage = NonNullable<RouteObject['lazy']>
+
+// Each module is its own bundle, loaded the first time it is opened.
+const MODULE_PAGES: Record<ModuleKey, LazyPage> = {
+  overview: () =>
+    import('@/features/overview/pages/OverviewPage').then((m) => ({ Component: m.OverviewPage })),
+  'command-centre': () =>
+    import('@/features/command-centre/pages/CommandCentrePage').then((m) => ({
+      Component: m.CommandCentrePage,
+    })),
+  geography: () =>
+    import('@/features/geography/pages/GeographyPage').then((m) => ({
+      Component: m.GeographyPage,
+    })),
+  agents: () =>
+    import('@/features/agents/pages/AgentsPage').then((m) => ({ Component: m.AgentsPage })),
+  verifications: () =>
+    import('@/features/verifications/pages/VerificationsPage').then((m) => ({
+      Component: m.VerificationsPage,
+    })),
+  trips: () => import('@/features/trips/pages/TripsPage').then((m) => ({ Component: m.TripsPage })),
+  violations: () =>
+    import('@/features/violations/pages/ViolationsPage').then((m) => ({
+      Component: m.ViolationsPage,
+    })),
+  evidence: () =>
+    import('@/features/evidence/pages/EvidencePage').then((m) => ({ Component: m.EvidencePage })),
+  payments: () =>
+    import('@/features/payments/pages/PaymentsPage').then((m) => ({ Component: m.PaymentsPage })),
+  notifications: () =>
+    import('@/features/notifications/pages/NotificationsPage').then((m) => ({
+      Component: m.NotificationsPage,
+    })),
+  audit: () => import('@/features/audit/pages/AuditPage').then((m) => ({ Component: m.AuditPage })),
+  sync: () => import('@/features/sync/pages/SyncPage').then((m) => ({ Component: m.SyncPage })),
+}
+
+export const routes: RouteObject[] = [
+  {
+    errorElement: <RouteErrorPage />,
+    children: [
+      {
+        element: <RedirectIfSignedIn />,
+        children: [
+          {
+            path: paths.signIn,
+            lazy: () =>
+              import('@/features/auth/pages/SignInPage').then((m) => ({ Component: m.SignInPage })),
+          },
+          {
+            path: paths.forgotPassword,
+            lazy: () =>
+              import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({
+                Component: m.ForgotPasswordPage,
+              })),
+          },
+        ],
+      },
+      {
+        element: <RequireAuth />,
+        children: [
+          {
+            element: <AppShell />,
+            children: [
+              { index: true, element: <HomeRedirect /> },
+              {
+                path: paths.profile,
+                lazy: () =>
+                  import('@/features/auth/pages/ProfilePage').then((m) => ({
+                    Component: m.ProfilePage,
+                  })),
+              },
+              ...MODULES.map<RouteObject>((module) => ({
+                path: module.path,
+                element: <RequireModule module={module.key} />,
+                children: [{ index: true, lazy: MODULE_PAGES[module.key] }],
+              })),
+              { path: '*', element: <NotFoundPage /> },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+]
