@@ -2,7 +2,8 @@ import { useId, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { isApiError } from '@/shared/api/api-error'
-import { signInSchema } from '../auth.schemas'
+import { useToast } from '@/shared/ui/toast/toast-context'
+import { AUTH_ERROR_CODES, signInSchema } from '../auth.schemas'
 import { AuthHelp } from '../components/AuthHelp'
 import { AuthLayout } from '../components/AuthLayout'
 import styles from '../components/form.module.css'
@@ -12,6 +13,7 @@ type FieldErrors = Partial<Record<'email' | 'password', string>>
 
 export function SignInPage() {
   const { signIn, endReason } = useSession()
+  const { showToast } = useToast()
   const id = useId()
 
   const [showPassword, setShowPassword] = useState(false)
@@ -21,7 +23,8 @@ export function SignInPage() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const data = new FormData(event.currentTarget)
+    const form = event.currentTarget
+    const data = new FormData(form)
     const parsed = signInSchema.safeParse({
       email: data.get('email'),
       password: data.get('password'),
@@ -43,8 +46,24 @@ export function SignInPage() {
       // Once signed in, <RedirectIfSignedIn> moves on to the right page.
       await signIn({ ...parsed.data, remember: data.get('remember') === 'on' })
     } catch (error) {
-      setFormError(isApiError(error) ? error.message : 'Sign-in failed. Try again.')
       setSubmitting(false)
+      if (isApiError(error) && error.code === AUTH_ERROR_CODES.accountDeactivated) {
+        // The design shows this as a notification with a way to CHL support, and the
+        // password cleared; the email stays so the user can see which account it was.
+        const password = form.elements.namedItem('password')
+        if (password instanceof HTMLInputElement) password.value = ''
+        showToast({
+          key: AUTH_ERROR_CODES.accountDeactivated,
+          variant: 'error',
+          title: 'Account deactivated',
+          lines: [
+            'Your account is deactivated. Your CHL administrator can help you restore access.',
+          ],
+          action: { label: 'Contact CHL support', to: paths.support },
+        })
+        return
+      }
+      setFormError(isApiError(error) ? error.message : 'Sign-in failed. Try again.')
     }
   }
 

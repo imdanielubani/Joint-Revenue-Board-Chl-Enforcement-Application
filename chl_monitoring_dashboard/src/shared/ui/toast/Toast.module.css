@@ -1,14 +1,21 @@
-.region {
+.stack {
   position: fixed;
   top: 36px;
   right: 32px;
   z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   width: 390px;
   max-width: calc(100vw - 32px);
   pointer-events: none;
+}
+
+.region {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.region:not(:empty) + .region:not(:empty) {
+  margin-top: var(--space-3);
 }
 
 .toast {
@@ -16,13 +23,24 @@
   align-items: flex-start;
   gap: 12px;
   padding: 18px 14px 18px 18px;
-  border: 1px solid var(--color-success-strong);
+  border: 1px solid;
   border-left-width: 4px;
   border-radius: var(--radius-toast);
   background: var(--color-surface);
   box-shadow: var(--shadow-toast);
   pointer-events: auto;
   animation: enter 200ms ease-out;
+}
+
+.success {
+  border-color: var(--color-success-strong);
+}
+
+/* The design's error notification: a finer border, sitting 7px lower (43px from the top). */
+.error {
+  margin-top: 7px;
+  border-width: 0.8px 0.8px 0.8px 4px;
+  border-color: var(--color-danger-strong);
 }
 
 .icon {
@@ -50,6 +68,24 @@
 
 .first {
   padding-top: 5px;
+}
+
+/* "Contact CHL support": 10px under the text, as in the design. */
+.action {
+  display: block;
+  width: fit-content;
+  margin-top: 10px;
+  padding-bottom: 1.6px;
+  color: var(--color-primary);
+  font-size: var(--font-size-overline);
+  font-weight: var(--font-weight-semibold);
+  line-height: 16px;
+  text-decoration: underline;
+  text-underline-position: from-font;
+}
+
+.action:hover {
+  color: var(--color-primary-hover);
 }
 
 .dismiss {
@@ -84,7 +120,7 @@
 }
 
 @media (max-width: 480px) {
-  .region {
+  .stack {
     top: 16px;
     right: 16px;
     left: 16px;

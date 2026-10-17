@@ -3,6 +3,9 @@ import { MODULE_KEYS, type User } from '@/features/auth/auth.schemas'
 /** Sample accounts for development; every one uses the password below. */
 export const MOCK_PASSWORD = 'password'
 
+/** Sample accounts that exist but are deactivated in CHL: sign-in is refused with a 403. */
+export const MOCK_DEACTIVATED_EMAILS = ['deactivated@jrb.gov.ng']
+
 export const MOCK_USERS: User[] = [
   {
     id: 'usr_admin',

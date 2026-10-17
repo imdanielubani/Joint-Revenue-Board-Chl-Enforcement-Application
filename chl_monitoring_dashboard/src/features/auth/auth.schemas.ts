@@ -1,5 +1,11 @@
 import { z } from 'zod'
 
+/** Error codes the backend returns on sign-in that the dashboard treats specially. */
+export const AUTH_ERROR_CODES = {
+  /** The CHL account exists but has been deactivated (HTTP 403). */
+  accountDeactivated: 'account_deactivated',
+} as const
+
 export const ROLES = ['administrator', 'supervisor', 'principal_officer'] as const
 export type Role = (typeof ROLES)[number]
 

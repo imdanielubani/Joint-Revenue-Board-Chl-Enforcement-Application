@@ -1,13 +1,21 @@
 import { createContext, useContext } from 'react'
 
+export type ToastVariant = 'success' | 'error'
+
 export interface ToastInput {
+  /** Success notifications dismiss themselves; error ones stay until dismissed. */
+  variant?: ToastVariant
   title: string
   /** One paragraph per entry, under the title. */
   lines?: string[]
+  /** A link under the text, such as "Contact CHL support". */
+  action?: { label: string; to: string }
+  /** Showing a toast with the same key replaces the earlier one instead of stacking. */
+  key?: string
 }
 
 export interface ToastContextValue {
-  /** Shows a success notification in the top-right corner. */
+  /** Shows a notification in the top-right corner. */
   showToast(toast: ToastInput): void
 }
 

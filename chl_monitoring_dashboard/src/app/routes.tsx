@@ -1,7 +1,8 @@
-import type { RouteObject } from 'react-router'
+import { Outlet, type RouteObject } from 'react-router'
 import { paths } from '@/config/paths'
 import type { ModuleKey } from '@/features/auth/auth.schemas'
 import { RedirectIfSignedIn, RequireAuth, RequireModule } from '@/features/auth/guards'
+import { ToastProvider } from '@/shared/ui/toast/ToastProvider'
 import { AppShell } from './layout/AppShell'
 import { MODULES } from './modules'
 import { HomeRedirect } from './pages/HomeRedirect'
@@ -47,6 +48,13 @@ const MODULE_PAGES: Record<ModuleKey, LazyPage> = {
 
 export const routes: RouteObject[] = [
   {
+    // Notifications live here, inside the router, so a notification's action can be a link,
+    // and it stays on screen when the page changes.
+    element: (
+      <ToastProvider>
+        <Outlet />
+      </ToastProvider>
+    ),
     errorElement: <RouteErrorPage />,
     children: [
       {

@@ -1,16 +1,26 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { ToastContext, type ToastContextValue, type ToastInput } from './toast-context'
 import styles from './Toast.module.css'
 
-/** How long a notification stays before it dismisses itself. */
+/** How long a success notification stays before it dismisses itself. */
 export const TOAST_DURATION_MS = 6000
+
+const ICONS = {
+  success: 'toast/check-circle.svg',
+  error: 'toast/account-error.svg',
+} as const
 
 interface ToastItem extends ToastInput {
   id: number
 }
 
-/** Shows notifications in the top-right corner; each one can be dismissed. */
+/**
+ * Shows notifications in the top-right corner. Errors are announced at once
+ * and stay until dismissed; success notifications are announced politely
+ * and dismiss themselves. Lives inside the router so actions can be links.
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const nextId = useRef(0)
@@ -21,18 +31,35 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const showToast = useCallback((toast: ToastInput) => {
     nextId.current += 1
-    setToasts((current) => [...current, { ...toast, id: nextId.current }])
+    const item = { ...toast, id: nextId.current }
+    setToasts((current) => [
+      ...current.filter((existing) => !toast.key || existing.key !== toast.key),
+      item,
+    ])
   }, [])
 
   const value = useMemo<ToastContextValue>(() => ({ showToast }), [showToast])
+  const errors = toasts.filter((toast) => toast.variant === 'error')
+  const others = toasts.filter((toast) => toast.variant !== 'error')
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className={styles.region} role="status" aria-live="polite">
-        {toasts.map((toast) => (
-          <Toast key={toast.id} toast={toast} onDismiss={dismiss} />
-        ))}
+      <div className={styles.stack}>
+        {/* An alert is announced when it appears, so this region exists only while it has errors.
+            The polite region must already be on the page for its changes to be announced. */}
+        {errors.length > 0 && (
+          <div className={styles.region} role="alert">
+            {errors.map((toast) => (
+              <Toast key={toast.id} toast={toast} onDismiss={dismiss} />
+            ))}
+          </div>
+        )}
+        <div className={styles.region} role="status" aria-live="polite">
+          {others.map((toast) => (
+            <Toast key={toast.id} toast={toast} onDismiss={dismiss} />
+          ))}
+        </div>
       </div>
     </ToastContext.Provider>
   )
@@ -45,21 +72,16 @@ interface ToastProps {
 }
 
 function Toast({ toast, onDismiss }: ToastProps) {
-  const { id } = toast
+  const { id, variant = 'success' } = toast
   useEffect(() => {
+    if (variant === 'error') return
     const timer = window.setTimeout(() => onDismiss(id), TOAST_DURATION_MS)
     return () => window.clearTimeout(timer)
-  }, [id, onDismiss])
+  }, [id, variant, onDismiss])
 
   return (
-    <div className={styles.toast}>
-      <img
-        className={styles.icon}
-        src={assetUrl('toast/check-circle.svg')}
-        width={23}
-        height={23}
-        alt=""
-      />
+    <div className={`${styles.toast} ${styles[variant]}`}>
+      <img className={styles.icon} src={assetUrl(ICONS[variant])} width={23} height={23} alt="" />
       <div className={styles.body}>
         <p className={styles.title}>{toast.title}</p>
         {toast.lines?.map((line, index) => (
@@ -67,6 +89,11 @@ function Toast({ toast, onDismiss }: ToastProps) {
             {line}
           </p>
         ))}
+        {toast.action && (
+          <Link className={styles.action} to={toast.action.to} onClick={() => onDismiss(id)}>
+            {toast.action.label}
+          </Link>
+        )}
       </div>
       <button
         type="button"

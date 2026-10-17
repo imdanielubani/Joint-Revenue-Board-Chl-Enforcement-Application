@@ -1,33 +1,46 @@
 import { act, render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useToast } from './toast-context'
+import { useToast, type ToastInput } from './toast-context'
 import { TOAST_DURATION_MS, ToastProvider } from './ToastProvider'
 
-function Trigger({ title }: { title: string }) {
+function Trigger({ label, toast }: { label: string; toast: ToastInput }) {
   const { showToast } = useToast()
   return (
-    <button type="button" onClick={() => showToast({ title, lines: ['Line one'] })}>
-      Show {title}
+    <button type="button" onClick={() => showToast(toast)}>
+      {label}
     </button>
   )
 }
 
+function renderToasts(...triggers: { label: string; toast: ToastInput }[]) {
+  render(
+    <MemoryRouter>
+      <ToastProvider>
+        {triggers.map((trigger) => (
+          <Trigger key={trigger.label} {...trigger} />
+        ))}
+      </ToastProvider>
+    </MemoryRouter>,
+  )
+}
+
+const click = (name: string) => act(() => screen.getByRole('button', { name }).click())
+
 afterEach(() => vi.useRealTimers())
 
 describe('ToastProvider', () => {
-  it('dismisses each notification on its own timer', () => {
+  it('dismisses each success notification on its own timer', () => {
     vi.useFakeTimers()
-    render(
-      <ToastProvider>
-        <Trigger title="First" />
-        <Trigger title="Second" />
-      </ToastProvider>,
+    renderToasts(
+      { label: 'Show first', toast: { title: 'First' } },
+      { label: 'Show second', toast: { title: 'Second' } },
     )
 
-    act(() => screen.getByRole('button', { name: 'Show First' }).click())
+    click('Show first')
     act(() => vi.advanceTimersByTime(TOAST_DURATION_MS - 1000))
     // A second notification must not restart the first one's timer.
-    act(() => screen.getByRole('button', { name: 'Show Second' }).click())
+    click('Show second')
     act(() => vi.advanceTimersByTime(1000))
 
     expect(screen.queryByText('First')).not.toBeInTheDocument()
@@ -37,18 +50,50 @@ describe('ToastProvider', () => {
     expect(screen.queryByText('Second')).not.toBeInTheDocument()
   })
 
-  it('announces notifications politely to screen readers', () => {
-    render(
-      <ToastProvider>
-        <Trigger title="Saved" />
-      </ToastProvider>,
-    )
+  it('announces success politely', () => {
+    renderToasts({ label: 'Show', toast: { title: 'Saved', lines: ['Line one'] } })
 
-    act(() => screen.getByRole('button', { name: 'Show Saved' }).click())
+    click('Show')
 
     const region = screen.getByRole('status')
     expect(region).toHaveAttribute('aria-live', 'polite')
     expect(region).toHaveTextContent('Saved')
     expect(region).toHaveTextContent('Line one')
+  })
+
+  it('announces errors at once and keeps them until dismissed', () => {
+    vi.useFakeTimers()
+    renderToasts({ label: 'Show', toast: { variant: 'error', title: 'Account deactivated' } })
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    click('Show')
+    act(() => vi.advanceTimersByTime(TOAST_DURATION_MS * 10))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Account deactivated')
+    click('Dismiss notification')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('replaces a notification with the same key instead of stacking', () => {
+    renderToasts({ label: 'Show', toast: { variant: 'error', title: 'Once', key: 'same' } })
+
+    click('Show')
+    click('Show')
+
+    expect(screen.getAllByText('Once')).toHaveLength(1)
+  })
+
+  it('shows an action link that also dismisses the notification', () => {
+    renderToasts({
+      label: 'Show',
+      toast: { variant: 'error', title: 'Oops', action: { label: 'Get help', to: '/support' } },
+    })
+
+    click('Show')
+    const link = screen.getByRole('link', { name: 'Get help' })
+    expect(link).toHaveAttribute('href', '/support')
+
+    act(() => link.click())
+    expect(screen.queryByText('Oops')).not.toBeInTheDocument()
   })
 })

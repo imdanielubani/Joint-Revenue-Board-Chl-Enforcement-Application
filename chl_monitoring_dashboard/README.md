@@ -34,11 +34,12 @@ Open http://localhost:5173. Until the backend is ready, the dashboard runs
 on sample data. Sign in with any sample account; the password is
 `password` for all of them.
 
-| Email                   | Role              | Sees                                       |
-| ----------------------- | ----------------- | ------------------------------------------ |
-| `admin@jrb.gov.ng`      | Administrator     | Every module, nationally                   |
-| `supervisor@jrb.gov.ng` | Supervisor        | Every module except the audit trail; Lagos |
-| `po@jrb.gov.ng`         | Principal Officer | Six modules; Ikeja LGA                     |
+| Email                    | Role              | Sees                                                  |
+| ------------------------ | ----------------- | ----------------------------------------------------- |
+| `admin@jrb.gov.ng`       | Administrator     | Every module, nationally                              |
+| `supervisor@jrb.gov.ng`  | Supervisor        | Every module except the audit trail; Lagos            |
+| `po@jrb.gov.ng`          | Principal Officer | Six modules; Ikeja LGA                                |
+| `deactivated@jrb.gov.ng` | —                 | Refused: shows the "Account deactivated" notification |
 
 ## Commands
 
@@ -149,9 +150,15 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 - **Every data screen** shows loading, empty, error and "last updated"
   states (`StatePanel`, `LastUpdated`).
 - **Notifications:** `useToast().showToast({ title, lines })` shows the
-  design's notification in the top-right corner (`shared/ui/toast/`). It
-  dismisses itself after 6 seconds or with its close button, and screen
-  readers announce it.
+  design's notification in the top-right corner (`shared/ui/toast/`).
+  - `variant: 'success'` (default, green): dismisses itself after 6 seconds
+    or with its close button; announced politely.
+  - `variant: 'error'` (red): stays until dismissed; announced at once.
+  - `action: { label, to }` adds a link under the text; following it
+    dismisses the notification. `key` replaces an earlier notification with
+    the same key instead of stacking another.
+  - The provider sits in the root route, inside the router, so actions can
+    be links and notifications survive page changes.
 - **Times are shown in Lagos time** (`shared/lib/format.ts`), whatever the
   viewer's clock.
 - **Styling:** CSS Modules next to each component; every value comes from
@@ -190,6 +197,12 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 - Pending with the backend: the auth paths in `features/auth/auth.api.ts`
   are provisional. Tokens are kept in browser storage for now; if the
   backend can use httpOnly cookies, they should move there.
+- **Deactivated accounts:** when sign-in is refused with the code
+  `account_deactivated` (HTTP 403, `AUTH_ERROR_CODES`), the sign-in page
+  shows the red "Account deactivated" notification with a "Contact CHL
+  support" link, clears the password and keeps the email. The backend
+  should only say so after the password is right, so the message never
+  reveals which accounts exist; the sample data does the same.
 - **Passwords are reset in CHL, never in the dashboard.** "Forgotten
   Password?" and "Need help signing in?" on the sign-in page open the
   sign-in help page (`/forgot-password`), which explains this and offers
@@ -221,6 +234,14 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- "Account deactivated" notification built to the design: shown on sign-in
+  for a deactivated CHL account, with "Contact CHL support" leading to the
+  support page.
+  - The notification system gained a red error variant (stays until
+    dismissed, announced at once), an action link and replace-by-key; it
+    moved into the root route so its links work.
+  - Sample account `deactivated@jrb.gov.ng` to try it. 49 tests.
 
 - CHL support: "Issue type" is now a dropdown (Can’t sign in, Account
   locked, Wrong access, Something else) instead of free text, and its label

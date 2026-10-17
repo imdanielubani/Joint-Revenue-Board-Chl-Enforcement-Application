@@ -31,6 +31,60 @@ describe('signing in', () => {
     )
   })
 
+  it('shows the "Account deactivated" notification for a deactivated account', async () => {
+    renderApp('/sign-in')
+    const user = userEvent.setup()
+    const submit = async () => {
+      await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
+      await user.click(screen.getByRole('button', { name: 'Sign In' }))
+    }
+
+    await user.type(await screen.findByLabelText('Email Address'), 'deactivated@jrb.gov.ng')
+    await submit()
+
+    const toast = await screen.findByRole('alert')
+    expect(toast).toHaveTextContent('Account deactivated')
+    expect(toast).toHaveTextContent(
+      'Your account is deactivated. Your CHL administrator can help you restore access.',
+    )
+    // The password is cleared; the email stays.
+    expect(screen.getByLabelText('Password')).toHaveValue('')
+    expect(screen.getByLabelText('Email Address')).toHaveValue('deactivated@jrb.gov.ng')
+
+    // Trying again replaces the notification rather than stacking another.
+    await submit()
+    await screen.findByRole('alert')
+    expect(screen.getAllByText('Account deactivated')).toHaveLength(1)
+  })
+
+  it('goes to CHL support from the "Account deactivated" notification', async () => {
+    const { router } = renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'deactivated@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+    await user.click(await screen.findByRole('link', { name: 'Contact CHL support' }))
+
+    expect(await screen.findByRole('heading', { name: 'How can we help?' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/support')
+    expect(screen.queryByText('Account deactivated')).not.toBeInTheDocument()
+  })
+
+  it('does not reveal a deactivated account to a wrong password', async () => {
+    renderApp('/sign-in')
+    const user = userEvent.setup()
+
+    await user.type(await screen.findByLabelText('Email Address'), 'deactivated@jrb.gov.ng')
+    await user.type(screen.getByLabelText('Password'), 'wrong')
+    await user.click(screen.getByRole('button', { name: 'Sign In' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The email or password is incorrect.',
+    )
+    expect(screen.queryByText('Account deactivated')).not.toBeInTheDocument()
+  })
+
   it('checks the fields before calling the backend', async () => {
     renderApp('/sign-in')
     const user = userEvent.setup()

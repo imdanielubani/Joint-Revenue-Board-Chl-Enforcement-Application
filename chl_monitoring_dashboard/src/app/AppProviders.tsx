@@ -3,7 +3,6 @@ import { useState, type ReactNode } from 'react'
 import type { AuthApi } from '@/features/auth/auth.api'
 import { SessionProvider } from '@/features/auth/SessionProvider'
 import { createQueryClient } from '@/shared/api/query-client'
-import { ToastProvider } from '@/shared/ui/toast/ToastProvider'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -12,13 +11,12 @@ interface AppProvidersProps {
   authApi?: AuthApi
 }
 
+/** App-wide state. Notifications live in the root route instead (see routes.tsx), inside the router. */
 export function AppProviders({ children, queryClient, authApi }: AppProvidersProps) {
   const [client] = useState(() => queryClient ?? createQueryClient())
   return (
     <QueryClientProvider client={client}>
-      <SessionProvider api={authApi}>
-        <ToastProvider>{children}</ToastProvider>
-      </SessionProvider>
+      <SessionProvider api={authApi}>{children}</SessionProvider>
     </QueryClientProvider>
   )
 }
