@@ -14,5 +14,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: { modules: { classNameStrategy: 'non-scoped' } },
     restoreMocks: true,
+    // Whole-app tests load pages on first use; on a busy machine that can pass the 5s default.
+    testTimeout: 15_000,
   },
 })

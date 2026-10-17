@@ -25,15 +25,19 @@ export function SignInPage() {
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
 
-  // A session that ran out (24 hours, or a renewal the backend refused) is announced once,
-  // with the design's "Session expired" notification; signing out yourself is not.
+  // A session that ran out (24 hours, a renewal the backend refused, or inactivity) is
+  // announced once, with the design's "Session expired" notification; signing out yourself is not.
   useEffect(() => {
-    if (endReason !== 'expired') return
+    if (endReason !== 'expired' && endReason !== 'inactive') return
     showToast({
       key: SIGN_IN_TOASTS.expired,
       variant: 'warning',
       title: 'Session expired',
-      lines: ['Your session has ended. Please sign in again to continue.'],
+      lines: [
+        endReason === 'inactive'
+          ? 'You were signed out after a period of inactivity. Please sign in again to continue.'
+          : 'Your session has ended. Please sign in again to continue.',
+      ],
       // Already on the sign-in page: put the cursor where the user should type next.
       // Not a link, so the page they were on is kept for after they sign in.
       action: {

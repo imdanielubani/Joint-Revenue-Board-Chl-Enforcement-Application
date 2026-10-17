@@ -306,7 +306,8 @@ describe('signed in', () => {
     await user.click(await screen.findByRole('button', { name: 'Sign out' }))
 
     expect(await screen.findByText('Logged out successfully')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
+    // The sign-in page loads on first use, so it may arrive just after the notification.
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
   })
 
   it('keeps a signed-in user off the sign-in page', async () => {

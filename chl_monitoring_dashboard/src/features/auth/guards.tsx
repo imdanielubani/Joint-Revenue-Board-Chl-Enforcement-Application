@@ -3,14 +3,23 @@ import { Navigate, Outlet, useLocation, type Location } from 'react-router'
 import { paths } from '@/config/paths'
 import { NoAccess } from '@/shared/ui/NoAccess'
 import type { ModuleKey } from './auth.schemas'
+import { SessionWarnings } from './components/SessionWarnings'
 import { useSession } from './session-context'
 
-/** Sends anyone who isn't signed in to the sign-in page, remembering where they were going. */
+/**
+ * Sends anyone who isn't signed in to the sign-in page, remembering where they were going.
+ * While signed in, warns before the session ends.
+ */
 export function RequireAuth() {
   const { session } = useSession()
   const location = useLocation()
   if (!session) return <Navigate to={paths.signIn} replace state={{ from: location }} />
-  return <Outlet />
+  return (
+    <>
+      <SessionWarnings />
+      <Outlet />
+    </>
+  )
 }
 
 /**

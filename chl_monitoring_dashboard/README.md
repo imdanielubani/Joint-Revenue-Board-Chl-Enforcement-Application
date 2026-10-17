@@ -187,6 +187,19 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 ## Sessions and access
 
 - Sign-in goes through the existing CHL authentication, via the backend.
+- **Inactivity: signed out after 45 minutes** without a click, key press,
+  scroll or mouse movement, in any tab (tabs share the last activity, so
+  working in one keeps the others signed in). Two minutes before, an amber
+  "Are you still there?" notification offers "Stay signed in"; any activity
+  also removes it. Time away with the browser closed counts too, even with
+  "Keep me signed in". Background data refreshes do not count as activity.
+  The sign-in page then shows "Session expired" with "You were signed out
+  after a period of inactivity."
+- **Five minutes before the 24 hours end**, an amber "Session expiring"
+  notification says so; it offers no action, since the 24 hours cannot be
+  extended.
+- The times are in `DEFAULT_SESSION_POLICY` (`features/auth/session-policy.ts`);
+  the session is checked every second.
 - **A session lasts 24 hours from sign-in**, like the mobile app's. Renewing
   the access token doesn't extend it. When it ends (or the backend refuses
   a renewal), the user is taken to the sign-in page, which shows the amber
@@ -259,6 +272,15 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Inactivity timeout and session warnings.
+  - Signed out after 45 minutes without activity in any tab, with an "Are
+    you still there?" warning and "Stay signed in" 2 minutes before.
+  - "Session expiring" warning 5 minutes before the 24-hour end.
+  - The session is now checked every second against one policy
+    (`session-policy.ts`), replacing the single 24-hour timer.
+  - Tests wait up to 3s for elements and 15s per test, since pages load on
+    first use; flaky waits in the session tests were fixed. 71 tests.
 
 - "Session expired" notification built to the design, replacing the
   message inside the sign-in form; shown once when a session runs out.

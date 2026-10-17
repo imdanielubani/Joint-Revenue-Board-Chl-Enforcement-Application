@@ -5,14 +5,22 @@ import { AppProviders } from '@/app/AppProviders'
 import { routes } from '@/app/routes'
 import type { AuthApi } from '@/features/auth/auth.api'
 import { saveSession, sessionExpiry } from '@/features/auth/session'
+import type { SessionPolicy } from '@/features/auth/session-policy'
 import { MOCK_USERS } from '@/mocks/mock-users'
 
 /** Renders the whole app at `path`, with a fresh query cache. */
-export function renderApp(path: string, options: { authApi?: AuthApi } = {}) {
+export function renderApp(
+  path: string,
+  options: { authApi?: AuthApi; sessionPolicy?: SessionPolicy } = {},
+) {
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
-    <AppProviders queryClient={queryClient} authApi={options.authApi}>
+    <AppProviders
+      queryClient={queryClient}
+      authApi={options.authApi}
+      sessionPolicy={options.sessionPolicy}
+    >
       <RouterProvider router={router} />
     </AppProviders>,
   )
