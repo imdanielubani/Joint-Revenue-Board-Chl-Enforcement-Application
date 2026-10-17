@@ -115,6 +115,36 @@
   --topbar-avatar-text: #245b37;
   --menu-shadow: 0 14px 40px rgb(23 32 51 / 0.13);
 
+  /* Monitoring cards: the Overview and the module screens */
+  --card-bg: #f5f7f6;
+  --card-line: #e4e4e7;
+  --card-shadow: 0 2px 2.5px rgb(16 24 40 / 0.02);
+  --card-title: #09090b;
+  --card-muted: #71717a;
+  --card-track: #f5f7f6;
+  --tab-active-bg: rgb(34 134 97 / 0.1);
+  --tab-active-text: #228661;
+  --tag-border: #e3e9ee;
+  --tag-text: #7b8794;
+  --status-success-bg: #edf7ef;
+  --status-success-text: #15803d;
+  --status-warning-bg: #fff5e5;
+  --status-warning-text: #d97706;
+  --status-amber-text: #b37a25;
+  --status-danger-bg: #fff0ef;
+  --status-danger-text: #dc2626;
+  --status-info-bg: #e3f4ff;
+  --amber: #b77922;
+  --chart-line: #27bd80;
+  --method-rfid: #17694f;
+  --method-qr: #43bc8d;
+  --method-ocr: #8dcbb7;
+  --method-manual: #c6e4d8;
+  --hero-gradient: linear-gradient(158.51deg, #132c1d 8.486%, #17472c 56.642%, #137836 91.514%);
+  --hero-border: #245b37;
+  --strip-gradient: linear-gradient(166.61deg, #edf5ee 7.735%, #f3f8f3 58.453%, #edf5ed 92.265%);
+  --strip-border: #dceadf;
+
   /* Layout */
   --control-height: 46px;
   --sidebar-width: 254px;

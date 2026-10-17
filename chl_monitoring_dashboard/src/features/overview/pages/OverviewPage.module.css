@@ -1,0 +1,35 @@
+/* Sections 24px apart; the banner, filters and summary strip sit closer, as one block. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 8px;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+/* The chart and the outcome list side by side: 737px and 391px of the 1144px width. */
+.activityRow {
+  display: grid;
+  grid-template-columns: minmax(0, 737fr) minmax(0, 391fr);
+  gap: 14px;
+}
+
+.stale {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid #f5d9a8;
+  border-radius: 8px;
+  background: var(--status-warning-bg);
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+}
+
+@media (max-width: 1180px) {
+  .activityRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

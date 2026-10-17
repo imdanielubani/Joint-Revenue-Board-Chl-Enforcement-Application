@@ -1,0 +1,108 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-ui);
+}
+
+/* A grey frame (6px inside) around a white panel, with the note underneath: 148px in all. */
+.kpi {
+  display: flex;
+  flex-direction: column;
+  min-height: 148px;
+  padding: 6px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 16px;
+  background: var(--card-bg);
+}
+
+.panel {
+  flex: 1;
+  padding: 16px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.label {
+  max-width: 200px;
+  color: var(--card-muted);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  line-height: 16.5px;
+  letter-spacing: 0.275px;
+  text-transform: uppercase;
+}
+
+.iconBox {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+}
+
+.value {
+  padding-top: 4px;
+  color: var(--card-title);
+  font-size: 24px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 36px;
+  letter-spacing: -0.6px;
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 8px 12px 4px 7px;
+  color: var(--card-title);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 16px;
+  text-decoration: none;
+}
+
+.note span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note img {
+  flex-shrink: 0;
+}
+
+.noteLink {
+  border-radius: 8px;
+}
+
+.noteLink:hover span {
+  text-decoration: underline;
+}
+
+@media (max-width: 1180px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

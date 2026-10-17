@@ -1,0 +1,78 @@
+/* As in the design: a grey frame (6px inside) holding a white header and a white body. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 16px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  font-family: var(--font-ui);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 80px;
+  padding: 18px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.heading {
+  min-width: 0;
+}
+
+.title {
+  color: var(--card-title);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 21px;
+  letter-spacing: -0.21px;
+}
+
+.subtitle {
+  padding-top: 4px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 18.7px;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 38px;
+  padding: 8px 12px 10px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 19.8px;
+  text-decoration: none;
+}
+
+.footerLink {
+  border-radius: 8px;
+}
+
+.footerLink:hover {
+  color: var(--card-title);
+}

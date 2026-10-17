@@ -1,0 +1,44 @@
+.button {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--card-bg);
+}
+
+.menu {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+  box-shadow: var(--menu-shadow);
+}
+
+.item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: left;
+  text-decoration: none;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: var(--card-bg);
+  outline: none;
+}

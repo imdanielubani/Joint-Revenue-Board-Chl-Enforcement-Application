@@ -35,7 +35,9 @@ describe('inactivity', { timeout: 20_000 }, () => {
     const status = await screen.findByRole('status')
     expect(await screen.findByText('Are you still there?')).toBeInTheDocument()
     expect(status).toHaveTextContent('You’ll be signed out in 1 minute because of inactivity.')
-    expect(screen.getByRole('heading', { name: 'Operational overview' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Operational overview' }),
+    ).toBeInTheDocument()
   })
 
   it('"Stay signed in" keeps the session', async () => {
@@ -76,7 +78,7 @@ describe('inactivity', { timeout: 20_000 }, () => {
   it('counts activity in another tab', async () => {
     signIn()
     const { router } = renderApp('/overview', { sessionPolicy: policy })
-    await screen.findByRole('heading', { name: 'Operational overview' })
+    await screen.findByRole('heading', { level: 1, name: 'Operational overview' })
 
     // Another tab records activity every 200ms for 5s, longer than the 4s limit.
     for (let i = 0; i < 25; i += 1) {

@@ -1,0 +1,48 @@
+.tabs {
+  display: flex;
+  gap: 4px;
+  height: 57px;
+  padding: 6.4px;
+  overflow: hidden;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12.8px;
+  background: var(--color-surface);
+}
+
+.tab {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 9.6px;
+  min-width: 0;
+  padding: 12px 9.6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--card-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 16.5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--card-title);
+}
+
+.selected,
+.selected:hover {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.count {
+  padding: 1.6px 4.8px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 4.8px;
+  font-size: 9px;
+  line-height: 13.5px;
+}

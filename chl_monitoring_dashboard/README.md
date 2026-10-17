@@ -92,7 +92,7 @@ src/
   features/                One folder per module
     auth/                  Sign-in, sign-in help, CHL support, profile, the 24-hour
                            session, route guards
-    overview/              Summary figures and recent activity
+    overview/              The Overview: headline figures, charts, registers, recent activity
     command-centre/        Activity feed, cases needing attention, field reports
     geography/             Point, zone, ward, LGA, state, region, subregion, national
     agents/                Each agent's verifications, violations and follow-up
@@ -106,8 +106,10 @@ src/
     sync/                  Synchronisation and field status
   shared/                  Used by every feature; imports no feature
     api/                   HTTP client, ApiError, query cache settings, auth bridge
-    lib/                   Lagos-time and number formatting, safe storage
-    ui/                    PageHeader, StatePanel, LastUpdated, NoAccess, placeholders
+    lib/                   Lagos-time dates and formatting, chart scales, CSV export,
+                           record-register search/sort/pages, safe storage
+    ui/                    PageHeader, StatePanel, DashboardCard, SegmentedTabs,
+                           StatusLabel, RegisterTable, RowActions, NoAccess, placeholders
   mocks/                   Sample data and sample APIs, used until the backend is ready
   styles/
     tokens.css             Design tokens: colours, type, spacing, radii
@@ -291,6 +293,21 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 ## Change log
 
 Newest first. Add a line for every change.
+
+- Overview page built to the design: banner with Refresh and Export records,
+  area and period filters (kept in the address), the summary strip, eight
+  headline figures, the daily verification chart, verification outcomes,
+  enforcement performance by agent, location or organization, verification
+  methods, violations by category, payment status, activity by location,
+  cases requiring attention, repeat-vehicle alerts and the recent activity
+  register.
+  - Shared building blocks for the module screens: monitoring card, segmented
+    tabs, status labels, and a record register with search, sortable columns,
+    pages and a row menu.
+  - Figures link into their modules only for users who may open them.
+  - Sample data matches the design; the backend path is `/api/v1/overview`
+    (provisional). Export records saves the period's records as CSV.
+  - Inter 500/600/700 added for the monitoring cards.
 
 - Sidebar, top bar and account menu built to the design (expanded,
   collapsed, and menu open), replacing the provisional frame.

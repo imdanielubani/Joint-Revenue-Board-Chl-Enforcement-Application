@@ -1,0 +1,82 @@
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+}
+
+.table th {
+  height: 40px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  color: var(--card-muted);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.table td {
+  height: 71px;
+  padding: 16px;
+  border-top: 0.8px solid var(--card-line);
+  color: var(--card-muted);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.start {
+  text-align: left;
+}
+
+.center {
+  text-align: center;
+}
+
+.end {
+  text-align: right;
+}
+
+.table th.end,
+.table td.end {
+  padding-right: 16px;
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sortButton:hover {
+  color: var(--card-title);
+}
+
+.sortIcon {
+  opacity: 0.4;
+}
+
+.sortActive {
+  opacity: 1;
+}
+
+.sortAscending {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
+.table td.empty {
+  height: 96px;
+  text-align: center;
+  white-space: normal;
+}

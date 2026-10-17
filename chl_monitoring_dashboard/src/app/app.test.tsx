@@ -87,7 +87,9 @@ describe('signing in', () => {
     await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    expect(await screen.findByRole('heading', { name: 'Operational overview' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Operational overview' }),
+    ).toBeInTheDocument()
     expect(screen.queryByText('Sign-in error')).not.toBeInTheDocument()
   })
 
@@ -171,7 +173,7 @@ describe('signing in', () => {
     await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    await screen.findByRole('heading', { name: 'Operational overview' })
+    await screen.findByRole('heading', { level: 1, name: 'Operational overview' })
     expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).not.toBeNull()
     expect(localStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
   })
@@ -185,7 +187,7 @@ describe('signing in', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Keep me signed in' }))
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    await screen.findByRole('heading', { name: 'Operational overview' })
+    await screen.findByRole('heading', { level: 1, name: 'Operational overview' })
     expect(localStorage.getItem(SESSION_STORAGE_KEY)).not.toBeNull()
     expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
   })
@@ -258,7 +260,9 @@ describe('signed in', () => {
     signInAs('admin@jrb.gov.ng')
     const { router } = renderApp('/')
 
-    expect(await screen.findByRole('heading', { name: 'Operational overview' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Operational overview' }),
+    ).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/overview')
   })
 
@@ -314,7 +318,9 @@ describe('signed in', () => {
     signInAs('admin@jrb.gov.ng')
     const { router } = renderApp('/sign-in')
 
-    expect(await screen.findByRole('heading', { name: 'Operational overview' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Operational overview' }),
+    ).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/overview')
   })
 })

@@ -1,0 +1,34 @@
+.body {
+  padding: 18px;
+}
+
+.panel {
+  padding-top: 16px;
+}
+
+.note {
+  padding-top: 14px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 19px;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+}
+
+.whoName {
+  color: var(--card-title);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 20px;
+}
+
+.whoId {
+  padding-top: 2px;
+  color: var(--card-muted);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 16px;
+}

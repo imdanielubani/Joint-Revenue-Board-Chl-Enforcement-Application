@@ -1,0 +1,55 @@
+.body {
+  padding: 14px 18px 18px;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li + li {
+  border-top: 0.8px solid var(--card-line);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 10px 0;
+  color: var(--card-title);
+  text-decoration: none;
+}
+
+.rowLink:hover .name {
+  text-decoration: underline;
+}
+
+.name {
+  display: block;
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  line-height: 19.5px;
+}
+
+.share {
+  display: block;
+  padding-top: 3.4px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 20.6px;
+}
+
+.count {
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 20px;
+}
+
+.empty {
+  padding: var(--space-6) 0;
+  color: var(--card-muted);
+  font-size: 12px;
+  text-align: center;
+}

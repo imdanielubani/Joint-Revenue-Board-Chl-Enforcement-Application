@@ -1,0 +1,245 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 85px;
+  padding: 16px 18px;
+  border-bottom: 0.8px solid var(--card-line);
+}
+
+.total {
+  color: var(--card-title);
+  font-size: 25.6px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 30.72px;
+  letter-spacing: -1.152px;
+}
+
+.totalLabel {
+  padding-top: 4px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 16.5px;
+}
+
+.viewRecords {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 16.5px;
+  text-decoration: none;
+}
+
+.viewRecords:hover {
+  color: var(--card-title);
+}
+
+.legendRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 56.6px;
+  padding: 14px 18px;
+  border-bottom: 0.8px solid var(--card-line);
+}
+
+.chip {
+  padding: 5.6px 9.6px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  line-height: 15px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.legendUnavailable {
+  opacity: 0.65;
+}
+
+.swatch {
+  width: 7.2px;
+  height: 7.2px;
+  border-radius: 1.6px;
+  background: var(--chart-line);
+}
+
+.swatchPrevious {
+  background: rgb(113 113 122 / 0.4);
+}
+
+/* The plot: values on the left, 380px tall, days underneath. */
+.chart {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+  padding: 26px 18px 22px 12px;
+}
+
+.yAxis {
+  position: relative;
+  flex-shrink: 0;
+  width: 28px;
+  height: 380px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.yAxis span {
+  position: absolute;
+  left: 0;
+  transform: translateY(50%);
+}
+
+.plotColumn {
+  flex: 1;
+  min-width: 0;
+}
+
+.plot {
+  position: relative;
+  height: 380px;
+  border-radius: 4px;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: #efeff1;
+  stroke-width: 0.75;
+}
+
+.dayLine {
+  stroke: #e4e4e7;
+  stroke-width: 0.75;
+  stroke-dasharray: 3 4;
+}
+
+.band {
+  fill: rgb(39 189 128 / 0.08);
+}
+
+.activeLine {
+  stroke: rgb(39 189 128 / 0.5);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.line {
+  fill: none;
+  stroke: var(--chart-line);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.previousLine {
+  fill: none;
+  stroke: rgb(113 113 122 / 0.4);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--chart-line);
+  box-shadow: 0 0 0 1px rgb(39 189 128 / 0.35);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.tooltip {
+  position: absolute;
+  top: 4px;
+  width: 176px;
+  padding: 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  filter: drop-shadow(0 6px 10px rgb(16 24 40 / 0.07));
+  pointer-events: none;
+}
+
+.tooltipTitle {
+  padding-top: 6px;
+  color: var(--card-title);
+  font-size: 9px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 13.5px;
+  letter-spacing: 0.36px;
+  text-transform: uppercase;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 5.6px;
+}
+
+.tooltipValue {
+  color: var(--chart-line);
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  line-height: 19.5px;
+}
+
+.tooltipDate {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.tooltipNote {
+  padding-top: 6.4px;
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 13.5px;
+}
+
+.xAxis {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 13.5px;
+}

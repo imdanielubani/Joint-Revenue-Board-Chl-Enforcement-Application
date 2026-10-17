@@ -1,0 +1,134 @@
+.register {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--font-ui);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titleIcon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.title {
+  color: var(--card-title);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 20px;
+}
+
+.total {
+  color: var(--card-muted);
+  font-size: 12px;
+  font-weight: var(--font-weight-regular);
+  line-height: 16px;
+}
+
+.subtitle {
+  padding-top: 2px;
+  color: var(--card-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 256px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+
+.search:focus-within {
+  border-color: var(--color-primary);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.search input::placeholder {
+  color: rgb(9 9 11 / 0.5);
+}
+
+.table {
+  overflow: hidden;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px;
+}
+
+.showing {
+  flex: 1;
+  padding-left: 8px;
+  color: var(--card-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.page {
+  color: var(--card-title);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.pageButton {
+  padding: 6px 10px;
+  border: 0.8px solid #b4b4b5;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.pageButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
