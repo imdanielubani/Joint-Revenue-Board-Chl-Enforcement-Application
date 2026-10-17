@@ -8,6 +8,8 @@ import { AuthShell } from '../components/AuthLayout'
 import { BackToSignIn } from '../components/BackToSignIn'
 import { supportApi } from '../support.api'
 import {
+  ISSUE_TYPE_LABELS,
+  ISSUE_TYPES,
   SUPPORT_MESSAGE_MAX_LENGTH,
   supportRequestSchema,
   type SupportRequest,
@@ -131,19 +133,27 @@ export function SupportPage() {
 
             <div className={styles.field}>
               <label className={styles.label} htmlFor={`${id}-issueType`}>
-                Issues type
+                Issue type
               </label>
-              <input
+              {/* The empty first option is the placeholder; `required` makes it :invalid until a choice is made. */}
+              <select
                 id={`${id}-issueType`}
-                className={styles.input}
+                className={`${styles.input} ${styles.select}`}
                 name="issueType"
-                type="text"
-                placeholder="What do you need help with?"
-                maxLength={120}
+                defaultValue=""
                 aria-invalid={Boolean(fieldErrors.issueType)}
                 aria-describedby={describedBy('issueType')}
                 required
-              />
+              >
+                <option value="" disabled>
+                  What do you need help with?
+                </option>
+                {ISSUE_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {ISSUE_TYPE_LABELS[type]}
+                  </option>
+                ))}
+              </select>
               {fieldError('issueType')}
             </div>
 

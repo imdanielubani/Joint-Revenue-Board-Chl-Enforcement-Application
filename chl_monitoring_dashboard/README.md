@@ -201,6 +201,10 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   form clears and an "Email sent" notification appears. On sample data the
   notification adds "Success preview only — no email has been sent.", which
   is true there. A failure keeps what was typed and says why.
+- **Issue types** (`ISSUE_TYPES` in `features/auth/support.schemas.ts`): Can’t
+  sign in (`cant_sign_in`), Account locked (`account_locked`), Wrong access
+  (`wrong_access`), Something else (`other`). The backend receives the key;
+  to add a type, add its key and label there.
 
 ## Conventions
 
@@ -217,6 +221,10 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- CHL support: "Issue type" is now a dropdown (Can’t sign in, Account
+  locked, Wrong access, Something else) instead of free text, and its label
+  reads "Issue type". 43 tests.
 
 - CHL support page built to the design ("How can we help?"), opened by
   "Contact CHL Support" on the sign-in help page.

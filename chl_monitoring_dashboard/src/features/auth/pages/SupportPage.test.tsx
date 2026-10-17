@@ -8,7 +8,7 @@ import { renderApp } from '@/test/render-app'
 async function fillForm(user: ReturnType<typeof userEvent.setup>) {
   await user.type(await screen.findByLabelText('Full name'), 'Adaeze Okafor')
   await user.type(screen.getByLabelText('CHL email address'), 'adaeze@jrb.gov.ng')
-  await user.type(screen.getByLabelText('Issues type'), 'Account locked')
+  await user.selectOptions(screen.getByLabelText('Issue type'), 'Account locked')
   await user.type(screen.getByLabelText('Message'), 'I cannot sign in since this morning.')
 }
 
@@ -22,10 +22,31 @@ describe('CHL support', () => {
 
     expect(screen.getByText('Enter your full name.')).toBeInTheDocument()
     expect(screen.getByText('Enter a valid email address.')).toBeInTheDocument()
-    expect(screen.getByText('Say what you need help with.')).toBeInTheDocument()
+    expect(screen.getByText('Choose what you need help with.')).toBeInTheDocument()
     expect(screen.getByText('Describe what happened.')).toBeInTheDocument()
     expect(screen.getByLabelText('Full name')).toHaveAttribute('aria-invalid', 'true')
     expect(send).not.toHaveBeenCalled()
+  })
+
+  it('offers the issue types, with nothing chosen at first', async () => {
+    renderApp('/support')
+    const select = await screen.findByLabelText('Issue type')
+
+    expect(select).toHaveValue('')
+    expect(
+      within(select)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual([
+      'What do you need help with?',
+      'Can’t sign in',
+      'Account locked',
+      'Wrong access',
+      'Something else',
+    ])
+    expect(
+      within(select).getByRole('option', { name: 'What do you need help with?' }),
+    ).toBeDisabled()
   })
 
   it('counts the message characters', async () => {
@@ -50,7 +71,7 @@ describe('CHL support', () => {
     expect(send).toHaveBeenCalledWith({
       fullName: 'Adaeze Okafor',
       email: 'adaeze@jrb.gov.ng',
-      issueType: 'Account locked',
+      issueType: 'account_locked',
       message: 'I cannot sign in since this morning.',
     })
     const region = within(screen.getByRole('status'))
@@ -59,6 +80,7 @@ describe('CHL support', () => {
     expect(region.getByText('Success preview only — no email has been sent.')).toBeInTheDocument()
     expect(toast).toBeInTheDocument()
     expect(screen.getByLabelText('Full name')).toHaveValue('')
+    expect(screen.getByLabelText('Issue type')).toHaveValue('')
     expect(screen.getByLabelText('Message')).toHaveValue('')
     expect(screen.getByText('0/2000')).toBeInTheDocument()
   })
