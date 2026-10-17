@@ -158,6 +158,11 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
   JRB logo, `auth/` for the sign-in pages). They are served as they are, so
   code refers to them by URL with `assetUrl('brand/jrb-logo.png')`
   (`shared/lib/asset-url.ts`), never by importing them.
+- **Favicon:** the JRB shield mark, cropped from the brand logo, in
+  `public/`: `favicon.ico` (16, 32 and 48 px), `favicon-16x16.png`,
+  `favicon-32x32.png`, and `apple-touch-icon.png` (180 px, on white, for
+  phone home screens). They are linked from `index.html`. To change them,
+  regenerate all four from the logo.
 
 ## Sessions and access
 
@@ -198,6 +203,10 @@ page → feature hooks (<feature>.queries.ts) → <feature>.api.ts
 ## Change log
 
 Newest first. Add a line for every change.
+
+- The favicon is now the JRB shield mark (`.ico` plus 16 and 32 px PNGs and
+  a 180 px Apple touch icon), replacing the Vite logo; the browser theme
+  colour is the brand green.
 
 - Moved the images to `public/assets/`, referenced through `assetUrl()`.
   The email field's placeholder is now "Enter Your Email Address".
