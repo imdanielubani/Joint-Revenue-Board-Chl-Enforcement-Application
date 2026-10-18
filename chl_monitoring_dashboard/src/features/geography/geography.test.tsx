@@ -194,6 +194,29 @@ describe('geographical monitoring page', () => {
     )
   })
 
+  it('shows each agent’s recorded activity in the scope, without scores', async () => {
+    const { overview } = expected('ng')
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/geography')
+    const activity = await card('Agent activity')
+    expect(activity).toHaveTextContent(`${overview.agents.length}Agents with activity`)
+    for (const agent of overview.agents) {
+      expect(within(activity).getByText(agent.name)).toBeInTheDocument()
+      expect(within(activity).getByRole('link', { name: `Open ${agent.name}` })).toHaveAttribute(
+        'href',
+        `/agents?agent=${agent.agentId}`,
+      )
+    }
+    // Activity only: each agent's tile counts records, nothing more.
+    const tile = within(activity).getByText(overview.agents[0]!.name).closest('li')!
+    expect([...tile.querySelectorAll('dt')].map((term) => term.textContent)).toEqual([
+      'Verifications',
+      'Violations',
+      'Unresolved',
+      'Repeat alerts',
+    ])
+  })
+
   it('keeps payment received apart from trip activation', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/geography')

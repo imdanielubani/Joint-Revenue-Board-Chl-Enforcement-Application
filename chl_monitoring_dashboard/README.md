@@ -302,6 +302,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring: an Agent activity card (SRD 4, "agent
+  activity"): agents with activity, organizations, verifications and
+  violations for the scope, then a tile per agent (by recorded agent ID)
+  with their verifications, violations, unresolved cases and repeat alerts,
+  their share of the scope's verifications and where they recorded activity,
+  linking to the agent where the role allows. Activity only: no scores or
+  rankings.
 - Sample data: a centrally defined subregion, Lagos Metropolitan (in South
   West, holding Lagos), so the Subregion view of geographical monitoring
   shows its activity. Lagos's place in the sample area tree moves under it;
