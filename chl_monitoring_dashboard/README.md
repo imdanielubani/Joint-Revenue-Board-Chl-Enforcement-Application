@@ -302,6 +302,16 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring data (SRD 4): for an area and period, the areas
+  directly under it in CHL's area tree, each with the same figures as the
+  area itself (verifications and outcomes, agents, violations, unresolved
+  and escalated cases, repeat-vehicle alerts, payments, enforcement points),
+  and every enforcement point in scope with its recorded GPS position, active
+  in the period or not. The parent-child relationships come only from the
+  area tree, so levels may differ under one parent (Ikeja holds a ward and an
+  enforcement point). Counted with the Overview's own counting in
+  `mocks/mock-geography-api.ts`; backend path `/api/v1/geography`
+  (provisional).
 - Each page banner shows its own module's icon, as the Overview does with
   its grid: the large faint mark and the small icon before "JRB CHL /". The
   Command centre's is its compass. `PageHero` takes the folder holding the
