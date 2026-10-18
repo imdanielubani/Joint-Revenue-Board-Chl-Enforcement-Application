@@ -10,15 +10,16 @@ const area = (id: string, name: string, level: Area['level'], parentId: string |
 })
 
 /**
- * Sample geography: Nigeria, four regions, and the states, LGAs, ward, zone and
- * enforcement points the sample records come from. The ids of Nigeria, Lagos
+ * Sample geography: Nigeria, four regions, a subregion, and the states, LGAs,
+ * ward, zone and enforcement points the sample records come from. The ids of Nigeria, Lagos
  * and Ikeja match the sample accounts' assigned areas.
  */
 export const MOCK_AREAS: Area[] = [
   area('ng', 'Nigeria', 'national', null),
 
   area('sw', 'South West', 'region', 'ng'),
-  area('la', 'Lagos', 'state', 'sw'),
+  area('sw-lagos-metro', 'Lagos Metropolitan', 'subregion', 'sw'),
+  area('la', 'Lagos', 'state', 'sw-lagos-metro'),
   area('la-ikeja', 'Ikeja', 'lga', 'la'),
   area('la-ikeja-ojota', 'Ojota', 'ward', 'la-ikeja'),
   area('la-zone-1', 'Lagos Zone 1', 'zone', 'la-ikeja-ojota'),

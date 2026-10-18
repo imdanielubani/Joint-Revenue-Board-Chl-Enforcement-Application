@@ -87,8 +87,22 @@ describe('geographical monitoring page', () => {
     )
   })
 
-  it('says when CHL configures no areas at a level', async () => {
+  it('shows a centrally defined subregion as CHL configures it', async () => {
     signInAs('admin@jrb.gov.ng')
+    renderApp('/geography')
+    const scope = await card('Monitoring scope')
+    await userEvent.click(within(scope).getByRole('tab', { name: 'Subregion' }))
+    expect(await screen.findByLabelText('Subregion to show')).toHaveDisplayValue(
+      'Lagos Metropolitan subregion',
+    )
+    expect(await card('Locations in view')).toHaveTextContent('Lagos Metropolitan subregion')
+    expect(await figure('Verifications')).toHaveTextContent(
+      String(expected('sw-lagos-metro').overview.kpis.totalVerifications),
+    )
+  })
+
+  it('says when CHL configures no areas at a level within the user’s own', async () => {
+    signInAs('supervisor@jrb.gov.ng')
     renderApp('/geography')
     const scope = await card('Monitoring scope')
     await userEvent.click(within(scope).getByRole('tab', { name: 'Subregion' }))

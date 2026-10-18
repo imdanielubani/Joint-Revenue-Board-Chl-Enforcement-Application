@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Sample data: a centrally defined subregion, Lagos Metropolitan (in South
+  West, holding Lagos), so the Subregion view of geographical monitoring
+  shows its activity. Lagos's place in the sample area tree moves under it;
+  the page itself assumes no hierarchy.
 - Geographical monitoring: access to the underlying records on the page
   itself (SRD 4). Every record's reference or name in the Underlying records
   registers opens a Record details panel: everything known about it, what it

@@ -20,8 +20,8 @@ describe('scopeOptions', () => {
     expect(options.slice(0, 4).map((option) => [option.label, option.depth])).toEqual([
       ['National overview', 0],
       ['South West region overview', 1],
-      ['Lagos state overview', 2],
-      ['Ikeja LGA overview', 3],
+      ['Lagos Metropolitan subregion overview', 2],
+      ['Lagos state overview', 3],
     ])
   })
 
