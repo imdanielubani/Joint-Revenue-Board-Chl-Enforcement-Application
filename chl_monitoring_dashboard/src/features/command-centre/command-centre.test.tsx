@@ -157,7 +157,7 @@ describe('command centre page', () => {
     expect(within(map).getByText(busiest.name)).toBeInTheDocument()
     expect(
       within(map).getByRole('link', { name: 'Open in geographical monitoring' }),
-    ).toHaveAttribute('href', `/geography?location=${busiest.id}`)
+    ).toHaveAttribute('href', `/geography?scope=${busiest.id}`)
 
     await userEvent.click(show)
     const feed = await card('Operational activity feed')

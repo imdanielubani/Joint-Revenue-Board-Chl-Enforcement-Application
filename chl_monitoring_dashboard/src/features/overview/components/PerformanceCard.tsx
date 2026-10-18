@@ -229,7 +229,7 @@ function LocationRegister({ rows }: { rows: readonly LocationRow[] }) {
         header: 'Actions',
         align: 'end',
         render: (row) => {
-          const to = link('geography', `${paths.geography}?location=${row.id}`)
+          const to = link('geography', `${paths.geography}?scope=${row.id}`)
           return to ? (
             <RowActions
               label={`Actions for ${row.name}`}

@@ -302,6 +302,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The map of enforcement points moves to `features/geography` as
+  `EnforcementMap`, shared by the Command centre and geographical
+  monitoring: each page gives its points (one figure each), how that figure
+  reads, the legend, and the panel's action and link. Busiest points are
+  drawn first, so smaller circles stay clickable on top. Links into
+  geographical monitoring now name the enforcement point as the scope
+  (`/geography?scope=…`), as points are areas in CHL's tree.
 - Geographical monitoring data (SRD 4): for an area and period, the areas
   directly under it in CHL's area tree, each with the same figures as the
   area itself (verifications and outcomes, agents, violations, unresolved

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useId, useState } from 'react'
+import { lazy, Suspense, useId, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { env } from '@/config/env'
 import { paths } from '@/config/paths'
@@ -193,7 +193,7 @@ type LocationView = 'map' | 'list'
 const mapAvailable = env.mapTileUrl !== ''
 
 /** Loaded only when the map is shown, with Leaflet. */
-const LocationsMap = lazy(() => import('./LocationsMap'))
+const EnforcementMap = lazy(() => import('@/features/geography/components/EnforcementMap'))
 
 /**
  * "Recorded locations": activity at each enforcement point in the window, and
@@ -209,10 +209,29 @@ export function RecordedLocationsCard({
 }) {
   const link = useModuleLink()
   const navigate = useNavigate()
-  const sorted = [...locations].sort(
-    (a, b) => b.events - a.events || (b.lastEventAt ?? '').localeCompare(a.lastEventAt ?? ''),
+  // Busiest first: the list leads with it, and on the map smaller circles are drawn over it.
+  const sorted = useMemo(
+    () =>
+      [...locations].sort(
+        (a, b) => b.events - a.events || (b.lastEventAt ?? '').localeCompare(a.lastEventAt ?? ''),
+      ),
+    [locations],
   )
   const busiest = sorted[0]?.events ?? 0
+  // The map's points: each location sized by the entries received there.
+  const points = useMemo(
+    () =>
+      sorted.map((location) => ({
+        id: location.id,
+        name: location.name,
+        area: location.area,
+        code: location.code,
+        position: location.position,
+        count: location.events,
+        lastRecordedAt: location.lastEventAt,
+      })),
+    [sorted],
+  )
   const idBase = useId()
   const [view, setView] = useState<LocationView>('map')
 
@@ -247,19 +266,31 @@ export function RecordedLocationsCard({
           >
             {mapAvailable && view === 'map' ? (
               <Suspense fallback={<p className={styles.empty}>Loading the map…</p>}>
-                <LocationsMap
-                  locations={sorted}
-                  onShowEntries={onShowEntries}
-                  linkFor={(location) =>
-                    link('geography', `${paths.geography}?location=${location.id}`)
+                <EnforcementMap
+                  points={points}
+                  countText={(count) =>
+                    `${count} ${count === 1 ? 'entry' : 'entries'} received in this window`
                   }
+                  legend="Larger circles: more entries received in this window. Grey: none. Click a circle for its entries."
+                  primary={{
+                    label: 'Show its entries in the feed',
+                    run: (point) => {
+                      const location = locations.find((entry) => entry.id === point.id)
+                      if (location) onShowEntries(location)
+                    },
+                    enabled: (point) => point.count > 0,
+                  }}
+                  link={{
+                    label: 'Open in geographical monitoring',
+                    to: (point) => link('geography', `${paths.geography}?scope=${point.id}`),
+                  }}
                   onNavigate={(to) => void navigate(to)}
                 />
               </Suspense>
             ) : (
               <ul className={styles.locations}>
                 {sorted.map((location) => {
-                  const to = link('geography', `${paths.geography}?location=${location.id}`)
+                  const to = link('geography', `${paths.geography}?scope=${location.id}`)
                   const content = (
                     <>
                       <span className={styles.locationHead}>

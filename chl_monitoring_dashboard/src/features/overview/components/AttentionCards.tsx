@@ -75,7 +75,7 @@ export function LocationActivityCard({ locations }: { locations: Overview['locat
             <li key={location.id}>
               <MaybeLink
                 className={styles.location}
-                to={link('geography', `${paths.geography}?location=${location.id}`)}
+                to={link('geography', `${paths.geography}?scope=${location.id}`)}
               >
                 <span className={index === 0 ? `${styles.rank} ${styles.rankFirst}` : styles.rank}>
                   {index + 1}
