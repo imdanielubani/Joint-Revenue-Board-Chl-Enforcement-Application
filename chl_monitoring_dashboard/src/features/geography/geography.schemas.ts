@@ -13,6 +13,10 @@ const count = z.number().int().nonnegative()
 const open = <T extends string>() => z.custom<Open<T>>((value) => typeof value === 'string')
 const agent = z.object({ id: z.string(), name: z.string() })
 const place = z.object({ id: z.string(), name: z.string(), area: z.string(), code: z.string() })
+/** The GPS the device captured with the record (WGS 84); null when none. A recorded position, not a live one. */
+const gps = z
+  .object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
+  .nullable()
 
 /** A verification received in the scope and period. */
 const verificationRecordSchema = z.object({
@@ -23,6 +27,7 @@ const verificationRecordSchema = z.object({
   result: open<VerificationOutcome>().nullable(),
   agent,
   location: place,
+  position: gps,
   recordedAt: z.string(),
   /** Later than recordedAt for a record made offline; null when not supplied. */
   receivedAt: z.string().nullable(),
@@ -38,6 +43,7 @@ const violationRecordSchema = z.object({
   status: open<ActionStatus>(),
   agent,
   location: place,
+  position: gps,
   recordedAt: z.string(),
   noticeId: z.string().nullable(),
 })

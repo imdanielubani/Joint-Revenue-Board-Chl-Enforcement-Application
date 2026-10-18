@@ -103,6 +103,19 @@
   background: var(--amber);
 }
 
+.event {
+  box-sizing: border-box;
+  border: 1.5px solid var(--color-primary);
+  background: #ffffff;
+}
+
+.fitOn,
+.fitOn:hover {
+  border-color: var(--color-primary);
+  background: #f3f9f5;
+  color: var(--color-primary);
+}
+
 /* Locations in view */
 .inViewBody {
   display: flex;

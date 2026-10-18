@@ -165,6 +165,8 @@ export interface MockRecord {
   receivedAt: number
   source: RecordSource
   syncStatus: SyncStatus
+  /** The GPS the device captured with the record; null when it captured none. Not live. */
+  position: { lat: number; lng: number } | null
   violation: MockViolation | null
 }
 
@@ -240,9 +242,32 @@ function violationFor(
   }
 }
 
+/** A stable number in [0, 1) from an integer, so positions need no draw from the generator. */
+function unit(n: number): number {
+  let x = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b)
+  x ^= x >>> 13
+  x = Math.imul(x, 0xc2b2ae35)
+  x ^= x >>> 16
+  return (x >>> 0) / 2 ** 32
+}
+
+/**
+ * Where a record's device said it was: within about 250 m of its enforcement
+ * point, as phones' GPS readings scatter; about one in twelve captured none.
+ */
+function capturedPosition(index: number, pointId: string): MockRecord['position'] {
+  const point = MOCK_POINTS.find((entry) => entry.id === pointId)
+  if (!point || unit(index * 3 + 1) < 0.08) return null
+  const round = (value: number) => Math.round(value * 1e5) / 1e5
+  return {
+    lat: round(point.lat + (unit(index * 3 + 2) - 0.5) * 0.0045),
+    lng: round(point.lng + (unit(index * 3 + 3) - 0.5) * 0.0045),
+  }
+}
+
 function generate(today: CalendarDay, now: number): MockRecord[] {
   const random = seeded(20_261_018)
-  const records: (Omit<MockRecord, 'id' | 'reference' | 'violation'> & {
+  const records: (Omit<MockRecord, 'id' | 'reference' | 'violation' | 'position'> & {
     draft: Omit<MockViolation, 'id'> | null
   })[] = []
 
@@ -297,6 +322,7 @@ function generate(today: CalendarDay, now: number): MockRecord[] {
       ...record,
       id: `rec_${index + 1}`,
       reference: `VR-${24_000 + index}`,
+      position: capturedPosition(index, record.pointId),
       violation: violation ? { ...violation, id: `VIO-${(violationNumber += 1)}` } : null,
     }
   })

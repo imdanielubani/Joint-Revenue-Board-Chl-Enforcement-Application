@@ -128,6 +128,31 @@ describe('geographical monitoring page', () => {
     if (first) expect(within(table).getByText(first.id)).toBeInTheDocument()
   })
 
+  it('shows the GPS recorded with each event, and can draw it on the map', async () => {
+    const { geography } = expected('la')
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    const table = within(records).getByRole('table', { name: 'Verifications' })
+    expect(within(table).getByRole('columnheader', { name: 'Recorded GPS' })).toBeInTheDocument()
+    const first = geography.records.verifications[0]!
+    const row = within(table).getByText(first.reference).closest('tr')!
+    expect(row).toHaveTextContent(
+      first.position
+        ? `${first.position.lat.toFixed(5)}, ${first.position.lng.toFixed(5)}`
+        : 'Not captured',
+    )
+
+    const footprint = await card('Enforcement footprint')
+    const toggle = within(footprint).getByRole('button', { name: 'Event GPS' })
+    expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    await userEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    expect(footprint).toHaveTextContent(
+      `Recorded event GPS · ${geography.records.verifications.filter((record) => record.position).length} verifications`,
+    )
+  })
+
   it('keeps payment received apart from trip activation', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/geography')

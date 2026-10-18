@@ -33,6 +33,19 @@ describe('summarizeGeography', () => {
     }
   })
 
+  it('gives each record the GPS its device captured near its location, or none', () => {
+    const { verifications } = summarizeGeography(filters('ng'), NOW).records
+    const { locations } = summarizeGeography(filters('ng'), NOW)
+    const at = new Map(locations.map((location) => [location.id, location.position!]))
+    for (const record of verifications) {
+      if (!record.position) continue
+      const point = at.get(record.location.id)!
+      expect(Math.abs(record.position.lat - point.lat)).toBeLessThan(0.003)
+      expect(Math.abs(record.position.lng - point.lng)).toBeLessThan(0.003)
+    }
+    expect(verifications.some((record) => record.position)).toBe(true)
+  })
+
   it('lists an enforcement location alone at its own scope', () => {
     const point = summarizeGeography(filters('loc_ojota'), NOW)
     expect(point.locations.map((location) => location.id)).toEqual(['loc_ojota'])

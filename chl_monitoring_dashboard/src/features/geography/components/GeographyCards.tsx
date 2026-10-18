@@ -8,8 +8,10 @@ import { assetUrl } from '@/shared/lib/asset-url'
 import { formatNumber } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
-import type { EnforcementPoint } from '../geography.schemas'
-import type { MapPoint } from './EnforcementMap'
+import { outcomeLabel } from '@/features/overview/overview-display'
+import { formatShortDateTime } from '@/shared/lib/format'
+import type { EnforcementPoint, VerificationRecord } from '../geography.schemas'
+import type { MapEvent, MapPoint } from './EnforcementMap'
 import styles from './GeographyCards.module.css'
 
 /** Loaded only when the map is shown, with Leaflet. */
@@ -29,10 +31,13 @@ export type MarkerMetric = 'verifications' | 'violations'
  */
 export function EnforcementFootprintCard({
   points,
+  verifications,
   selectedId,
   onSelect,
 }: {
   points: readonly EnforcementPoint[]
+  /** The scope's verifications in the period, whose recorded GPS the map can show. */
+  verifications: readonly VerificationRecord[]
   /** The location the page is focused on, if it is one. */
   selectedId: string | null
   onSelect(id: string): void
@@ -42,6 +47,28 @@ export function EnforcementFootprintCard({
   const idBase = useId()
   const [metric, setMetric] = useState<MarkerMetric>('verifications')
   const [fitRequest, setFitRequest] = useState(0)
+  const [showEvents, setShowEvents] = useState(false)
+
+  // Each verification where its device said it was, when the user asks to see them.
+  const located = useMemo(() => verifications.filter((record) => record.position), [verifications])
+  const events = useMemo<MapEvent[]>(
+    () =>
+      showEvents
+        ? located.map((record) => ({
+            id: record.id,
+            lat: record.position!.lat,
+            lng: record.position!.lng,
+            label: [
+              record.reference,
+              record.result ? outcomeLabel(record.result) : null,
+              formatShortDateTime(record.recordedAt),
+            ]
+              .filter(Boolean)
+              .join(' · '),
+          }))
+        : [],
+    [showEvents, located],
+  )
 
   // Highest first: on the map, smaller circles are drawn over larger ones.
   const mapPoints = useMemo<MapPoint[]>(
@@ -68,8 +95,9 @@ export function EnforcementFootprintCard({
       bodyClassName={styles.footprintBody}
       footer={
         <p className={styles.footer}>
-          Markers show each enforcement location’s recorded position, not the GPS of every event and
-          not continuous tracking. Map boundaries are not CHL enforcement boundaries.
+          Circles show each enforcement location’s recorded position; “Event GPS” adds where each
+          verification’s device said it was. Recorded positions, never continuous tracking. Map
+          boundaries are not CHL enforcement boundaries.
         </p>
       }
     >
@@ -88,6 +116,17 @@ export function EnforcementFootprintCard({
         <span className={styles.small}>Marker values show {metric}</span>
         <span className={styles.toolbarEnd}>
           <span className={styles.chip}>{plural(points.length, 'location')}</span>
+          {mapAvailable && located.length > 0 && (
+            <button
+              type="button"
+              className={showEvents ? `${styles.fit} ${styles.fitOn}` : styles.fit}
+              aria-pressed={showEvents}
+              onClick={() => setShowEvents((shown) => !shown)}
+            >
+              <span className={`${styles.dot} ${styles.event}`} aria-hidden="true" />
+              Event GPS
+            </button>
+          )}
           {mapAvailable && points.length > 0 && (
             <button
               type="button"
@@ -109,6 +148,7 @@ export function EnforcementFootprintCard({
             points={mapPoints}
             selectedId={selectedId}
             fitRequest={fitRequest}
+            events={events}
             countText={(count) => `${formatNumber(count)} ${metric} in this period`}
             primary={{ label: 'Focus on this location', run: (point) => onSelect(point.id) }}
             link={{
@@ -137,6 +177,12 @@ export function EnforcementFootprintCard({
           <span className={`${styles.dot} ${styles.selected}`} aria-hidden="true" />
           Selected
         </span>
+        {showEvents && (
+          <span>
+            <span className={`${styles.dot} ${styles.event}`} aria-hidden="true" />
+            Recorded event GPS · {plural(located.length, 'verification')}
+          </span>
+        )}
         <span className={styles.legendEnd}>Location snapshots · not live tracking</span>
       </div>
     </DashboardCard>

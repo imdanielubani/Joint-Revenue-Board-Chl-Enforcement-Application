@@ -302,6 +302,14 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring: recorded GPS for each event (SRD 4, "recorded GPS
+  positions"). Verifications and violations carry the GPS their device
+  captured (`position`, or null when none was captured), shown in the
+  verification register's "Recorded GPS" column and under each violation's
+  recorded time. "Event GPS" on the enforcement footprint adds each
+  verification's recorded position to the map as a small hollow dot, labelled
+  with its reference, outcome and time. Choosing an enforcement location zooms
+  the map to it. Recorded positions, never continuous tracking.
 - Geographical monitoring: the E-Tag column is removed from the
   verification register, and the `etag` field with it from the geography
   API. E-Tag outcomes (missing, invalid, tag-vehicle mismatch) still show as

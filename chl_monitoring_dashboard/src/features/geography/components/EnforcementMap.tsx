@@ -5,6 +5,8 @@ import { env } from '@/config/env'
 import { formatShortDateTime } from '@/shared/lib/format'
 import styles from './EnforcementMap.module.css'
 
+const NO_EVENTS: readonly MapEvent[] = []
+
 /** Nigeria, for when no point has a position. */
 const NIGERIA: L.LatLngTuple = [9.08, 8.68]
 const MAX_FIT_ZOOM = 12
@@ -22,6 +24,15 @@ export interface MapPoint {
   lastRecordedAt: string | null
 }
 
+/** A recorded event's GPS: a small hollow dot, labelled with what was recorded there. */
+export interface MapEvent {
+  id: string
+  lat: number
+  lng: number
+  /** "VR-24150 · No Active Trip · 18 Oct, 05:01 PM" */
+  label: string
+}
+
 export interface EnforcementMapProps {
   points: readonly MapPoint[]
   /** What a point's figure counts: "9 entries received in this window". */
@@ -32,6 +43,8 @@ export interface EnforcementMapProps {
   selectedId?: string | null
   /** Changes when the user asks to fit the view to every point again. */
   fitRequest?: number
+  /** Recorded event positions to draw as well, when the page shows them. */
+  events?: readonly MapEvent[]
   /** The panel's main action, such as narrowing the page to the point. */
   primary?: { label: string; run(point: MapPoint): void; enabled?(point: MapPoint): boolean }
   /** A link in the panel; `to` is undefined when the user may not open it. */
@@ -40,7 +53,7 @@ export interface EnforcementMapProps {
   onNavigate(to: string): void
 }
 
-type Options = Omit<EnforcementMapProps, 'points' | 'selectedId' | 'fitRequest'>
+type Options = Omit<EnforcementMapProps, 'points' | 'selectedId' | 'fitRequest' | 'events'>
 
 /** A token's value, for Leaflet, which takes colours as literals. */
 function token(name: string, fallback: string): string {
@@ -118,11 +131,13 @@ export default function EnforcementMap({
   points,
   selectedId = null,
   fitRequest = 0,
+  events = NO_EVENTS,
   ...options
 }: EnforcementMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
+  const eventsLayerRef = useRef<L.LayerGroup | null>(null)
   // Each point's circle, and the panel a click on it opens.
   const markersRef = useRef(new Map<string, { marker: L.CircleMarker; panel: L.Popup }>())
   // The points the circles were drawn for: a refresh updates them in place,
@@ -144,11 +159,13 @@ export default function EnforcementMap({
     L.tileLayer(env.mapTileUrl, { attribution: env.mapAttribution, maxZoom: 18 }).addTo(map)
     mapRef.current = map
     layerRef.current = L.layerGroup().addTo(map)
+    eventsLayerRef.current = L.layerGroup().addTo(map)
     const markers = markersRef.current
     return () => {
       map.remove()
       mapRef.current = null
       layerRef.current = null
+      eventsLayerRef.current = null
       markers.clear()
       drawnRef.current = ''
     }
@@ -225,6 +242,37 @@ export default function EnforcementMap({
       })
     }
   }, [points, selectedId])
+
+  // Recorded event positions: small hollow dots over the locations' circles.
+  useEffect(() => {
+    const layer = eventsLayerRef.current
+    if (!layer) return
+    layer.clearLayers()
+    const stroke = token('--color-primary', '#137836')
+    for (const event of events) {
+      const label = document.createElement('div')
+      label.textContent = event.label
+      L.circleMarker([event.lat, event.lng], {
+        radius: 3.5,
+        color: stroke,
+        weight: 1.5,
+        fillColor: '#ffffff',
+        fillOpacity: 1,
+      })
+        .bindTooltip(label, { direction: 'top', offset: [0, -4] })
+        .addTo(layer)
+    }
+  }, [events])
+
+  // A newly selected point: zoom to it, where its own events can be seen.
+  useEffect(() => {
+    const map = mapRef.current
+    const point = points.find((entry) => entry.id === selectedId)
+    if (!map || !point?.position) return
+    map.setView([point.position.lat, point.position.lng], MAX_FIT_ZOOM + 2)
+    // Only when the selection changes, not when the figures refresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId])
 
   // "Fit locations": back to a view of every point.
   useEffect(() => {

@@ -40,6 +40,10 @@ type RecordView =
 
 type ModuleLink = ReturnType<typeof useModuleLink>
 
+/** "6.58712, 3.37968": a recorded position, five decimal places (about a metre). */
+const gpsText = (position: { lat: number; lng: number }) =>
+  `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`
+
 const actionsOf = (actions: { label: string; to: string | undefined }[]) =>
   actions.filter((action): action is RowAction => action.to !== undefined)
 
@@ -114,6 +118,16 @@ function verificationColumns(link: ModuleLink): Column<VerificationRecord>[] {
         />
       ),
       sortValue: (row) => Date.parse(row.recordedAt),
+    },
+    {
+      key: 'gps',
+      header: 'Recorded GPS',
+      render: (row) =>
+        row.position ? (
+          <span className={styles.gps}>{gpsText(row.position)}</span>
+        ) : (
+          <span className={styles.sub}>Not captured</span>
+        ),
     },
     {
       key: 'actions',
@@ -233,7 +247,12 @@ function violationColumns(link: ModuleLink): Column<ViolationRecord>[] {
     {
       key: 'recorded',
       header: 'Recorded (WAT)',
-      render: (row) => formatShortDateTime(row.recordedAt),
+      render: (row) => (
+        <Stack
+          main={formatShortDateTime(row.recordedAt)}
+          sub={row.position ? `GPS ${gpsText(row.position)}` : 'GPS not captured'}
+        />
+      ),
       sortValue: (row) => Date.parse(row.recordedAt),
     },
     {

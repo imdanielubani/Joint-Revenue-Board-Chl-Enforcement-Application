@@ -178,6 +178,7 @@ function GeographyContent({
           <div className={styles.splitRow}>
             <EnforcementFootprintCard
               points={pointsInView}
+              verifications={geography.records.verifications}
               selectedId={atLocation ? scope.value : null}
               onSelect={onSelectLocation}
             />
