@@ -42,10 +42,16 @@ describe('inactivity', { timeout: 20_000 }, () => {
 
   it('"Stay signed in" keeps the session', async () => {
     signIn()
-    const { router } = renderApp('/overview', { sessionPolicy: policy })
+    // A wide window: on a busy machine the page can take seconds to appear, and the
+    // button must still be there to press.
+    const { router } = renderApp('/overview', {
+      sessionPolicy: { ...policy, inactivityLimitMs: 12_000, inactivityWarningMs: 11_500 },
+    })
     const user = userEvent.setup()
 
-    await user.click(await screen.findByRole('button', { name: 'Stay signed in' }))
+    await user.click(
+      await screen.findByRole('button', { name: 'Stay signed in' }, { timeout: 8000 }),
+    )
 
     expect(screen.queryByText('Are you still there?')).not.toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/overview')

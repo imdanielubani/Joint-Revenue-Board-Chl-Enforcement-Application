@@ -302,6 +302,20 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring page built (SRD 4), in the Overview's design and
+  with its own map icon on the banner. One area at a time, at any level CHL
+  configures (enforcement point, zone, ward, LGA, state, subregion, region,
+  national), chosen with the area picker, from the "Areas within" table, the
+  map or the scope trail (National › South West region › Lagos state › …),
+  and kept in the address with the period. For that area: verification
+  totals and outcomes, agent activity, violations issued, unresolved and
+  escalated cases, repeat-vehicle alerts, payment and compliance status,
+  enforcement locations at their recorded GPS positions (map or list, not
+  live tracking), and the record register, with figures linking to the
+  records. The "Areas within" table lists the areas directly under it in
+  CHL's configuration with the same figures. The views are of the same data
+  as the Overview, so the figures agree. The summary strip's line can now
+  hold more than text.
 - The map of enforcement points moves to `features/geography` as
   `EnforcementMap`, shared by the Command centre and geographical
   monitoring: each page gives its points (one figure each), how that figure

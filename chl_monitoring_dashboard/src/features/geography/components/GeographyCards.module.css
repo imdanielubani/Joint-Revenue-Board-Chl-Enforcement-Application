@@ -1,0 +1,160 @@
+.small {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stack strong {
+  color: var(--card-title);
+  font-weight: var(--font-weight-semibold);
+}
+
+.empty {
+  padding: var(--space-6) 0;
+  color: var(--card-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.footer {
+  padding: 8px 12px 10px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 19.8px;
+}
+
+/* Scope trail: National › South West › Lagos state */
+.trail ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trail li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trail li + li::before {
+  color: #94a0ad;
+  content: '›';
+}
+
+.trailStep {
+  padding: 1px 4px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.trailStep:hover {
+  background: rgb(19 120 54 / 0.08);
+  text-decoration: underline;
+}
+
+.trailCurrent {
+  padding: 1px 4px;
+  color: #31513b;
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Areas within */
+.areaButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+
+.areaButton:hover {
+  text-decoration: underline;
+}
+
+/* Enforcement locations */
+.viewTabs {
+  max-width: 240px;
+  margin-bottom: 12px;
+}
+
+.points {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.point {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+}
+
+.pointHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pointName {
+  overflow: hidden;
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pointFocus {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: 0.8px solid #cfe3d5;
+  border-radius: 6px;
+  background: #f3f9f5;
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.pointFocus:hover {
+  background: #e8f3ec;
+}
+
+.pointFigures {
+  color: var(--card-muted);
+  font-size: 11px;
+}
+
+.pointFigures strong {
+  color: var(--card-title);
+  font-weight: var(--font-weight-semibold);
+}

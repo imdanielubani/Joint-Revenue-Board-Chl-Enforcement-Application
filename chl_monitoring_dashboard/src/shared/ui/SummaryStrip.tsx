@@ -20,7 +20,7 @@ export function SummaryStrip({ title, meta, link }: SummaryStripProps) {
       </span>
       <div className={styles.stripText}>
         <p className={styles.stripTitle}>{title}</p>
-        <p className={styles.stripMeta}>{meta}</p>
+        <div className={styles.stripMeta}>{meta}</div>
       </div>
       {link && (
         <Link className={styles.stripLink} to={link.to}>
