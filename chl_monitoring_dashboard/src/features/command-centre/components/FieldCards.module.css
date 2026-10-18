@@ -204,7 +204,13 @@
   line-height: 17px;
 }
 
-/* Recorded locations: a tile per enforcement point. */
+/* Recorded locations: a map, or a tile per enforcement point. */
+.viewTabs {
+  max-width: 240px;
+  margin-bottom: 12px;
+}
+
+/* Recorded locations: the list. */
 .locations {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

@@ -25,15 +25,53 @@ export interface MockPoint {
   code: string
   /** The state (or FCT) the point is in. */
   state: string
+  /** Where the point's events are recorded (WGS 84). */
+  lat: number
+  lng: number
 }
 
 export const MOCK_POINTS: MockPoint[] = [
-  { id: 'loc_ojota', name: 'Ojota enforcement point', code: 'LOS-04', state: 'Lagos' },
-  { id: 'loc_ikeja_gate', name: 'Ikeja Gate 3', code: 'LOS-01', state: 'Lagos' },
-  { id: 'loc_apapa', name: 'Apapa Port Rd', code: 'LOS-07', state: 'Lagos' },
-  { id: 'loc_kano_zaria', name: 'Kano-Zaria Exp', code: 'KAN-02', state: 'Kano' },
-  { id: 'loc_zuba', name: 'Zuba Junction', code: 'FCT-03', state: 'FCT' },
-  { id: 'loc_eleme', name: 'Eleme Toll', code: 'RIV-02', state: 'Rivers' },
+  {
+    id: 'loc_ojota',
+    name: 'Ojota enforcement point',
+    code: 'LOS-04',
+    state: 'Lagos',
+    lat: 6.5866,
+    lng: 3.3792,
+  },
+  {
+    id: 'loc_ikeja_gate',
+    name: 'Ikeja Gate 3',
+    code: 'LOS-01',
+    state: 'Lagos',
+    lat: 6.6018,
+    lng: 3.3515,
+  },
+  {
+    id: 'loc_apapa',
+    name: 'Apapa Port Rd',
+    code: 'LOS-07',
+    state: 'Lagos',
+    lat: 6.4489,
+    lng: 3.359,
+  },
+  {
+    id: 'loc_kano_zaria',
+    name: 'Kano-Zaria Exp',
+    code: 'KAN-02',
+    state: 'Kano',
+    lat: 11.9022,
+    lng: 8.4947,
+  },
+  { id: 'loc_zuba', name: 'Zuba Junction', code: 'FCT-03', state: 'FCT', lat: 9.0986, lng: 7.2131 },
+  {
+    id: 'loc_eleme',
+    name: 'Eleme Toll',
+    code: 'RIV-02',
+    state: 'Rivers',
+    lat: 4.7986,
+    lng: 7.1203,
+  },
 ]
 
 /** Where each sample agent works. */

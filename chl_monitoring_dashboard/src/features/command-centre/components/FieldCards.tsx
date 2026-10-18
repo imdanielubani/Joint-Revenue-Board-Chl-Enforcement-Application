@@ -1,5 +1,6 @@
-import { useId, useState } from 'react'
+import { lazy, Suspense, useId, useState } from 'react'
 import { Link } from 'react-router'
+import { env } from '@/config/env'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { plural, share } from '@/features/overview/overview-display'
@@ -186,6 +187,14 @@ function ReceivedTime({ item }: { item: FeedItem }) {
   )
 }
 
+type LocationView = 'map' | 'list'
+
+/** The map is turned off when no tile address is configured; the list remains. */
+const mapAvailable = env.mapTileUrl !== ''
+
+/** Loaded only when the map is shown, with Leaflet. */
+const LocationsMap = lazy(() => import('./LocationsMap'))
+
 /**
  * "Recorded locations": activity at each enforcement point in the window, and
  * when it last recorded anything. The GPS of recorded events, not live tracking.
@@ -196,6 +205,8 @@ export function RecordedLocationsCard({ locations }: { locations: CommandCentre[
     (a, b) => b.events - a.events || (b.lastEventAt ?? '').localeCompare(a.lastEventAt ?? ''),
   )
   const busiest = sorted[0]?.events ?? 0
+  const idBase = useId()
+  const [view, setView] = useState<LocationView>('map')
 
   return (
     <DashboardCard
@@ -207,55 +218,84 @@ export function RecordedLocationsCard({ locations }: { locations: CommandCentre[
       {sorted.length === 0 ? (
         <p className={styles.empty}>No enforcement points in this area.</p>
       ) : (
-        <ul className={styles.locations}>
-          {sorted.map((location) => {
-            const to = link('geography', `${paths.geography}?location=${location.id}`)
-            const content = (
-              <>
-                <span className={styles.locationHead}>
-                  <span className={styles.locationName}>{location.name}</span>
-                  {to && (
-                    <img
-                      src={assetUrl('overview/arrow-up-right.svg')}
-                      alt=""
-                      width={14}
-                      height={14}
-                    />
-                  )}
-                </span>
-                <span className={styles.small}>
-                  {[location.area, location.code].filter(Boolean).join(' · ')}
-                </span>
-                <span className={styles.locationFigure}>
-                  <strong>{formatNumber(location.events)}</strong>
-                  <span>{location.events === 1 ? 'entry' : 'entries'} received in this window</span>
-                </span>
-                <span className={styles.track} aria-hidden="true">
-                  <span
-                    className={styles.fill}
-                    style={{ width: `${share(location.events, busiest)}%` }}
-                  />
-                </span>
-                <span className={styles.small}>
-                  {location.lastEventAt
-                    ? `Last recorded ${formatShortDateTime(location.lastEventAt)}`
-                    : 'Nothing recorded yet'}
-                </span>
-              </>
-            )
-            return (
-              <li key={location.id}>
-                {to ? (
-                  <Link className={`${styles.location} ${styles.linked}`} to={to}>
-                    {content}
-                  </Link>
-                ) : (
-                  <div className={styles.location}>{content}</div>
-                )}
-              </li>
-            )
-          })}
-        </ul>
+        <>
+          {mapAvailable && (
+            <SegmentedTabs<LocationView>
+              idBase={idBase}
+              label="How to show locations"
+              tabs={[
+                { id: 'map', label: 'Map' },
+                { id: 'list', label: 'List' },
+              ]}
+              value={view}
+              onChange={setView}
+              className={styles.viewTabs}
+            />
+          )}
+          <div
+            id={panelId(idBase)}
+            role={mapAvailable ? 'tabpanel' : undefined}
+            aria-labelledby={mapAvailable ? tabId(idBase, view) : undefined}
+          >
+            {mapAvailable && view === 'map' ? (
+              <Suspense fallback={<p className={styles.empty}>Loading the map…</p>}>
+                <LocationsMap locations={sorted} />
+              </Suspense>
+            ) : (
+              <ul className={styles.locations}>
+                {sorted.map((location) => {
+                  const to = link('geography', `${paths.geography}?location=${location.id}`)
+                  const content = (
+                    <>
+                      <span className={styles.locationHead}>
+                        <span className={styles.locationName}>{location.name}</span>
+                        {to && (
+                          <img
+                            src={assetUrl('overview/arrow-up-right.svg')}
+                            alt=""
+                            width={14}
+                            height={14}
+                          />
+                        )}
+                      </span>
+                      <span className={styles.small}>
+                        {[location.area, location.code].filter(Boolean).join(' · ')}
+                      </span>
+                      <span className={styles.locationFigure}>
+                        <strong>{formatNumber(location.events)}</strong>
+                        <span>
+                          {location.events === 1 ? 'entry' : 'entries'} received in this window
+                        </span>
+                      </span>
+                      <span className={styles.track} aria-hidden="true">
+                        <span
+                          className={styles.fill}
+                          style={{ width: `${share(location.events, busiest)}%` }}
+                        />
+                      </span>
+                      <span className={styles.small}>
+                        {location.lastEventAt
+                          ? `Last recorded ${formatShortDateTime(location.lastEventAt)}`
+                          : 'Nothing recorded yet'}
+                      </span>
+                    </>
+                  )
+                  return (
+                    <li key={location.id}>
+                      {to ? (
+                        <Link className={`${styles.location} ${styles.linked}`} to={to}>
+                          {content}
+                        </Link>
+                      ) : (
+                        <div className={styles.location}>{content}</div>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        </>
       )}
     </DashboardCard>
   )

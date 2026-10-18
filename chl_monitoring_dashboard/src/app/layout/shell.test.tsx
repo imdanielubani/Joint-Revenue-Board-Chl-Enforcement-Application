@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { renderApp, signInAs } from '@/test/render-app'
 import { SIDEBAR_COLLAPSED_KEY } from './AppShell'
 
@@ -153,13 +153,15 @@ describe('top bar', () => {
     signInAs('admin@jrb.gov.ng')
     const { router } = renderApp('/overview')
     const user = userEvent.setup()
+    // Let the page finish loading first, so its updates do not race the typing.
+    await screen.findByRole('list', { name: 'Headline figures' })
 
     await user.type(
       await screen.findByRole('searchbox', { name: 'Search all records' }),
       'KJA 123 XY{Enter}',
     )
 
-    expect(router.state.location.pathname).toBe('/search')
+    await vi.waitFor(() => expect(router.state.location.pathname).toBe('/search'))
     expect(router.state.location.search).toBe('?q=KJA%20123%20XY')
     expect(await screen.findByText(/Results for “KJA 123 XY”/)).toBeInTheDocument()
   })

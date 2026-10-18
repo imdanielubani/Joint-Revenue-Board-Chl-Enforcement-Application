@@ -108,6 +108,10 @@ const locationActivitySchema = z.object({
   events: count,
   /** The latest event recorded there, at any time; the GPS of that event, not a live position. */
   lastEventAt: z.string().nullable(),
+  /** Where its events were recorded (GPS, WGS 84); null when CHL has no position for it. */
+  position: z
+    .object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
+    .nullable(),
 })
 
 export const commandCentreSchema = z.object({

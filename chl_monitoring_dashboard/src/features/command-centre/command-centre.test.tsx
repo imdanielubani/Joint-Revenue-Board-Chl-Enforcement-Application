@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { summarizeCommandCentre } from '@/mocks/mock-command-centre-api'
 import { renderApp, signInAs } from '@/test/render-app'
 import { feedTitle } from './command-centre-display'
@@ -91,6 +91,32 @@ describe('command centre page', () => {
 
     const panel = await card('SOS monitoring')
     expect(within(panel).getAllByText('Open').length).toBe(Math.min(sos.open, 4))
+  })
+
+  it('shows recorded locations on a map, or as a list', async () => {
+    const sample = summarizeCommandCentre({ scope: 'ng', window: '24h' })
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/command-centre')
+    const locations = await card('Recorded locations')
+
+    expect(within(locations).getByRole('tab', { name: 'Map' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    const map = await within(locations).findByRole('region', {
+      name: 'Map of recorded event locations',
+    })
+    // One circle per enforcement point with a position.
+    await vi.waitFor(() =>
+      expect(map.querySelectorAll('path.leaflet-interactive')).toHaveLength(
+        sample.locations.filter((location) => location.position).length,
+      ),
+    )
+
+    await userEvent.click(within(locations).getByRole('tab', { name: 'List' }))
+    for (const location of sample.locations) {
+      expect(within(locations).getByText(location.name)).toBeInTheDocument()
+    }
   })
 
   it('says it is not live tracking or dispatch', async () => {

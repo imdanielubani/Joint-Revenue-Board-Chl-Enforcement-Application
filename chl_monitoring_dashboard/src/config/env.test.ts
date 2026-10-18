@@ -7,7 +7,22 @@ describe('parseEnv', () => {
       appEnv: 'development',
       apiBaseUrl: '',
       useMocks: true,
+      mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      mapAttribution: expect.stringContaining('OpenStreetMap'),
     })
+  })
+
+  it('takes a map tile address, or none to turn the map off', () => {
+    expect(
+      parseEnv({ VITE_MAP_TILE_URL: 'https://tiles.example/{z}/{x}/{y}.png' }).mapTileUrl,
+    ).toBe('https://tiles.example/{z}/{x}/{y}.png')
+    expect(parseEnv({ VITE_MAP_TILE_URL: '' }).mapTileUrl).toBe('')
+    expect(() => parseEnv({ VITE_MAP_TILE_URL: 'http://tiles.example/{z}/{x}/{y}.png' })).toThrow(
+      /VITE_MAP_TILE_URL/,
+    )
+    expect(() => parseEnv({ VITE_MAP_TILE_URL: 'https://tiles.example/map.png' })).toThrow(
+      /VITE_MAP_TILE_URL/,
+    )
   })
 
   it('drops a trailing slash from the backend address', () => {

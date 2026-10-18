@@ -292,6 +292,7 @@ export function summarizeCommandCentre(
           code: point.code,
           events: inWindow.filter((item) => item.pointId === pointId).length,
           lastEventAt: last === undefined ? null : new Date(last).toISOString(),
+          position: { lat: point.lat, lng: point.lng },
         },
       ]
     }),

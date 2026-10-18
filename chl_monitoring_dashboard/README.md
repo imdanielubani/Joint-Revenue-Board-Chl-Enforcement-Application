@@ -59,16 +59,23 @@ on sample data. Sign in with any sample account; the password is
 Settings are read from `VITE_` variables and checked at start-up in
 `src/config/env.ts`. Copy `.env.example` to `.env.local` (ignored by git).
 
-| Setting             | Default       | Meaning                                                 |
-| ------------------- | ------------- | ------------------------------------------------------- |
-| `VITE_APP_ENV`      | `development` | `development`, `staging` or `production`                |
-| `VITE_USE_MOCKS`    | `true`        | Run on the sample data in `src/mocks/`                  |
-| `VITE_API_BASE_URL` | empty         | The backend's address; required when sample data is off |
+| Setting                | Default         | Meaning                                                 |
+| ---------------------- | --------------- | ------------------------------------------------------- |
+| `VITE_APP_ENV`         | `development`   | `development`, `staging` or `production`                |
+| `VITE_USE_MOCKS`       | `true`          | Run on the sample data in `src/mocks/`                  |
+| `VITE_API_BASE_URL`    | empty           | The backend's address; required when sample data is off |
+| `VITE_MAP_TILE_URL`    | OpenStreetMap   | Map tiles for the Command centre (https, `{z}/{x}/{y}`) |
+| `VITE_MAP_ATTRIBUTION` | OpenStreetMap's | The credit the tile provider requires, shown on the map |
 
 The dashboard refuses to start if production is set to sample data, if
 sample data is off without a backend address, if staging or production
-use `http` instead of `https`. Outside production, the top bar shows the
-environment, and "Sample data" while it is on.
+use `http` instead of `https`, or if the map tile address is not an
+`https` address with `{z}`, `{x}` and `{y}`. Outside production, the top bar
+shows the environment, and "Sample data" while it is on.
+
+OpenStreetMap's own tiles suit development and light use only; for production,
+set a tile provider JRB has an agreement with, and its credit. An empty
+`VITE_MAP_TILE_URL` turns the map off; the list of locations remains.
 
 ## Project structure
 
@@ -295,6 +302,16 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre: the Recorded locations card shows a map by default (SRD 3,
+  location-based view), with a List tab for the tiles. Each enforcement point
+  is a circle at the GPS where its events were recorded, larger where more was
+  received in the window and grey where nothing was; hovering shows its name,
+  code, entries and when it last recorded something. The view fits the chosen
+  area and keeps the user's pan and zoom across refreshes. Positions are of
+  recorded events, never live ones. Built with Leaflet 1.9.4, loaded only when
+  the map is shown. New settings `VITE_MAP_TILE_URL` and
+  `VITE_MAP_ATTRIBUTION` (OpenStreetMap by default; empty turns the map off).
+  The API's locations gain `position` (latitude and longitude, or null).
 - Command centre: SOS monitoring (SRD 3), for SOS notifications agents send,
   where the backend exposes them. While any SOS is open, a red line above the
   feed names the latest, with "Show details". The SOS card beside the feed
