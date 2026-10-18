@@ -1,6 +1,6 @@
-import { screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { summarizeCommandCentre } from '@/mocks/mock-command-centre-api'
 import { renderApp, signInAs } from '@/test/render-app'
 import { feedTitle } from './command-centre-display'
@@ -117,6 +117,53 @@ describe('command centre page', () => {
     for (const location of sample.locations) {
       expect(within(locations).getByText(location.name)).toBeInTheDocument()
     }
+  })
+
+  it('opens a location from the map and narrows the feed to its entries', async () => {
+    // jsdom lays nothing out; give the map a size so Leaflet can place the circles.
+    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(680)
+    const height = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(340)
+    onTestFinished(() => {
+      width.mockRestore()
+      height.mockRestore()
+    })
+    const sample = summarizeCommandCentre({ scope: 'ng', window: '24h' })
+    // The card lists the busiest first, so the first circle drawn is the busiest point.
+    const busiest = [...sample.locations].sort(
+      (a, b) => b.events - a.events || (b.lastEventAt ?? '').localeCompare(a.lastEventAt ?? ''),
+    )[0]!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/command-centre')
+    const locations = await card('Recorded locations')
+    const map = await within(locations).findByRole('region', {
+      name: 'Map of recorded event locations',
+    })
+    const circle = await vi.waitFor(() => {
+      const found = map.querySelector('path.leaflet-interactive')
+      if (!found) throw new Error('no circle yet')
+      return found
+    })
+
+    // A plain click with a position: Leaflet reads where every mouse event lands.
+    fireEvent.click(circle, { clientX: 340, clientY: 170 })
+    const show = await within(map).findByRole('button', { name: 'Show its entries in the feed' })
+    expect(within(map).getByText(busiest.name)).toBeInTheDocument()
+    expect(
+      within(map).getByRole('link', { name: 'Open in geographical monitoring' }),
+    ).toHaveAttribute('href', `/geography?location=${busiest.id}`)
+
+    await userEvent.click(show)
+    const feed = await card('Operational activity feed')
+    expect(within(feed).getByRole('status')).toHaveTextContent(
+      `Showing entries from ${busiest.name}`,
+    )
+    // The feed's entries are the buttons that can be chosen (aria-pressed).
+    const entries = [...feed.querySelectorAll('button[aria-pressed]')]
+    expect(entries.length).toBeGreaterThan(0)
+    for (const entry of entries) expect(entry).toHaveTextContent(busiest.name)
+
+    await userEvent.click(within(feed).getByRole('button', { name: 'Show all locations' }))
+    expect(within(feed).queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('says it is not live tracking or dispatch', async () => {

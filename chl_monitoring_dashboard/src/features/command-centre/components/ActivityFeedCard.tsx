@@ -20,9 +20,16 @@ import type { FeedItem } from '../command-centre.schemas'
 import styles from './ActivityFeedCard.module.css'
 
 interface ActivityFeedCardProps {
+  id: string
+  /** The entries to list: the latest received, narrowed to `place` when one is chosen. */
   feed: readonly FeedItem[]
   /** Entries in the window; the feed itself lists only the latest. */
   total: number
+  /** True when the window holds more entries than the feed returns. */
+  limited: boolean
+  /** The enforcement point the feed is narrowed to, from the map. */
+  place: string | null
+  onClearPlace(): void
   view: FeedView
   onViewChange(view: FeedView): void
   selectedId: string | null
@@ -31,8 +38,12 @@ interface ActivityFeedCardProps {
 
 /** "Operational activity feed": field activity as CHL receives it, newest first. */
 export function ActivityFeedCard({
+  id,
   feed,
   total,
+  limited,
+  place,
+  onClearPlace,
   view,
   onViewChange,
   selectedId,
@@ -46,19 +57,33 @@ export function ActivityFeedCard({
 
   return (
     <DashboardCard
+      id={id}
+      className={styles.card}
       title="Operational activity feed"
       subtitle="Field activity in the order CHL received it · latest first"
       icon="overview/card-activity.svg"
       bodyClassName={styles.body}
       footer={
         <p className={styles.footer}>
-          {total > feed.length
-            ? `Showing the latest ${feed.length} of ${total} entries in this window.`
-            : `${total} ${total === 1 ? 'entry' : 'entries'} in this window.`}{' '}
+          {place
+            ? `${feed.length} ${feed.length === 1 ? 'entry' : 'entries'} from ${place}${limited ? ' among the latest received' : ''} in this window.`
+            : limited
+              ? `Showing the latest ${feed.length} of ${total} entries in this window.`
+              : `${total} ${total === 1 ? 'entry' : 'entries'} in this window.`}{' '}
           Checked every 30 seconds.
         </p>
       }
     >
+      {place && (
+        <p className={styles.place} role="status">
+          <span>
+            Showing entries from <strong>{place}</strong>
+          </span>
+          <button type="button" className={styles.clearPlace} onClick={onClearPlace}>
+            Show all locations
+          </button>
+        </p>
+      )}
       <SegmentedTabs<FeedView>
         idBase={idBase}
         label="Activity to show"

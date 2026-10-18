@@ -1,7 +1,43 @@
+/* As tall as the incident context beside it: the list takes any extra height. */
+.card {
+  scroll-margin-top: 96px;
+}
+
 .body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.place {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 8px 12px;
+  border: 0.8px solid #cfe3d5;
+  border-radius: 10px;
+  background: #f3f9f5;
+  color: var(--card-title);
+  font-size: 11px;
+}
+
+.place strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+.clearPlace {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .tabs {
@@ -10,9 +46,10 @@
   overflow-x: auto;
 }
 
-/* The list scrolls inside the card, so the cards beside it stay in view. */
+/* The list scrolls inside the card: 486px tall, or more when the card beside it is taller. */
 .panel {
-  max-height: 486px;
+  flex: 1 1 486px;
+  min-height: 0;
   margin: 0 -8px;
   padding: 0 8px;
   overflow-y: auto;

@@ -302,6 +302,19 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre:
+  - Clicking a circle on the map opens a panel for that enforcement point:
+    its entries in the window, when it last recorded something, a reminder
+    that positions are recorded ones, "Show its entries in the feed" and, for
+    users who may open it, "Open in geographical monitoring". "Show its
+    entries" narrows the feed to that point (with "Show all locations" to
+    undo), shows its latest entry in the incident context and scrolls to the
+    feed. The panel opens at the circle's centre and stays open across the
+    30-second refresh.
+  - SOS monitoring has its own full-width row under the feed, with
+    notifications side by side.
+  - The activity feed and the incident context are always the same height;
+    the feed's list takes any extra height.
 - Command centre: the Recorded locations card shows a map by default (SRD 3,
   location-based view), with a List tab for the tiles. Each enforcement point
   is a circle at the GPS where its events were recorded, larger where more was

@@ -40,6 +40,11 @@ export function sosStatus(status: string): { tone: StatusTone; label: string } {
   return { tone: 'neutral', label: humanize(status) }
 }
 
+/** Which enforcement point an entry or location is: its code, or its name without one. */
+export function placeKey(place: { code: string; name: string }): string {
+  return place.code || place.name
+}
+
 /** The coloured marker on each feed entry: what kind of event it is. */
 const KIND_COLORS: Record<FeedKind, string> = {
   verification: 'var(--color-primary)',

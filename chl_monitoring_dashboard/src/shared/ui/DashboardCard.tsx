@@ -19,6 +19,8 @@ interface DashboardCardProps {
   children: ReactNode
   className?: string
   bodyClassName?: string
+  /** For links and scrolling to the card. */
+  id?: string
 }
 
 function isLink(footer: DashboardCardProps['footer']): footer is CardLink {
@@ -37,10 +39,12 @@ export function DashboardCard({
   children,
   className,
   bodyClassName,
+  id,
 }: DashboardCardProps) {
   const titleId = useId()
   return (
     <section
+      id={id}
       className={className ? `${styles.card} ${className}` : styles.card}
       aria-labelledby={titleId}
     >

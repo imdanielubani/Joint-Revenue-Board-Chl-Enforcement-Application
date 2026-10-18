@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useModuleLink } from '@/features/auth/use-module-link'
@@ -15,12 +15,17 @@ import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { SummaryStrip } from '@/shared/ui/SummaryStrip'
 import { ActivityFeedCard } from '../components/ActivityFeedCard'
-import { inView, type FeedView } from '../command-centre-display'
+import { inView, placeKey, type FeedView } from '../command-centre-display'
 import { FieldReportsCard, LoadReportsCard, RecordedLocationsCard } from '../components/FieldCards'
 import { IncidentContextCard } from '../components/IncidentContextCard'
 import { OpenSosAlert, SosCard } from '../components/SosCard'
 import { useCommandCentre } from '../command-centre.queries'
-import { CC_WINDOWS, CC_WINDOW_LABELS, type CommandCentre } from '../command-centre.schemas'
+import {
+  CC_WINDOWS,
+  CC_WINDOW_LABELS,
+  type CommandCentre,
+  type LocationActivity,
+} from '../command-centre.schemas'
 import { useCommandCentreFilters } from '../use-command-centre-filters'
 import styles from './CommandCentrePage.module.css'
 
@@ -129,6 +134,9 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
   const link = useModuleLink()
   const [view, setView] = useState<FeedView>('all')
   const [chosenId, setChosenId] = useState<string | null>(null)
+  // The enforcement point chosen on the map, narrowing the feed.
+  const [place, setPlace] = useState<{ key: string; name: string } | null>(null)
+  const feedId = useId()
 
   // Every entry the page lists: the feed, and the cards' own lists, which can
   // reach further back than the feed's latest entries.
@@ -144,11 +152,12 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
       ),
     [data],
   )
-  const inFeed = (id: string) => data.feed.some((item) => item.id === id)
+  const feed = place ? data.feed.filter((item) => placeKey(item.location) === place.key) : data.feed
+  const inFeed = (id: string) => feed.some((item) => item.id === id)
 
   // The chosen entry while it is still listed (and, if in the feed, in its tab);
   // otherwise the latest the feed shows.
-  const visible = data.feed.filter((item) => inView(item, view))
+  const visible = feed.filter((item) => inView(item, view))
   const chosen = chosenId === null ? undefined : entries.get(chosenId)
   const selected =
     (chosen && (!inFeed(chosen.id) || inView(chosen, view)) ? chosen : visible[0]) ?? null
@@ -157,6 +166,14 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
     const item = entries.get(id)
     if (item && inFeed(id) && !inView(item, view)) setView('all')
     setChosenId(id)
+  }
+
+  // From the map: the feed narrows to that point's entries, its latest shown.
+  const showEntriesFrom = (location: LocationActivity) => {
+    setPlace({ key: placeKey(location), name: location.name })
+    setView('all')
+    setChosenId(null)
+    document.getElementById(feedId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -197,18 +214,21 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
 
       <div className={styles.feedRow}>
         <ActivityFeedCard
-          feed={data.feed}
+          id={feedId}
+          feed={feed}
           total={data.counts.activity}
+          limited={data.counts.activity > data.feed.length}
+          place={place?.name ?? null}
+          onClearPlace={() => setPlace(null)}
           view={view}
           onViewChange={setView}
           selectedId={selected?.id ?? null}
           onSelect={select}
         />
-        <div className={styles.side}>
-          <IncidentContextCard item={selected} />
-          <SosCard sos={data.sos} onSelect={select} />
-        </div>
+        <IncidentContextCard item={selected} />
       </div>
+
+      <SosCard sos={data.sos} onSelect={select} />
 
       <div className={styles.row}>
         <CasesCard cases={data.cases} />
@@ -217,7 +237,7 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
       </div>
 
       <div className={styles.splitRow}>
-        <RecordedLocationsCard locations={data.locations} />
+        <RecordedLocationsCard locations={data.locations} onShowEntries={showEntriesFrom} />
         <LoadReportsCard reports={data.loadReports} onSelect={select} />
       </div>
 

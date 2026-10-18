@@ -1,5 +1,5 @@
 import { lazy, Suspense, useId, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { env } from '@/config/env'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
@@ -11,7 +11,7 @@ import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { fieldReportLabel, loadLabel } from '../command-centre-display'
-import type { CommandCentre, FeedItem } from '../command-centre.schemas'
+import type { CommandCentre, FeedItem, LocationActivity } from '../command-centre.schemas'
 import styles from './FieldCards.module.css'
 
 /** How many entries each card lists. */
@@ -199,8 +199,16 @@ const LocationsMap = lazy(() => import('./LocationsMap'))
  * "Recorded locations": activity at each enforcement point in the window, and
  * when it last recorded anything. The GPS of recorded events, not live tracking.
  */
-export function RecordedLocationsCard({ locations }: { locations: CommandCentre['locations'] }) {
+export function RecordedLocationsCard({
+  locations,
+  onShowEntries,
+}: {
+  locations: CommandCentre['locations']
+  /** Narrows the feed to a location's entries, from the map. */
+  onShowEntries(location: LocationActivity): void
+}) {
   const link = useModuleLink()
+  const navigate = useNavigate()
   const sorted = [...locations].sort(
     (a, b) => b.events - a.events || (b.lastEventAt ?? '').localeCompare(a.lastEventAt ?? ''),
   )
@@ -239,7 +247,14 @@ export function RecordedLocationsCard({ locations }: { locations: CommandCentre[
           >
             {mapAvailable && view === 'map' ? (
               <Suspense fallback={<p className={styles.empty}>Loading the map…</p>}>
-                <LocationsMap locations={sorted} />
+                <LocationsMap
+                  locations={sorted}
+                  onShowEntries={onShowEntries}
+                  linkFor={(location) =>
+                    link('geography', `${paths.geography}?location=${location.id}`)
+                  }
+                  onNavigate={(to) => void navigate(to)}
+                />
               </Suspense>
             ) : (
               <ul className={styles.locations}>
