@@ -1,12 +1,14 @@
 import type { StatusTone } from '@/shared/ui/StatusLabel'
 import {
   ACTION_STATUS_LABELS,
+  ETAG_RESULT_LABELS,
   METHOD_LABELS,
   METHOD_TAGS,
   OUTCOME_LABELS,
   SOURCE_LABELS,
   SYNC_STATUS_LABELS,
   type ActionStatus,
+  type EtagResult,
   type RecordSource,
   type SyncStatus,
   type FollowUp,
@@ -103,6 +105,18 @@ export function sourceLabel(source: Open<RecordSource>): string {
 
 export function syncStatusLabel(status: Open<SyncStatus>): string {
   return isKnown(SYNC_STATUS_LABELS, status) ? SYNC_STATUS_LABELS[status] : humanize(status)
+}
+
+export function etagResultLabel(result: Open<EtagResult>): string {
+  return isKnown(ETAG_RESULT_LABELS, result) ? ETAG_RESULT_LABELS[result] : humanize(result)
+}
+
+/** A valid tag is green, a missing, fake or mismatched one red; anything else grey. */
+export function etagResultColor(result: Open<EtagResult>): string {
+  if (result === 'valid') return 'var(--status-success-text)'
+  return isKnown(ETAG_RESULT_LABELS, result)
+    ? 'var(--status-danger-text)'
+    : 'var(--status-neutral-dot)'
 }
 
 export function followUpLabel(followUp: Open<FollowUp>): string {

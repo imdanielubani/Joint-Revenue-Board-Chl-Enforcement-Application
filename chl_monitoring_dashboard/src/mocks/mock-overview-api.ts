@@ -1,6 +1,8 @@
 import type { OverviewApi } from '@/features/overview/overview.api'
 import {
+  ETAG_RESULTS,
   VERIFICATION_METHODS,
+  type EtagResult,
   VERIFICATION_OUTCOMES,
   type ActivityRecord,
   type AgentRow,
@@ -19,6 +21,18 @@ import { mockRecords, pointById, type MockRecord } from './mock-records'
 
 /** A vehicle needs this many qualifying reports to raise a repeat-vehicle alert (SRD 11.1). */
 const REPEAT_THRESHOLD = 3
+
+/**
+ * The E-Tag check a sample record stands for: a missing, fake or mismatched tag
+ * from its result; otherwise a valid tag when it was an RFID read. Records
+ * checked another way had no tag check.
+ */
+function etagResultOf(record: MockRecord): EtagResult | null {
+  if (record.outcome === 'etag_missing') return 'missing'
+  if (record.outcome === 'invalid_etag') return 'invalid'
+  if (record.outcome === 'tag_vehicle_mismatch') return 'mismatch'
+  return record.method === 'rfid' ? 'valid' : null
+}
 
 const agentById = new Map(MOCK_AGENTS.map((agent) => [agent.id, agent]))
 
@@ -205,6 +219,10 @@ export function summarize(all: readonly MockRecord[], filters: OverviewFilters):
     agents,
     locations,
     methods: VERIFICATION_METHODS.map((method) => ({ method, count: methods.get(method) ?? 0 })),
+    etagResults: ETAG_RESULTS.map((result) => ({
+      result,
+      count: records.filter((record) => etagResultOf(record) === result).length,
+    })),
     violationCategories: [...categories]
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category)),

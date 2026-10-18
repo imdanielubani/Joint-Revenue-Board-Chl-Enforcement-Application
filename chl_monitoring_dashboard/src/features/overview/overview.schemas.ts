@@ -121,6 +121,20 @@ export const SYNC_STATUS_LABELS: Record<SyncStatus, string> = {
   evidence_pending: 'Evidence pending',
 }
 
+/**
+ * What an E-Tag check found (SRD 6.3). Only verifications that read a tag, or
+ * found one missing or wrong, have one; a failed scan is not a missing tag.
+ */
+export const ETAG_RESULTS = ['valid', 'missing', 'invalid', 'mismatch'] as const
+export type EtagResult = (typeof ETAG_RESULTS)[number]
+
+export const ETAG_RESULT_LABELS: Record<EtagResult, string> = {
+  valid: 'Valid E-Tag',
+  missing: 'Missing E-Tag',
+  invalid: 'Invalid / fake E-Tag',
+  mismatch: 'Tag-vehicle mismatch',
+}
+
 /** Whether a repeat vehicle's reports have been acted on. */
 export type FollowUp = 'none' | 'partial'
 
@@ -225,6 +239,8 @@ export const overviewSchema = z.object({
   agents: z.array(agentRowSchema),
   locations: z.array(locationRowSchema),
   methods: z.array(z.object({ method: open<VerificationMethod>(), count })),
+  /** E-Tag check results, valid ones included; verifications with no tag check are left out. */
+  etagResults: z.array(z.object({ result: open<EtagResult>(), count })),
   violationCategories: z.array(z.object({ category: z.string(), count })),
   payments: z.object({
     received: count,

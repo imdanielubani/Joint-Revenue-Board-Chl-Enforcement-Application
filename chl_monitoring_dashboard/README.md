@@ -294,6 +294,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: "E-Tag results" (SRD 6.3) at the foot of the Verification method
+  card: Valid E-Tag, Missing E-Tag, Invalid / fake E-Tag and Tag-vehicle
+  mismatch, each with its count and share of tag checks and a link to
+  Verifications. Kept apart from the outcomes, since a valid tag can still
+  have no active trip. The overview answer gains `etagResults`; a result CHL
+  adds later shows in grey.
 - Sample data: today's sample records now arrive every 20 minutes up to the
   present, so "Field data received" is recent at any time of day (it showed
   "may be delayed" from late morning on).

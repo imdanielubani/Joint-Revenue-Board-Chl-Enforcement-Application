@@ -3,6 +3,8 @@ import { mockOverviewApi } from '@/mocks/mock-overview-api'
 import {
   actionStatusLabel,
   actionStatusTone,
+  etagResultColor,
+  etagResultLabel,
   followUpLabel,
   humanize,
   methodStyle,
@@ -23,6 +25,10 @@ describe('statuses and outcomes', () => {
     expect(actionStatusTone('cancelled')).toBe('neutral')
     expect(methodTag('qr')).toBe('QR Code')
     expect(followUpLabel('partial')).toBe('Partial follow-up')
+    expect(etagResultLabel('invalid')).toBe('Invalid / fake E-Tag')
+    expect(etagResultColor('valid')).toBe('var(--status-success-text)')
+    expect(etagResultColor('missing')).toBe('var(--status-danger-text)')
+    expect(etagResultColor('cloned')).toBe('var(--status-neutral-dot)')
   })
 
   it('shows a state CHL adds later as it comes, in grey', () => {

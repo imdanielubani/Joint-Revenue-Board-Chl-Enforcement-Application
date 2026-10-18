@@ -338,6 +338,30 @@ describe('overview page', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows E-Tag results, valid tags included, apart from the outcomes', async () => {
+    const { etagResults } = expected()
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+
+    const results = await screen.findByRole('region', { name: 'E-Tag results' })
+    const checks = etagResults.reduce((sum, item) => sum + item.count, 0)
+    expect(
+      within(results).getByText(`${checks} tag check${checks === 1 ? '' : 's'}`),
+    ).toBeInTheDocument()
+    for (const [label, result] of [
+      ['Valid E-Tag', 'valid'],
+      ['Missing E-Tag', 'missing'],
+      ['Invalid / fake E-Tag', 'invalid'],
+      ['Tag-vehicle mismatch', 'mismatch'],
+    ] as const) {
+      const link = within(results).getByRole('link', { name: new RegExp(label) })
+      expect(link).toHaveAttribute('href', `/verifications?etag=${result}`)
+      expect(link).toHaveTextContent(
+        String(etagResults.find((item) => item.result === result)?.count),
+      )
+    }
+  })
+
   it('lists only escalated cases on the Escalated tab', async () => {
     const { cases } = expected()
     signInAs('admin@jrb.gov.ng')

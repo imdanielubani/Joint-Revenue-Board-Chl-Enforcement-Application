@@ -7,7 +7,7 @@ import styles from './CardRows.module.css'
 export function InsightCardsRow({ overview }: { overview: Overview }) {
   return (
     <div className={styles.row}>
-      <MethodCard methods={overview.methods} />
+      <MethodCard methods={overview.methods} etagResults={overview.etagResults} />
       <ViolationCategoriesCard categories={overview.violationCategories} />
       <PaymentStatusCard payments={overview.payments} />
     </div>

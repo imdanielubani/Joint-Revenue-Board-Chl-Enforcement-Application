@@ -4,7 +4,15 @@ import { paths } from '@/config/paths'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { formatNumber, formatPercent } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
-import { methodLabel, methodStyle, methodTag, plural, share } from '../overview-display'
+import {
+  etagResultColor,
+  etagResultLabel,
+  methodLabel,
+  methodStyle,
+  methodTag,
+  plural,
+  share,
+} from '../overview-display'
 import type { Overview } from '../overview.schemas'
 import { useModuleLink } from '../use-module-link'
 import styles from './InsightCards.module.css'
@@ -38,7 +46,13 @@ const DONUT_LENGTH = 2 * Math.PI * DONUT_RADIUS
 const DONUT_GAP = 4
 
 /** "Verification method": how attempts were captured, as a ring and four tiles. */
-export function MethodCard({ methods }: { methods: Overview['methods'] }) {
+export function MethodCard({
+  methods,
+  etagResults,
+}: {
+  methods: Overview['methods']
+  etagResults: Overview['etagResults']
+}) {
   const link = useModuleLink()
   const total = methods.reduce((sum, item) => sum + item.count, 0)
   const top = methods.reduce<Overview['methods'][number] | null>(
@@ -161,7 +175,49 @@ export function MethodCard({ methods }: { methods: Overview['methods'] }) {
           )
         })}
       </ul>
+
+      <EtagResults results={etagResults} />
     </DashboardCard>
+  )
+}
+
+/**
+ * "E-Tag results" (SRD 6.3): what the tag checks found, valid tags included.
+ * Kept apart from the outcomes: a valid tag can still have no active trip.
+ */
+function EtagResults({ results }: { results: Overview['etagResults'] }) {
+  const link = useModuleLink()
+  const checks = results.reduce((sum, item) => sum + item.count, 0)
+  return (
+    <section className={styles.etag} aria-label="E-Tag results">
+      <div className={styles.etagHead}>
+        <p className={styles.overline}>E-Tag results</p>
+        <span className={styles.chip}>{plural(checks, 'tag check')}</span>
+      </div>
+      <ul className={styles.etagList}>
+        {results.map(({ result, count }) => (
+          <li key={result}>
+            <MaybeLink
+              className={styles.etagItem}
+              to={link('verifications', `${paths.verifications}?etag=${result}`)}
+            >
+              <span className={styles.etagName}>
+                <span
+                  className={styles.etagDot}
+                  style={{ background: etagResultColor(result) }}
+                  aria-hidden="true"
+                />
+                {etagResultLabel(result)}
+              </span>
+              <span className={styles.etagFigures}>
+                <strong>{formatNumber(count)}</strong>
+                <span>{formatPercent(count, checks)}</span>
+              </span>
+            </MaybeLink>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

@@ -47,6 +47,13 @@ describe('sample overview', () => {
     expect(kpis.escalatedViolations).toBeLessThanOrEqual(kpis.unresolvedViolations)
     expect(kpis.openRepeatAlerts).toBe(overview.repeatVehicles.items.length)
     expect(kpis.enforcementLocations).toBe(overview.locations.length)
+    // Missing, fake and mismatched tags are exactly those outcomes; valid tags are on top.
+    const outcome = (name: string) => overview.outcomes.find((item) => item.outcome === name)?.count
+    const etag = (name: string) => overview.etagResults.find((item) => item.result === name)?.count
+    expect(etag('missing')).toBe(outcome('etag_missing'))
+    expect(etag('invalid')).toBe(outcome('invalid_etag'))
+    expect(etag('mismatch')).toBe(outcome('tag_vehicle_mismatch'))
+    expect(sum(overview.etagResults.map((item) => item.count))).toBeLessThanOrEqual(total)
   })
 
   it('keeps to the chosen area, agent, organization and days', () => {
