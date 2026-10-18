@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Each page banner shows its own module's icon, as the Overview does with
+  its grid: the large faint mark and the small icon before "JRB CHL /". The
+  Command centre's is its compass. `PageHero` takes the folder holding the
+  module's `hero-watermark.svg` and `hero-crumb.svg`.
 - Command centre:
   - SOS: each notification shows how long it has been open ("Open for
     2 h 10 min", counting up while the page is open) or how long it was open

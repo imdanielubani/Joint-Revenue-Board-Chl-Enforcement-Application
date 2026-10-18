@@ -7,26 +7,31 @@ interface PageHeroProps {
   lede: string
   /** The section after "JRB CHL /" in the small heading: "Workspace", "Enforcement". */
   section: string
+  /**
+   * The folder in public/assets/ holding the module's banner icons,
+   * hero-watermark.svg and hero-crumb.svg: its own sidebar icon, as on the Overview.
+   */
+  icons: string
   /** The buttons on the right: HeroButton and RefreshButton. */
   actions?: ReactNode
 }
 
 /** The green banner at the top of a module page: its name, a line about it, and its actions. */
-export function PageHero({ title, lede, section, actions }: PageHeroProps) {
+export function PageHero({ title, lede, section, icons, actions }: PageHeroProps) {
   const titleId = useId()
   return (
     <section className={styles.hero} aria-labelledby={titleId}>
       <span className={styles.rings} aria-hidden="true" />
       <img
         className={styles.watermark}
-        src={assetUrl('overview/hero-watermark.svg')}
+        src={assetUrl(`${icons}/hero-watermark.svg`)}
         alt=""
         width={160}
         height={160}
       />
       <div className={styles.heroText}>
         <p className={styles.eyebrow}>
-          <img src={assetUrl('overview/hero-crumb.svg')} alt="" width={18} height={18} />
+          <img src={assetUrl(`${icons}/hero-crumb.svg`)} alt="" width={18} height={18} />
           <span>JRB CHL</span>
           <span className={styles.slash} aria-hidden="true">
             /

@@ -76,6 +76,7 @@ function CommandCentreContent({
             title="Command centre"
             lede="Enforcement activity, field reports and cases needing attention, as CHL receives them."
             section="Workspace"
+            icons="command-centre"
             actions={
               <RefreshButton
                 refreshing={query.isFetching && !query.isPending}

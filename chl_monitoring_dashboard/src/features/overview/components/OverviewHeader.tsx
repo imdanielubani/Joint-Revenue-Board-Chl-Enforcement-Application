@@ -27,6 +27,7 @@ export function OverviewHero({ refreshing, onRefresh, onExport }: HeroProps) {
       title="Operational overview"
       lede="Your enforcement operations, connected in one place."
       section="Workspace"
+      icons="overview"
       actions={
         <>
           <RefreshButton refreshing={refreshing} onRefresh={onRefresh} />
