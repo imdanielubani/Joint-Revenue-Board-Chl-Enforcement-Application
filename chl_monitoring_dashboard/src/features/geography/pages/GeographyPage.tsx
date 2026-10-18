@@ -21,7 +21,6 @@ import {
 import { EnforcementFootprintCard, LocationsInViewCard } from '../components/GeographyCards'
 import { MonitoringScopeCard } from '../components/ScopeCards'
 import { UnderlyingRecordsCard } from '../components/UnderlyingRecordsCard'
-import { AgentActivityCard } from '../components/AgentActivityCard'
 import { useGeography } from '../geography.queries'
 import { scopeOptions, type ScopeOption } from '../scope-options'
 import styles from './GeographyPage.module.css'
@@ -191,8 +190,6 @@ function GeographyContent({
               onSelect={onSelectLocation}
             />
           </div>
-
-          <AgentActivityCard scopeId={scope.value} agents={overview.agents} />
 
           <div className={styles.row}>
             <GeoOutcomesCard scopeId={scope.value} overview={overview} />

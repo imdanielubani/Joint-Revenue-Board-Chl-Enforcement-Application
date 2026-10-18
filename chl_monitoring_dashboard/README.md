@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring: the Agent activity card is removed; agent
+  activity stays in the Agents tab of Underlying records. In the
+  verification register the plate column shows the plate alone, and the
+  outcome column is headed "Verification result".
 - Geographical monitoring keeps to the document's features: "Locations in
   view" names the current scope without repeating its figures, and the
   agent tiles no longer show each agent's share of the scope's

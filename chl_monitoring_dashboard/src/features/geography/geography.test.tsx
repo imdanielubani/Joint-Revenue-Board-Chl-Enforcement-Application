@@ -196,29 +196,29 @@ describe('geographical monitoring page', () => {
     )
   })
 
-  it('shows each agent’s recorded activity in the scope, without scores', async () => {
+  it('lists agent activity in the underlying records, and calls a verification’s outcome its result', async () => {
     const { overview } = expected('ng')
     signInAs('admin@jrb.gov.ng')
     renderApp('/geography')
-    const activity = await card('Agent activity')
-    expect(activity).toHaveTextContent(`${overview.agents.length}Agents with activity`)
+    expect(screen.queryByRole('region', { name: 'Agent activity' })).not.toBeInTheDocument()
+
+    const records = await card('Underlying records')
+    const verifications = within(records).getByRole('table', { name: 'Verifications' })
+    expect(
+      within(verifications).getByRole('columnheader', { name: 'Verification result' }),
+    ).toBeInTheDocument()
+    expect(within(verifications).queryByRole('columnheader', { name: 'Outcome' })).toBeNull()
+    // The plate alone, without its location.
+    expect(within(verifications).getByRole('columnheader', { name: 'Plate' })).toBeInTheDocument()
+    const first = expected('ng').geography.records.verifications[0]!
+    const row = within(verifications).getByText(first.reference).closest('tr')!
+    expect(row.querySelectorAll('td')[1]).toHaveTextContent(new RegExp(`^${first.plate}$`))
+
+    await userEvent.click(within(records).getByRole('tab', { name: /^Agents/ }))
+    const agents = within(records).getByRole('table', { name: 'Agents' })
     for (const agent of overview.agents) {
-      expect(within(activity).getByText(agent.name)).toBeInTheDocument()
-      expect(within(activity).getByRole('link', { name: `Open ${agent.name}` })).toHaveAttribute(
-        'href',
-        `/agents?agent=${agent.agentId}`,
-      )
+      expect(within(agents).getByRole('button', { name: agent.name })).toBeInTheDocument()
     }
-    // Activity only: each agent's tile counts records, nothing more.
-    const tile = within(activity).getByText(overview.agents[0]!.name).closest('li')!
-    expect([...tile.querySelectorAll('dt')].map((term) => term.textContent)).toEqual([
-      'Verifications',
-      'Violations',
-      'Unresolved',
-      'Repeat alerts',
-    ])
-    // Activity only: no share of the scope's verifications.
-    expect(activity).not.toHaveTextContent(/% of this scope/)
   })
 
   it('keeps payment received apart from trip activation', async () => {

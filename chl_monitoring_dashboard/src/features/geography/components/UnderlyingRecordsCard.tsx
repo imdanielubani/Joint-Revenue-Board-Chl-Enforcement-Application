@@ -91,15 +91,8 @@ function verificationColumns(
     },
     {
       key: 'plate',
-      header: 'Plate · location',
-      render: (row) => (
-        <span className={styles.stack}>
-          <span className={styles.plate}>{row.plate}</span>
-          <span className={styles.sub}>
-            {row.location.name}, {row.location.area}
-          </span>
-        </span>
-      ),
+      header: 'Plate',
+      render: (row) => <span className={styles.plate}>{row.plate}</span>,
       sortValue: (row) => row.plate,
     },
     {
@@ -111,7 +104,7 @@ function verificationColumns(
     },
     {
       key: 'outcome',
-      header: 'Outcome',
+      header: 'Verification result',
       render: (row) =>
         row.result ? (
           <StatusLabel {...outcomeStyle(row.result)}>{outcomeLabel(row.result)}</StatusLabel>
