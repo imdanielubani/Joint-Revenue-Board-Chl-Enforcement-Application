@@ -182,8 +182,9 @@ export function MethodCard({
 }
 
 /**
- * "E-Tag results" (SRD 6.3): what the tag checks found, valid tags included.
- * Kept apart from the outcomes: a valid tag can still have no active trip.
+ * "E-Tag results" (SRD 6.3): what the tag checks found, valid tags included, as
+ * one bar and a legend, in the payment card's style. Kept apart from the
+ * outcomes: a valid tag can still have no active trip.
  */
 function EtagResults({ results }: { results: Overview['etagResults'] }) {
   const link = useModuleLink()
@@ -194,25 +195,35 @@ function EtagResults({ results }: { results: Overview['etagResults'] }) {
         <p className={styles.overline}>E-Tag results</p>
         <span className={styles.chip}>{plural(checks, 'tag check')}</span>
       </div>
-      <ul className={styles.etagList}>
+      <div className={styles.etagBar} aria-hidden="true">
+        {checks === 0 ? (
+          <span className={styles.etagEmpty} />
+        ) : (
+          results
+            .filter((item) => item.count > 0)
+            .map((item) => (
+              <span
+                key={item.result}
+                style={{ flexGrow: item.count, background: etagResultColor(item.result) }}
+              />
+            ))
+        )}
+      </div>
+      <ul className={styles.etagLegend}>
         {results.map(({ result, count }) => (
           <li key={result}>
             <MaybeLink
               className={styles.etagItem}
               to={link('verifications', `${paths.verifications}?etag=${result}`)}
             >
-              <span className={styles.etagName}>
-                <span
-                  className={styles.etagDot}
-                  style={{ background: etagResultColor(result) }}
-                  aria-hidden="true"
-                />
-                {etagResultLabel(result)}
-              </span>
-              <span className={styles.etagFigures}>
-                <strong>{formatNumber(count)}</strong>
-                <span>{formatPercent(count, checks)}</span>
-              </span>
+              <span
+                className={styles.etagDot}
+                style={{ background: etagResultColor(result) }}
+                aria-hidden="true"
+              />
+              <span className={styles.etagName}>{etagResultLabel(result)}</span>
+              <strong className={styles.etagCount}>{formatNumber(count)}</strong>
+              <span className={styles.etagShare}>{formatPercent(count, checks)}</span>
             </MaybeLink>
           </li>
         ))}

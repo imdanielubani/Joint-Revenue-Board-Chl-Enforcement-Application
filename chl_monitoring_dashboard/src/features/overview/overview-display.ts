@@ -111,11 +111,17 @@ export function etagResultLabel(result: Open<EtagResult>): string {
   return isKnown(ETAG_RESULT_LABELS, result) ? ETAG_RESULT_LABELS[result] : humanize(result)
 }
 
-/** A valid tag is green, a missing, fake or mismatched one red; anything else grey. */
+const ETAG_RESULT_COLORS: Record<EtagResult, string> = {
+  valid: 'var(--etag-valid)',
+  missing: 'var(--etag-missing)',
+  invalid: 'var(--etag-invalid)',
+  mismatch: 'var(--etag-mismatch)',
+}
+
+/** A valid tag is green; each problem has its own warm colour; anything else is grey. */
 export function etagResultColor(result: Open<EtagResult>): string {
-  if (result === 'valid') return 'var(--status-success-text)'
-  return isKnown(ETAG_RESULT_LABELS, result)
-    ? 'var(--status-danger-text)'
+  return isKnown(ETAG_RESULT_COLORS, result)
+    ? ETAG_RESULT_COLORS[result]
     : 'var(--status-neutral-dot)'
 }
 

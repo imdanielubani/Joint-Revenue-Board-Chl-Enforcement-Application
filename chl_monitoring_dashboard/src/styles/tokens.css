@@ -138,6 +138,10 @@
   --status-neutral-text: #52525b;
   --status-neutral-dot: #a1a1aa;
   --amber: #b77922;
+  --etag-valid: #43bc8d;
+  --etag-missing: #dc2626;
+  --etag-invalid: #f08a7e;
+  --etag-mismatch: #b77922;
   --chart-line: #27bd80;
   --method-rfid: #17694f;
   --method-qr: #43bc8d;

@@ -442,8 +442,11 @@
   margin-top: 2.4px;
 }
 
-/* E-Tag results, under the method tiles */
+/* E-Tag results, under the method tiles: a bar and a legend, as in the payment card */
 .etag {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding-top: 14px;
   border-top: 0.8px dashed var(--card-line);
 }
@@ -455,35 +458,44 @@
   gap: var(--space-2);
 }
 
-.etagList {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 15px;
+.etagBar {
+  display: flex;
+  gap: 3px;
+  height: 8px;
+}
+
+.etagBar span {
+  flex-basis: 0;
+  min-width: 4px;
+  border-radius: 4px;
+}
+
+.etagEmpty {
+  flex-grow: 1;
+  background: var(--card-track);
+}
+
+.etagLegend {
+  display: flex;
+  flex-direction: column;
   margin: 0;
-  padding: 10px 0 0;
+  padding: 0;
   list-style: none;
 }
 
 .etagItem {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: var(--card-bg);
-}
-
-.etagItem.linked:hover {
-  background: #eef1f0;
-}
-
-.etagName {
-  display: flex;
   align-items: center;
   gap: 6px;
+  padding: 3px 0;
   color: var(--card-muted);
   font-size: 10px;
   line-height: 15px;
+}
+
+.etagItem.linked:hover .etagName {
+  color: var(--card-title);
+  text-decoration: underline;
 }
 
 .etagDot {
@@ -493,18 +505,22 @@
   border-radius: 3.2px;
 }
 
-.etagFigures {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  color: var(--card-muted);
-  font-size: 9px;
-  line-height: 13.5px;
+.etagName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.etagFigures strong {
+.etagCount {
   color: var(--card-title);
-  font-size: 14px;
+  font-size: 11px;
   font-weight: var(--font-weight-semibold);
-  line-height: 20px;
+}
+
+.etagShare {
+  width: 34px;
+  font-size: 9px;
+  text-align: right;
 }

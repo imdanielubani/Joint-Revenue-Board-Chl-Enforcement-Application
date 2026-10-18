@@ -294,6 +294,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: "E-Tag results" redrawn in the payment card's style, as one
+  segmented bar and a one-line-per-result legend (count and share), so the
+  method card stays in step with the design and the row is no taller than it
+  needs to be. Each result has its own colour (valid green; missing, fake and
+  mismatched in distinct warm colours). The chart's tooltip now sits beside
+  the day it describes, never over its point or the line.
 - Overview: the Verification activity card shows how many attempts completed
   and how many could not (SRD 6.1). An attempt that could not complete is
   Verification Unavailable (CHL could not be reached or answer); it is not a

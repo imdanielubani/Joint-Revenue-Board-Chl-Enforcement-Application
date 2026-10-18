@@ -13,6 +13,9 @@ import styles from './VerificationActivityCard.module.css'
 /** The plot's drawing size; the SVG stretches to the card's width, the height is fixed. */
 const WIDTH = 1000
 const HEIGHT = 380
+/** The tooltip's size, to keep it beside the point it describes. */
+const TOOLTIP_WIDTH = 176
+const TOOLTIP_HEIGHT = 96
 
 interface Props {
   daily: Overview['dailyVerifications']
@@ -236,7 +239,15 @@ export function VerificationActivityCard({ daily, previous, total, attempts }: P
                 />
                 <div
                   className={styles.tooltip}
-                  style={{ left: `clamp(0px, calc(${activeLeft}% - 55px), calc(100% - 176px))` }}
+                  style={{
+                    // Beside the point, never over it: to its left on the right half of the
+                    // chart, to its right otherwise; low down when the point is high.
+                    left:
+                      activeLeft > 55
+                        ? `max(0px, calc(${activeLeft}% - ${TOOLTIP_WIDTH + 14}px))`
+                        : `min(calc(100% - ${TOOLTIP_WIDTH}px), calc(${activeLeft}% + 14px))`,
+                    top: y(activeDay.count) < HEIGHT / 2 ? HEIGHT - TOOLTIP_HEIGHT - 8 : 4,
+                  }}
                   aria-live="polite"
                 >
                   <p className={styles.tooltipTitle}>Verifications</p>

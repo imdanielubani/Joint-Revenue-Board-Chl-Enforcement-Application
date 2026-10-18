@@ -188,7 +188,6 @@
 
 .tooltip {
   position: absolute;
-  top: 4px;
   width: 176px;
   padding: 12px;
   border: 0.8px solid var(--card-line);

@@ -26,8 +26,8 @@ describe('statuses and outcomes', () => {
     expect(methodTag('qr')).toBe('QR Code')
     expect(followUpLabel('partial')).toBe('Partial follow-up')
     expect(etagResultLabel('invalid')).toBe('Invalid / fake E-Tag')
-    expect(etagResultColor('valid')).toBe('var(--status-success-text)')
-    expect(etagResultColor('missing')).toBe('var(--status-danger-text)')
+    expect(etagResultColor('valid')).toBe('var(--etag-valid)')
+    expect(etagResultColor('missing')).toBe('var(--etag-missing)')
     expect(etagResultColor('cloned')).toBe('var(--status-neutral-dot)')
   })
 
