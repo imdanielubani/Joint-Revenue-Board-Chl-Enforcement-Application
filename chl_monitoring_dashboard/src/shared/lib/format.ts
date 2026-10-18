@@ -76,6 +76,21 @@ export function formatDelay(from: string | Date, to: string | Date): string {
   return `${days} day${days === 1 ? '' : 's'} later`
 }
 
+/**
+ * How long something lasted: "under a minute", "42 min", "1 h 20 min",
+ * "2 days 3 h". Used for how long an SOS has been, or was, open.
+ */
+export function formatDuration(from: string | Date | number, to: string | Date | number): string {
+  const minutes = Math.floor((new Date(to).getTime() - new Date(from).getTime()) / 60_000)
+  if (!Number.isFinite(minutes) || minutes < 1) return 'under a minute'
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return minutes % 60 === 0 ? `${hours} h` : `${hours} h ${minutes % 60} min`
+  const days = Math.floor(hours / 24)
+  const dayText = `${days} day${days === 1 ? '' : 's'}`
+  return hours % 24 === 0 ? dayText : `${dayText} ${hours % 24} h`
+}
+
 export function formatNumber(value: number): string {
   return numberFormat.format(value)
 }

@@ -97,6 +97,21 @@ describe('summarizeCommandCentre', () => {
     }
   })
 
+  it('has ten SOS notifications in the last day, three still open, the rest with a closing time', () => {
+    const sos = summarizeCommandCentre({ scope: 'ng', window: '24h' }, NOW).sos!
+    expect(sos.items).toHaveLength(10)
+    expect(sos.open).toBe(3)
+    for (const item of sos.items) {
+      if (item.sos?.status === 'open') {
+        expect(item.sos.closedAt).toBeNull()
+      } else {
+        const closed = Date.parse(item.sos!.closedAt!)
+        expect(closed).toBeGreaterThan(Date.parse(item.recordedAt))
+        expect(closed).toBeLessThanOrEqual(NOW)
+      }
+    }
+  })
+
   it('gives a verification and its violation the same photographs', () => {
     const { feed } = summarizeCommandCentre({ scope: 'ng', window: '7d' }, NOW)
     const violations = feed.filter((item) => item.kind === 'violation')

@@ -27,8 +27,8 @@ export interface MockSos {
   pointId: string
   recordedAt: number
   receivedAt: number
-  /** The latest is still open; the rest were closed by the time of the sample. */
-  open: boolean
+  /** When it was closed; null while it is still open. */
+  closedAt: number | null
 }
 
 export interface MockLoadReport {
@@ -152,7 +152,84 @@ const SOS_MESSAGES = [
   null,
 ]
 
-/** One SOS every week or two, the latest 40 minutes ago and still open. Seeded on its own. */
+/**
+ * The last day's SOS notifications: when each was sent (minutes ago), by whom,
+ * where, and how long it stayed open (null: still open).
+ */
+const RECENT_SOS: {
+  minutesAgo: number
+  agentId: string
+  pointId: string
+  message: string | null
+  openFor: number | null
+}[] = [
+  {
+    minutesAgo: 40,
+    agentId: 'JRB-AG-0142',
+    pointId: 'loc_ikeja_gate',
+    message: 'Driver threatening agents at the checkpoint.',
+    openFor: null,
+  },
+  {
+    minutesAgo: 130,
+    agentId: 'JRB-AG-0145',
+    pointId: 'loc_apapa',
+    message: 'Crowd gathering around the enforcement team.',
+    openFor: null,
+  },
+  {
+    minutesAgo: 330,
+    agentId: 'JRB-AG-0144',
+    pointId: 'loc_kano_zaria',
+    message: null,
+    openFor: null,
+  },
+  {
+    minutesAgo: 420,
+    agentId: 'JRB-AG-0143',
+    pointId: 'loc_zuba',
+    message: 'Collision near the checkpoint; one person hurt.',
+    openFor: 48,
+  },
+  {
+    minutesAgo: 540,
+    agentId: 'JRB-AG-0142',
+    pointId: 'loc_ojota',
+    message: 'Agent feeling unwell; needs help.',
+    openFor: 25,
+  },
+  {
+    minutesAgo: 660,
+    agentId: 'JRB-AG-0145',
+    pointId: 'loc_eleme',
+    message: 'Driver drove at an agent and left the checkpoint.',
+    openFor: 72,
+  },
+  {
+    minutesAgo: 810,
+    agentId: 'JRB-AG-0144',
+    pointId: 'loc_kano_zaria',
+    message: 'Vehicle blocking the road; drivers arguing with agents.',
+    openFor: 34,
+  },
+  { minutesAgo: 960, agentId: 'JRB-AG-0143', pointId: 'loc_zuba', message: null, openFor: 12 },
+  {
+    minutesAgo: 1140,
+    agentId: 'JRB-AG-0142',
+    pointId: 'loc_ikeja_gate',
+    message: 'Fire at a roadside stall beside the checkpoint.',
+    openFor: 95,
+  },
+  {
+    minutesAgo: 1320,
+    agentId: 'JRB-AG-0145',
+    pointId: 'loc_apapa',
+    message: 'Agent threatened while checking a tag.',
+    openFor: 41,
+  },
+]
+
+/** One SOS every week or two before today, all closed, then the last day's ten. Seeded on its own. */
 function generateSos(today: CalendarDay, now: number): MockSos[] {
   const random = seeded(20_261_020)
   const alerts: MockSos[] = []
@@ -170,20 +247,22 @@ function generateSos(today: CalendarDay, now: number): MockSos[] {
       pointId: points[Math.floor(random() * points.length)] ?? 'loc_ojota',
       recordedAt,
       receivedAt: recordedAt + 20_000,
-      open: false,
+      closedAt: recordedAt + Math.round((10 + random() * 80) * 60_000),
     })
     daysAgo += 7 + Math.floor(random() * 8)
   }
-  const latest = now - 40 * 60_000
-  alerts.push({
-    id: '',
-    message: 'Driver threatening agents at the checkpoint.',
-    agentId: 'JRB-AG-0142',
-    pointId: 'loc_ikeja_gate',
-    recordedAt: latest,
-    receivedAt: latest + 20_000,
-    open: true,
-  })
+  for (const recent of RECENT_SOS) {
+    const recordedAt = now - recent.minutesAgo * 60_000
+    alerts.push({
+      id: '',
+      message: recent.message,
+      agentId: recent.agentId,
+      pointId: recent.pointId,
+      recordedAt,
+      receivedAt: recordedAt + 20_000,
+      closedAt: recent.openFor === null ? null : recordedAt + recent.openFor * 60_000,
+    })
+  }
   return alerts
     .sort((a, b) => a.recordedAt - b.recordedAt)
     .map((alert, index) => ({ ...alert, id: `SOS-${410 + index}` }))

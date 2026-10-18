@@ -3,6 +3,7 @@ import {
   formatClock,
   formatDateTime,
   formatDelay,
+  formatDuration,
   formatNumber,
   formatPercent,
   formatShortDateTime,
@@ -52,5 +53,22 @@ describe('formatDelay', () => {
     expect(formatDelay(at, '2026-10-14T12:10:00Z')).toBe('3 h later')
     expect(formatDelay(at, '2026-10-15T10:00:00Z')).toBe('1 day later')
     expect(formatDelay(at, '2026-10-17T10:00:00Z')).toBe('3 days later')
+  })
+})
+
+describe('formatDuration', () => {
+  it('says how long something lasted', () => {
+    const at = '2026-10-14T09:00:00Z'
+    expect(formatDuration(at, '2026-10-14T09:00:40Z')).toBe('under a minute')
+    expect(formatDuration(at, '2026-10-14T09:42:00Z')).toBe('42 min')
+    expect(formatDuration(at, '2026-10-14T11:00:00Z')).toBe('2 h')
+    expect(formatDuration(at, '2026-10-14T10:20:30Z')).toBe('1 h 20 min')
+    expect(formatDuration(at, '2026-10-15T09:00:00Z')).toBe('1 day')
+    expect(formatDuration(at, '2026-10-16T12:00:00Z')).toBe('2 days 3 h')
+  })
+
+  it('says under a minute for an unreadable or reversed span', () => {
+    expect(formatDuration('nonsense', '2026-10-14T09:00:00Z')).toBe('under a minute')
+    expect(formatDuration('2026-10-14T09:00:00Z', '2026-10-14T08:00:00Z')).toBe('under a minute')
   })
 })

@@ -91,8 +91,17 @@ const feedItemSchema = z.object({
   report: z.object({ type: open<FieldReportType>(), summary: z.string() }).nullable(),
   /** For a loaded / empty confirmation. */
   load: open<LoadStatus>().nullable(),
-  /** For an SOS notification: whether it is still open, and the agent's message if any. */
-  sos: z.object({ status: open<SosStatus>(), message: z.string().nullable() }).nullable(),
+  /**
+   * For an SOS notification: whether it is still open, the agent's message if
+   * any, and when it was closed (null while open, or when CHL does not say).
+   */
+  sos: z
+    .object({
+      status: open<SosStatus>(),
+      message: z.string().nullable(),
+      closedAt: z.string().nullable(),
+    })
+    .nullable(),
   /** Photographs supplied with the record; viewed in Evidence records. */
   evidenceCount: count,
   /** The agent's note, where one was written. */

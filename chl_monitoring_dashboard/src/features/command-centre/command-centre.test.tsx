@@ -89,8 +89,15 @@ describe('command centre page', () => {
     expect(within(context).getByText(open.sos!.message!)).toBeInTheDocument()
     expect(within(context).getByText(/not a live position/)).toBeInTheDocument()
 
+    expect(within(context).getByText('Open for')).toBeInTheDocument()
+
     const panel = await card('SOS monitoring')
-    expect(within(panel).getAllByText('Open').length).toBe(Math.min(sos.open, 4))
+    expect(within(panel).getAllByRole('button')).toHaveLength(Math.min(sos.items.length, 10))
+    expect(within(panel).getAllByText('Open').length).toBe(sos.open)
+    expect(within(panel).getAllByText(/^Open for /).length).toBe(sos.open)
+    expect(within(panel).getAllByText(/^Closed after /).length).toBe(
+      Math.min(sos.items.length, 10) - sos.open,
+    )
   })
 
   it('shows recorded locations on a map, or as a list', async () => {
@@ -170,6 +177,10 @@ describe('command centre page', () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/command-centre')
     const boundaries = await card('Operational boundaries')
+    expect(within(boundaries).getByRole('heading', { name: 'What it does' })).toBeInTheDocument()
+    expect(
+      within(boundaries).getByRole('heading', { name: 'What it does not do' }),
+    ).toBeInTheDocument()
     expect(boundaries).toHaveTextContent('No dispatch, messaging, remote commands or CCTV.')
     expect(boundaries).toHaveTextContent('never live')
     expect(await card('Recorded locations')).toHaveTextContent('not live tracking')

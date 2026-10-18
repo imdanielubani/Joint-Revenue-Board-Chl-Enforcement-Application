@@ -197,7 +197,15 @@ function feedFrom(
       payment: null,
       report: null,
       load: null,
-      sos: { status: alert.open ? 'open' : 'closed', message: alert.message },
+      sos: {
+        // Closed only once its closing time has passed.
+        status: alert.closedAt !== null && alert.closedAt <= now ? 'closed' : 'open',
+        message: alert.message,
+        closedAt:
+          alert.closedAt !== null && alert.closedAt <= now
+            ? new Date(alert.closedAt).toISOString()
+            : null,
+      },
       evidenceCount: 0,
       note: null,
     })

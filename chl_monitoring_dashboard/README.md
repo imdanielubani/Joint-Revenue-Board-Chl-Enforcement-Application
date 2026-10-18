@@ -302,6 +302,18 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre:
+  - SOS: each notification shows how long it has been open ("Open for
+    2 h 10 min", counting up while the page is open) or how long it was open
+    before it closed ("Closed after 48 min"). The alert above the feed and
+    the incident context say the same. The card lists up to ten, open ones
+    first, and the sample data has ten in the last day (three still open).
+    The API's SOS details gain `closedAt`.
+  - Operational boundaries is laid out as two labelled groups, "What it
+    does" and "What it does not do", with each icon in a box in one column
+    and a line between rows.
+  - New `formatDuration` ("1 h 20 min") and `useNow` (a clock for figures
+    that count up).
 - Command centre: the incident context is arranged as in the design. A
   summary block shows what the entry is, its vehicle (or what happened, where
   there is none) and its status. Below it, the facts are listed one under

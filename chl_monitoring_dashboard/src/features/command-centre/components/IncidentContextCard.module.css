@@ -93,6 +93,11 @@
   font-weight: var(--font-weight-regular);
 }
 
+.running {
+  color: var(--color-danger);
+  font-weight: var(--font-weight-semibold);
+}
+
 .delayed {
   color: var(--status-amber-text);
   font-size: 11px;
@@ -126,32 +131,64 @@
   text-align: center;
 }
 
-/* Operational boundaries: a short centred checklist. */
+/* Operational boundaries: two labelled groups, icons in one column, a line between rows. */
 .boundariesBody {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
   padding: 19px;
+}
+
+.boundaryGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.boundaryHeading {
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 14px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .boundaries {
   display: flex;
   flex-direction: column;
-  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .boundaries li {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: var(--card-muted);
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 0.8px solid var(--card-line);
+  color: var(--card-title);
   font-size: 11px;
-  line-height: 17px;
+  line-height: 16px;
 }
 
-.boundaries img {
-  flex-shrink: 0;
-  margin-top: 1.5px;
+.boundaries li:last-child {
+  border-bottom: 0;
+}
+
+.boundaryIcon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 7px;
+  background: var(--card-bg);
+}
+
+.allowed {
+  border-color: #cfe3d5;
+  background: #f3f9f5;
 }

@@ -5,6 +5,7 @@ import {
   outcomeLabel,
   outcomeStyle,
 } from '@/features/overview/overview-display'
+import { formatDuration } from '@/shared/lib/format'
 import type { StatusTone } from '@/shared/ui/StatusLabel'
 import {
   FEED_KIND_LABELS,
@@ -38,6 +39,20 @@ export function sosStatus(status: string): { tone: StatusTone; label: string } {
   if (status === 'open') return { tone: 'danger', label: 'Open' }
   if (status === 'closed') return { tone: 'neutral', label: 'Closed' }
   return { tone: 'neutral', label: humanize(status) }
+}
+
+/** "Open for 42 min", "Closed after 25 min", or "Closed" when CHL gives no time. */
+export function sosDuration(item: FeedItem, now: number): { text: string; open: boolean } | null {
+  if (!item.sos) return null
+  if (item.sos.status === 'open') {
+    return { text: `Open for ${formatDuration(item.recordedAt, now)}`, open: true }
+  }
+  return {
+    text: item.sos.closedAt
+      ? `Closed after ${formatDuration(item.recordedAt, item.sos.closedAt)}`
+      : 'Closed',
+    open: false,
+  }
 }
 
 /** Which enforcement point an entry or location is: its code, or its name without one. */
