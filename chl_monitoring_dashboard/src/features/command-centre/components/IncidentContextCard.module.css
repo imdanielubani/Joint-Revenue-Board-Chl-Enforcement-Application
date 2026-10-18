@@ -1,66 +1,89 @@
+/* Takes the height left beside the feed, above the boundaries card. */
+.card {
+  flex: 1;
+}
+
 .body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  padding: 19px;
 }
 
-.head {
+/* The summary block: what the entry is, its vehicle, and its status. */
+.summary {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  padding-bottom: 14px;
-  border-bottom: 0.8px solid var(--card-line);
+  padding: 15px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--card-bg);
 }
 
 .kind {
   color: var(--card-muted);
   font-size: 10px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
+  font-weight: var(--font-weight-medium);
+  line-height: 14px;
 }
 
-.title {
+.headline {
+  padding-top: 8px;
   color: var(--card-title);
-  font-size: 15px;
+  font-size: 22px;
   font-weight: var(--font-weight-semibold);
-  line-height: 21px;
+  line-height: 30px;
+  letter-spacing: -0.4px;
+  overflow-wrap: anywhere;
 }
 
-.summary {
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--card-bg);
+.what {
+  padding-top: 2px;
   color: var(--card-title);
   font-size: 12px;
-  line-height: 19px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
 }
 
+.status {
+  padding-top: 8px;
+}
+
+/* The facts, one under another, with a line between each. */
 .facts {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  margin: 16px 0 0;
 }
 
 .fact {
-  display: grid;
-  grid-template-columns: 104px minmax(0, 1fr);
-  gap: 10px;
-  font-size: 12px;
-  line-height: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 0.8px solid var(--card-line);
+}
+
+.fact:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .fact dt {
   color: var(--card-muted);
+  font-size: 10px;
+  line-height: 14px;
 }
 
 .fact dd {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  margin: 0;
   color: var(--card-title);
+  font-size: 12px;
   font-weight: var(--font-weight-medium);
+  line-height: 19px;
   overflow-wrap: anywhere;
 }
 
@@ -75,31 +98,25 @@
   font-size: 11px;
 }
 
-.links {
+.evidence {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 0;
-  padding: 14px 0 0;
-  border-top: 0.8px solid var(--card-line);
-  list-style: none;
+  align-items: center;
+  gap: 4px 10px;
 }
 
-.link {
+.inlineLink {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border: 0.8px solid var(--card-line);
-  border-radius: 8px;
+  gap: 2px;
   color: var(--color-primary);
   font-size: 11px;
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
 }
 
-.link:hover {
-  background: #f3f9f5;
+.inlineLink:hover {
+  text-decoration: underline;
 }
 
 .empty {
@@ -107,4 +124,34 @@
   color: var(--card-muted);
   font-size: 12px;
   text-align: center;
+}
+
+/* Operational boundaries: a short centred checklist. */
+.boundariesBody {
+  display: flex;
+  justify-content: center;
+  padding: 19px;
+}
+
+.boundaries {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.boundaries li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.boundaries img {
+  flex-shrink: 0;
+  margin-top: 1.5px;
 }

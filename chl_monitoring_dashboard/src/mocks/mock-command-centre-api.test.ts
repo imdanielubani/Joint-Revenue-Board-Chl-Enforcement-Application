@@ -97,6 +97,18 @@ describe('summarizeCommandCentre', () => {
     }
   })
 
+  it('gives a verification and its violation the same photographs', () => {
+    const { feed } = summarizeCommandCentre({ scope: 'ng', window: '7d' }, NOW)
+    const violations = feed.filter((item) => item.kind === 'violation')
+    expect(violations.length).toBeGreaterThan(0)
+    for (const violation of violations) {
+      const verification = feed.find(
+        (item) => item.kind === 'verification' && item.violation?.id === violation.violation?.id,
+      )
+      if (verification) expect(verification.evidenceCount).toBe(violation.evidenceCount)
+    }
+  })
+
   it('starts "today" at midnight in Lagos', () => {
     expect(new Date(windowStart('today', NOW)).toISOString()).toBe('2026-10-17T23:00:00.000Z')
   })

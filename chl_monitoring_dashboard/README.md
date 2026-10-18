@@ -302,6 +302,16 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre: the incident context is arranged as in the design. A
+  summary block shows what the entry is, its vehicle (or what happened, where
+  there is none) and its status. Below it, the facts are listed one under
+  another: agent, location, recorded and received times, how it was checked,
+  related case, demand notice, evidence (with a link to view the photographs)
+  and the agent's note. The record it belongs to opens from the card's foot.
+  An Operational boundaries card under it lists what the Command centre does
+  and does not do (SRD 3), replacing the note at the foot of the page. The
+  two cards together match the feed's height. A verification now shows the
+  same photographs as the violation it led to. Card subtitles are optional.
 - Command centre:
   - Clicking a circle on the map opens a panel for that enforcement point:
     its entries in the window, when it last recorded something, a reminder

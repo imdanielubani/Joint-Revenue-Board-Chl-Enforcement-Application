@@ -17,7 +17,7 @@ import { SummaryStrip } from '@/shared/ui/SummaryStrip'
 import { ActivityFeedCard } from '../components/ActivityFeedCard'
 import { inView, placeKey, type FeedView } from '../command-centre-display'
 import { FieldReportsCard, LoadReportsCard, RecordedLocationsCard } from '../components/FieldCards'
-import { IncidentContextCard } from '../components/IncidentContextCard'
+import { IncidentContextCard, OperationalBoundariesCard } from '../components/IncidentContextCard'
 import { OpenSosAlert, SosCard } from '../components/SosCard'
 import { useCommandCentre } from '../command-centre.queries'
 import {
@@ -225,7 +225,10 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
           selectedId={selected?.id ?? null}
           onSelect={select}
         />
-        <IncidentContextCard item={selected} />
+        <div className={styles.side}>
+          <IncidentContextCard item={selected} />
+          <OperationalBoundariesCard />
+        </div>
       </div>
 
       <SosCard sos={data.sos} onSelect={select} />
@@ -240,12 +243,6 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
         <RecordedLocationsCard locations={data.locations} onShowEntries={showEntriesFrom} />
         <LoadReportsCard reports={data.loadReports} onSelect={select} />
       </div>
-
-      <p className={styles.footnote}>
-        The Command centre shows what CHL has received from the field. It does not dispatch agents,
-        send messages, control devices or show live positions; locations are where events were
-        recorded. Records made offline appear when they reach CHL.
-      </p>
     </>
   )
 }

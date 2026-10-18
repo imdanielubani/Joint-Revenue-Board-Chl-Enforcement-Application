@@ -169,7 +169,9 @@ describe('command centre page', () => {
   it('says it is not live tracking or dispatch', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/command-centre')
-    expect(await screen.findByText(/does not dispatch agents/)).toBeInTheDocument()
+    const boundaries = await card('Operational boundaries')
+    expect(boundaries).toHaveTextContent('No dispatch, messaging, remote commands or CCTV.')
+    expect(boundaries).toHaveTextContent('never live')
     expect(await card('Recorded locations')).toHaveTextContent('not live tracking')
   })
 })

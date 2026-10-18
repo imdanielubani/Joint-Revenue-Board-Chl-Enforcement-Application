@@ -71,6 +71,8 @@ function feedFrom(
 
   for (const record of records) {
     const violation = record.violation
+    // Photographs belong to the record: its verification and violation show the same ones.
+    const photographs = violation ? 2 + (numberOf(violation.id) % 4) : 0
     items.push({
       ...base(record),
       id: `ver-${record.id}`,
@@ -82,6 +84,7 @@ function feedFrom(
       violation: violation
         ? { id: violation.id, category: violation.category, status: violation.status }
         : null,
+      evidenceCount: photographs,
     })
     if (!violation) continue
 
@@ -95,7 +98,7 @@ function feedFrom(
       recordedAt: new Date(issuedAt).toISOString(),
       receivedAt: new Date(Math.max(issuedAt, record.receivedAt)).toISOString(),
       violation: { id: violation.id, category: violation.category, status: violation.status },
-      evidenceCount: 2 + (n % 4),
+      evidenceCount: photographs,
       note: NOTES[n % NOTES.length] ?? null,
     })
 

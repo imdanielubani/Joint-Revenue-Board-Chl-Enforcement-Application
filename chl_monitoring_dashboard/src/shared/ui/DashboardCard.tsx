@@ -11,7 +11,8 @@ export interface CardLink {
 
 interface DashboardCardProps {
   title: string
-  subtitle: string
+  /** The line under the title; some cards have none. */
+  subtitle?: string
   /** The 32px header icon, in public/assets/. */
   icon?: string
   /** The link along the bottom of the card, or a note in its place. */
@@ -53,7 +54,7 @@ export function DashboardCard({
           <h3 id={titleId} className={styles.title}>
             {title}
           </h3>
-          <p className={styles.subtitle}>{subtitle}</p>
+          {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
         {icon && <img className={styles.icon} src={assetUrl(icon)} alt="" width={32} height={32} />}
       </header>

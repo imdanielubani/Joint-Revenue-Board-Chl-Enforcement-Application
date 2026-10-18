@@ -5,20 +5,32 @@ import { useModuleLink } from '@/features/auth/use-module-link'
 import { sourceLabel, syncStatusLabel } from '@/features/overview/overview-display'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { formatDateTime, formatDelay } from '@/shared/lib/format'
-import { DashboardCard } from '@/shared/ui/DashboardCard'
+import { DashboardCard, type CardLink } from '@/shared/ui/DashboardCard'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { feedKindLabel, feedStatus, feedTitle } from '../command-centre-display'
 import type { FeedItem } from '../command-centre.schemas'
 import styles from './IncidentContextCard.module.css'
 
-/** "Incident context": the selected feed entry, as CHL recorded it, with links to its records. */
+/** Kinds of entry that may carry photographs, so "Not supplied" is worth saying. */
+const EVIDENCE_KINDS: readonly string[] = ['verification', 'violation', 'field_report']
+
+/**
+ * "Incident context": the selected entry, as CHL recorded it. A summary block
+ * (what it is, its vehicle, its status), the facts one under another, and the
+ * record to open along the bottom.
+ */
 export function IncidentContextCard({ item }: { item: FeedItem | null }) {
+  const link = useModuleLink()
+  const primary = item ? primaryLink(item, link) : undefined
+
   return (
     <DashboardCard
+      className={styles.card}
       title="Incident context"
       subtitle="The selected entry, as CHL recorded it"
-      icon="overview/card-cases.svg"
+      icon="command-centre/card-incident.svg"
       bodyClassName={styles.body}
+      {...(primary?.to ? { footer: primary } : {})}
     >
       {item ? (
         <IncidentDetails item={item} />
@@ -29,71 +41,77 @@ export function IncidentContextCard({ item }: { item: FeedItem | null }) {
   )
 }
 
-function IncidentDetails({ item }: { item: FeedItem }) {
-  const link = useModuleLink()
-  const status = feedStatus(item)
-  const offline = item.source === 'offline'
+type ModuleLink = ReturnType<typeof useModuleLink>
 
-  // Only records the user may open are linked.
-  const links: { label: string; to: string | undefined }[] = []
-  if (item.kind === 'sos') {
-    links.push({
-      label: 'Open the agent',
-      to: link('agents', `${paths.agents}?agent=${encodeURIComponent(item.agent.id)}`),
-    })
+/** The record the entry belongs to; undefined `to` when the user may not open it. */
+function primaryLink(item: FeedItem, link: ModuleLink): CardLink | undefined {
+  if (item.violation) {
+    return {
+      label: 'Open the case',
+      to: link('violations', `${paths.violations}?case=${item.violation.id}`),
+    }
+  }
+  if (item.payment) {
+    return {
+      label: 'Open the payment',
+      to: link('payments', `${paths.payments}?notice=${item.payment.noticeId}`),
+    }
   }
   if (item.kind === 'verification') {
-    links.push({
+    return {
       label: 'Open in verifications',
       to: link(
         'verifications',
         `${paths.verifications}?plate=${encodeURIComponent(item.plate ?? '')}`,
       ),
-    })
+    }
   }
-  if (item.violation) {
-    links.push({
-      label: 'Open the case',
-      to: link('violations', `${paths.violations}?case=${item.violation.id}`),
-    })
+  if (item.kind === 'sos') {
+    return {
+      label: 'Open the agent',
+      to: link('agents', `${paths.agents}?agent=${encodeURIComponent(item.agent.id)}`),
+    }
   }
-  if (item.payment) {
-    links.push({
-      label: 'Open the payment',
-      to: link('payments', `${paths.payments}?notice=${item.payment.noticeId}`),
-    })
-  }
-  if (item.evidenceCount > 0) {
-    const reference = item.violation?.id ?? item.id
-    links.push({
-      label: `View ${item.evidenceCount} photograph${item.evidenceCount === 1 ? '' : 's'}`,
-      to: link('evidence', `${paths.evidence}?record=${encodeURIComponent(reference)}`),
-    })
-  }
+  return undefined
+}
 
-  const open = links.flatMap((entry) => (entry.to ? [{ label: entry.label, to: entry.to }] : []))
+function IncidentDetails({ item }: { item: FeedItem }) {
+  const link = useModuleLink()
+  const status = feedStatus(item)
+  const title = feedTitle(item)
+  const offline = item.source === 'offline'
+  // The vehicle leads where there is one; otherwise what happened does.
+  const headline = item.plate ?? title
+  const evidenceTo =
+    item.evidenceCount > 0
+      ? link(
+          'evidence',
+          `${paths.evidence}?record=${encodeURIComponent(item.violation?.id ?? item.id)}`,
+        )
+      : undefined
 
   return (
     <>
-      <div className={styles.head}>
+      <div className={styles.summary}>
         <p className={styles.kind}>{feedKindLabel(item.kind)}</p>
-        <p className={styles.title}>{feedTitle(item)}</p>
+        <p className={styles.headline}>{headline}</p>
+        {headline !== title && title !== status?.label && <p className={styles.what}>{title}</p>}
         {status && (
-          <StatusLabel tone={status.tone} {...(status.icon ? { icon: status.icon } : {})}>
-            {status.label}
-          </StatusLabel>
+          <span className={styles.status}>
+            <StatusLabel tone={status.tone} {...(status.icon ? { icon: status.icon } : {})}>
+              {status.label}
+            </StatusLabel>
+          </span>
         )}
       </div>
 
-      {item.report && <p className={styles.summary}>{item.report.summary}</p>}
-      {item.sos && (
-        <p className={styles.summary}>{item.sos.message ?? 'No message was sent with the SOS.'}</p>
-      )}
-
       <dl className={styles.facts}>
-        {item.plate && <Fact term="Vehicle">{item.plate}</Fact>}
+        {item.report && <Fact term="Report">{item.report.summary}</Fact>}
+        {item.sos && (
+          <Fact term="Message">{item.sos.message ?? 'No message was sent with the SOS.'}</Fact>
+        )}
         <Fact term="Agent">
-          {item.agent.name} · {item.agent.id}
+          {item.agent.id} · {item.agent.name}
         </Fact>
         <Fact term="Location">
           {item.location.name}
@@ -102,24 +120,6 @@ function IncidentDetails({ item }: { item: FeedItem }) {
             {item.kind === 'sos' && ' · where it was sent, not a live position'}
           </span>
         </Fact>
-        {item.violation && (
-          <Fact term="Violation">
-            {item.violation.id}
-            <span className={styles.muted}>{item.violation.category}</span>
-          </Fact>
-        )}
-        {item.payment && (
-          <Fact term="Demand notice">
-            {item.payment.noticeId}
-            <span className={styles.muted}>
-              {item.payment.status === 'received'
-                ? item.payment.tripActivated
-                  ? 'Payment received; CHL reports the trip activated'
-                  : 'Payment received; CHL has not reported the trip activated'
-                : 'Awaiting payment'}
-            </span>
-          </Fact>
-        )}
         <Fact term="Recorded">{formatDateTime(item.recordedAt)}</Fact>
         <Fact term="Received by CHL">
           {item.receivedAt ? formatDateTime(item.receivedAt) : 'Not supplied'}
@@ -139,26 +139,50 @@ function IncidentDetails({ item }: { item: FeedItem }) {
               .join(' · ')}
           </Fact>
         )}
-        {item.evidenceCount > 0 && (
+        {item.violation ? (
+          <Fact term="Related case">
+            {item.violation.id}
+            <span className={styles.muted}>{item.violation.category}</span>
+          </Fact>
+        ) : (
+          item.kind === 'verification' && <Fact term="Related case">No violation recorded</Fact>
+        )}
+        {item.payment && (
+          <Fact term="Demand notice">
+            {item.payment.noticeId}
+            <span className={styles.muted}>
+              {item.payment.status === 'received'
+                ? item.payment.tripActivated
+                  ? 'Payment received; CHL reports the trip activated'
+                  : 'Payment received; CHL has not reported the trip activated'
+                : 'Awaiting payment'}
+            </span>
+          </Fact>
+        )}
+        {(item.evidenceCount > 0 || EVIDENCE_KINDS.includes(item.kind)) && (
           <Fact term="Evidence">
-            {item.evidenceCount} photograph{item.evidenceCount === 1 ? '' : 's'}
+            {item.evidenceCount > 0 ? (
+              <span className={styles.evidence}>
+                {item.evidenceCount} photograph{item.evidenceCount === 1 ? '' : 's'}
+                {evidenceTo && (
+                  <Link className={styles.inlineLink} to={evidenceTo}>
+                    View
+                    <img
+                      src={assetUrl('overview/arrow-up-right.svg')}
+                      alt=""
+                      width={12}
+                      height={12}
+                    />
+                  </Link>
+                )}
+              </span>
+            ) : (
+              'Not supplied'
+            )}
           </Fact>
         )}
         {item.note && <Fact term="Agent note">{item.note}</Fact>}
       </dl>
-
-      {open.length > 0 && (
-        <ul className={styles.links}>
-          {open.map((entry) => (
-            <li key={entry.label}>
-              <Link className={styles.link} to={entry.to}>
-                {entry.label}
-                <img src={assetUrl('overview/arrow-up-right.svg')} alt="" width={14} height={14} />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
     </>
   )
 }
@@ -169,5 +193,33 @@ function Fact({ term, children }: { term: string; children: ReactNode }) {
       <dt>{term}</dt>
       <dd>{children}</dd>
     </div>
+  )
+}
+
+const BOUNDARIES = [
+  { icon: 'bound-check', text: 'Shows what CHL received, with the context supplied.' },
+  { icon: 'bound-check', text: 'Opens related records for review, as your role allows.' },
+  { icon: 'bound-lock', text: 'No dispatch, messaging, remote commands or CCTV.' },
+  { icon: 'bound-pin', text: 'Locations are where events were recorded, never live.' },
+  { icon: 'bound-clock', text: 'Records made offline appear when they reach CHL.' },
+] as const
+
+/** "Operational boundaries": what the Command centre does, and what it does not (SRD 3). */
+export function OperationalBoundariesCard() {
+  return (
+    <DashboardCard
+      title="Operational boundaries"
+      icon="command-centre/card-boundaries.svg"
+      bodyClassName={styles.boundariesBody}
+    >
+      <ul className={styles.boundaries}>
+        {BOUNDARIES.map((entry) => (
+          <li key={entry.text}>
+            <img src={assetUrl(`command-centre/${entry.icon}.svg`)} alt="" width={14} height={14} />
+            {entry.text}
+          </li>
+        ))}
+      </ul>
+    </DashboardCard>
   )
 }

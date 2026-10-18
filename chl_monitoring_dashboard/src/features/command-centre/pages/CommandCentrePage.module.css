@@ -20,6 +20,14 @@
   gap: 14px;
 }
 
+/* Beside the feed: the incident context, which takes the spare height, and the boundaries. */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
 /* Locations and loaded / empty reports: the same 737 / 391 split. */
 .splitRow {
   display: grid;
@@ -40,12 +48,6 @@
   background: var(--status-warning-bg);
   color: var(--color-warning);
   font-size: var(--font-size-xs);
-}
-
-.footnote {
-  color: var(--card-muted);
-  font-size: 11px;
-  line-height: 18px;
 }
 
 @media (max-width: 1280px) {
