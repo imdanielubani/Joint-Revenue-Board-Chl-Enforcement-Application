@@ -124,6 +124,8 @@ describe('geographical monitoring page', () => {
     // The Enforcement Location view still lists every permitted location.
     expect(within(focused).getByRole('button', { name: /Zuba Junction/ })).toBeInTheDocument()
     expect(focused).toHaveTextContent('6 of 6 permitted locations')
+    // The scope is named; its figures are not repeated here.
+    expect(focused).not.toHaveTextContent('Unresolved')
   })
 
   it('lists the underlying records for the scope, by kind', async () => {
@@ -215,6 +217,8 @@ describe('geographical monitoring page', () => {
       'Unresolved',
       'Repeat alerts',
     ])
+    // Activity only: no share of the scope's verifications.
+    expect(activity).not.toHaveTextContent(/% of this scope/)
   })
 
   it('keeps payment received apart from trip activation', async () => {

@@ -192,19 +192,17 @@ export function EnforcementFootprintCard({
 /* ------------------------------------------------------------ Locations in view */
 
 /**
- * "Locations in view": the current scope's figures, and the locations in view
+ * "Locations in view": the current scope, and the locations in view
  * to choose from; a location focuses the page on it.
  */
 export function LocationsInViewCard({
   scopeName,
-  figures,
   points,
   permitted,
   selectedId,
   onSelect,
 }: {
   scopeName: string
-  figures: { verifications: number; violations: number; unresolved: number }
   points: readonly EnforcementPoint[]
   /** How many locations the user may see in all. */
   permitted: number
@@ -236,20 +234,6 @@ export function LocationsInViewCard({
       <div className={styles.current}>
         <p className={styles.eyebrow}>Current scope</p>
         <p className={styles.currentName}>{scopeName}</p>
-        <dl className={styles.currentFigures}>
-          <div>
-            <dd>{formatNumber(figures.verifications)}</dd>
-            <dt>Verifications</dt>
-          </div>
-          <div>
-            <dd>{formatNumber(figures.violations)}</dd>
-            <dt>Violations</dt>
-          </div>
-          <div>
-            <dd>{formatNumber(figures.unresolved)}</dd>
-            <dt>Unresolved</dt>
-          </div>
-        </dl>
       </div>
 
       <label className={styles.search} htmlFor={searchId}>

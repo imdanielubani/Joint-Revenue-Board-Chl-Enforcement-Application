@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring keeps to the document's features: "Locations in
+  view" names the current scope without repeating its figures, and the
+  agent tiles no longer show each agent's share of the scope's
+  verifications.
 - Geographical monitoring: an Agent activity card (SRD 4, "agent
   activity"): agents with activity, organizations, verifications and
   violations for the scope, then a tile per agent (by recorded agent ID)

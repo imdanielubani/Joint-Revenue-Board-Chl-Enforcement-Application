@@ -185,11 +185,6 @@ function GeographyContent({
             />
             <LocationsInViewCard
               scopeName={scope.name}
-              figures={{
-                verifications: overview.kpis.totalVerifications,
-                violations: overview.kpis.violationsIssued,
-                unresolved: overview.kpis.unresolvedViolations,
-              }}
               points={pointsInView}
               permitted={permitted.locations.length}
               selectedId={atLocation ? scope.value : null}

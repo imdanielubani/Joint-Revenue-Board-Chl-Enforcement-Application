@@ -144,32 +144,6 @@
   line-height: 24px;
 }
 
-.currentFigures {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 12px 0 0;
-}
-
-.currentFigures div {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2px;
-}
-
-.currentFigures dd {
-  margin: 0;
-  color: var(--card-title);
-  font-size: 20px;
-  font-weight: var(--font-weight-semibold);
-  line-height: 26px;
-}
-
-.currentFigures dt {
-  color: var(--card-muted);
-  font-size: 10px;
-}
-
 .search {
   display: flex;
   align-items: center;

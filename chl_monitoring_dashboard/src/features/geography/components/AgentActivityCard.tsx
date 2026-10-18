@@ -1,10 +1,10 @@
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
-import { plural, share } from '@/features/overview/overview-display'
+import { plural } from '@/features/overview/overview-display'
 import type { AgentRow } from '@/features/overview/overview.schemas'
 import { assetUrl } from '@/shared/lib/asset-url'
-import { formatNumber, formatPercent } from '@/shared/lib/format'
+import { formatNumber } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import styles from './AgentActivityCard.module.css'
 
@@ -111,18 +111,6 @@ export function AgentActivityCard({
                     <dt>Repeat alerts</dt>
                   </div>
                 </dl>
-                <span className={styles.share}>
-                  <span className={styles.track} aria-hidden="true">
-                    <span
-                      className={styles.fill}
-                      style={{ width: `${share(agent.verifications, verifications)}%` }}
-                    />
-                  </span>
-                  <span className={styles.small}>
-                    {formatPercent(agent.verifications, verifications)} of this scope’s
-                    verifications
-                  </span>
-                </span>
                 <span className={styles.small}>
                   Recorded in {agent.locations || 'no recorded location'}
                 </span>
