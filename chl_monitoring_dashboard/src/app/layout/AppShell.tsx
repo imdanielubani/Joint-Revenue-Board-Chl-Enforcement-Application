@@ -70,11 +70,14 @@ export function AppShell() {
         <div className={styles.backdrop} aria-hidden="true" onClick={() => setOverlayOpen(false)} />
       )}
       <div className={styles.body}>
-        <Topbar
-          sidebarOpen={sidebarOpen}
-          toggleLabel={toggleLabel}
-          onToggleSidebar={toggleSidebar}
-        />
+        {/* The top bar sits on a frosted band, so the page blurs away as it scrolls under it. */}
+        <div className={styles.topbarDock}>
+          <Topbar
+            sidebarOpen={sidebarOpen}
+            toggleLabel={toggleLabel}
+            onToggleSidebar={toggleSidebar}
+          />
+        </div>
         <main id="main" className={styles.main} tabIndex={-1}>
           <Outlet />
         </main>

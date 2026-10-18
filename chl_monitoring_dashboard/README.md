@@ -294,6 +294,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Top bar: it now sits on a frosted band (a blurred, translucent backdrop
+  from the top of the window to just below the bar), so the page blurs and
+  fades out behind it as it scrolls. The bar and the page keep their places;
+  browsers without backdrop blur get a near-solid band instead.
 - Overview: the verification-method ring is drawn as one arc path per method
   (`arcPath` in `shared/lib/chart-scale.ts`) instead of dashed circles. It
   looks the same in the browser, and Figma exports now keep it: before, each

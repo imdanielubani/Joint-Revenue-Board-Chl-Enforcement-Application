@@ -21,10 +21,33 @@
   min-width: 0;
 }
 
-/* The top bar stays in view as the page scrolls. */
-.body > header {
+/* The top bar stays in view as the page scrolls, on a frosted band from the top of
+   the window to just below the bar: content scrolling up blurs and fades out behind
+   it. The band spans the 16px above and below the bar without moving anything. */
+.topbarDock {
   position: sticky;
-  top: 16px;
+  top: 0;
+  z-index: 20;
+  margin: -16px 0 -16px;
+  padding: 16px 0;
+}
+
+.topbarDock::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(247 249 250 / 0.72);
+  backdrop-filter: blur(12px);
+  content: '';
+  /* Solid behind the bar, fading out over the 16px under it. */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+  pointer-events: none;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .topbarDock::before {
+    background: rgb(247 249 250 / 0.94);
+  }
 }
 
 .main {
@@ -57,5 +80,12 @@
   .shell {
     gap: 0;
     padding: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .topbarDock {
+    margin: -12px 0 -16px;
+    padding: 12px 0 16px;
   }
 }
