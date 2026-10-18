@@ -46,6 +46,12 @@ describe('summarizeGeography', () => {
     expect(verifications.some((record) => record.position)).toBe(true)
   })
 
+  it('lists the evidence supplied with each violation', () => {
+    const { violations, evidence } = summarizeGeography(filters('ng'), NOW).records
+    expect(evidence.map((item) => item.violationId)).toEqual(violations.map((item) => item.id))
+    for (const item of evidence) expect(item.photographs).toBeGreaterThanOrEqual(2)
+  })
+
   it('lists an enforcement location alone at its own scope', () => {
     const point = summarizeGeography(filters('loc_ojota'), NOW)
     expect(point.locations.map((location) => location.id)).toEqual(['loc_ojota'])

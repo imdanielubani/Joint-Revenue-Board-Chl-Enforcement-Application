@@ -302,6 +302,15 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring: access to the underlying records on the page
+  itself (SRD 4). Every record's reference or name in the Underlying records
+  registers opens a Record details panel: everything known about it, what it
+  is linked to (a verification's violation, a violation's demand notice and
+  photographs, a notice's trip activation) and links into the modules where
+  the user's role allows. A new Evidence tab lists the photographs supplied
+  with each violation, how many, and whether they have all reached CHL.
+  The API's records gain `evidence`, and violations their
+  `verificationReference`.
 - Geographical monitoring: recorded GPS for each event (SRD 4, "recorded GPS
   positions"). Verifications and violations carry the GPS their device
   captured (`position`, or null when none was captured), shown in the

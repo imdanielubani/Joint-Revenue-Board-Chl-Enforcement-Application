@@ -37,3 +37,26 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* A record's reference or name: opens its details on the page. */
+.open {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+
+.open:hover {
+  text-decoration: underline;
+}

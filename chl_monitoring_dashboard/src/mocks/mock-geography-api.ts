@@ -19,8 +19,11 @@ const placeOf = (record: MockRecord) => {
     code: point?.code ?? '',
   }
 }
+const numberOf = (violationId: string) => Number(violationId.replace(/\D/g, ''))
 /** The demand notice's reference, as the Command centre names it. */
-const noticeIdOf = (violationId: string) => `DN-${violationId.replace(/\D/g, '')}`
+const noticeIdOf = (violationId: string) => `DN-${numberOf(violationId)}`
+/** How many photographs came with a violation, as the Command centre counts them. */
+const photographsOf = (violationId: string) => 2 + (numberOf(violationId) % 4)
 
 /**
  * The geography for an area and period: its enforcement points with their
@@ -96,6 +99,7 @@ export function summarizeGeography(filters: GeographyFilters, now: number = Date
                 position: record.position,
                 recordedAt: iso(record.recordedAt),
                 noticeId: record.violation.notice ? noticeIdOf(record.violation.id) : null,
+                verificationReference: record.reference,
               },
             ]
           : [],
@@ -110,6 +114,22 @@ export function summarizeGeography(filters: GeographyFilters, now: number = Date
                 status: record.violation.notice,
                 tripActivated: record.violation.tripActivated,
                 location: placeOf(record),
+                recordedAt: iso(record.recordedAt),
+              },
+            ]
+          : [],
+      ),
+      evidence: inScope.flatMap((record) =>
+        record.violation
+          ? [
+              {
+                id: `EV-${numberOf(record.violation.id)}`,
+                violationId: record.violation.id,
+                plate: record.plate,
+                photographs: photographsOf(record.violation.id),
+                status: record.syncStatus === 'evidence_pending' ? 'pending' : 'received',
+                location: placeOf(record),
+                position: record.position,
                 recordedAt: iso(record.recordedAt),
               },
             ]

@@ -46,6 +46,21 @@ const violationRecordSchema = z.object({
   position: gps,
   recordedAt: z.string(),
   noticeId: z.string().nullable(),
+  /** The verification that led to it. */
+  verificationReference: z.string(),
+})
+
+/** The photographs supplied with a violation, as Evidence records holds them. */
+const evidenceRecordSchema = z.object({
+  id: z.string(),
+  violationId: z.string(),
+  plate: z.string(),
+  photographs: count,
+  /** Received by CHL, or still uploading from the device. */
+  status: open<'received' | 'pending'>(),
+  location: place,
+  position: gps,
+  recordedAt: z.string(),
 })
 
 /** A demand notice linked to a violation in the scope and period. */
@@ -85,6 +100,7 @@ export const geographySchema = z.object({
     verifications: z.array(verificationRecordSchema),
     violations: z.array(violationRecordSchema),
     notices: z.array(noticeRecordSchema),
+    evidence: z.array(evidenceRecordSchema),
   }),
 })
 
@@ -93,6 +109,7 @@ export type EnforcementPoint = z.infer<typeof enforcementPointSchema>
 export type VerificationRecord = z.infer<typeof verificationRecordSchema>
 export type ViolationRecord = z.infer<typeof violationRecordSchema>
 export type NoticeRecord = z.infer<typeof noticeRecordSchema>
+export type EvidenceRecord = z.infer<typeof evidenceRecordSchema>
 
 /** The area and period, as on the Overview; agents and organizations are not narrowed here. */
 export type GeographyFilters = Pick<OverviewFilters, 'scope' | 'range' | 'from' | 'to'>

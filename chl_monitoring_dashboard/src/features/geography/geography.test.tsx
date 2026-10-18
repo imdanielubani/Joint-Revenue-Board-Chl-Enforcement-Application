@@ -153,6 +153,33 @@ describe('geographical monitoring page', () => {
     )
   })
 
+  it('opens any underlying record on the page, with what it is linked to', async () => {
+    const { geography } = expected('la')
+    const violation = geography.records.violations.find((entry) => entry.noticeId)!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    await userEvent.click(within(records).getByRole('tab', { name: /^Violations/ }))
+    await userEvent.click(within(records).getByRole('button', { name: violation.id }))
+
+    const panel = within(records).getByRole('region', { name: violation.id })
+    expect(panel).toHaveTextContent(violation.category)
+    expect(panel).toHaveTextContent(`${violation.noticeId} ·`)
+    expect(panel).toHaveTextContent(violation.verificationReference)
+    expect(within(panel).getByRole('link', { name: /Open the case/ })).toHaveAttribute(
+      'href',
+      `/violations?case=${violation.id}`,
+    )
+    await userEvent.click(within(panel).getByRole('button', { name: 'Close' }))
+    expect(within(records).queryByRole('region', { name: violation.id })).not.toBeInTheDocument()
+
+    await userEvent.click(within(records).getByRole('tab', { name: /^Evidence/ }))
+    const table = within(records).getByRole('table', { name: 'Evidence' })
+    expect(within(table).getAllByRole('row')).toHaveLength(
+      Math.min(geography.records.evidence.length, 10) + 1,
+    )
+  })
+
   it('keeps payment received apart from trip activation', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/geography')

@@ -22,10 +22,24 @@ import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import type {
   EnforcementPoint,
+  EvidenceRecord,
   NoticeRecord,
   VerificationRecord,
   ViolationRecord,
 } from '../geography.schemas'
+import {
+  agentDetails,
+  evidenceDetails,
+  gpsText,
+  locationDetails,
+  noticeDetails,
+  repeatDetails,
+  verificationDetails,
+  violationDetails,
+  type RecordDetails,
+  type RecordsContext,
+} from '../record-details'
+import { RecordDetailsPanel } from './RecordDetailsPanel'
 import styles from './UnderlyingRecordsCard.module.css'
 
 type RecordView =
@@ -36,13 +50,19 @@ type RecordView =
   | 'escalated'
   | 'repeat'
   | 'payments'
+  | 'evidence'
   | 'locations'
 
 type ModuleLink = ReturnType<typeof useModuleLink>
 
-/** "6.58712, 3.37968": a recorded position, five decimal places (about a metre). */
-const gpsText = (position: { lat: number; lng: number }) =>
-  `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`
+/** The first cell of a row: the record's reference or name, opening its details on the page. */
+function OpenButton({ children, onClick }: { children: string; onClick(): void }) {
+  return (
+    <button type="button" className={styles.open} onClick={onClick}>
+      {children}
+    </button>
+  )
+}
 
 const actionsOf = (actions: { label: string; to: string | undefined }[]) =>
   actions.filter((action): action is RowAction => action.to !== undefined)
@@ -58,12 +78,15 @@ function Stack({ main, sub }: { main: string; sub?: string | undefined }) {
 
 /* ------------------------------------------------------------ Columns per tab */
 
-function verificationColumns(link: ModuleLink): Column<VerificationRecord>[] {
+function verificationColumns(
+  link: ModuleLink,
+  onOpen: (row: VerificationRecord) => void,
+): Column<VerificationRecord>[] {
   return [
     {
       key: 'reference',
       header: 'Reference',
-      render: (row) => <span className={styles.strong}>{row.reference}</span>,
+      render: (row) => <OpenButton onClick={() => onOpen(row)}>{row.reference}</OpenButton>,
       sortValue: (row) => row.reference,
     },
     {
@@ -153,7 +176,7 @@ function verificationColumns(link: ModuleLink): Column<VerificationRecord>[] {
   ]
 }
 
-function agentColumns(link: ModuleLink): Column<AgentRow>[] {
+function agentColumns(link: ModuleLink, onOpen: (row: AgentRow) => void): Column<AgentRow>[] {
   const figure = (key: keyof AgentRow & string, header: string): Column<AgentRow> => ({
     key,
     header,
@@ -165,7 +188,12 @@ function agentColumns(link: ModuleLink): Column<AgentRow>[] {
     {
       key: 'agent',
       header: 'Agent',
-      render: (row) => <Stack main={row.name} sub={row.agentId} />,
+      render: (row) => (
+        <span className={styles.stack}>
+          <OpenButton onClick={() => onOpen(row)}>{row.name}</OpenButton>
+          <span className={styles.sub}>{row.agentId}</span>
+        </span>
+      ),
       sortValue: (row) => row.name,
     },
     {
@@ -201,12 +229,15 @@ function agentColumns(link: ModuleLink): Column<AgentRow>[] {
   ]
 }
 
-function violationColumns(link: ModuleLink): Column<ViolationRecord>[] {
+function violationColumns(
+  link: ModuleLink,
+  onOpen: (row: ViolationRecord) => void,
+): Column<ViolationRecord>[] {
   return [
     {
       key: 'id',
       header: 'Reference',
-      render: (row) => <span className={styles.strong}>{row.id}</span>,
+      render: (row) => <OpenButton onClick={() => onOpen(row)}>{row.id}</OpenButton>,
       sortValue: (row) => row.id,
     },
     {
@@ -277,12 +308,15 @@ function violationColumns(link: ModuleLink): Column<ViolationRecord>[] {
   ]
 }
 
-function repeatColumns(link: ModuleLink): Column<RepeatVehicle>[] {
+function repeatColumns(
+  link: ModuleLink,
+  onOpen: (row: RepeatVehicle) => void,
+): Column<RepeatVehicle>[] {
   return [
     {
       key: 'plate',
       header: 'Plate',
-      render: (row) => <span className={styles.plate}>{row.plate}</span>,
+      render: (row) => <OpenButton onClick={() => onOpen(row)}>{row.plate}</OpenButton>,
       sortValue: (row) => row.plate,
     },
     {
@@ -329,12 +363,15 @@ function repeatColumns(link: ModuleLink): Column<RepeatVehicle>[] {
   ]
 }
 
-function noticeColumns(link: ModuleLink): Column<NoticeRecord>[] {
+function noticeColumns(
+  link: ModuleLink,
+  onOpen: (row: NoticeRecord) => void,
+): Column<NoticeRecord>[] {
   return [
     {
       key: 'id',
       header: 'Demand notice',
-      render: (row) => <span className={styles.strong}>{row.id}</span>,
+      render: (row) => <OpenButton onClick={() => onOpen(row)}>{row.id}</OpenButton>,
       sortValue: (row) => row.id,
     },
     {
@@ -396,12 +433,97 @@ function noticeColumns(link: ModuleLink): Column<NoticeRecord>[] {
   ]
 }
 
-function locationColumns(): Column<EnforcementPoint>[] {
+function evidenceColumns(
+  link: ModuleLink,
+  onOpen: (row: EvidenceRecord) => void,
+): Column<EvidenceRecord>[] {
+  return [
+    {
+      key: 'id',
+      header: 'Evidence',
+      render: (row) => <OpenButton onClick={() => onOpen(row)}>{row.id}</OpenButton>,
+      sortValue: (row) => row.id,
+    },
+    {
+      key: 'plate',
+      header: 'Plate · location',
+      render: (row) => (
+        <span className={styles.stack}>
+          <span className={styles.plate}>{row.plate}</span>
+          <span className={styles.sub}>
+            {row.location.name}, {row.location.area}
+          </span>
+        </span>
+      ),
+      sortValue: (row) => row.plate,
+    },
+    {
+      key: 'violation',
+      header: 'Violation',
+      render: (row) => row.violationId,
+      sortValue: (row) => row.violationId,
+    },
+    {
+      key: 'photographs',
+      header: 'Photographs',
+      align: 'end',
+      render: (row) => formatNumber(row.photographs),
+      sortValue: (row) => row.photographs,
+    },
+    {
+      key: 'status',
+      header: 'Upload',
+      render: (row) =>
+        row.status === 'received' ? (
+          <StatusLabel tone="success">Received</StatusLabel>
+        ) : (
+          <StatusLabel tone="amber">Still uploading</StatusLabel>
+        ),
+      sortValue: (row) => row.status,
+    },
+    {
+      key: 'recorded',
+      header: 'Recorded (WAT)',
+      render: (row) => (
+        <Stack
+          main={formatShortDateTime(row.recordedAt)}
+          sub={row.position ? `GPS ${gpsText(row.position)}` : 'GPS not captured'}
+        />
+      ),
+      sortValue: (row) => Date.parse(row.recordedAt),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'end',
+      render: (row) => {
+        const actions = actionsOf([
+          {
+            label: 'View photographs',
+            to: link('evidence', `${paths.evidence}?record=${row.violationId}`),
+          },
+        ])
+        return actions.length > 0 ? (
+          <RowActions label={`Actions for ${row.id}`} actions={actions} />
+        ) : null
+      },
+    },
+  ]
+}
+
+function locationColumns(onOpen: (row: EnforcementPoint) => void): Column<EnforcementPoint>[] {
   return [
     {
       key: 'name',
       header: 'Location',
-      render: (row) => <Stack main={row.name} sub={`${row.area} · ${row.code}`} />,
+      render: (row) => (
+        <span className={styles.stack}>
+          <OpenButton onClick={() => onOpen(row)}>{row.name}</OpenButton>
+          <span className={styles.sub}>
+            {row.area} · {row.code}
+          </span>
+        </span>
+      ),
       sortValue: (row) => row.name,
     },
     {
@@ -409,7 +531,7 @@ function locationColumns(): Column<EnforcementPoint>[] {
       header: 'Recorded position',
       render: (row) =>
         row.position ? (
-          `${row.position.lat.toFixed(4)}, ${row.position.lng.toFixed(4)}`
+          <span className={styles.gps}>{gpsText(row.position)}</span>
         ) : (
           <span className={styles.sub}>Not recorded</span>
         ),
@@ -467,12 +589,19 @@ export function UnderlyingRecordsCard({
     verifications: readonly VerificationRecord[]
     violations: readonly ViolationRecord[]
     notices: readonly NoticeRecord[]
+    evidence: readonly EvidenceRecord[]
   }
   locations: readonly EnforcementPoint[]
 }) {
   const link = useModuleLink()
   const idBase = useId()
-  const [view, setView] = useState<RecordView>('verifications')
+  const [view, setViewState] = useState<RecordView>('verifications')
+  // The record opened on the page; another tab closes it.
+  const [details, setDetails] = useState<RecordDetails | null>(null)
+  const setView = (next: RecordView) => {
+    setViewState(next)
+    setDetails(null)
+  }
 
   const open = useMemo(() => new Set(overview.cases.items.map((item) => item.id)), [overview])
   const unresolved = useMemo(
@@ -483,17 +612,18 @@ export function UnderlyingRecordsCard({
     () => unresolved.filter((violation) => violation.status === 'escalated'),
     [unresolved],
   )
-  const columns = useMemo(
-    () => ({
-      verifications: verificationColumns(link),
-      agents: agentColumns(link),
-      violations: violationColumns(link),
-      repeat: repeatColumns(link),
-      notices: noticeColumns(link),
-      locations: locationColumns(),
-    }),
-    [link],
-  )
+  const columns = useMemo(() => {
+    const ctx: RecordsContext = { link, ...records }
+    return {
+      verifications: verificationColumns(link, (row) => setDetails(verificationDetails(row, ctx))),
+      agents: agentColumns(link, (row) => setDetails(agentDetails(row, ctx))),
+      violations: violationColumns(link, (row) => setDetails(violationDetails(row, ctx))),
+      repeat: repeatColumns(link, (row) => setDetails(repeatDetails(row, ctx))),
+      notices: noticeColumns(link, (row) => setDetails(noticeDetails(row, ctx))),
+      evidence: evidenceColumns(link, (row) => setDetails(evidenceDetails(row, ctx))),
+      locations: locationColumns((row) => setDetails(locationDetails(row, ctx))),
+    }
+  }, [link, records])
 
   const tabs: { id: RecordView; label: string; count: number }[] = [
     { id: 'verifications', label: 'Verifications', count: records.verifications.length },
@@ -503,6 +633,7 @@ export function UnderlyingRecordsCard({
     { id: 'escalated', label: 'Escalated', count: escalated.length },
     { id: 'repeat', label: 'Repeat alerts', count: overview.repeatVehicles.items.length },
     { id: 'payments', label: 'Payments', count: records.notices.length },
+    { id: 'evidence', label: 'Evidence', count: records.evidence.length },
     { id: 'locations', label: 'Locations', count: locations.length },
   ]
   const label = tabs.find((tab) => tab.id === view)?.label ?? 'Records'
@@ -522,7 +653,19 @@ export function UnderlyingRecordsCard({
         onChange={setView}
         className={styles.tabs}
       />
-      <div id={panelId(idBase)} role="tabpanel" aria-labelledby={tabId(idBase, view)}>
+      <div
+        id={panelId(idBase)}
+        role="tabpanel"
+        aria-labelledby={tabId(idBase, view)}
+        className={styles.panel}
+      >
+        {details && (
+          <RecordDetailsPanel
+            key={details.key}
+            details={details}
+            onClose={() => setDetails(null)}
+          />
+        )}
         {view === 'verifications' && (
           <RegisterTable
             key={view}
@@ -579,6 +722,18 @@ export function UnderlyingRecordsCard({
             label={label}
             rows={records.notices}
             columns={columns.notices}
+            rowKey={(row) => row.id}
+            searchText={(row) =>
+              `${row.id} ${row.plate} ${row.violationId} ${row.location.name} ${row.location.area}`
+            }
+          />
+        )}
+        {view === 'evidence' && (
+          <RegisterTable
+            key={view}
+            label={label}
+            rows={records.evidence}
+            columns={columns.evidence}
             rowKey={(row) => row.id}
             searchText={(row) =>
               `${row.id} ${row.plate} ${row.violationId} ${row.location.name} ${row.location.area}`
