@@ -4,8 +4,6 @@ import { useModuleLink } from '@/features/auth/use-module-link'
 import {
   actionStatusLabel,
   actionStatusTone,
-  etagResultColor,
-  etagResultLabel,
   followUpLabel,
   methodTag,
   outcomeLabel,
@@ -94,24 +92,6 @@ function verificationColumns(link: ModuleLink): Column<VerificationRecord>[] {
           <span className={styles.sub}>Not supplied</span>
         ),
       sortValue: (row) => (row.result ? outcomeLabel(row.result) : ''),
-    },
-    {
-      key: 'etag',
-      header: 'E-Tag',
-      render: (row) =>
-        row.etag ? (
-          <span className={styles.etag}>
-            <span
-              className={styles.dot}
-              style={{ background: etagResultColor(row.etag) }}
-              aria-hidden="true"
-            />
-            {etagResultLabel(row.etag)}
-          </span>
-        ) : (
-          <span className={styles.sub}>No tag check</span>
-        ),
-      sortValue: (row) => (row.etag ? etagResultLabel(row.etag) : ''),
     },
     {
       key: 'agent',

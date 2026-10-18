@@ -3,7 +3,7 @@ import type { Geography, GeographyFilters } from '@/features/geography/geography
 import { lagosDay } from '@/shared/lib/dates'
 import { delay } from './delay'
 import { MOCK_AGENTS } from './mock-agents-api'
-import { etagResultOf, pointsWithin, summarize } from './mock-overview-api'
+import { pointsWithin, summarize } from './mock-overview-api'
 import { mockRecords, pointById, type MockRecord } from './mock-records'
 
 const agentOf = (record: MockRecord) => ({
@@ -75,7 +75,6 @@ export function summarizeGeography(filters: GeographyFilters, now: number = Date
         plate: record.plate,
         method: record.method,
         result: record.outcome,
-        etag: etagResultOf(record),
         agent: agentOf(record),
         location: placeOf(record),
         recordedAt: iso(record.recordedAt),

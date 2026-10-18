@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import type {
   ActionStatus,
-  EtagResult,
   Open,
   OverviewFilters,
   RecordSource,
@@ -22,8 +21,6 @@ const verificationRecordSchema = z.object({
   plate: z.string(),
   method: open<VerificationMethod>().nullable(),
   result: open<VerificationOutcome>().nullable(),
-  /** The E-Tag check, where one was made. */
-  etag: open<EtagResult>().nullable(),
   agent,
   location: place,
   recordedAt: z.string(),

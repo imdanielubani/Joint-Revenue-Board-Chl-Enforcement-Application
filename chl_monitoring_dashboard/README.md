@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring: the E-Tag column is removed from the
+  verification register, and the `etag` field with it from the geography
+  API. E-Tag outcomes (missing, invalid, tag-vehicle mismatch) still show as
+  verification outcomes.
 - Geographical monitoring laid out as in its design, in our own components
   (SRD 4): four headline figures (verifications, agents with activity,
   unresolved cases, repeat-vehicle alerts); Monitoring scope, "eight views of
