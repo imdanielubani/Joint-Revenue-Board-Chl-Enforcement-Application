@@ -37,7 +37,7 @@ export const MOCK_POINTS: MockPoint[] = [
 ]
 
 /** Where each sample agent works. */
-const AGENT_POINTS: Record<string, string[]> = {
+export const AGENT_POINTS: Record<string, string[]> = {
   'JRB-AG-0142': ['loc_ojota', 'loc_ikeja_gate'],
   'JRB-AG-0143': ['loc_zuba'],
   'JRB-AG-0144': ['loc_kano_zaria'],
@@ -45,7 +45,7 @@ const AGENT_POINTS: Record<string, string[]> = {
 }
 
 /** The first plates come up far more often, so repeat-vehicle alerts arise. */
-const PLATES: [plate: string, weight: number][] = [
+export const PLATES: [plate: string, weight: number][] = [
   ['KJA-482-XY', 9],
   ['ENU-156-HL', 8],
   ['PHC-388-MN', 7],
@@ -131,7 +131,7 @@ export interface MockRecord {
 }
 
 /** A small seeded random number generator (mulberry32): the same seed, the same numbers. */
-function seeded(seed: number) {
+export function seeded(seed: number) {
   let state = seed >>> 0
   return () => {
     state = (state + 0x6d2b79f5) >>> 0
@@ -142,7 +142,7 @@ function seeded(seed: number) {
   }
 }
 
-function pick<T>(random: () => number, choices: readonly [T, number][]): T {
+export function pick<T>(random: () => number, choices: readonly [T, number][]): T {
   const total = choices.reduce((sum, [, weight]) => sum + weight, 0)
   let roll = random() * total
   for (const [choice, weight] of choices) {
@@ -153,7 +153,7 @@ function pick<T>(random: () => number, choices: readonly [T, number][]): T {
 }
 
 /** Midnight at the start of a Lagos day (UTC+1, no daylight saving). */
-const startOfDay = (day: CalendarDay) => Date.parse(`${day}T00:00:00+01:00`)
+export const startOfDay = (day: CalendarDay) => Date.parse(`${day}T00:00:00+01:00`)
 
 function violationFor(
   random: () => number,

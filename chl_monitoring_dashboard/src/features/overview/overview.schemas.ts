@@ -169,7 +169,7 @@ const locationRowSchema = z.object({
   repeatAlerts: count,
 })
 
-const caseSchema = z.object({
+export const caseSchema = z.object({
   id: z.string(),
   plate: z.string(),
   category: z.string(),
@@ -177,7 +177,7 @@ const caseSchema = z.object({
   area: z.string(),
 })
 
-const repeatVehicleSchema = z.object({
+export const repeatVehicleSchema = z.object({
   plate: z.string(),
   reports: count,
   agents: count,
@@ -203,6 +203,20 @@ const activityRecordSchema = z.object({
   syncStatus: open<SyncStatus>().nullable(),
   /** When CHL received the record: later than recordedAt when it was made offline. */
   receivedAt: z.string().nullable(),
+})
+
+/** Cases needing attention: the counts, and the latest cases, escalated ones included. */
+export const casesSchema = z.object({
+  unresolved: count,
+  escalated: count,
+  items: z.array(caseSchema),
+})
+
+/** Vehicles with three or more qualifying reports, and whether anyone followed up. */
+export const repeatVehiclesSchema = z.object({
+  open: count,
+  withoutFollowUp: count,
+  items: z.array(repeatVehicleSchema),
 })
 
 export const overviewSchema = z.object({
@@ -255,17 +269,8 @@ export const overviewSchema = z.object({
     /** Paid notices whose trip was then activated: a separate outcome from payment. */
     tripActivatedOnPaid: count,
   }),
-  cases: z.object({
-    unresolved: count,
-    escalated: count,
-    /** The latest cases needing attention; escalated ones included. */
-    items: z.array(caseSchema),
-  }),
-  repeatVehicles: z.object({
-    open: count,
-    withoutFollowUp: count,
-    items: z.array(repeatVehicleSchema),
-  }),
+  cases: casesSchema,
+  repeatVehicles: repeatVehiclesSchema,
   /** The latest timed records, newest first. */
   recentActivity: z.array(activityRecordSchema),
 })

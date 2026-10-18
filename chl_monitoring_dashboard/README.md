@@ -295,6 +295,14 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre data (SRD 3): the operational activity feed (verifications,
+  violations, payment updates, field reports and loaded / empty
+  confirmations, each with when it was recorded and when CHL received it),
+  open cases and repeat-vehicle alerts, and activity by enforcement point.
+  Shown for an area and a window ending now (last hour, today, last 24 hours,
+  last 7 days) and checked every 30 seconds. Sample field reports in
+  `mocks/mock-field-reports.ts`, counted in `mocks/mock-command-centre-api.ts`;
+  backend path `/api/v1/command-centre` (provisional).
 - Shared page parts, for the Overview and the module screens: the green
   banner and its buttons (`PageHero`), the filter row and its dropdowns
   (`FilterBar`), the field-data freshness line (`FreshnessLine`), the summary

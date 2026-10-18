@@ -37,7 +37,7 @@ function etagResultOf(record: MockRecord): EtagResult | null {
 const agentById = new Map(MOCK_AGENTS.map((agent) => [agent.id, agent]))
 
 /** The enforcement points in an area and everything under it. */
-function pointsWithin(areaId: string): Set<string> {
+export function pointsWithin(areaId: string): Set<string> {
   const children = new Map<string, string[]>()
   for (const area of MOCK_AREAS) {
     if (area.parentId)
