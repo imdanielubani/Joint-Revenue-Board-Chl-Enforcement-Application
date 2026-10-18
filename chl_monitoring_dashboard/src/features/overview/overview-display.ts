@@ -22,12 +22,12 @@ const OUTCOME_STYLES: Record<VerificationOutcome, { tone: StatusTone; icon: stri
   active_trip: { tone: 'success', icon: 'overview/result-active.svg' },
   vehicle_not_found: { tone: 'warning', icon: 'overview/result-not-found.svg' },
   no_trip_history: { tone: 'info', icon: 'overview/result-no-history.svg' },
-  etag_missing: { tone: 'danger', icon: 'overview/result-etag.svg' },
+  etag_missing: { tone: 'danger', icon: 'overview/result-etag-missing.svg' },
   verification_unavailable: { tone: 'warning', icon: 'overview/result-unavailable.svg' },
   expired_trip: { tone: 'amber', icon: 'overview/result-expired.svg' },
   tag_vehicle_mismatch: { tone: 'danger', icon: 'overview/result-mismatch.svg' },
   no_active_trip: { tone: 'danger', icon: 'overview/result-no-active.svg' },
-  invalid_etag: { tone: 'danger', icon: 'overview/result-etag.svg' },
+  invalid_etag: { tone: 'danger', icon: 'overview/result-etag-invalid.svg' },
 }
 
 const ACTION_STATUS_TONES: Record<ActionStatus, StatusTone> = {

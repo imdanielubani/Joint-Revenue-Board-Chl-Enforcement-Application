@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- E-Tag Missing and Invalid E-Tag verification results have their own
+  icons (a tag struck through; a tag with a cross) in place of a plain dash,
+  in every register and card that shows verification results.
 - Geographical monitoring: the verification register's method column
   matches the Overview's: headed "Verification method", each method as the
   same small outlined tag, and "Not supplied" where the device gave none.

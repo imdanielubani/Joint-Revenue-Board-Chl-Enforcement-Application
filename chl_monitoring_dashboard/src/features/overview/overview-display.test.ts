@@ -12,9 +12,21 @@ import {
   outcomeLabel,
   outcomeStyle,
 } from './overview-display'
-import { overviewSchema } from './overview.schemas'
+import { overviewSchema, VERIFICATION_OUTCOMES } from './overview.schemas'
+
+/** Every icon file the dashboard ships, by path. */
+const ASSETS = import.meta.glob('/public/assets/**/*.svg')
 
 describe('statuses and outcomes', () => {
+  it('gives every verification result an icon that exists, E-Tag results their own', () => {
+    for (const outcome of VERIFICATION_OUTCOMES) {
+      const { icon } = outcomeStyle(outcome)
+      expect(icon, outcome).toBeDefined()
+      expect(Object.keys(ASSETS), icon).toContain(`/public/assets/${icon}`)
+    }
+    expect(outcomeStyle('etag_missing').icon).not.toBe(outcomeStyle('invalid_etag').icon)
+  })
+
   it('names the documented ones as the design does', () => {
     expect(outcomeLabel('expired_trip')).toBe('Expired / Previous Trip')
     expect(outcomeStyle('active_trip')).toEqual({
