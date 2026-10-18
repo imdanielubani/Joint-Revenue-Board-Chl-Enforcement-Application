@@ -96,18 +96,12 @@ export function OverviewFilterBar({
 
       <FilterDivider />
 
-      <img src={assetUrl('overview/calendar.svg')} alt="" width={17} height={17} />
-      <FilterSelect
-        label="Date range"
-        value={range}
-        options={RANGE_OPTIONS}
-        onChange={onRangeChange}
+      <PeriodFilter
+        range={range}
+        onRangeChange={onRangeChange}
+        period={period}
+        onCustomPeriodChange={onCustomPeriodChange}
       />
-      {range === 'custom' ? (
-        <CustomRange value={period} onChange={onCustomPeriodChange} />
-      ) : (
-        <FilterNote>{formatPeriod(period.from, period.to)}</FilterNote>
-      )}
 
       {people.agents.length > 0 && (
         <>
@@ -149,6 +143,36 @@ export function OverviewFilterBar({
         </>
       )}
     </FilterBar>
+  )
+}
+
+/** The period reported on: a preset with its dates beside it, or custom from and to dates. */
+export function PeriodFilter({
+  range,
+  onRangeChange,
+  period,
+  onCustomPeriodChange,
+}: {
+  range: OverviewRange
+  onRangeChange(range: OverviewRange): void
+  period: Period
+  onCustomPeriodChange(period: Period): void
+}) {
+  return (
+    <>
+      <img src={assetUrl('overview/calendar.svg')} alt="" width={17} height={17} />
+      <FilterSelect
+        label="Date range"
+        value={range}
+        options={RANGE_OPTIONS}
+        onChange={onRangeChange}
+      />
+      {range === 'custom' ? (
+        <CustomRange value={period} onChange={onCustomPeriodChange} />
+      ) : (
+        <FilterNote>{formatPeriod(period.from, period.to)}</FilterNote>
+      )}
+    </>
   )
 }
 

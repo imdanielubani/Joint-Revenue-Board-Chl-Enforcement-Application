@@ -302,6 +302,22 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring follows the document (SRD 4) rather than repeating
+  the Overview. A Monitoring scope card offers the eight scopes in the
+  document's order (enforcement location, enforcement zone, ward, LGA,
+  state, region, subregion, national), each listing the areas CHL
+  configures at that level within the user's areas, with the area each sits
+  under; national visibility is for authorized users only. "Activity in …"
+  shows the eight features the document lists for every scope: verification
+  totals and outcomes, agent activity, violations issued, unresolved and
+  escalated cases, repeat-vehicle alerts, related payment / compliance
+  status, enforcement locations and recorded GPS positions (the map below),
+  and access to the underlying records (scoped links, as the user's role
+  allows). The "Areas within" table keeps the parent-child view from CHL's
+  configuration. Removed: the Overview's headline figures, outcomes,
+  performance, cases, repeat-vehicle and payment cards, the record register
+  and the area picker (the scope card replaces it). The Overview's period
+  control is shared as `PeriodFilter`.
 - Geographical monitoring page built (SRD 4), in the Overview's design and
   with its own map icon on the banner. One area at a time, at any level CHL
   configures (enforcement point, zone, ward, LGA, state, subregion, region,

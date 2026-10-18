@@ -1,0 +1,190 @@
+.small {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.empty {
+  padding: var(--space-6) 0;
+  color: var(--card-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Monitoring scope: eight levels, then the areas at the chosen one. */
+.levels {
+  max-width: 100%;
+  margin-bottom: 14px;
+  overflow-x: auto;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: inherit;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.choice:hover {
+  border-color: #cfe3d5;
+  background: #f8fbf9;
+}
+
+.chosen,
+.chosen:hover {
+  border-color: var(--color-primary);
+  background: #f3f9f5;
+}
+
+.choiceName {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.chosen .choiceName {
+  color: var(--color-primary);
+}
+
+/* Features within the scope: four across, each as tall as its row. */
+.featuresBody {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.featureTitle {
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 14px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.featureBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.figure {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--card-muted);
+  font-size: 11px;
+}
+
+.figure strong {
+  color: var(--card-title);
+  font-size: 20px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 0.8px solid var(--card-line);
+  list-style: none;
+}
+
+.lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.lines strong {
+  flex-shrink: 0;
+  color: var(--card-title);
+  font-weight: var(--font-weight-semibold);
+}
+
+.featureLink {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.featureLink:hover {
+  text-decoration: underline;
+}
+
+.recordLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recordLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.recordLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1280px) {
+  .featuresBody {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .featuresBody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

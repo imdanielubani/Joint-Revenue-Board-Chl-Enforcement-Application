@@ -20,19 +20,6 @@
   gap: 4px 14px;
 }
 
-/* The map and the outcomes side by side: 737px and 391px of 1144px. */
-.splitRow {
-  display: grid;
-  grid-template-columns: minmax(0, 737fr) minmax(0, 391fr);
-  gap: 14px;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 17px;
-}
-
 .stale {
   padding: var(--space-2) var(--space-3);
   border: 1px solid #f5d9a8;
@@ -40,22 +27,4 @@
   background: var(--status-warning-bg);
   color: var(--color-warning);
   font-size: var(--font-size-xs);
-}
-
-@media (max-width: 1280px) {
-  .row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1180px) {
-  .splitRow {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 760px) {
-  .row {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
