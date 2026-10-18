@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { niceTicks, pointX } from './chart-scale'
+import { arcPath, niceTicks, pointX } from './chart-scale'
 
 describe('niceTicks', () => {
   it('uses round, whole-number steps from zero', () => {
@@ -18,5 +18,16 @@ describe('pointX', () => {
     expect(pointX(0, 3)).toBe(0)
     expect(pointX(2, 3)).toBe(1)
     expect(pointX(0, 1)).toBe(0.5)
+  })
+})
+
+describe('arcPath', () => {
+  it('draws clockwise from twelve o’clock', () => {
+    // A quarter circle: from the top to the right-hand side.
+    expect(arcPath(50, 50, 40, 0, Math.PI / 2)).toBe('M 50 10 A 40 40 0 0 1 90 50')
+  })
+
+  it('uses the large arc past half a turn', () => {
+    expect(arcPath(50, 50, 40, 0, Math.PI * 1.5)).toBe('M 50 10 A 40 40 0 1 1 10 50')
   })
 })

@@ -294,6 +294,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: the verification-method ring is drawn as one arc path per method
+  (`arcPath` in `shared/lib/chart-scale.ts`) instead of dashed circles. It
+  looks the same in the browser, and Figma exports now keep it: before, each
+  arc lost its offset there and all of them started at twelve o'clock.
 - Overview: "E-Tag results" redrawn in the payment card's style, as one
   segmented bar and a one-line-per-result legend (count and share), so the
   method card stays in step with the design and the row is no taller than it

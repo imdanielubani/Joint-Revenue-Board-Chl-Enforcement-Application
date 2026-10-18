@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { assetUrl } from '@/shared/lib/asset-url'
+import { arcPath } from '@/shared/lib/chart-scale'
 import { formatNumber, formatPercent } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import {
@@ -41,9 +42,9 @@ function MaybeLink({
 const DONUT_SIZE = 112
 const DONUT_STROKE = 14
 const DONUT_RADIUS = (DONUT_SIZE - DONUT_STROKE) / 2
-const DONUT_LENGTH = 2 * Math.PI * DONUT_RADIUS
 /** The space between segments, along the ring. */
 const DONUT_GAP = 4
+const DONUT_CENTER = DONUT_SIZE / 2
 
 /** "Verification method": how attempts were captured, as a ring and four tiles. */
 export function MethodCard({
@@ -60,15 +61,19 @@ export function MethodCard({
     null,
   )
 
-  // Each method's arc, starting at twelve o'clock and leaving a small gap between arcs.
+  // Each method's arc, clockwise from twelve o'clock. Round ends reach half the
+  // stroke past an arc's ends, so each arc is trimmed by that plus half the gap.
+  // Arcs are drawn as paths rather than dashed circles, which Figma exports drop.
   const used = methods.filter((item) => item.count > 0)
+  const trim = (DONUT_STROKE / 2 + DONUT_GAP / 2) / DONUT_RADIUS
   const arcs = used.map((item, index) => {
-    const length = (item.count / total) * DONUT_LENGTH
-    const offset = used
-      .slice(0, index)
-      .reduce((sum, before) => sum + (before.count / total) * DONUT_LENGTH, 0)
-    const drawn = used.length > 1 ? Math.max(0.5, length - DONUT_GAP - DONUT_STROKE) : length
-    return { method: item.method, drawn, offset }
+    const before = used.slice(0, index).reduce((sum, other) => sum + other.count, 0)
+    const start = (before / total) * 2 * Math.PI + trim
+    const end = Math.max(start + 0.01, ((before + item.count) / total) * 2 * Math.PI - trim)
+    return {
+      method: item.method,
+      path: arcPath(DONUT_CENTER, DONUT_CENTER, DONUT_RADIUS, start, end),
+    }
   })
 
   return (
@@ -91,30 +96,35 @@ export function MethodCard({
             aria-hidden="true"
           >
             <circle
-              cx={DONUT_SIZE / 2}
-              cy={DONUT_SIZE / 2}
+              cx={DONUT_CENTER}
+              cy={DONUT_CENTER}
               r={DONUT_RADIUS}
               fill="none"
               stroke="var(--card-track)"
               strokeWidth={DONUT_STROKE}
             />
-            {arcs.map((arc) => (
+            {used.length === 1 && used[0] ? (
+              // A single method fills the whole ring.
               <circle
-                key={arc.method}
-                cx={DONUT_SIZE / 2}
-                cy={DONUT_SIZE / 2}
+                cx={DONUT_CENTER}
+                cy={DONUT_CENTER}
                 r={DONUT_RADIUS}
                 fill="none"
-                stroke={methodStyle(arc.method).color}
+                stroke={methodStyle(used[0].method).color}
                 strokeWidth={DONUT_STROKE}
-                strokeLinecap={arcs.length > 1 ? 'round' : 'butt'}
-                strokeDasharray={`${arc.drawn} ${DONUT_LENGTH}`}
-                strokeDashoffset={
-                  -(arc.offset + (arcs.length > 1 ? DONUT_STROKE / 2 + DONUT_GAP / 2 : 0))
-                }
-                transform={`rotate(-90 ${DONUT_SIZE / 2} ${DONUT_SIZE / 2})`}
               />
-            ))}
+            ) : (
+              arcs.map((arc) => (
+                <path
+                  key={arc.method}
+                  d={arc.path}
+                  fill="none"
+                  stroke={methodStyle(arc.method).color}
+                  strokeWidth={DONUT_STROKE}
+                  strokeLinecap="round"
+                />
+              ))
+            )}
           </svg>
           <p className={styles.donutCenter}>
             <span className={styles.donutValue}>{formatNumber(total)}</span>

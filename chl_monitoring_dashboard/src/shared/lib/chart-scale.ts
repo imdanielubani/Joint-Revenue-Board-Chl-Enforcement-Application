@@ -19,3 +19,16 @@ export function niceTicks(max: number, targetSteps = 5): number[] {
 export function pointX(index: number, count: number): number {
   return count <= 1 ? 0.5 : index / (count - 1)
 }
+
+/**
+ * An SVG path for a circular arc, clockwise from `start` to `end` (radians
+ * measured from twelve o'clock), around (cx, cy) with radius r.
+ */
+export function arcPath(cx: number, cy: number, r: number, start: number, end: number): string {
+  const point = (angle: number) =>
+    `${round(cx + r * Math.sin(angle))} ${round(cy - r * Math.cos(angle))}`
+  const largeArc = end - start > Math.PI ? 1 : 0
+  return `M ${point(start)} A ${r} ${r} 0 ${largeArc} 1 ${point(end)}`
+}
+
+const round = (value: number) => Math.round(value * 100) / 100
