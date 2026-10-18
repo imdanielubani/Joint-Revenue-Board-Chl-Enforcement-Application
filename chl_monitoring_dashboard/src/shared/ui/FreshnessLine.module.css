@@ -1,0 +1,30 @@
+.freshness {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  margin-left: auto;
+}
+
+.checked {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #83908b;
+  font-size: 10px;
+}
+
+.checkedDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-primary);
+}
+
+.fieldDelayed {
+  color: var(--status-amber-text);
+}
+
+.delayedDot {
+  background: var(--amber);
+}

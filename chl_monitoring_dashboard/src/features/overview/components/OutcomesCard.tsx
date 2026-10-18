@@ -4,7 +4,7 @@ import { formatNumber, formatPercent } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { outcomeLabel } from '../overview-display'
 import type { Overview } from '../overview.schemas'
-import { useModuleLink } from '../use-module-link'
+import { useModuleLink } from '@/features/auth/use-module-link'
 import styles from './OutcomesCard.module.css'
 
 /** "Verification outcomes": each result kept separate, with its count and share. */

@@ -16,7 +16,7 @@ import {
   syncStatusLabel,
 } from '../overview-display'
 import type { ActivityRecord } from '../overview.schemas'
-import { useModuleLink } from '../use-module-link'
+import { useModuleLink } from '@/features/auth/use-module-link'
 import styles from './RecentActivityCard.module.css'
 
 const searchText = (row: ActivityRecord) =>

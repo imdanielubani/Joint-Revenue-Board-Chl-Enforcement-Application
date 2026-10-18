@@ -23,8 +23,12 @@ import {
   syncStatusLabel,
 } from '../overview-display'
 import type { Overview } from '../overview.schemas'
-import { coversSeveralLocations, scopeOptions, type ScopeOption } from '../scope-options'
-import { useModuleLink } from '../use-module-link'
+import {
+  coversSeveralLocations,
+  scopeOptions,
+  type ScopeOption,
+} from '@/features/geography/scope-options'
+import { useModuleLink } from '@/features/auth/use-module-link'
 import { periodLabel } from '../overview-period'
 import { useOverviewFilters } from '../use-overview-filters'
 import styles from './OverviewPage.module.css'

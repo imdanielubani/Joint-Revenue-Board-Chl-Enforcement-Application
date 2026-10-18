@@ -9,7 +9,7 @@ import {
   type OverviewRange,
   type PresetRange,
 } from './overview.schemas'
-import type { ScopeOption } from './scope-options'
+import type { ScopeOption } from '@/features/geography/scope-options'
 
 export const DEFAULT_RANGE: PresetRange = '14d'
 

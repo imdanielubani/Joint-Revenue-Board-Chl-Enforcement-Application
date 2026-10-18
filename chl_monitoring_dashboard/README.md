@@ -108,8 +108,9 @@ src/
     api/                   HTTP client, ApiError, query cache settings, auth bridge
     lib/                   Lagos-time dates and formatting, chart scales, CSV export,
                            record-register search/sort/pages, safe storage
-    ui/                    PageHeader, StatePanel, DashboardCard, SegmentedTabs,
-                           StatusLabel, RegisterTable, RowActions, NoAccess, placeholders
+    ui/                    PageHero, FilterBar, FreshnessLine, SummaryStrip,
+                           HeadlineFigures, DashboardCard, SegmentedTabs, StatusLabel,
+                           RegisterTable, RowActions, StatePanel, NoAccess, placeholders
   mocks/                   Sample data and sample APIs, used until the backend is ready
   styles/
     tokens.css             Design tokens: colours, type, spacing, radii
@@ -294,6 +295,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Shared page parts, for the Overview and the module screens: the green
+  banner and its buttons (`PageHero`), the filter row and its dropdowns
+  (`FilterBar`), the field-data freshness line (`FreshnessLine`), the summary
+  strip (`SummaryStrip`) and the headline figures (`HeadlineFigures`) move to
+  `shared/ui`; the area picker and area options to `features/geography`; the
+  module-access link helper to `features/auth`. The Overview looks and
+  behaves as before.
 - Top bar: it now sits on a frosted band (a blurred, translucent backdrop
   from the top of the window to just below the bar), so the page blurs and
   fades out behind it as it scrolls. The bar and the page keep their places;

@@ -1,14 +1,16 @@
 import { useId, useState } from 'react'
-import { Link } from 'react-router'
 import type { Agent } from '@/features/agents/agents.api'
+import { AreaPicker } from '@/features/geography/components/AreaPicker'
+import type { ScopeOption } from '@/features/geography/scope-options'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { formatPeriod, lagosDay } from '@/shared/lib/dates'
-import { formatClock, formatShortDateTime } from '@/shared/lib/format'
+import { FilterBar, FilterDivider, FilterNote, FilterSelect } from '@/shared/ui/FilterBar'
+import { FreshnessLine } from '@/shared/ui/FreshnessLine'
 import { MaskIcon } from '@/shared/ui/MaskIcon'
+import { HeroButton, PageHero, RefreshButton } from '@/shared/ui/PageHero'
+import { SummaryStrip } from '@/shared/ui/SummaryStrip'
 import { customPeriodProblem, type Period } from '../overview-period'
 import { OVERVIEW_RANGES, RANGE_LABELS, type OverviewRange } from '../overview.schemas'
-import type { ScopeOption } from '../scope-options'
-import { AreaPicker } from './AreaPicker'
 import styles from './OverviewHeader.module.css'
 
 interface HeroProps {
@@ -20,59 +22,25 @@ interface HeroProps {
 
 /** The green banner: the page's name and its Refresh and Export records buttons. */
 export function OverviewHero({ refreshing, onRefresh, onExport }: HeroProps) {
-  const titleId = useId()
   return (
-    <section className={styles.hero} aria-labelledby={titleId}>
-      <span className={styles.rings} aria-hidden="true" />
-      <img
-        className={styles.watermark}
-        src={assetUrl('overview/hero-watermark.svg')}
-        alt=""
-        width={160}
-        height={160}
-      />
-      <div className={styles.heroText}>
-        <p className={styles.eyebrow}>
-          <img src={assetUrl('overview/hero-crumb.svg')} alt="" width={18} height={18} />
-          <span>JRB CHL</span>
-          <span className={styles.slash} aria-hidden="true">
-            /
-          </span>
-          <span>Workspace</span>
-        </p>
-        <h2 id={titleId} className={styles.heroTitle}>
-          Operational overview
-        </h2>
-        <p className={styles.heroLede}>Your enforcement operations, connected in one place.</p>
-      </div>
-      <div className={styles.heroActions}>
-        <button
-          type="button"
-          className={`${styles.heroButton} ${styles.refresh}`}
-          onClick={onRefresh}
-          disabled={refreshing}
-          aria-busy={refreshing}
-        >
-          <img
-            className={refreshing ? styles.spinning : undefined}
-            src={assetUrl('overview/refresh.svg')}
-            alt=""
-            width={17}
-            height={17}
-          />
-          {refreshing ? 'Refreshing…' : 'Refresh'}
-        </button>
-        <button
-          type="button"
-          className={`${styles.heroButton} ${styles.export}`}
-          onClick={onExport}
-          disabled={!onExport}
-        >
-          <img src={assetUrl('overview/export.svg')} alt="" width={17} height={17} />
-          Export records
-        </button>
-      </div>
-    </section>
+    <PageHero
+      title="Operational overview"
+      lede="Your enforcement operations, connected in one place."
+      section="Workspace"
+      actions={
+        <>
+          <RefreshButton refreshing={refreshing} onRefresh={onRefresh} />
+          <HeroButton
+            variant="solid"
+            icon="overview/export.svg"
+            onClick={onExport}
+            disabled={!onExport}
+          >
+            Export records
+          </HeroButton>
+        </>
+      }
+    />
   )
 }
 
@@ -104,6 +72,8 @@ interface FilterBarProps {
   latestReceivedAt: string | null | undefined
 }
 
+const RANGE_OPTIONS = OVERVIEW_RANGES.map((value) => ({ value, label: RANGE_LABELS[value] }))
+
 /** The area and period the page reports on, and when its figures were last checked. */
 export function OverviewFilterBar({
   scopes,
@@ -117,182 +87,67 @@ export function OverviewFilterBar({
   checkedAt,
   latestReceivedAt,
 }: FilterBarProps) {
-  const rangeId = useId()
-  const organizationId = useId()
-  const agentId = useId()
   const filtered = people.agentId !== null || people.organization !== null
   return (
-    <div className={styles.filters}>
-      <div className={styles.filterGroup}>
-        <img src={assetUrl('overview/scope-globe.svg')} alt="" width={17} height={17} />
-        <AreaPicker options={scopes} value={scope} onChange={onScopeChange} />
+    <FilterBar end={<FreshnessLine checkedAt={checkedAt} latestReceivedAt={latestReceivedAt} />}>
+      <img src={assetUrl('overview/scope-globe.svg')} alt="" width={17} height={17} />
+      <AreaPicker options={scopes} value={scope} onChange={onScopeChange} />
 
-        <span className={styles.divider} aria-hidden="true" />
+      <FilterDivider />
 
-        <img src={assetUrl('overview/calendar.svg')} alt="" width={17} height={17} />
-        <label className="visually-hidden" htmlFor={rangeId}>
-          Date range
-        </label>
-        <span className={styles.selectWrap}>
-          <select
-            id={rangeId}
-            className={`${styles.select} ${styles.rangeSelect}`}
-            value={range}
-            onChange={(event) => onRangeChange(event.target.value as OverviewRange)}
-          >
-            {OVERVIEW_RANGES.map((option) => (
-              <option key={option} value={option}>
-                {RANGE_LABELS[option]}
-              </option>
-            ))}
-          </select>
-          <img
-            className={styles.chevron}
-            src={assetUrl('overview/filter-chevron.svg')}
-            alt=""
-            width={13}
-            height={13}
-          />
-        </span>
-        {range === 'custom' ? (
-          <CustomRange value={period} onChange={onCustomPeriodChange} />
-        ) : (
-          <span className={styles.period}>{formatPeriod(period.from, period.to)}</span>
-        )}
-
-        {people.agents.length > 0 && (
-          <>
-            <span className={styles.divider} aria-hidden="true" />
-            <MaskIcon className={styles.peopleIcon} src="overview/kpi-agents.svg" size={17} />
-            {people.organizations.length > 0 && (
-              <>
-                <label className="visually-hidden" htmlFor={organizationId}>
-                  Organization
-                </label>
-                <span className={styles.selectWrap}>
-                  <select
-                    id={organizationId}
-                    className={
-                      people.organization
-                        ? `${styles.select} ${styles.activeSelect}`
-                        : `${styles.select} ${styles.rangeSelect}`
-                    }
-                    value={people.organization ?? ''}
-                    onChange={(event) => people.onOrganizationChange(event.target.value || null)}
-                  >
-                    <option value="">All organizations</option>
-                    {people.organizations.map((organization) => (
-                      <option key={organization} value={organization}>
-                        {organization}
-                      </option>
-                    ))}
-                  </select>
-                  <img
-                    className={styles.chevron}
-                    src={assetUrl('overview/filter-chevron.svg')}
-                    alt=""
-                    width={13}
-                    height={13}
-                  />
-                </span>
-              </>
-            )}
-            <label className="visually-hidden" htmlFor={agentId}>
-              Agent
-            </label>
-            <span className={styles.selectWrap}>
-              <select
-                id={agentId}
-                className={
-                  people.agentId
-                    ? `${styles.select} ${styles.activeSelect}`
-                    : `${styles.select} ${styles.rangeSelect}`
-                }
-                value={people.agentId ?? ''}
-                onChange={(event) => people.onAgentChange(event.target.value || null)}
-              >
-                <option value="">All agents</option>
-                {people.agents.map((agent) => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.name} · {agent.id}
-                  </option>
-                ))}
-              </select>
-              <img
-                className={styles.chevron}
-                src={assetUrl('overview/filter-chevron.svg')}
-                alt=""
-                width={13}
-                height={13}
-              />
-            </span>
-            {filtered && (
-              <button type="button" className={styles.clearFilters} onClick={people.onClear}>
-                Clear
-              </button>
-            )}
-          </>
-        )}
-      </div>
-      {checkedAt > 0 && (
-        <div className={styles.freshness}>
-          {latestReceivedAt !== undefined && (
-            <FieldDataFreshness receivedAt={latestReceivedAt} checkedAt={checkedAt} />
-          )}
-          <p className={styles.checked}>
-            <span className={styles.checkedDot} aria-hidden="true" />
-            Last checked {formatClock(checkedAt)}
-          </p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/** After this long without a field record, the time is shown in amber. */
-const FIELD_DATA_DELAY_MS = 2 * 60 * 60_000
-
-/**
- * When CHL last received a record from the field. Records made offline reach
- * CHL later, so the figures may not include everything that has happened.
- */
-function FieldDataFreshness({
-  receivedAt,
-  checkedAt,
-}: {
-  receivedAt: string | null
-  checkedAt: number
-}) {
-  const explanation =
-    'When CHL last received a record from the field for these figures. Records made offline arrive later, so recent activity may still be on its way.'
-  if (!receivedAt) {
-    return (
-      <p className={`${styles.checked} ${styles.fieldDelayed}`} title={explanation}>
-        <span className={`${styles.checkedDot} ${styles.delayedDot}`} aria-hidden="true" />
-        No field records received
-      </p>
-    )
-  }
-  const received = new Date(receivedAt)
-  const delayed = checkedAt - received.getTime() > FIELD_DATA_DELAY_MS
-  const time =
-    lagosDay(received) === lagosDay(new Date(checkedAt))
-      ? formatClock(received)
-      : formatShortDateTime(received)
-  return (
-    <p
-      className={delayed ? `${styles.checked} ${styles.fieldDelayed}` : styles.checked}
-      title={explanation}
-    >
-      <span
-        className={delayed ? `${styles.checkedDot} ${styles.delayedDot}` : styles.checkedDot}
-        aria-hidden="true"
+      <img src={assetUrl('overview/calendar.svg')} alt="" width={17} height={17} />
+      <FilterSelect
+        label="Date range"
+        value={range}
+        options={RANGE_OPTIONS}
+        onChange={onRangeChange}
       />
-      <span>
-        Field data received <time dateTime={received.toISOString()}>{time}</time>
-        {delayed && ' · may be delayed'}
-      </span>
-    </p>
+      {range === 'custom' ? (
+        <CustomRange value={period} onChange={onCustomPeriodChange} />
+      ) : (
+        <FilterNote>{formatPeriod(period.from, period.to)}</FilterNote>
+      )}
+
+      {people.agents.length > 0 && (
+        <>
+          <FilterDivider />
+          <MaskIcon className={styles.peopleIcon} src="overview/kpi-agents.svg" size={17} />
+          {people.organizations.length > 0 && (
+            <FilterSelect
+              label="Organization"
+              value={people.organization ?? ''}
+              active={people.organization !== null}
+              options={[
+                { value: '', label: 'All organizations' },
+                ...people.organizations.map((organization) => ({
+                  value: organization,
+                  label: organization,
+                })),
+              ]}
+              onChange={(value) => people.onOrganizationChange(value || null)}
+            />
+          )}
+          <FilterSelect
+            label="Agent"
+            value={people.agentId ?? ''}
+            active={people.agentId !== null}
+            options={[
+              { value: '', label: 'All agents' },
+              ...people.agents.map((agent) => ({
+                value: agent.id,
+                label: `${agent.name} · ${agent.id}`,
+              })),
+            ]}
+            onChange={(value) => people.onAgentChange(value || null)}
+          />
+          {filtered && (
+            <button type="button" className={styles.clearFilters} onClick={people.onClear}>
+              Clear
+            </button>
+          )}
+        </>
+      )}
+    </FilterBar>
   )
 }
 
@@ -363,7 +218,7 @@ interface ScopeStripProps {
   focus?: string | undefined
   reportingLocations: number
   /** The geographical monitoring page, when the user may open it. */
-  locationsLink?: string
+  locationsLink?: string | undefined
 }
 
 /** "Monitoring & corporate dashboard": what the figures below cover. */
@@ -376,24 +231,10 @@ export function ScopeStrip({
 }: ScopeStripProps) {
   const locations = `${reportingLocations} reporting enforcement location${reportingLocations === 1 ? '' : 's'}`
   return (
-    <div className={styles.strip}>
-      <span className={styles.stripIcon}>
-        <img src={assetUrl('overview/strip-shield.svg')} alt="" width={21} height={21} />
-      </span>
-      <div className={styles.stripText}>
-        <p className={styles.stripTitle}>Monitoring &amp; corporate dashboard</p>
-        <p className={styles.stripMeta}>
-          {scopeName} scope · {periodText} · {focus ? `${focus} · ` : ''}
-          {locations}.
-        </p>
-      </div>
-      {locationsLink && (
-        <Link className={styles.stripLink} to={locationsLink}>
-          Explore locations
-          <img src={assetUrl('overview/strip-arrow.svg')} alt="" width={16} height={16} />
-        </Link>
-      )}
-      <span className={styles.stripGrid} aria-hidden="true" />
-    </div>
+    <SummaryStrip
+      title="Monitoring & corporate dashboard"
+      meta={`${scopeName} scope · ${periodText} · ${focus ? `${focus} · ` : ''}${locations}.`}
+      link={locationsLink ? { label: 'Explore locations', to: locationsLink } : undefined}
+    />
   )
 }

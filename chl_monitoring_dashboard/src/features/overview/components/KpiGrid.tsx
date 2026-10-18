@@ -1,24 +1,13 @@
-import { Link } from 'react-router'
 import { paths } from '@/config/paths'
-import { assetUrl } from '@/shared/lib/asset-url'
-import { formatNumber } from '@/shared/lib/format'
+import { HeadlineFigures, type HeadlineFigure } from '@/shared/ui/HeadlineFigures'
 import { plural } from '../overview-display'
 import type { Overview } from '../overview.schemas'
-import { useModuleLink } from '../use-module-link'
-import styles from './KpiGrid.module.css'
-
-interface Kpi {
-  label: string
-  value: number
-  icon: string
-  note: string
-  to?: string
-}
+import { useModuleLink } from '@/features/auth/use-module-link'
 
 /** The eight headline figures, four to a row. */
 export function KpiGrid({ kpis }: { kpis: Overview['kpis'] }) {
   const link = useModuleLink()
-  const items: Kpi[] = [
+  const items: HeadlineFigure[] = [
     {
       label: 'Total agent verifications',
       value: kpis.totalVerifications,
@@ -77,31 +66,5 @@ export function KpiGrid({ kpis }: { kpis: Overview['kpis'] }) {
     },
   ]
 
-  return (
-    <ul className={styles.grid} aria-label="Headline figures">
-      {items.map((kpi) => (
-        <li key={kpi.label} className={styles.kpi}>
-          <div className={styles.panel}>
-            <div className={styles.top}>
-              <p className={styles.label}>{kpi.label}</p>
-              <span className={styles.iconBox}>
-                <img src={assetUrl(kpi.icon)} alt="" width={16} height={16} />
-              </span>
-            </div>
-            <p className={styles.value}>{formatNumber(kpi.value)}</p>
-          </div>
-          {kpi.to ? (
-            <Link className={`${styles.note} ${styles.noteLink}`} to={kpi.to}>
-              <span>{kpi.note}</span>
-              <img src={assetUrl('overview/kpi-arrow.svg')} alt="" width={16} height={16} />
-            </Link>
-          ) : (
-            <p className={styles.note}>
-              <span>{kpi.note}</span>
-            </p>
-          )}
-        </li>
-      ))}
-    </ul>
-  )
+  return <HeadlineFigures items={items} />
 }

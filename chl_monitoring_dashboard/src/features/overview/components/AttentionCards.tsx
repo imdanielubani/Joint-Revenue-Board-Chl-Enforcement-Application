@@ -15,7 +15,7 @@ import {
   share,
 } from '../overview-display'
 import type { CaseItem, Overview } from '../overview.schemas'
-import { useModuleLink } from '../use-module-link'
+import { useModuleLink } from '@/features/auth/use-module-link'
 import styles from './AttentionCards.module.css'
 
 /** How many entries a card lists before pointing to the full page. */

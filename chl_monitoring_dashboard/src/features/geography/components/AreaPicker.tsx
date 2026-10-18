@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
-import { levelCaption } from '@/features/geography/areas'
+import { levelCaption } from '../areas'
 import { assetUrl } from '@/shared/lib/asset-url'
 import type { ScopeOption } from '../scope-options'
 import styles from './AreaPicker.module.css'

@@ -7,7 +7,7 @@ import { formatDay } from '@/shared/lib/dates'
 import { formatNumber } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Overview } from '../overview.schemas'
-import { useModuleLink } from '../use-module-link'
+import { useModuleLink } from '@/features/auth/use-module-link'
 import styles from './VerificationActivityCard.module.css'
 
 /** The plot's drawing size; the SVG stretches to the card's width, the height is fixed. */

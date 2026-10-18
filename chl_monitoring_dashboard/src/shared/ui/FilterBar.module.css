@@ -1,0 +1,69 @@
+/* Filters: 22px under the banner. */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding-top: 22px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select {
+  height: 31px;
+  max-width: 220px;
+  padding: 0 22px 0 3px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  appearance: none;
+  cursor: pointer;
+  /* As wide as the chosen option, not the longest one. */
+  field-sizing: content;
+}
+
+.select:hover {
+  background: rgb(19 120 54 / 0.06);
+}
+
+.muted {
+  color: #6e7c88;
+}
+
+.active {
+  color: var(--color-primary);
+}
+
+.chevron {
+  position: absolute;
+  right: 6px;
+  pointer-events: none;
+}
+
+.divider {
+  width: 1px;
+  height: 17px;
+  margin: 0 16px;
+  background: #dfe6e9;
+}
+
+.note {
+  padding-left: 8px;
+  color: #94a0ad;
+  font-size: 10px;
+}

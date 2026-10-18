@@ -15,7 +15,7 @@ import {
   share,
 } from '../overview-display'
 import type { Overview } from '../overview.schemas'
-import { useModuleLink } from '../use-module-link'
+import { useModuleLink } from '@/features/auth/use-module-link'
 import styles from './InsightCards.module.css'
 
 /** A link when there is somewhere to go, otherwise the same content without one. */

@@ -8,7 +8,7 @@ import { RowActions, type RowAction } from '@/shared/ui/RowActions'
 import { SegmentedTabs, type SegmentedTab } from '@/shared/ui/SegmentedTabs'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import type { AgentRow, LocationRow, Overview } from '../overview.schemas'
-import { useModuleLink } from '../use-module-link'
+import { useModuleLink } from '@/features/auth/use-module-link'
 import styles from './PerformanceCard.module.css'
 
 type View = 'agents' | 'locations' | 'corporate'
