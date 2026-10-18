@@ -125,8 +125,12 @@
   min-height: 0;
   padding: 0 13px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--sidebar-line) transparent;
+  /* The menu still scrolls on short screens, but shows no scrollbar. */
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
 }
 
 .section + .section {

@@ -294,6 +294,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Sample data: today's sample records now arrive every 20 minutes up to the
+  present, so "Field data received" is recent at any time of day (it showed
+  "may be delayed" from late morning on).
+- Sidebar: the menu no longer shows a scrollbar. On short screens it still
+  scrolls with the wheel, touch or keyboard.
 - Signing in shows the design's "Login successful" notification ("Welcome
   back. Your monitoring workspace is ready.") over the dashboard it opens on;
   it dismisses itself like other confirmations, and replaces a "Logged out

@@ -96,6 +96,7 @@ const CATEGORY_FOR: Partial<Record<VerificationOutcome, string>> = {
 const LATEST_WEEK = [3, 4, 4, 4, 3, 5, 4]
 const QUIET_DAYS = 7
 export const HISTORY_DAYS = 90
+const TODAY_SPACING_MS = 20 * 60_000
 
 export type ViolationStatus = Extract<
   ActionStatus,
@@ -221,10 +222,14 @@ function generate(today: CalendarDay, now: number): MockRecord[] {
       const points = AGENT_POINTS[agentId] ?? []
       const pointId = points[Math.floor(random() * points.length)] ?? MOCK_POINTS[0]!.id
       const start = startOfDay(day)
-      // Today's records are spread up to now; earlier days between 07:00 and 18:00.
+      // Today's records arrive every 20 minutes up to now (never before midnight), so
+      // the latest is always recent; earlier days' fall between 07:00 and 18:00.
       const recordedAt =
         daysAgo === 0
-          ? start + ((now - start) * (index + 1)) / (count + 1)
+          ? Math.min(
+              now,
+              Math.max(start + (index + 1) * 60_000, now - (count - index) * TODAY_SPACING_MS),
+            )
           : start + (7 + random() * 11) * 3_600_000
       const offline = random() < 0.25
       const outcome = pick(random, OUTCOMES)
