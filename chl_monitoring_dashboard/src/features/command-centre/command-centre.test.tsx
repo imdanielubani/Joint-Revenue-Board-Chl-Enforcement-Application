@@ -75,6 +75,24 @@ describe('command centre page', () => {
     expect(within(context).getByText(plate)).toBeInTheDocument()
   })
 
+  it('raises open SOS above the feed and shows its details', async () => {
+    const sos = summarizeCommandCentre({ scope: 'ng', window: '24h' }).sos!
+    const open = sos.items.find((item) => item.sos?.status === 'open')!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/command-centre')
+
+    const alert = await screen.findByText(/open SOS notification/)
+    expect(alert).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Show details' }))
+    const context = await card('Incident context')
+    expect(within(context).getByText(`SOS from ${open.agent.name}`)).toBeInTheDocument()
+    expect(within(context).getByText(open.sos!.message!)).toBeInTheDocument()
+    expect(within(context).getByText(/not a live position/)).toBeInTheDocument()
+
+    const panel = await card('SOS monitoring')
+    expect(within(panel).getAllByText('Open').length).toBe(Math.min(sos.open, 4))
+  })
+
   it('says it is not live tracking or dispatch', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/command-centre')

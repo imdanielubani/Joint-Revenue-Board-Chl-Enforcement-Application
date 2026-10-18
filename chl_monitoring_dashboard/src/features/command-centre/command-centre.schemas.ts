@@ -27,6 +27,7 @@ export const FEED_KINDS = [
   'payment',
   'field_report',
   'load_status',
+  'sos',
 ] as const
 export type FeedKind = (typeof FEED_KINDS)[number]
 
@@ -36,6 +37,7 @@ export const FEED_KIND_LABELS: Record<FeedKind, string> = {
   payment: 'Payment update',
   field_report: 'Field report',
   load_status: 'Loaded / empty',
+  sos: 'SOS',
 }
 
 /** The field reports agents submit from the mobile application (SRD 3, 11.3). */
@@ -48,6 +50,9 @@ export const FIELD_REPORT_LABELS: Record<FieldReportType, string> = {
   situation: 'Situation report',
   general: 'General notification',
 }
+
+/** Whether an SOS notification is still open, as CHL reports it. */
+export type SosStatus = 'open' | 'closed'
 
 /** A haulage-loaded or empty confirmation, where recorded. */
 export type LoadStatus = 'loaded' | 'empty'
@@ -86,6 +91,8 @@ const feedItemSchema = z.object({
   report: z.object({ type: open<FieldReportType>(), summary: z.string() }).nullable(),
   /** For a loaded / empty confirmation. */
   load: open<LoadStatus>().nullable(),
+  /** For an SOS notification: whether it is still open, and the agent's message if any. */
+  sos: z.object({ status: open<SosStatus>(), message: z.string().nullable() }).nullable(),
   /** Photographs supplied with the record; viewed in Evidence records. */
   evidenceCount: count,
   /** The agent's note, where one was written. */
@@ -127,6 +134,11 @@ export const commandCentreSchema = z.object({
     empty: count,
     items: z.array(feedItemSchema),
   }),
+  /**
+   * SOS notifications from agents: those received in the window and any still
+   * open, open first. Null when the backend does not expose SOS notifications.
+   */
+  sos: z.object({ open: count, items: z.array(feedItemSchema) }).nullable(),
   /** Open now, whenever they were raised: what needs attention does not depend on the window. */
   cases: casesSchema,
   repeatVehicles: repeatVehiclesSchema,

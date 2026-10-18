@@ -20,6 +20,17 @@ export interface MockFieldReport {
   receivedAt: number
 }
 
+export interface MockSos {
+  id: string
+  message: string | null
+  agentId: string
+  pointId: string
+  recordedAt: number
+  receivedAt: number
+  /** The latest is still open; the rest were closed by the time of the sample. */
+  open: boolean
+}
+
 export interface MockLoadReport {
   id: string
   status: LoadStatus
@@ -134,7 +145,58 @@ function generate(today: CalendarDay, now: number) {
   }
 }
 
+const SOS_MESSAGES = [
+  'Driver threatening agents at the checkpoint.',
+  'Collision near the checkpoint; one person hurt.',
+  'Agent feeling unwell; needs help.',
+  null,
+]
+
+/** One SOS every week or two, the latest 40 minutes ago and still open. Seeded on its own. */
+function generateSos(today: CalendarDay, now: number): MockSos[] {
+  const random = seeded(20_261_020)
+  const alerts: MockSos[] = []
+  let daysAgo = 3
+  while (daysAgo < HISTORY_DAYS) {
+    const agent = MOCK_AGENTS[Math.floor(random() * MOCK_AGENTS.length)]!
+    const points = AGENT_POINTS[agent.id] ?? []
+    const recordedAt = Math.round(
+      startOfDay(addDays(today, -daysAgo)) + (8 + random() * 9) * 3_600_000,
+    )
+    alerts.push({
+      id: '',
+      message: SOS_MESSAGES[Math.floor(random() * SOS_MESSAGES.length)] ?? null,
+      agentId: agent.id,
+      pointId: points[Math.floor(random() * points.length)] ?? 'loc_ojota',
+      recordedAt,
+      receivedAt: recordedAt + 20_000,
+      open: false,
+    })
+    daysAgo += 7 + Math.floor(random() * 8)
+  }
+  const latest = now - 40 * 60_000
+  alerts.push({
+    id: '',
+    message: 'Driver threatening agents at the checkpoint.',
+    agentId: 'JRB-AG-0142',
+    pointId: 'loc_ikeja_gate',
+    recordedAt: latest,
+    receivedAt: latest + 20_000,
+    open: true,
+  })
+  return alerts
+    .sort((a, b) => a.recordedAt - b.recordedAt)
+    .map((alert, index) => ({ ...alert, id: `SOS-${410 + index}` }))
+}
+
 let cache: { today: CalendarDay; data: ReturnType<typeof generate> } | null = null
+let sosCache: { today: CalendarDay; data: MockSos[] } | null = null
+
+/** The sample SOS notifications for the 90 days ending `today`. */
+export function mockSos(today: CalendarDay, now: number = Date.now()) {
+  if (sosCache?.today !== today) sosCache = { today, data: generateSos(today, now) }
+  return sosCache.data
+}
 
 /** The sample field reports and loaded / empty confirmations for the 90 days ending `today`. */
 export function mockFieldReports(today: CalendarDay, now: number = Date.now()) {

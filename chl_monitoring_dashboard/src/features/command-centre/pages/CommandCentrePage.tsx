@@ -18,6 +18,7 @@ import { ActivityFeedCard } from '../components/ActivityFeedCard'
 import { inView, type FeedView } from '../command-centre-display'
 import { FieldReportsCard, LoadReportsCard, RecordedLocationsCard } from '../components/FieldCards'
 import { IncidentContextCard } from '../components/IncidentContextCard'
+import { OpenSosAlert, SosCard } from '../components/SosCard'
 import { useCommandCentre } from '../command-centre.queries'
 import { CC_WINDOWS, CC_WINDOW_LABELS, type CommandCentre } from '../command-centre.schemas'
 import { useCommandCentreFilters } from '../use-command-centre-filters'
@@ -134,10 +135,12 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
   const entries = useMemo(
     () =>
       new Map(
-        [...data.feed, ...data.fieldReports.items, ...data.loadReports.items].map((item) => [
-          item.id,
-          item,
-        ]),
+        [
+          ...data.feed,
+          ...data.fieldReports.items,
+          ...data.loadReports.items,
+          ...(data.sos?.items ?? []),
+        ].map((item) => [item.id, item]),
       ),
     [data],
   )
@@ -190,6 +193,8 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
         ]}
       />
 
+      <OpenSosAlert sos={data.sos} onSelect={select} />
+
       <div className={styles.feedRow}>
         <ActivityFeedCard
           feed={data.feed}
@@ -199,7 +204,10 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
           selectedId={selected?.id ?? null}
           onSelect={select}
         />
-        <IncidentContextCard item={selected} />
+        <div className={styles.side}>
+          <IncidentContextCard item={selected} />
+          <SosCard sos={data.sos} onSelect={select} />
+        </div>
       </div>
 
       <div className={styles.row}>

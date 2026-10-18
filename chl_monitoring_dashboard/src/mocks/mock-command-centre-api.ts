@@ -10,7 +10,7 @@ import { presetPeriod } from '@/features/overview/overview-period'
 import { lagosDay } from '@/shared/lib/dates'
 import { delay } from './delay'
 import { MOCK_AGENTS } from './mock-agents-api'
-import { mockFieldReports } from './mock-field-reports'
+import { mockFieldReports, mockSos } from './mock-field-reports'
 import { pointsWithin, summarize } from './mock-overview-api'
 import { mockRecords, pointById, startOfDay, type MockRecord } from './mock-records'
 
@@ -64,6 +64,7 @@ function feedFrom(
     payment: null,
     report: null,
     load: null,
+    sos: null,
     evidenceCount: 0,
     note: null,
   })
@@ -147,6 +148,7 @@ function feedFrom(
       payment: null,
       report: { type: report.type, summary: report.summary },
       load: null,
+      sos: null,
       evidenceCount: report.type === 'general' ? 0 : 1 + (numberOf(report.id) % 2),
       note: null,
     })
@@ -169,6 +171,30 @@ function feedFrom(
       payment: null,
       report: null,
       load: load.status,
+      sos: null,
+      evidenceCount: 0,
+      note: null,
+    })
+  }
+  for (const alert of mockSos(today, now)) {
+    items.push({
+      id: `sos-${alert.id}`,
+      kind: 'sos',
+      at: alert.recordedAt,
+      recordedAt: new Date(alert.recordedAt).toISOString(),
+      receivedAt: new Date(alert.receivedAt).toISOString(),
+      source: 'live',
+      syncStatus: 'synced',
+      agent: { id: alert.agentId, name: agentName(alert.agentId) },
+      location: place(alert.pointId),
+      pointId: alert.pointId,
+      plate: null,
+      result: null,
+      violation: null,
+      payment: null,
+      report: null,
+      load: null,
+      sos: { status: alert.open ? 'open' : 'closed', message: alert.message },
       evidenceCount: 0,
       note: null,
     })
@@ -217,6 +243,10 @@ export function summarizeCommandCentre(
     return at !== null && (latest === null || at > latest) ? at : latest
   }, null)
 
+  // SOS: those received in the window, and any still open whenever sent; open first.
+  const sos = everything
+    .filter((item) => item.sos && (item.sos.status === 'open' || receivedTime(item) >= from))
+    .sort((a, b) => Number(b.sos?.status === 'open') - Number(a.sos?.status === 'open'))
   const reports = inWindow.filter((item) => item.kind === 'field_report')
   const loads = inWindow.filter((item) => item.kind === 'load_status')
 
@@ -243,6 +273,10 @@ export function summarizeCommandCentre(
       loaded: loads.filter((item) => item.load === 'loaded').length,
       empty: loads.filter((item) => item.load === 'empty').length,
       items: loads.slice(0, REPORT_LIMIT).map(strip),
+    },
+    sos: {
+      open: sos.filter((item) => item.sos?.status === 'open').length,
+      items: sos.map(strip),
     },
     cases: open.cases,
     repeatVehicles: open.repeatVehicles,

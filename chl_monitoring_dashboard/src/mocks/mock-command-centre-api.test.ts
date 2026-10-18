@@ -78,6 +78,25 @@ describe('summarizeCommandCentre', () => {
     expect(pending.every((item) => item.payment?.tripActivated === false)).toBe(true)
   })
 
+  it('lists SOS received in the window and any still open, open first', () => {
+    const hour = summarizeCommandCentre({ scope: 'ng', window: '1h' }, NOW).sos!
+    const week = summarizeCommandCentre({ scope: 'ng', window: '7d' }, NOW).sos!
+    const from = windowStart('1h', NOW)
+    expect(hour.open).toBeGreaterThan(0)
+    for (const item of hour.items) {
+      expect(item.sos?.status === 'open' || Date.parse(item.receivedAt!) >= from).toBe(true)
+    }
+    // Open ones come first; the closed ones listed were all received in the window.
+    const statuses = week.items.map((item) => item.sos?.status)
+    const firstClosed = statuses.indexOf('closed')
+    expect(firstClosed === -1 || statuses.lastIndexOf('open') < firstClosed).toBe(true)
+    expect(week.open).toBe(statuses.filter((status) => status === 'open').length)
+    const weekFrom = windowStart('7d', NOW)
+    for (const item of week.items.filter((entry) => entry.sos?.status === 'closed')) {
+      expect(Date.parse(item.receivedAt!)).toBeGreaterThanOrEqual(weekFrom)
+    }
+  })
+
   it('starts "today" at midnight in Lagos', () => {
     expect(new Date(windowStart('today', NOW)).toISOString()).toBe('2026-10-17T23:00:00.000Z')
   })

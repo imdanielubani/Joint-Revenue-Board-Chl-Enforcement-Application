@@ -36,6 +36,12 @@ function IncidentDetails({ item }: { item: FeedItem }) {
 
   // Only records the user may open are linked.
   const links: { label: string; to: string | undefined }[] = []
+  if (item.kind === 'sos') {
+    links.push({
+      label: 'Open the agent',
+      to: link('agents', `${paths.agents}?agent=${encodeURIComponent(item.agent.id)}`),
+    })
+  }
   if (item.kind === 'verification') {
     links.push({
       label: 'Open in verifications',
@@ -80,6 +86,9 @@ function IncidentDetails({ item }: { item: FeedItem }) {
       </div>
 
       {item.report && <p className={styles.summary}>{item.report.summary}</p>}
+      {item.sos && (
+        <p className={styles.summary}>{item.sos.message ?? 'No message was sent with the SOS.'}</p>
+      )}
 
       <dl className={styles.facts}>
         {item.plate && <Fact term="Vehicle">{item.plate}</Fact>}
@@ -90,6 +99,7 @@ function IncidentDetails({ item }: { item: FeedItem }) {
           {item.location.name}
           <span className={styles.muted}>
             {[item.location.area, item.location.code].filter(Boolean).join(' · ')}
+            {item.kind === 'sos' && ' · where it was sent, not a live position'}
           </span>
         </Fact>
         {item.violation && (

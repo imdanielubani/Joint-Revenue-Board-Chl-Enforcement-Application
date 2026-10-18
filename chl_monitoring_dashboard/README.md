@@ -295,6 +295,16 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre: SOS monitoring (SRD 3), for SOS notifications agents send,
+  where the backend exposes them. While any SOS is open, a red line above the
+  feed names the latest, with "Show details". The SOS card beside the feed
+  lists open notifications first, then any received in the window, with the
+  agent, their message, where it was sent and when CHL received it. SOS
+  entries also appear in the feed and the incident context, where the location
+  is marked as where the SOS was sent, not a live position. The dashboard only
+  shows them; responding happens outside it. When the API returns `sos: null`
+  the card says CHL does not provide SOS notifications yet. Sample SOS
+  notifications in `mocks/mock-field-reports.ts`.
 - Command centre: a Loaded / empty reports card (SRD 3), showing agents'
   haulage-loaded or empty status where recorded. It has a loaded-to-empty bar,
   All / Loaded / Empty tabs, and the latest reports with vehicle, agent,

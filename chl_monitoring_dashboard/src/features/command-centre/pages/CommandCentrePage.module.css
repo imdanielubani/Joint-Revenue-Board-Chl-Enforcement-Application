@@ -20,6 +20,14 @@
   gap: 14px;
 }
 
+/* Beside the feed: the incident context, and SOS notifications under it. */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
 /* Locations and loaded / empty reports: the same 737 / 391 split. */
 .splitRow {
   display: grid;

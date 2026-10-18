@@ -33,6 +33,13 @@ export function loadLabel(load: string | null): string {
   return humanize(load ?? 'unknown')
 }
 
+/** An SOS notification's state: open in red; closed, or a state CHL adds later, in grey. */
+export function sosStatus(status: string): { tone: StatusTone; label: string } {
+  if (status === 'open') return { tone: 'danger', label: 'Open' }
+  if (status === 'closed') return { tone: 'neutral', label: 'Closed' }
+  return { tone: 'neutral', label: humanize(status) }
+}
+
 /** The coloured marker on each feed entry: what kind of event it is. */
 const KIND_COLORS: Record<FeedKind, string> = {
   verification: 'var(--color-primary)',
@@ -40,6 +47,7 @@ const KIND_COLORS: Record<FeedKind, string> = {
   payment: 'var(--amber)',
   field_report: 'var(--method-qr)',
   load_status: 'var(--status-neutral-dot)',
+  sos: 'var(--color-danger)',
 }
 
 export function feedKindColor(kind: FeedItem['kind']): string {
@@ -59,6 +67,7 @@ export function feedTitle(item: FeedItem): string {
     if (item.payment.status === 'pending') return `Demand notice ${item.payment.noticeId} issued`
     return `${item.payment.noticeId}: ${humanize(item.payment.status)}`
   }
+  if (item.kind === 'sos') return `SOS from ${item.agent.name}`
   if (item.kind === 'field_report' && item.report) return fieldReportLabel(item.report.type)
   if (item.kind === 'load_status' && item.load) {
     return item.load === 'loaded' || item.load === 'empty'
@@ -75,6 +84,7 @@ export function feedStatus(
   if (item.kind === 'verification' && item.result) {
     return { ...outcomeStyle(item.result), label: outcomeLabel(item.result) }
   }
+  if (item.sos) return sosStatus(item.sos.status)
   if (item.violation) {
     return {
       tone: actionStatusTone(item.violation.status),
