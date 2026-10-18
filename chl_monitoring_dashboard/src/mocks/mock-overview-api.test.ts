@@ -54,6 +54,9 @@ describe('sample overview', () => {
     expect(etag('invalid')).toBe(outcome('invalid_etag'))
     expect(etag('mismatch')).toBe(outcome('tag_vehicle_mismatch'))
     expect(sum(overview.etagResults.map((item) => item.count))).toBeLessThanOrEqual(total)
+    // An attempt that could not complete is exactly a Verification Unavailable result.
+    expect(overview.attempts.completed + overview.attempts.notCompleted).toBe(total)
+    expect(overview.attempts.notCompleted).toBe(outcome('verification_unavailable'))
   })
 
   it('keeps to the chosen area, agent, organization and days', () => {

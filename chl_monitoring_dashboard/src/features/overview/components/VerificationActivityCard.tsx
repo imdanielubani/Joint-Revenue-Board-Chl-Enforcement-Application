@@ -18,10 +18,11 @@ interface Props {
   daily: Overview['dailyVerifications']
   previous: Overview['previousDailyVerifications']
   total: number
+  attempts: Overview['attempts']
 }
 
 /** "Verification activity": daily verification attempts over the period, as a line. */
-export function VerificationActivityCard({ daily, previous, total }: Props) {
+export function VerificationActivityCard({ daily, previous, total, attempts }: Props) {
   const link = useModuleLink()
   const recordsLink = link('verifications', paths.verifications)
   const gradientId = useId()
@@ -84,6 +85,28 @@ export function VerificationActivityCard({ daily, previous, total }: Props) {
           <p className={styles.total}>{formatNumber(total)}</p>
           <p className={styles.totalLabel}>verification outcomes</p>
         </div>
+        <dl
+          className={styles.attempts}
+          title="An attempt that could not complete is Verification Unavailable: CHL could not be reached or could not answer. It is not a failed check."
+        >
+          <div>
+            <dt>
+              <span className={styles.attemptDot} aria-hidden="true" />
+              Completed
+            </dt>
+            <dd>{formatNumber(attempts.completed)}</dd>
+          </div>
+          <div>
+            <dt>
+              <span
+                className={`${styles.attemptDot} ${styles.attemptDotUnavailable}`}
+                aria-hidden="true"
+              />
+              Could not complete
+            </dt>
+            <dd>{formatNumber(attempts.notCompleted)}</dd>
+          </div>
+        </dl>
         {recordsLink && (
           <Link className={styles.viewRecords} to={recordsLink}>
             View records

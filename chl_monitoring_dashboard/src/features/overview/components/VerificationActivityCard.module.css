@@ -243,3 +243,51 @@
   font-size: 9px;
   line-height: 13.5px;
 }
+
+/* Completed and could-not-complete attempts, between the total and "View records". */
+.attempts {
+  display: flex;
+  flex: 1;
+  gap: 28px;
+  margin: 0 0 0 36px;
+}
+
+.attempts dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.attempts dd {
+  margin: 4px 0 0;
+  color: var(--card-title);
+  font-size: 16px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 24px;
+}
+
+.attemptDot {
+  width: 6.4px;
+  height: 6.4px;
+  border-radius: 3.2px;
+  background: var(--chart-line);
+}
+
+.attemptDotUnavailable {
+  background: var(--status-warning-text);
+}
+
+@media (max-width: 600px) {
+  .summary {
+    flex-wrap: wrap;
+  }
+
+  .attempts {
+    order: 3;
+    flex-basis: 100%;
+    margin: 12px 0 0;
+  }
+}

@@ -228,6 +228,13 @@ export const overviewSchema = z.object({
     agentsWithActivity: count,
     enforcementLocations: count,
   }),
+  /**
+   * Whether each verification attempt completed (SRD 6.1). An attempt that
+   * could not complete is Verification Unavailable: CHL could not be reached
+   * or could not answer. This is not pass/fail: a completed attempt can find
+   * any outcome, Active Trip or not.
+   */
+  attempts: z.object({ completed: count, notCompleted: count }),
   /** One entry per day of the period, oldest first. */
   dailyVerifications: z.array(z.object({ date: day, count })),
   /**

@@ -194,6 +194,10 @@ export function summarize(all: readonly MockRecord[], filters: OverviewFilters):
     period: { from, to },
     reportingLocations: locations.length,
     latestReceivedAt: latestReceived === null ? null : new Date(latestReceived).toISOString(),
+    attempts: {
+      completed: records.length - (outcomes.get('verification_unavailable') ?? 0),
+      notCompleted: outcomes.get('verification_unavailable') ?? 0,
+    },
     kpis: {
       totalVerifications: records.length,
       activeTripResults: outcomes.get('active_trip') ?? 0,

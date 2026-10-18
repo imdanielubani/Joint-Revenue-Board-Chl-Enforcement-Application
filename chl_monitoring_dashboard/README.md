@@ -294,6 +294,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Overview: the Verification activity card shows how many attempts completed
+  and how many could not (SRD 6.1). An attempt that could not complete is
+  Verification Unavailable (CHL could not be reached or answer); it is not a
+  failed check, and outcomes are still never summed into pass/fail. Hovering
+  explains this. The overview answer gains `attempts`.
 - Overview: "E-Tag results" (SRD 6.3) at the foot of the Verification method
   card: Valid E-Tag, Missing E-Tag, Invalid / fake E-Tag and Tag-vehicle
   mismatch, each with its count and share of tag checks and a link to

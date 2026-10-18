@@ -338,6 +338,18 @@ describe('overview page', () => {
     ).toBeInTheDocument()
   })
 
+  it('says how many verification attempts completed and how many could not', async () => {
+    const { attempts } = expected()
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+
+    const activity = await card('Verification activity')
+    const completed = within(activity).getByText('Completed').closest('div')!
+    const notCompleted = within(activity).getByText('Could not complete').closest('div')!
+    expect(completed).toHaveTextContent(`Completed${attempts.completed}`)
+    expect(notCompleted).toHaveTextContent(`Could not complete${attempts.notCompleted}`)
+  })
+
   it('shows E-Tag results, valid tags included, apart from the outcomes', async () => {
     const { etagResults } = expected()
     signInAs('admin@jrb.gov.ng')

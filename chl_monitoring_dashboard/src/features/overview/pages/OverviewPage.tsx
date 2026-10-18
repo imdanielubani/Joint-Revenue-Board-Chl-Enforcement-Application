@@ -174,6 +174,7 @@ function OverviewContent({
               daily={overview.dailyVerifications}
               previous={overview.previousDailyVerifications}
               total={overview.kpis.totalVerifications}
+              attempts={overview.attempts}
             />
             <OutcomesCard outcomes={overview.outcomes} />
           </div>
