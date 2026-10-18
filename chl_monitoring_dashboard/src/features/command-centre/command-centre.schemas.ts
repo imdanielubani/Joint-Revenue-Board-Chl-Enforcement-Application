@@ -97,7 +97,7 @@ const locationActivitySchema = z.object({
   name: z.string(),
   area: z.string(),
   code: z.string(),
-  /** Events recorded there in the window. */
+  /** Entries from there that CHL received in the window. */
   events: count,
   /** The latest event recorded there, at any time; the GPS of that event, not a live position. */
   lastEventAt: z.string().nullable(),
@@ -107,13 +107,16 @@ export const commandCentreSchema = z.object({
   window: z.object({ from: z.string(), to: z.string() }),
   latestReceivedAt: z.string().nullable(),
   counts: z.object({
-    /** Feed entries received in the window. */
+    /** Feed entries CHL received in the window, whenever they were recorded. */
     activity: count,
     fieldReports: count,
     loaded: count,
     empty: count,
   }),
-  /** Newest first; the latest entries only. */
+  /**
+   * Entries CHL received in the window, latest received first; the latest only.
+   * A record made offline appears when it reaches CHL, with its earlier recorded time.
+   */
   feed: z.array(feedItemSchema),
   /** Open now, whenever they were raised: what needs attention does not depend on the window. */
   cases: casesSchema,

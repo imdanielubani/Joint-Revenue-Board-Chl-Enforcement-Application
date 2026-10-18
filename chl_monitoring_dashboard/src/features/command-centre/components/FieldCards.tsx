@@ -126,7 +126,7 @@ export function RecordedLocationsCard({ locations }: { locations: CommandCentre[
                 </span>
                 <span className={styles.locationFigure}>
                   <strong>{formatNumber(location.events)}</strong>
-                  <span>{location.events === 1 ? 'event' : 'events'} in this window</span>
+                  <span>{location.events === 1 ? 'entry' : 'entries'} received in this window</span>
                 </span>
                 <span className={styles.track} aria-hidden="true">
                   <span

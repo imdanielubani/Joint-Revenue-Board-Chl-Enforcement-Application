@@ -30,7 +30,7 @@
 
 .entry {
   display: grid;
-  grid-template-columns: 78px 8px minmax(0, 1fr) auto;
+  grid-template-columns: 96px 8px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -68,7 +68,7 @@
   color: var(--status-amber-text);
   font-size: 10px;
   font-weight: var(--font-weight-medium);
-  white-space: nowrap;
+  line-height: 14px;
 }
 
 .marker {

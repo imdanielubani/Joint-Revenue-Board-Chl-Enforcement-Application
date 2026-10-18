@@ -10,15 +10,30 @@ describe('summarizeCommandCentre', () => {
     expect(commandCentreSchema.safeParse(result).success).toBe(true)
   })
 
-  it('keeps the feed inside the window, newest first, and never in the future', () => {
+  it('keeps the feed to entries received in the window, latest received first', () => {
     const { feed, window } = summarizeCommandCentre({ scope: 'ng', window: '7d' }, NOW)
     expect(feed.length).toBeGreaterThan(0)
-    const times = feed.map((item) => Date.parse(item.recordedAt))
-    for (const time of times) {
+    const received = feed.map((item) => Date.parse(item.receivedAt ?? item.recordedAt))
+    for (const time of received) {
       expect(time).toBeGreaterThanOrEqual(Date.parse(window.from))
       expect(time).toBeLessThanOrEqual(NOW)
     }
-    expect([...times].sort((a, b) => b - a)).toEqual(times)
+    expect([...received].sort((a, b) => b - a)).toEqual(received)
+    for (const item of feed) {
+      expect(Date.parse(item.recordedAt)).toBeLessThanOrEqual(Date.parse(item.receivedAt!))
+    }
+  })
+
+  it('shows a record made offline when it reaches CHL, not when it was made', () => {
+    const week = summarizeCommandCentre({ scope: 'ng', window: '7d' }, NOW)
+    const day = summarizeCommandCentre({ scope: 'ng', window: '24h' }, NOW)
+    const from = Date.parse(day.window.from)
+    // Every entry received in the last 24 hours is in that window, whenever it was recorded.
+    const expected = week.feed
+      .filter((item) => Date.parse(item.receivedAt!) >= from)
+      .map((item) => item.id)
+    expect(day.feed.map((item) => item.id)).toEqual(expected.slice(0, day.feed.length))
+    expect(day.counts.activity).toBe(expected.length)
   })
 
   it('counts more activity in a wider window', () => {

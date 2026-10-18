@@ -147,7 +147,7 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
             label: 'Activity received',
             value: data.counts.activity,
             icon: 'overview/kpi-scan.svg',
-            note: 'Feed entries in the selected window',
+            note: 'Received by CHL in the selected window',
           },
           {
             label: 'Cases needing attention',

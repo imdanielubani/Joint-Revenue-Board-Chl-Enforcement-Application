@@ -171,8 +171,14 @@ function feedFrom(
     })
   }
   // Events still to come (a payment hours after the notice) are not shown yet.
-  return items.filter((item) => item.at <= now).sort((a, b) => b.at - a.at)
+  return items
+    .filter((item) => item.at <= now && receivedTime(item) <= now)
+    .sort((a, b) => receivedTime(b) - receivedTime(a) || b.at - a.at)
 }
+
+/** When CHL received an entry; its recorded time when the receipt time is not supplied. */
+const receivedTime = (item: FeedItem & { at: number }) =>
+  item.receivedAt ? Date.parse(item.receivedAt) : item.at
 
 /** The Command centre for an area and window, counted from the sample records. */
 export function summarizeCommandCentre(
@@ -184,8 +190,10 @@ export function summarizeCommandCentre(
   const points = pointsWithin(filters.scope)
   const from = windowStart(filters.window, now)
 
+  // The window is when CHL received each entry: a record made offline days ago
+  // and synced a minute ago is new activity.
   const everything = feedFrom(records, today, now).filter((item) => points.has(item.pointId))
-  const inWindow = everything.filter((item) => item.at >= from)
+  const inWindow = everything.filter((item) => receivedTime(item) >= from)
 
   // Cases open now, whenever they were raised (the last 90 days of records).
   const open = summarize(records, {
@@ -196,9 +204,10 @@ export function summarizeCommandCentre(
     organization: null,
   })
 
+  // The latest event recorded at each point, by when it happened there.
   const lastAt = new Map<string, number>()
   for (const item of everything) {
-    if (!lastAt.has(item.pointId)) lastAt.set(item.pointId, item.at)
+    lastAt.set(item.pointId, Math.max(lastAt.get(item.pointId) ?? 0, item.at))
   }
   const latestReceived = inWindow.reduce<number | null>((latest, item) => {
     const at = item.receivedAt ? Date.parse(item.receivedAt) : null

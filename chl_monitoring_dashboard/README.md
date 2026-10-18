@@ -295,6 +295,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre: the time window and the feed's order go by when CHL
+  received each entry (SRD 3, "received by CHL"). A record made offline
+  earlier and synced a minute ago appears as new activity, with its earlier
+  recorded time shown under the received time. Activity by location counts
+  entries received in the window; "last recorded" is still when the latest
+  event happened there.
 - Command centre page built in the Overview's design: banner with Refresh;
   area and time-window filters (kept in the address) with the field-data
   freshness line; the summary strip; four headline figures (activity

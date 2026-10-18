@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { sourceLabel } from '@/features/overview/overview-display'
-import { formatClock, formatDelay, formatShortDateTime } from '@/shared/lib/format'
+import { formatClock, formatShortDateTime } from '@/shared/lib/format'
 import { lagosDay } from '@/shared/lib/dates'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
@@ -41,11 +41,13 @@ export function ActivityFeedCard({
   const idBase = useId()
   const items = feed.filter((item) => inView(item, view))
   const today = lagosDay()
+  const shortTime = (value: Date) =>
+    lagosDay(value) === today ? formatClock(value) : formatShortDateTime(value)
 
   return (
     <DashboardCard
       title="Operational activity feed"
-      subtitle="Field activity as CHL receives it · newest first"
+      subtitle="Field activity in the order CHL received it · latest first"
       icon="overview/card-activity.svg"
       bodyClassName={styles.body}
       footer={
@@ -82,6 +84,8 @@ export function ActivityFeedCard({
             {items.map((item) => {
               const status = feedStatus(item)
               const recorded = new Date(item.recordedAt)
+              // The feed runs in the order CHL received entries, so that time leads.
+              const received = item.receivedAt ? new Date(item.receivedAt) : recorded
               const selected = item.id === selectedId
               return (
                 <li key={item.id}>
@@ -92,15 +96,11 @@ export function ActivityFeedCard({
                     onClick={() => onSelect(item.id)}
                   >
                     <span className={styles.time}>
-                      <time dateTime={item.recordedAt}>
-                        {lagosDay(recorded) === today
-                          ? formatClock(recorded)
-                          : formatShortDateTime(recorded)}
-                      </time>
+                      <time dateTime={received.toISOString()}>{shortTime(received)}</time>
                       {item.source === 'offline' && (
                         <span className={styles.offline}>
-                          {sourceLabel(item.source)}
-                          {item.receivedAt && ` · ${formatDelay(item.recordedAt, item.receivedAt)}`}
+                          {sourceLabel(item.source)} · recorded{' '}
+                          <time dateTime={item.recordedAt}>{shortTime(recorded)}</time>
                         </span>
                       )}
                     </span>
