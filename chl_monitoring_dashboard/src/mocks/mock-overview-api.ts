@@ -27,7 +27,7 @@ const REPEAT_THRESHOLD = 3
  * from its result; otherwise a valid tag when it was an RFID read. Records
  * checked another way had no tag check.
  */
-function etagResultOf(record: MockRecord): EtagResult | null {
+export function etagResultOf(record: MockRecord): EtagResult | null {
   if (record.outcome === 'etag_missing') return 'missing'
   if (record.outcome === 'invalid_etag') return 'invalid'
   if (record.outcome === 'tag_vehicle_mismatch') return 'mismatch'

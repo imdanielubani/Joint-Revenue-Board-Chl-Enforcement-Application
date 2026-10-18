@@ -4,355 +4,261 @@ import { env } from '@/config/env'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { plural } from '@/features/overview/overview-display'
-import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
-import { useRecordRegister } from '@/shared/lib/use-record-register'
+import { assetUrl } from '@/shared/lib/asset-url'
+import { formatNumber } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
-import { DataTable, type Column } from '@/shared/ui/DataTable'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
-import { panelId, tabId } from '@/shared/ui/tab-ids'
-import { areaTitle, levelCaption, type Area } from '../areas'
-import type { ChildArea, EnforcementPoint } from '../geography.schemas'
+import type { EnforcementPoint } from '../geography.schemas'
 import type { MapPoint } from './EnforcementMap'
 import styles from './GeographyCards.module.css'
 
 /** Loaded only when the map is shown, with Leaflet. */
 const EnforcementMap = lazy(() => import('./EnforcementMap'))
 
-/* ------------------------------------------------------------ Scope trail */
-
-/**
- * The scope's place in CHL's area tree, from the user's own area down: each
- * step above the current one moves the page there.
- */
-export function ScopeTrail({
-  trail,
-  onScopeChange,
-}: {
-  /** From the user's own area to the scope, as the area tree has them. */
-  trail: readonly Area[]
-  onScopeChange(scope: string): void
-}) {
-  return (
-    <nav aria-label="Monitoring scope" className={styles.trail}>
-      <ol>
-        {trail.map((area, index) => {
-          const current = index === trail.length - 1
-          return (
-            <li key={area.id}>
-              {current ? (
-                <span aria-current="location" className={styles.trailCurrent}>
-                  {areaTitle(area)}
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  className={styles.trailStep}
-                  onClick={() => onScopeChange(area.id)}
-                >
-                  {areaTitle(area)}
-                </button>
-              )}
-            </li>
-          )
-        })}
-      </ol>
-    </nav>
-  )
-}
-
-/* ------------------------------------------------------------ Areas within */
-
-/**
- * "Areas within …": the areas directly under the scope in CHL's configuration,
- * each with the same figures as the scope. A name moves the page into it.
- */
-export function AreasCard({
-  scope,
-  areas,
-  onScopeChange,
-}: {
-  scope: Pick<Area, 'name' | 'level'>
-  areas: readonly ChildArea[]
-  onScopeChange(scope: string): void
-}) {
-  const columns = useMemo<Column<ChildArea>[]>(
-    () => [
-      {
-        key: 'area',
-        header: 'Area',
-        minWidth: 200,
-        render: (row) => (
-          <span className={styles.stack}>
-            <button
-              type="button"
-              className={styles.areaButton}
-              onClick={() => onScopeChange(row.id)}
-            >
-              {areaTitle(row)}
-            </button>
-            <span className={styles.small}>{levelCaption(row.level)}</span>
-          </span>
-        ),
-        sortValue: (row) => row.name,
-      },
-      {
-        key: 'verifications',
-        header: 'Verifications',
-        align: 'end',
-        render: (row) => (
-          <span className={styles.stack}>
-            <strong>{formatNumber(row.verifications)}</strong>
-            <span className={styles.small}>
-              {formatNumber(row.activeTrip)} active · {formatNumber(row.noActiveTrip)} no active
-              trip
-            </span>
-          </span>
-        ),
-        sortValue: (row) => row.verifications,
-      },
-      {
-        key: 'agents',
-        header: 'Agents',
-        align: 'end',
-        render: (row) => formatNumber(row.agents),
-        sortValue: (row) => row.agents,
-      },
-      {
-        key: 'violations',
-        header: 'Violations',
-        align: 'end',
-        render: (row) => formatNumber(row.violations),
-        sortValue: (row) => row.violations,
-      },
-      {
-        key: 'unresolved',
-        header: 'Unresolved',
-        align: 'end',
-        render: (row) => (
-          <span className={styles.stack}>
-            <strong>{formatNumber(row.unresolved)}</strong>
-            <span className={styles.small}>{formatNumber(row.escalated)} escalated</span>
-          </span>
-        ),
-        sortValue: (row) => row.unresolved,
-      },
-      {
-        key: 'repeat',
-        header: 'Repeat alerts',
-        align: 'end',
-        render: (row) => formatNumber(row.repeatAlerts),
-        sortValue: (row) => row.repeatAlerts,
-      },
-      {
-        key: 'payments',
-        header: 'Payments',
-        align: 'end',
-        render: (row) => (
-          <span className={styles.stack}>
-            <strong>{formatNumber(row.payments.received)} received</strong>
-            <span className={styles.small}>{formatNumber(row.payments.pending)} pending</span>
-          </span>
-        ),
-        sortValue: (row) => row.payments.received,
-      },
-      {
-        key: 'locations',
-        header: 'Enforcement points',
-        align: 'end',
-        render: (row) => (
-          <span className={styles.stack}>
-            <strong>{formatNumber(row.locations)}</strong>
-            <span className={styles.small}>{formatNumber(row.reportingLocations)} reporting</span>
-          </span>
-        ),
-        sortValue: (row) => row.locations,
-      },
-    ],
-    [onScopeChange],
-  )
-  const table = useRecordRegister({
-    rows: areas,
-    columns,
-    searchText: (row) => row.name,
-    pageSize: 50,
-  })
-
-  return (
-    <DashboardCard
-      title={`Areas within ${areaTitle(scope)}`}
-      subtitle="As CHL configures them · the same figures as the whole · choose one to look inside"
-      icon="overview/card-location.svg"
-      footer={
-        <p className={styles.footer}>
-          {areas.length === 0
-            ? 'Nothing is configured under this area.'
-            : `${plural(areas.length, 'area')} directly under ${areaTitle(scope)}, as CHL configures them.`}
-        </p>
-      }
-    >
-      {areas.length === 0 ? (
-        <p className={styles.empty}>
-          {scope.level === 'enforcement_point'
-            ? 'This is an enforcement point: its activity is shown on this page.'
-            : `CHL has no areas configured under ${areaTitle(scope)}.`}
-        </p>
-      ) : (
-        <DataTable
-          label={`Areas within ${areaTitle(scope)}`}
-          columns={columns}
-          rows={table.pageRows}
-          rowKey={(row) => row.id}
-          sort={table.sort}
-          onSort={table.toggleSort}
-          emptyMessage="No areas."
-        />
-      )}
-    </DashboardCard>
-  )
-}
-
-/* ------------------------------------------------------------ Enforcement locations */
-
-type PointView = 'map' | 'list'
-
-/** The map is turned off when no tile address is configured; the list remains. */
+/** The map is turned off when no tile address is configured; the list beside it remains. */
 const mapAvailable = env.mapTileUrl !== ''
 
+/** What the map's circles are sized by. */
+export type MarkerMetric = 'verifications' | 'violations'
+
+/* ------------------------------------------------------------ Enforcement footprint */
+
 /**
- * "Enforcement locations": the enforcement points in scope at the GPS where
- * their events were recorded, sized by verifications in the period. Not live.
+ * "Enforcement footprint": the enforcement locations in view at their recorded
+ * positions. Choosing one focuses the page's figures and records on it.
  */
-export function EnforcementPointsCard({
+export function EnforcementFootprintCard({
   points,
-  canFocus,
-  onScopeChange,
+  selectedId,
+  onSelect,
 }: {
   points: readonly EnforcementPoint[]
-  /** Whether the page may move to a point (it is within the user's areas). */
-  canFocus(id: string): boolean
-  onScopeChange(scope: string): void
+  /** The location the page is focused on, if it is one. */
+  selectedId: string | null
+  onSelect(id: string): void
 }) {
   const link = useModuleLink()
   const navigate = useNavigate()
   const idBase = useId()
-  const [view, setView] = useState<PointView>('map')
+  const [metric, setMetric] = useState<MarkerMetric>('verifications')
+  const [fitRequest, setFitRequest] = useState(0)
 
-  // Busiest first: the list leads with it, and on the map smaller circles are drawn over it.
-  const sorted = useMemo(
-    () =>
-      [...points].sort((a, b) => b.verifications - a.verifications || a.name.localeCompare(b.name)),
-    [points],
-  )
+  // Highest first: on the map, smaller circles are drawn over larger ones.
   const mapPoints = useMemo<MapPoint[]>(
     () =>
-      sorted.map((point) => ({
-        id: point.id,
-        name: point.name,
-        area: point.area,
-        code: point.code,
-        position: point.position,
-        count: point.verifications,
-        lastRecordedAt: point.lastRecordedAt,
-      })),
-    [sorted],
+      [...points]
+        .sort((a, b) => b[metric] - a[metric] || a.name.localeCompare(b.name))
+        .map((point) => ({
+          id: point.id,
+          name: point.name,
+          area: point.area,
+          code: point.code,
+          position: point.position,
+          count: point[metric],
+          lastRecordedAt: point.lastRecordedAt,
+        })),
+    [points, metric],
   )
-  const recordsLink = (id: string) =>
-    link('verifications', `${paths.verifications}?scope=${encodeURIComponent(id)}`)
 
   return (
     <DashboardCard
-      title="Enforcement locations"
-      subtitle="Recorded GPS positions of enforcement events · not live tracking"
+      title="Enforcement footprint"
+      subtitle="Select a location to focus metrics and underlying records"
       icon="overview/card-location.svg"
+      bodyClassName={styles.footprintBody}
       footer={
         <p className={styles.footer}>
-          {plural(points.length, 'enforcement point')} in this area ·{' '}
-          {plural(points.filter((point) => point.verifications > 0).length, 'point')} with
-          verifications in this period
+          Markers show each enforcement location’s recorded position, not the GPS of every event and
+          not continuous tracking. Map boundaries are not CHL enforcement boundaries.
         </p>
       }
     >
-      {points.length === 0 ? (
-        <p className={styles.empty}>No enforcement points are configured in this area.</p>
-      ) : (
-        <>
-          {mapAvailable && (
-            <SegmentedTabs<PointView>
-              idBase={idBase}
-              label="How to show enforcement locations"
-              tabs={[
-                { id: 'map', label: 'Map' },
-                { id: 'list', label: 'List' },
-              ]}
-              value={view}
-              onChange={setView}
-              className={styles.viewTabs}
-            />
+      <div className={styles.toolbar}>
+        <SegmentedTabs<MarkerMetric>
+          idBase={idBase}
+          label="Marker values"
+          tabs={[
+            { id: 'verifications', label: 'Verifications' },
+            { id: 'violations', label: 'Violations' },
+          ]}
+          value={metric}
+          onChange={setMetric}
+          className={styles.metricTabs}
+        />
+        <span className={styles.small}>Marker values show {metric}</span>
+        <span className={styles.toolbarEnd}>
+          <span className={styles.chip}>{plural(points.length, 'location')}</span>
+          {mapAvailable && points.length > 0 && (
+            <button
+              type="button"
+              className={styles.fit}
+              onClick={() => setFitRequest((request) => request + 1)}
+            >
+              <img src={assetUrl('overview/scope-globe.svg')} alt="" width={14} height={14} />
+              Fit locations
+            </button>
           )}
-          <div
-            id={panelId(idBase)}
-            role={mapAvailable ? 'tabpanel' : undefined}
-            aria-labelledby={mapAvailable ? tabId(idBase, view) : undefined}
-          >
-            {mapAvailable && view === 'map' ? (
-              <Suspense fallback={<p className={styles.empty}>Loading the map…</p>}>
-                <EnforcementMap
-                  points={mapPoints}
-                  countText={(count) =>
-                    `${formatNumber(count)} verification${count === 1 ? '' : 's'} in this period`
-                  }
-                  legend="Larger circles: more verifications in this period. Grey: none. Click a circle to look at that point."
-                  primary={{
-                    label: 'Look at this enforcement point',
-                    run: (point) => onScopeChange(point.id),
-                    enabled: (point) => canFocus(point.id),
-                  }}
-                  link={{
-                    label: 'Open its verification records',
-                    to: (point) => recordsLink(point.id),
-                  }}
-                  onNavigate={(to) => void navigate(to)}
-                />
-              </Suspense>
-            ) : (
-              <ul className={styles.points}>
-                {sorted.map((point) => (
-                  <li key={point.id} className={styles.point}>
-                    <span className={styles.pointHead}>
-                      <span className={styles.pointName}>{point.name}</span>
-                      {canFocus(point.id) && (
-                        <button
-                          type="button"
-                          className={styles.pointFocus}
-                          onClick={() => onScopeChange(point.id)}
-                        >
-                          Look at it
-                        </button>
-                      )}
-                    </span>
-                    <span className={styles.small}>
-                      {[point.area, point.code].filter(Boolean).join(' · ')}
-                    </span>
-                    <span className={styles.pointFigures}>
-                      <strong>{formatNumber(point.verifications)}</strong> verifications ·{' '}
-                      <strong>{formatNumber(point.violations)}</strong> violations ·{' '}
-                      <strong>{formatNumber(point.agents)}</strong> agents
-                    </span>
-                    <span className={styles.small}>
-                      {point.position
-                        ? `GPS ${point.position.lat.toFixed(4)}, ${point.position.lng.toFixed(4)}`
-                        : 'No recorded position'}
-                      {' · '}
-                      {point.lastRecordedAt
-                        ? `last recorded ${formatShortDateTime(point.lastRecordedAt)}`
-                        : 'nothing recorded yet'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
+        </span>
+      </div>
+
+      {points.length === 0 ? (
+        <p className={styles.empty}>No enforcement locations are configured in this scope.</p>
+      ) : mapAvailable ? (
+        <Suspense fallback={<p className={styles.empty}>Loading the map…</p>}>
+          <EnforcementMap
+            points={mapPoints}
+            selectedId={selectedId}
+            fitRequest={fitRequest}
+            countText={(count) => `${formatNumber(count)} ${metric} in this period`}
+            primary={{ label: 'Focus on this location', run: (point) => onSelect(point.id) }}
+            link={{
+              label: 'Open its verification records',
+              to: (point) =>
+                link(
+                  'verifications',
+                  `${paths.verifications}?scope=${encodeURIComponent(point.id)}`,
+                ),
+            }}
+            onNavigate={(to) => void navigate(to)}
+          />
+        </Suspense>
+      ) : (
+        <p className={styles.empty}>
+          The map is turned off; choose a location from the list beside it.
+        </p>
+      )}
+
+      <div className={styles.legend}>
+        <span>
+          <span className={`${styles.dot} ${styles.recorded}`} aria-hidden="true" />
+          Recorded location
+        </span>
+        <span>
+          <span className={`${styles.dot} ${styles.selected}`} aria-hidden="true" />
+          Selected
+        </span>
+        <span className={styles.legendEnd}>Location snapshots · not live tracking</span>
+      </div>
+    </DashboardCard>
+  )
+}
+
+/* ------------------------------------------------------------ Locations in view */
+
+/**
+ * "Locations in view": the current scope's figures, and the locations in view
+ * to choose from; a location focuses the page on it.
+ */
+export function LocationsInViewCard({
+  scopeName,
+  figures,
+  points,
+  permitted,
+  selectedId,
+  onSelect,
+}: {
+  scopeName: string
+  figures: { verifications: number; violations: number; unresolved: number }
+  points: readonly EnforcementPoint[]
+  /** How many locations the user may see in all. */
+  permitted: number
+  selectedId: string | null
+  onSelect(id: string): void
+}) {
+  const searchId = useId()
+  const [query, setQuery] = useState('')
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  const shown = [...points]
+    .sort((a, b) => b.verifications - a.verifications || a.name.localeCompare(b.name))
+    .filter((point) => {
+      const text = `${point.name} ${point.area} ${point.code}`.toLowerCase()
+      return words.every((word) => text.includes(word))
+    })
+
+  return (
+    <DashboardCard
+      title="Locations in view"
+      subtitle="Choose a point on the map or a location below"
+      icon="overview/card-location.svg"
+      bodyClassName={styles.inViewBody}
+      footer={
+        <p className={styles.footer}>
+          {points.length} of {plural(permitted, 'permitted location')}
+        </p>
+      }
+    >
+      <div className={styles.current}>
+        <p className={styles.eyebrow}>Current scope</p>
+        <p className={styles.currentName}>{scopeName}</p>
+        <dl className={styles.currentFigures}>
+          <div>
+            <dd>{formatNumber(figures.verifications)}</dd>
+            <dt>Verifications</dt>
           </div>
-        </>
+          <div>
+            <dd>{formatNumber(figures.violations)}</dd>
+            <dt>Violations</dt>
+          </div>
+          <div>
+            <dd>{formatNumber(figures.unresolved)}</dd>
+            <dt>Unresolved</dt>
+          </div>
+        </dl>
+      </div>
+
+      <label className={styles.search} htmlFor={searchId}>
+        <img src={assetUrl('overview/search.svg')} alt="" width={16} height={16} />
+        <span className="visually-hidden">Find a location</span>
+        <input
+          id={searchId}
+          type="search"
+          placeholder="Find a location…"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </label>
+
+      {shown.length === 0 ? (
+        <p className={styles.empty}>No location matches “{query}”.</p>
+      ) : (
+        <ul className={styles.places}>
+          {shown.map((point) => {
+            const selected = point.id === selectedId
+            return (
+              <li key={point.id}>
+                <button
+                  type="button"
+                  className={selected ? `${styles.place} ${styles.placeSelected}` : styles.place}
+                  aria-pressed={selected}
+                  onClick={() => onSelect(point.id)}
+                >
+                  <span className={styles.placeIcon}>
+                    <img
+                      src={assetUrl('overview/location-pin.svg')}
+                      alt=""
+                      width={16}
+                      height={16}
+                    />
+                  </span>
+                  <span className={styles.placeText}>
+                    <span className={styles.placeName}>{point.name}</span>
+                    <span className={styles.small}>{point.area}</span>
+                  </span>
+                  <span className={styles.placeCount}>
+                    {formatNumber(point.verifications)}
+                    <span className="visually-hidden"> verifications</span>
+                  </span>
+                  <img
+                    src={assetUrl('overview/arrow-up-right.svg')}
+                    alt=""
+                    width={14}
+                    height={14}
+                  />
+                </button>
+              </li>
+            )
+          })}
+        </ul>
       )}
     </DashboardCard>
   )

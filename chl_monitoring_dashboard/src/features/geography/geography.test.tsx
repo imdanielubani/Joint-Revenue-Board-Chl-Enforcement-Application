@@ -2,148 +2,149 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
+import { summarizeGeography } from '@/mocks/mock-geography-api'
 import { summarize } from '@/mocks/mock-overview-api'
 import { mockRecords } from '@/mocks/mock-records'
 import { lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
 
 const card = (title: string) => screen.findByRole('region', { name: title })
-const feature = async (title: string) => screen.findByRole('region', { name: title })
+const figure = async (label: string) => {
+  const figures = await screen.findByRole('list', { name: 'Headline figures' })
+  return within(figures).getByText(label).closest('li')!
+}
 
-/** What the page must show for an area: the same counting as every view, last 14 days. */
+/** What the page must show for an area: the same records every view counts, last 14 days. */
 function expected(scope: string) {
   const today = lagosDay()
-  return summarize(mockRecords(today), {
-    scope,
-    range: '14d',
-    ...presetPeriod('14d', today),
-    agentId: null,
-    organization: null,
-  })
+  const filters = { scope, range: '14d' as const, ...presetPeriod('14d', today) }
+  return {
+    overview: summarize(mockRecords(today), { ...filters, agentId: null, organization: null }),
+    geography: summarizeGeography(filters),
+  }
 }
 
 describe('geographical monitoring page', () => {
-  it('offers the eight monitoring scopes, in the order the document lists them', async () => {
+  it('shows the headline figures for the scope', async () => {
+    const { overview } = expected('ng')
     signInAs('admin@jrb.gov.ng')
     renderApp('/geography')
 
-    const scope = await card('Monitoring scope')
-    const levels = within(scope)
-      .getAllByRole('tab')
-      .map((tab) => tab.textContent?.replace(/\d+$/, '').trim())
-    expect(levels).toEqual([
-      'Enforcement location',
-      'Enforcement zone',
-      'Ward',
-      'LGA',
-      'State',
-      'Region',
-      'Subregion',
-      'National',
-    ])
-    expect(within(scope).getByRole('tab', { name: /^National/ })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Geographical monitoring' }),
+    ).toBeVisible()
+    expect(await figure('Verifications')).toHaveTextContent(
+      String(overview.kpis.totalVerifications),
     )
-  })
-
-  it('shows the features the document lists for the scope, with its records', async () => {
-    const sample = expected('ng')
-    signInAs('admin@jrb.gov.ng')
-    renderApp('/geography')
-
-    expect(await feature('Verification totals and outcomes')).toHaveTextContent(
-      `${sample.kpis.totalVerifications}verifications`,
+    expect(await figure('Agents with activity')).toHaveTextContent(
+      String(overview.kpis.agentsWithActivity),
     )
-    expect(await feature('Agent activity')).toHaveTextContent(
-      `${sample.kpis.agentsWithActivity}agents with recorded activity`,
+    expect(await figure('Unresolved cases')).toHaveTextContent(
+      `${overview.kpis.escalatedViolations} escalated within this total`,
     )
-    expect(await feature('Violations issued')).toHaveTextContent(
-      `${sample.kpis.violationsIssued}violations issued`,
-    )
-    expect(await feature('Unresolved and escalated cases')).toHaveTextContent(
-      `${sample.kpis.unresolvedViolations}unresolved${sample.kpis.escalatedViolations}escalated`,
-    )
-    expect(await feature('Repeat-vehicle alerts')).toHaveTextContent(
-      `${sample.kpis.openRepeatAlerts}open alerts`,
-    )
-    expect(await feature('Related payment / compliance status')).toHaveTextContent(
-      `${sample.payments.received}payments received${sample.payments.pending}pending`,
-    )
-    expect(await feature('Enforcement locations and recorded GPS positions')).toHaveTextContent(
-      '6enforcement points',
-    )
-    const records = await feature('Access to underlying records')
-    expect(within(records).getByRole('link', { name: 'Verification records' })).toHaveAttribute(
+    expect(within(await figure('Verifications')).getByRole('link')).toHaveAttribute(
       'href',
       '/verifications?scope=ng',
     )
-    expect(within(records).getByRole('link', { name: 'Evidence records' })).toHaveAttribute(
-      'href',
-      '/evidence?scope=ng',
-    )
-
-    // Nothing from the Overview that the document does not list.
-    expect(screen.queryByRole('region', { name: 'Recent activity' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('list', { name: 'Headline figures' })).not.toBeInTheDocument()
   })
 
-  it('chooses an area at a level, and counts again for it', async () => {
+  it('offers eight views of the same records, widest first', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/geography')
     const scope = await card('Monitoring scope')
-    await userEvent.click(within(scope).getByRole('tab', { name: /^State/ }))
-    const lagos = within(scope).getByRole('button', { name: /Lagos state/ })
-    expect(lagos).toHaveTextContent('in South West region')
-    await userEvent.click(lagos)
-
-    expect(await card('Activity in Lagos state')).toBeInTheDocument()
-    expect(await feature('Verification totals and outcomes')).toHaveTextContent(
-      `${expected('la').kpis.totalVerifications}verifications`,
+    expect(
+      within(scope)
+        .getAllByRole('tab')
+        .map((tab) => tab.textContent),
+    ).toEqual([
+      'National',
+      'Region',
+      'Subregion',
+      'State',
+      'Local Government Area',
+      'Ward',
+      'Enforcement Zone',
+      'Enforcement Location',
+    ])
+    expect(within(scope).getByRole('tab', { name: 'National' })).toHaveAttribute(
+      'aria-selected',
+      'true',
     )
-    const trail = screen.getByRole('navigation', { name: 'Monitoring scope' })
-    expect(within(trail).getByText('Lagos state')).toHaveAttribute('aria-current', 'location')
-    await userEvent.click(within(trail).getByRole('button', { name: 'National' }))
-    expect(await card('Activity in National')).toBeInTheDocument()
+    expect(scope).toHaveTextContent('National (authorized)')
+  })
+
+  it('moves to a level and an area, and counts again for it', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/geography')
+    const scope = await card('Monitoring scope')
+    await userEvent.click(within(scope).getByRole('tab', { name: 'State' }))
+    await userEvent.selectOptions(await screen.findByLabelText('State to show'), 'Kano state')
+
+    const inView = await card('Locations in view')
+    expect(await within(inView).findByText('Kano state')).toBeInTheDocument()
+    expect(await figure('Verifications')).toHaveTextContent(
+      String(expected('kn').overview.kpis.totalVerifications),
+    )
   })
 
   it('says when CHL configures no areas at a level', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/geography')
     const scope = await card('Monitoring scope')
-    await userEvent.click(within(scope).getByRole('tab', { name: /^Subregion/ }))
+    await userEvent.click(within(scope).getByRole('tab', { name: 'Subregion' }))
     expect(scope).toHaveTextContent('CHL has no subregions configured within your areas.')
   })
 
-  it('follows the configured tree, whatever the levels under an area', async () => {
+  it('focuses on a location chosen from the list, keeping the others to choose from', async () => {
     signInAs('admin@jrb.gov.ng')
-    renderApp('/geography?scope=la-ikeja')
-    const areas = await card('Areas within Ikeja LGA')
-    expect(within(areas).getByRole('button', { name: 'Ojota ward' })).toBeInTheDocument()
-    expect(within(areas).getByRole('button', { name: 'Ikeja Gate 3' })).toBeInTheDocument()
-    expect(within(areas).getByText('Enforcement point')).toBeInTheDocument()
+    renderApp('/geography')
+    const inView = await card('Locations in view')
+    await userEvent.click(within(inView).getByRole('button', { name: /Apapa Port Rd/ }))
+
+    const focused = await card('Locations in view')
+    expect(await within(focused).findByText('Apapa Port Rd', { selector: 'p' })).toBeInTheDocument()
+    expect(within(focused).getByRole('button', { name: /Apapa Port Rd/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    // The Enforcement Location view still lists every permitted location.
+    expect(within(focused).getByRole('button', { name: /Zuba Junction/ })).toBeInTheDocument()
+    expect(focused).toHaveTextContent('6 of 6 permitted locations')
   })
 
-  it('shows an enforcement location on its own, with its recorded position', async () => {
+  it('lists the underlying records for the scope, by kind', async () => {
+    const { geography } = expected('la')
     signInAs('admin@jrb.gov.ng')
-    renderApp('/geography?scope=loc_ojota')
-    expect(await card('Areas within Ojota enforcement point')).toHaveTextContent(
-      'This is an enforcement point',
+    renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    expect(within(records).getByRole('tab', { name: /^Verifications/ })).toHaveTextContent(
+      String(geography.records.verifications.length),
     )
-    const locations = await card('Enforcement locations')
-    await userEvent.click(within(locations).getByRole('tab', { name: 'List' }))
-    expect(within(locations).getByText('Ojota enforcement point')).toBeInTheDocument()
-    expect(within(locations).getByText(/^GPS 6\.5866, 3\.3792/)).toBeInTheDocument()
+    expect(within(records).getByRole('table', { name: 'Verifications' })).toBeInTheDocument()
+
+    await userEvent.click(within(records).getByRole('tab', { name: /^Payments/ }))
+    const table = within(records).getByRole('table', { name: 'Payments' })
+    const first = geography.records.notices[0]
+    if (first) expect(within(table).getByText(first.id)).toBeInTheDocument()
+  })
+
+  it('keeps payment received apart from trip activation', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/geography')
+    const payments = await card('Payment follow-up')
+    expect(payments).toHaveTextContent('Trip activation recorded')
+    expect(payments).toHaveTextContent('Payment received does not confirm trip activation')
   })
 
   it('keeps national visibility to authorized users', async () => {
     signInAs('supervisor@jrb.gov.ng')
     renderApp('/geography?scope=ng')
-    expect(await card('Activity in Lagos state')).toBeInTheDocument()
-    expect(screen.queryByRole('navigation', { name: 'Monitoring scope' })).not.toBeInTheDocument()
-
     const scope = await card('Monitoring scope')
-    await userEvent.click(within(scope).getByRole('tab', { name: /^National/ }))
+    expect(within(scope).getByRole('tab', { name: 'State' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    await userEvent.click(within(scope).getByRole('tab', { name: 'National' }))
     expect(scope).toHaveTextContent('Consolidated national visibility is for authorized users')
   })
 })

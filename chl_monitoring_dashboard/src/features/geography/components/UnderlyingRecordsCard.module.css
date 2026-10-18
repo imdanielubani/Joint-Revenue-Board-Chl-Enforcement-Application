@@ -1,0 +1,48 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tabs {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sub {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.strong {
+  color: var(--card-title);
+  font-weight: var(--font-weight-semibold);
+}
+
+.plate {
+  color: var(--card-title);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.275px;
+}
+
+.etag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}

@@ -26,8 +26,12 @@ export interface EnforcementMapProps {
   points: readonly MapPoint[]
   /** What a point's figure counts: "9 entries received in this window". */
   countText(count: number): string
-  /** The line under the map, saying what the circles mean. */
-  legend: string
+  /** The line under the map, saying what the circles mean; the page may give its own instead. */
+  legend?: string
+  /** The point the page is focused on, drawn in amber. */
+  selectedId?: string | null
+  /** Changes when the user asks to fit the view to every point again. */
+  fitRequest?: number
   /** The panel's main action, such as narrowing the page to the point. */
   primary?: { label: string; run(point: MapPoint): void; enabled?(point: MapPoint): boolean }
   /** A link in the panel; `to` is undefined when the user may not open it. */
@@ -36,7 +40,7 @@ export interface EnforcementMapProps {
   onNavigate(to: string): void
 }
 
-type Options = Omit<EnforcementMapProps, 'points'>
+type Options = Omit<EnforcementMapProps, 'points' | 'selectedId' | 'fitRequest'>
 
 /** A token's value, for Leaflet, which takes colours as literals. */
 function token(name: string, fallback: string): string {
@@ -110,7 +114,12 @@ function popup(point: MapPoint, options: { current: Options }): HTMLElement {
  * names a point; a click opens its figure and actions. Not live tracking.
  * Loaded on demand, with Leaflet, so the rest of the dashboard stays light.
  */
-export default function EnforcementMap({ points, ...options }: EnforcementMapProps) {
+export default function EnforcementMap({
+  points,
+  selectedId = null,
+  fitRequest = 0,
+  ...options
+}: EnforcementMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
@@ -119,6 +128,8 @@ export default function EnforcementMap({ points, ...options }: EnforcementMapPro
   // The points the circles were drawn for: a refresh updates them in place,
   // keeping the user's pan, zoom and any open panel.
   const drawnRef = useRef('')
+  // Where the points are, for "Fit locations".
+  const placedRef = useRef<L.LatLngTuple[]>([])
   // The latest options, for labels and panels built earlier.
   const optionsRef = useRef(options)
   useLayoutEffect(() => {
@@ -156,13 +167,15 @@ export default function EnforcementMap({ points, ...options }: EnforcementMapPro
     const highest = Math.max(1, ...placed.map(({ point }) => point.count))
     const active = token('--color-primary', '#137836')
     const idle = token('--status-neutral-dot', '#9aa5ad')
+    const chosen = token('--amber', '#b77922')
     const style = (point: MapPoint): L.CircleMarkerOptions => ({
       radius: 7 + 9 * Math.sqrt(point.count / highest),
       color: '#ffffff',
-      weight: 2,
-      fillColor: point.count > 0 ? active : idle,
+      weight: point.id === selectedId ? 3 : 2,
+      fillColor: point.id === selectedId ? chosen : point.count > 0 ? active : idle,
       fillOpacity: 0.85,
     })
+    placedRef.current = placed.map(({ at }) => at)
 
     const key = placed.map(({ point, at }) => `${point.id}@${at.join(',')}`).join('|')
     const markers = markersRef.current
@@ -172,6 +185,7 @@ export default function EnforcementMap({ points, ...options }: EnforcementMapPro
         const drawn = markers.get(point.id)
         if (!drawn) continue
         drawn.marker.setStyle(style(point))
+        if (point.id === selectedId) drawn.marker.bringToFront()
         drawn.marker.setTooltipContent(tooltip(point, optionsRef))
         drawn.panel.setContent(popup(point, optionsRef))
       }
@@ -199,6 +213,7 @@ export default function EnforcementMap({ points, ...options }: EnforcementMapPro
       marker.addTo(layer)
       markers.set(point.id, { marker, panel })
     }
+    markers.get(selectedId ?? '')?.marker.bringToFront()
 
     const [first] = placed
     if (!first) map.setView(NIGERIA, 6)
@@ -209,7 +224,17 @@ export default function EnforcementMap({ points, ...options }: EnforcementMapPro
         maxZoom: MAX_FIT_ZOOM,
       })
     }
-  }, [points])
+  }, [points, selectedId])
+
+  // "Fit locations": back to a view of every point.
+  useEffect(() => {
+    const map = mapRef.current
+    const placed = placedRef.current
+    if (!map || fitRequest === 0 || placed.length === 0) return
+    const [first] = placed
+    if (placed.length === 1 && first) map.setView(first, MAX_FIT_ZOOM)
+    else map.fitBounds(L.latLngBounds(placed), { padding: [36, 36], maxZoom: MAX_FIT_ZOOM })
+  }, [fitRequest])
 
   const unplaced = points.filter((point) => !point.position).length
 
@@ -221,12 +246,14 @@ export default function EnforcementMap({ points, ...options }: EnforcementMapPro
         role="region"
         aria-label="Map of recorded event locations"
       />
-      <p className={styles.legend}>
-        <span className={styles.key} aria-hidden="true" />
-        {options.legend}
-        {unplaced > 0 &&
-          ` ${unplaced} location${unplaced === 1 ? ' has' : 's have'} no recorded position.`}
-      </p>
+      {(options.legend || unplaced > 0) && (
+        <p className={styles.legend}>
+          {options.legend && <span className={styles.key} aria-hidden="true" />}
+          {options.legend}
+          {unplaced > 0 &&
+            ` ${unplaced} location${unplaced === 1 ? ' has' : 's have'} no recorded position.`}
+        </p>
+      )}
     </div>
   )
 }

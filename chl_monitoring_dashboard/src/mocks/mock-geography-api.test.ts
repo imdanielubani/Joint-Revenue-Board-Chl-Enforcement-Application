@@ -14,41 +14,31 @@ describe('summarizeGeography', () => {
     expect(geographySchema.safeParse(summarizeGeography(filters('ng'), NOW)).success).toBe(true)
   })
 
-  it('lists the areas directly under the scope, as the area tree has them', () => {
-    expect(summarizeGeography(filters('ng'), NOW).areas.map((area) => area.id)).toEqual([
-      'sw',
-      'nw',
-      'nc',
-      'ss',
-    ])
-    expect(summarizeGeography(filters('la'), NOW).areas.map((area) => area.id)).toEqual([
-      'la-ikeja',
-      'la-apapa',
-    ])
-    // Levels are not assumed: Ikeja holds a ward and, directly, an enforcement point.
-    const ikeja = summarizeGeography(filters('la-ikeja'), NOW).areas
-    expect(ikeja.map((area) => [area.id, area.level])).toEqual([
-      ['la-ikeja-ojota', 'ward'],
-      ['loc_ikeja_gate', 'enforcement_point'],
-    ])
-  })
-
-  it('counts each area as the Overview counts it, so the parts add up to the whole', () => {
+  it('lists the underlying records the Overview counts, newest first', () => {
     const records = mockRecords(TODAY, NOW)
-    const whole = summarize(records, { ...filters('ng'), agentId: null, organization: null })
-    const { areas } = summarizeGeography(filters('ng'), NOW)
-    const sum = (pick: (area: (typeof areas)[number]) => number) =>
-      areas.reduce((total, area) => total + pick(area), 0)
-    expect(sum((area) => area.verifications)).toBe(whole.kpis.totalVerifications)
-    expect(sum((area) => area.violations)).toBe(whole.kpis.violationsIssued)
-    expect(sum((area) => area.unresolved)).toBe(whole.kpis.unresolvedViolations)
-    expect(sum((area) => area.locations)).toBe(6)
+    const whole = summarize(records, { ...filters('la'), agentId: null, organization: null })
+    const geo = summarizeGeography(filters('la'), NOW).records
+    expect(geo.verifications).toHaveLength(whole.kpis.totalVerifications)
+    expect(geo.violations).toHaveLength(whole.kpis.violationsIssued)
+    expect(geo.notices).toHaveLength(whole.payments.received + whole.payments.pending)
+    expect(geo.notices.filter((notice) => notice.status === 'received')).toHaveLength(
+      whole.payments.received,
+    )
+    const times = geo.verifications.map((record) => Date.parse(record.recordedAt))
+    expect([...times].sort((a, b) => b - a)).toEqual(times)
+    for (const notice of geo.notices) {
+      expect(
+        geo.violations.find((violation) => violation.id === notice.violationId)?.noticeId,
+      ).toBe(notice.id)
+    }
   })
 
-  it('has nothing under an enforcement point, and lists that point alone', () => {
+  it('lists an enforcement location alone at its own scope', () => {
     const point = summarizeGeography(filters('loc_ojota'), NOW)
-    expect(point.areas).toEqual([])
     expect(point.locations.map((location) => location.id)).toEqual(['loc_ojota'])
+    expect(point.records.verifications.every((record) => record.location.id === 'loc_ojota')).toBe(
+      true,
+    )
   })
 
   it('lists every enforcement point in scope with its recorded position', () => {

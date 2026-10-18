@@ -2,39 +2,35 @@ import type { GeographyApi } from '@/features/geography/geography.api'
 import type { Geography, GeographyFilters } from '@/features/geography/geography.schemas'
 import { lagosDay } from '@/shared/lib/dates'
 import { delay } from './delay'
-import { MOCK_AREAS } from './mock-areas-api'
-import { pointsWithin, summarize } from './mock-overview-api'
-import { mockRecords, pointById } from './mock-records'
+import { MOCK_AGENTS } from './mock-agents-api'
+import { etagResultOf, pointsWithin, summarize } from './mock-overview-api'
+import { mockRecords, pointById, type MockRecord } from './mock-records'
+
+const agentOf = (record: MockRecord) => ({
+  id: record.agentId,
+  name: MOCK_AGENTS.find((agent) => agent.id === record.agentId)?.name ?? record.agentId,
+})
+const placeOf = (record: MockRecord) => {
+  const point = pointById.get(record.pointId)
+  return {
+    id: record.pointId,
+    name: point?.name ?? record.pointId,
+    area: point?.state ?? '',
+    code: point?.code ?? '',
+  }
+}
+/** The demand notice's reference, as the Command centre names it. */
+const noticeIdOf = (violationId: string) => `DN-${violationId.replace(/\D/g, '')}`
 
 /**
- * The geography for an area and period, counted from the sample records with
- * the Overview's own counting, so every view agrees.
+ * The geography for an area and period: its enforcement points with their
+ * recorded positions, and its underlying records, from the same sample records
+ * the Overview counts, so every view agrees.
  */
 export function summarizeGeography(filters: GeographyFilters, now: number = Date.now()): Geography {
   const records = mockRecords(lagosDay(new Date(now)), now)
   const scoped = (scope: string) =>
     summarize(records, { ...filters, scope, agentId: null, organization: null })
-
-  // The children come from the area tree (CHL's configuration), never from the levels.
-  const areas = MOCK_AREAS.filter((area) => area.parentId === filters.scope).map((area) => {
-    const figures = scoped(area.id)
-    return {
-      id: area.id,
-      name: area.name,
-      level: area.level,
-      verifications: figures.kpis.totalVerifications,
-      activeTrip: figures.kpis.activeTripResults,
-      noActiveTrip: figures.kpis.noActiveTripResults,
-      agents: figures.kpis.agentsWithActivity,
-      violations: figures.kpis.violationsIssued,
-      unresolved: figures.kpis.unresolvedViolations,
-      escalated: figures.kpis.escalatedViolations,
-      repeatAlerts: figures.kpis.openRepeatAlerts,
-      payments: { received: figures.payments.received, pending: figures.payments.pending },
-      locations: pointsWithin(area.id).size,
-      reportingLocations: figures.reportingLocations,
-    }
-  })
 
   // Every enforcement point in scope, with or without activity in the period.
   const inPeriod = scoped(filters.scope).locations
@@ -60,7 +56,66 @@ export function summarizeGeography(filters: GeographyFilters, now: number = Date
     ]
   })
 
-  return { areas, locations }
+  // The underlying records: the scope's points, the period's days (as the Overview counts).
+  const points = pointsWithin(filters.scope)
+  const inScope = records
+    .filter(
+      (record) =>
+        record.day >= filters.from && record.day <= filters.to && points.has(record.pointId),
+    )
+    .sort((a, b) => b.recordedAt - a.recordedAt)
+  const iso = (ms: number) => new Date(ms).toISOString()
+
+  return {
+    locations,
+    records: {
+      verifications: inScope.map((record) => ({
+        id: record.id,
+        reference: record.reference,
+        plate: record.plate,
+        method: record.method,
+        result: record.outcome,
+        etag: etagResultOf(record),
+        agent: agentOf(record),
+        location: placeOf(record),
+        recordedAt: iso(record.recordedAt),
+        receivedAt: iso(record.receivedAt),
+        source: record.source,
+        syncStatus: record.syncStatus,
+      })),
+      violations: inScope.flatMap((record) =>
+        record.violation
+          ? [
+              {
+                id: record.violation.id,
+                plate: record.plate,
+                category: record.violation.category,
+                status: record.violation.status,
+                agent: agentOf(record),
+                location: placeOf(record),
+                recordedAt: iso(record.recordedAt),
+                noticeId: record.violation.notice ? noticeIdOf(record.violation.id) : null,
+              },
+            ]
+          : [],
+      ),
+      notices: inScope.flatMap((record) =>
+        record.violation?.notice
+          ? [
+              {
+                id: noticeIdOf(record.violation.id),
+                violationId: record.violation.id,
+                plate: record.plate,
+                status: record.violation.notice,
+                tripActivated: record.violation.tripActivated,
+                location: placeOf(record),
+                recordedAt: iso(record.recordedAt),
+              },
+            ]
+          : [],
+      ),
+    },
+  }
 }
 
 /** Sample data: counted from the sample records. */

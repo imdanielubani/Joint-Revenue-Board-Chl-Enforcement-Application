@@ -6,18 +6,18 @@
   padding-bottom: 8px;
 }
 
-.top {
-  display: flex;
-  flex-direction: column;
-  gap: 17px;
+/* The footprint map and the locations beside it: 737px and 391px of 1144px. */
+.splitRow {
+  display: grid;
+  grid-template-columns: minmax(0, 737fr) minmax(0, 391fr);
+  gap: 14px;
 }
 
-/* The scope's path in the area tree, then what the figures cover. */
-.stripMeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 14px;
+/* The three follow-up cards, each as tall as the tallest. */
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
 }
 
 .stale {
@@ -27,4 +27,28 @@
   background: var(--status-warning-bg);
   color: var(--color-warning);
   font-size: var(--font-size-xs);
+}
+
+.note {
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 18px;
+}
+
+@media (max-width: 1280px) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .splitRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

@@ -302,6 +302,23 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring laid out as in its design, in our own components
+  (SRD 4): four headline figures (verifications, agents with activity,
+  unresolved cases, repeat-vehicle alerts); Monitoring scope, "eight views of
+  the same enforcement records, not a geographical hierarchy" — National,
+  Region, Subregion, State, Local Government Area, Ward, Enforcement Zone and
+  Enforcement Location, each with the areas CHL configures at that level and
+  the record window; Enforcement footprint (the map, sized by verifications
+  or violations, with Fit locations; the selected location in amber) beside
+  Locations in view (the current scope's figures and a searchable list; at
+  Enforcement Location level every permitted location stays listed);
+  Verification outcomes, Enforcement follow-up and Payment follow-up; and
+  Underlying records, a register for each of verifications, agents,
+  violations, unresolved, escalated, repeat alerts, payments and locations.
+  No parent-child hierarchy is assumed, so the "Areas within" table and the
+  scope trail are gone, and the API's `areas` with them; it gains
+  `records` (the scope's verifications with E-Tag results, violations and
+  demand notices for the period).
 - Geographical monitoring follows the document (SRD 4) rather than repeating
   the Overview. A Monitoring scope card offers the eight scopes in the
   document's order (enforcement location, enforcement zone, ward, LGA,

@@ -1,30 +1,60 @@
 import { z } from 'zod'
-import { GEO_LEVELS } from '@/features/auth/auth.schemas'
-import type { OverviewFilters } from '@/features/overview/overview.schemas'
+import type {
+  ActionStatus,
+  EtagResult,
+  Open,
+  OverviewFilters,
+  RecordSource,
+  SyncStatus,
+  VerificationMethod,
+  VerificationOutcome,
+} from '@/features/overview/overview.schemas'
 
 const count = z.number().int().nonnegative()
+const open = <T extends string>() => z.custom<Open<T>>((value) => typeof value === 'string')
+const agent = z.object({ id: z.string(), name: z.string() })
+const place = z.object({ id: z.string(), name: z.string(), area: z.string(), code: z.string() })
 
-/**
- * One area directly under the scope in CHL's configuration, with the same
- * figures as the scope itself: the views are of the same data (SRD 4).
- */
-const childAreaSchema = z.object({
+/** A verification received in the scope and period. */
+const verificationRecordSchema = z.object({
   id: z.string(),
-  name: z.string(),
-  level: z.enum(GEO_LEVELS),
-  verifications: count,
-  activeTrip: count,
-  noActiveTrip: count,
-  agents: count,
-  violations: count,
-  unresolved: count,
-  escalated: count,
-  /** Open repeat-vehicle alerts raised there. */
-  repeatAlerts: count,
-  payments: z.object({ received: count, pending: count }),
-  /** Enforcement points within it, and how many sent data in the period. */
-  locations: count,
-  reportingLocations: count,
+  reference: z.string(),
+  plate: z.string(),
+  method: open<VerificationMethod>().nullable(),
+  result: open<VerificationOutcome>().nullable(),
+  /** The E-Tag check, where one was made. */
+  etag: open<EtagResult>().nullable(),
+  agent,
+  location: place,
+  recordedAt: z.string(),
+  /** Later than recordedAt for a record made offline; null when not supplied. */
+  receivedAt: z.string().nullable(),
+  source: open<RecordSource>().nullable(),
+  syncStatus: open<SyncStatus>().nullable(),
+})
+
+/** A violation issued in the scope and period, and its demand notice if one was issued. */
+const violationRecordSchema = z.object({
+  id: z.string(),
+  plate: z.string(),
+  category: z.string(),
+  status: open<ActionStatus>(),
+  agent,
+  location: place,
+  recordedAt: z.string(),
+  noticeId: z.string().nullable(),
+})
+
+/** A demand notice linked to a violation in the scope and period. */
+const noticeRecordSchema = z.object({
+  id: z.string(),
+  violationId: z.string(),
+  plate: z.string(),
+  status: open<'pending' | 'received'>(),
+  /** Whether CHL recorded the trip as activated after payment: a separate outcome. */
+  tripActivated: z.boolean(),
+  location: place,
+  recordedAt: z.string(),
 })
 
 /** An enforcement point in scope, active in the period or not. */
@@ -46,14 +76,20 @@ const enforcementPointSchema = z.object({
 })
 
 export const geographySchema = z.object({
-  /** Areas directly under the scope, as CHL configures them; empty at an enforcement point. */
-  areas: z.array(childAreaSchema),
   locations: z.array(enforcementPointSchema),
+  /** The underlying records for the scope and period, newest first. */
+  records: z.object({
+    verifications: z.array(verificationRecordSchema),
+    violations: z.array(violationRecordSchema),
+    notices: z.array(noticeRecordSchema),
+  }),
 })
 
 export type Geography = z.infer<typeof geographySchema>
-export type ChildArea = z.infer<typeof childAreaSchema>
 export type EnforcementPoint = z.infer<typeof enforcementPointSchema>
+export type VerificationRecord = z.infer<typeof verificationRecordSchema>
+export type ViolationRecord = z.infer<typeof violationRecordSchema>
+export type NoticeRecord = z.infer<typeof noticeRecordSchema>
 
 /** The area and period, as on the Overview; agents and organizations are not narrowed here. */
 export type GeographyFilters = Pick<OverviewFilters, 'scope' | 'range' | 'from' | 'to'>
