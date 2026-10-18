@@ -208,6 +208,10 @@ describe('geographical monitoring page', () => {
       within(verifications).getByRole('columnheader', { name: 'Verification result' }),
     ).toBeInTheDocument()
     expect(within(verifications).queryByRole('columnheader', { name: 'Outcome' })).toBeNull()
+    // The verification method as the Overview's register shows it.
+    expect(
+      within(verifications).getByRole('columnheader', { name: 'Verification method' }),
+    ).toBeInTheDocument()
     // The plate alone, without its location.
     expect(within(verifications).getByRole('columnheader', { name: 'Plate' })).toBeInTheDocument()
     const first = expected('ng').geography.records.verifications[0]!

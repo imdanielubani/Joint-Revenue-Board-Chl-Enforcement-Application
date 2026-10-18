@@ -97,9 +97,13 @@ function verificationColumns(
     },
     {
       key: 'method',
-      header: 'Method',
+      header: 'Verification method',
       render: (row) =>
-        row.method ? methodTag(row.method) : <span className={styles.sub}>Not supplied</span>,
+        row.method ? (
+          <span className={styles.tag}>{methodTag(row.method)}</span>
+        ) : (
+          <span className={styles.missing}>Not supplied</span>
+        ),
       sortValue: (row) => (row.method ? methodTag(row.method) : ''),
     },
     {

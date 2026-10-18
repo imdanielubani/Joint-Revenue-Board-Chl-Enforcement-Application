@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring: the verification register's method column
+  matches the Overview's: headed "Verification method", each method as the
+  same small outlined tag, and "Not supplied" where the device gave none.
 - Geographical monitoring: the Agent activity card is removed; agent
   activity stays in the Agents tab of Underlying records. In the
   verification register the plate column shows the plate alone, and the
