@@ -26,6 +26,13 @@ export function fieldReportLabel(type: string): string {
     : humanize(type)
 }
 
+/** "Loaded", "Empty", or a status CHL adds later, made readable. */
+export function loadLabel(load: string | null): string {
+  if (load === 'loaded') return 'Loaded'
+  if (load === 'empty') return 'Empty'
+  return humanize(load ?? 'unknown')
+}
+
 /** The coloured marker on each feed entry: what kind of event it is. */
 const KIND_COLORS: Record<FeedKind, string> = {
   verification: 'var(--color-primary)',
@@ -54,11 +61,9 @@ export function feedTitle(item: FeedItem): string {
   }
   if (item.kind === 'field_report' && item.report) return fieldReportLabel(item.report.type)
   if (item.kind === 'load_status' && item.load) {
-    return item.load === 'loaded'
-      ? 'Confirmed loaded'
-      : item.load === 'empty'
-        ? 'Confirmed empty'
-        : humanize(item.load)
+    return item.load === 'loaded' || item.load === 'empty'
+      ? `Reported ${item.load}`
+      : loadLabel(item.load)
   }
   return feedKindLabel(item.kind)
 }
@@ -87,11 +92,7 @@ export function feedStatus(
       : { tone: 'neutral', label: humanize(item.payment.status) }
   }
   if (item.load) {
-    return item.load === 'loaded'
-      ? { tone: 'info', label: 'Loaded' }
-      : item.load === 'empty'
-        ? { tone: 'neutral', label: 'Empty' }
-        : { tone: 'neutral', label: humanize(item.load) }
+    return { tone: item.load === 'loaded' ? 'info' : 'neutral', label: loadLabel(item.load) }
   }
   if (item.report) return { tone: 'info', label: fieldReportLabel(item.report.type) }
   return null

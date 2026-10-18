@@ -16,7 +16,7 @@ import { StatePanel } from '@/shared/ui/StatePanel'
 import { SummaryStrip } from '@/shared/ui/SummaryStrip'
 import { ActivityFeedCard } from '../components/ActivityFeedCard'
 import { inView, type FeedView } from '../command-centre-display'
-import { FieldReportsCard, RecordedLocationsCard } from '../components/FieldCards'
+import { FieldReportsCard, LoadReportsCard, RecordedLocationsCard } from '../components/FieldCards'
 import { IncidentContextCard } from '../components/IncidentContextCard'
 import { useCommandCentre } from '../command-centre.queries'
 import { CC_WINDOWS, CC_WINDOW_LABELS, type CommandCentre } from '../command-centre.schemas'
@@ -129,13 +129,30 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
   const [view, setView] = useState<FeedView>('all')
   const [chosenId, setChosenId] = useState<string | null>(null)
 
-  // The chosen entry while it is still in the feed and the tab; otherwise the newest shown.
+  // Every entry the page lists: the feed, and the cards' own lists, which can
+  // reach further back than the feed's latest entries.
+  const entries = useMemo(
+    () =>
+      new Map(
+        [...data.feed, ...data.fieldReports.items, ...data.loadReports.items].map((item) => [
+          item.id,
+          item,
+        ]),
+      ),
+    [data],
+  )
+  const inFeed = (id: string) => data.feed.some((item) => item.id === id)
+
+  // The chosen entry while it is still listed (and, if in the feed, in its tab);
+  // otherwise the latest the feed shows.
   const visible = data.feed.filter((item) => inView(item, view))
-  const selected = visible.find((item) => item.id === chosenId) ?? visible[0] ?? null
+  const chosen = chosenId === null ? undefined : entries.get(chosenId)
+  const selected =
+    (chosen && (!inFeed(chosen.id) || inView(chosen, view)) ? chosen : visible[0]) ?? null
 
   const select = (id: string) => {
-    const item = data.feed.find((entry) => entry.id === id)
-    if (item && !inView(item, view)) setView('all')
+    const item = entries.get(id)
+    if (item && inFeed(id) && !inView(item, view)) setView('all')
     setChosenId(id)
   }
 
@@ -188,10 +205,13 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
       <div className={styles.row}>
         <CasesCard cases={data.cases} />
         <RepeatVehiclesCard repeat={data.repeatVehicles} />
-        <FieldReportsCard counts={data.counts} feed={data.feed} onSelect={select} />
+        <FieldReportsCard reports={data.fieldReports} onSelect={select} />
       </div>
 
-      <RecordedLocationsCard locations={data.locations} />
+      <div className={styles.splitRow}>
+        <RecordedLocationsCard locations={data.locations} />
+        <LoadReportsCard reports={data.loadReports} onSelect={select} />
+      </div>
 
       <p className={styles.footnote}>
         The Command centre shows what CHL has received from the field. It does not dispatch agents,

@@ -109,15 +109,24 @@ export const commandCentreSchema = z.object({
   counts: z.object({
     /** Feed entries CHL received in the window, whenever they were recorded. */
     activity: count,
-    fieldReports: count,
-    loaded: count,
-    empty: count,
   }),
   /**
    * Entries CHL received in the window, latest received first; the latest only.
    * A record made offline appears when it reaches CHL, with its earlier recorded time.
    */
   feed: z.array(feedItemSchema),
+  /** Field reports received in the window: how many of each type, and the latest. */
+  fieldReports: z.object({
+    total: count,
+    byType: z.array(z.object({ type: open<FieldReportType>(), count })),
+    items: z.array(feedItemSchema),
+  }),
+  /** Loaded / empty confirmations received in the window, and the latest. */
+  loadReports: z.object({
+    loaded: count,
+    empty: count,
+    items: z.array(feedItemSchema),
+  }),
   /** Open now, whenever they were raised: what needs attention does not depend on the window. */
   cases: casesSchema,
   repeatVehicles: repeatVehiclesSchema,

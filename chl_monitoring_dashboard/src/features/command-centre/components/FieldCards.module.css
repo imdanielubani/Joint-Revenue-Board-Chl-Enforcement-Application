@@ -34,7 +34,7 @@
 }
 
 /* Field reports */
-.loadTop {
+.summaryTop {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -42,7 +42,7 @@
   border-bottom: 0.8px solid var(--card-line);
 }
 
-.loadFigure {
+.figure {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -54,27 +54,103 @@
   font-size: 10px;
 }
 
-.loadFigure strong {
+.figure strong {
   color: var(--card-title);
   font-size: 20px;
   font-weight: var(--font-weight-semibold);
   line-height: 26px;
 }
 
-.loadSplit {
-  display: flex;
+.types {
+  display: grid;
   flex: 1;
-  flex-direction: column;
-  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 14px;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.loadLabel {
+.types li {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.types strong {
+  color: var(--card-title);
+  font-weight: var(--font-weight-semibold);
+}
+
+.offline {
+  color: var(--status-amber-text);
+}
+
+/* Loaded / empty */
+.split {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+}
+
+.splitLabel {
   display: flex;
   justify-content: space-between;
   color: var(--card-title);
   font-size: 11px;
   font-weight: var(--font-weight-semibold);
+}
+
+.splitLabel > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.loadedDot {
+  background: var(--color-primary);
+}
+
+.emptyDot {
+  background: var(--card-track);
+  box-shadow: inset 0 0 0 1px var(--card-line);
+}
+
+.splitTrack,
+.splitTrack .fill {
+  height: 8px;
+}
+
+.report.loadEntry {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.loadMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.plate {
+  color: var(--card-title);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.275px;
 }
 
 .reports {
@@ -109,13 +185,15 @@
 
 .reportHead {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: 2px 8px;
 }
 
 .reportType {
   color: var(--card-title);
+  white-space: nowrap;
   font-size: 11px;
   font-weight: var(--font-weight-semibold);
 }

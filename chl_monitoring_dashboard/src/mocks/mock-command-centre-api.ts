@@ -1,9 +1,10 @@
 import type { CommandCentreApi } from '@/features/command-centre/command-centre.api'
-import type {
-  CommandCentre,
-  CommandCentreFilters,
-  CcWindow,
-  FeedItem,
+import {
+  FIELD_REPORT_TYPES,
+  type CommandCentre,
+  type CommandCentreFilters,
+  type CcWindow,
+  type FeedItem,
 } from '@/features/command-centre/command-centre.schemas'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { lagosDay } from '@/shared/lib/dates'
@@ -15,6 +16,8 @@ import { mockRecords, pointById, startOfDay, type MockRecord } from './mock-reco
 
 /** How many entries the feed returns, newest first. */
 const FEED_LIMIT = 150
+/** How many field reports and loaded / empty confirmations are listed. */
+const REPORT_LIMIT = 50
 
 const NOTES = [
   'Driver said the trip was paid at the last checkpoint.',
@@ -214,6 +217,9 @@ export function summarizeCommandCentre(
     return at !== null && (latest === null || at > latest) ? at : latest
   }, null)
 
+  const reports = inWindow.filter((item) => item.kind === 'field_report')
+  const loads = inWindow.filter((item) => item.kind === 'load_status')
+
   const strip = ({
     pointId: _pointId,
     at: _at,
@@ -223,13 +229,21 @@ export function summarizeCommandCentre(
   return {
     window: { from: new Date(from).toISOString(), to: new Date(now).toISOString() },
     latestReceivedAt: latestReceived === null ? null : new Date(latestReceived).toISOString(),
-    counts: {
-      activity: inWindow.length,
-      fieldReports: inWindow.filter((item) => item.kind === 'field_report').length,
-      loaded: inWindow.filter((item) => item.load === 'loaded').length,
-      empty: inWindow.filter((item) => item.load === 'empty').length,
-    },
+    counts: { activity: inWindow.length },
     feed: inWindow.slice(0, FEED_LIMIT).map(strip),
+    fieldReports: {
+      total: reports.length,
+      byType: FIELD_REPORT_TYPES.map((type) => ({
+        type,
+        count: reports.filter((item) => item.report?.type === type).length,
+      })),
+      items: reports.slice(0, REPORT_LIMIT).map(strip),
+    },
+    loadReports: {
+      loaded: loads.filter((item) => item.load === 'loaded').length,
+      empty: loads.filter((item) => item.load === 'empty').length,
+      items: loads.slice(0, REPORT_LIMIT).map(strip),
+    },
     cases: open.cases,
     repeatVehicles: open.repeatVehicles,
     locations: [...points].flatMap((pointId) => {

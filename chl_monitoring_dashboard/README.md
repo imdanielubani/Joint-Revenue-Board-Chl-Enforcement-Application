@@ -295,6 +295,14 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre: a Loaded / empty reports card (SRD 3), showing agents'
+  haulage-loaded or empty status where recorded. It has a loaded-to-empty bar,
+  All / Loaded / Empty tabs, and the latest reports with vehicle, agent,
+  location and when CHL received them; choosing one shows it in the incident
+  context. The Field reports card now counts reports by type (vehicle, driver,
+  situation, general notification). Both cards have their own lists from the
+  API (`fieldReports`, `loadReports`), so the feed's 150-entry limit never
+  hides a report.
 - Command centre: the time window and the feed's order go by when CHL
   received each entry (SRD 3, "received by CHL"). A record made offline
   earlier and synced a minute ago appears as new activity, with its earlier

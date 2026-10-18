@@ -1,3 +1,4 @@
+import { useId, useState } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
@@ -5,71 +6,63 @@ import { plural, share } from '@/features/overview/overview-display'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
-import { fieldReportLabel } from '../command-centre-display'
+import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
+import { StatusLabel } from '@/shared/ui/StatusLabel'
+import { panelId, tabId } from '@/shared/ui/tab-ids'
+import { fieldReportLabel, loadLabel } from '../command-centre-display'
 import type { CommandCentre, FeedItem } from '../command-centre.schemas'
 import styles from './FieldCards.module.css'
 
-/** How many field reports the card lists. */
+/** How many entries each card lists. */
 const REPORT_LIMIT = 3
+const LOAD_LIMIT = 5
 
-/** "Field reports": what agents reported, and their loaded / empty confirmations. */
+type SelectEntry = (id: string) => void
+
+/** "Field reports": vehicle, driver and situation reports and general notifications. */
 export function FieldReportsCard({
-  counts,
-  feed,
+  reports,
   onSelect,
 }: {
-  counts: CommandCentre['counts']
-  feed: readonly FeedItem[]
+  reports: CommandCentre['fieldReports']
   /** Shows the report in the incident context. */
-  onSelect(id: string): void
+  onSelect: SelectEntry
 }) {
-  const reports = feed.filter((item) => item.kind === 'field_report').slice(0, REPORT_LIMIT)
-  const confirmed = counts.loaded + counts.empty
+  const latest = reports.items.slice(0, REPORT_LIMIT)
 
   return (
     <DashboardCard
       title="Field reports"
-      subtitle="Reports and loaded / empty confirmations from agents"
+      subtitle="Vehicle, driver and situation reports, and general notifications"
       icon="overview/card-recent.svg"
       footer={<p className={styles.footer}>Submitted from the mobile application</p>}
     >
-      <div className={styles.loadTop}>
-        <div className={styles.loadFigure}>
-          <strong>{formatNumber(counts.fieldReports)}</strong>
-          <span>{counts.fieldReports === 1 ? 'report' : 'reports'}</span>
+      <div className={styles.summaryTop}>
+        <div className={styles.figure}>
+          <strong>{formatNumber(reports.total)}</strong>
+          <span>{reports.total === 1 ? 'report' : 'reports'}</span>
         </div>
-        <div className={styles.loadSplit}>
-          <p className={styles.loadLabel}>
-            <span>Loaded {formatNumber(counts.loaded)}</span>
-            <span>Empty {formatNumber(counts.empty)}</span>
-          </p>
-          <span className={styles.track} aria-hidden="true">
-            <span
-              className={styles.fill}
-              style={{ width: `${share(counts.loaded, confirmed)}%` }}
-            />
-          </span>
-          <p className={styles.small}>
-            {confirmed === 0
-              ? 'No loaded / empty confirmations in this window'
-              : `${plural(confirmed, 'confirmation')} in this window`}
-          </p>
-        </div>
+        <ul className={styles.types} aria-label="Reports by type">
+          {reports.byType.map((entry) => (
+            <li key={entry.type}>
+              <span>{fieldReportLabel(entry.type)}</span>
+              <strong>{formatNumber(entry.count)}</strong>
+            </li>
+          ))}
+        </ul>
       </div>
-      {reports.length === 0 ? (
+      {latest.length === 0 ? (
         <p className={styles.empty}>No field reports were received in this window.</p>
       ) : (
         <ul className={styles.reports}>
-          {reports.map((item) => (
+          {latest.map((item) => (
             <li key={item.id}>
               <button type="button" className={styles.report} onClick={() => onSelect(item.id)}>
                 <span className={styles.reportHead}>
                   <span className={styles.reportType}>
                     {item.report ? fieldReportLabel(item.report.type) : 'Field report'}
                   </span>
-                  <time className={styles.small} dateTime={item.recordedAt}>
-                    {formatShortDateTime(item.recordedAt)}
-                  </time>
+                  <ReceivedTime item={item} />
                 </span>
                 <span className={styles.reportSummary}>{item.report?.summary}</span>
                 <span className={styles.small}>
@@ -81,6 +74,115 @@ export function FieldReportsCard({
         </ul>
       )}
     </DashboardCard>
+  )
+}
+
+type LoadView = 'all' | 'loaded' | 'empty'
+
+/** "Loaded / empty reports": agents' haulage-loaded or empty status, where recorded. */
+export function LoadReportsCard({
+  reports,
+  onSelect,
+}: {
+  reports: CommandCentre['loadReports']
+  onSelect: SelectEntry
+}) {
+  const idBase = useId()
+  const [view, setView] = useState<LoadView>('all')
+  const total = reports.loaded + reports.empty
+  const items = reports.items
+    .filter((item) => view === 'all' || item.load === view)
+    .slice(0, LOAD_LIMIT)
+
+  return (
+    <DashboardCard
+      title="Loaded / empty reports"
+      subtitle="Haulage-loaded or empty status reported by agents, where recorded"
+      icon="overview/card-payment.svg"
+      footer={
+        <p className={styles.footer}>
+          {total === 0
+            ? 'Nothing reported in this window'
+            : `${plural(total, 'report')} in this window`}
+        </p>
+      }
+    >
+      <div className={styles.split}>
+        <p className={styles.splitLabel}>
+          <span>
+            <span className={`${styles.dot} ${styles.loadedDot}`} aria-hidden="true" />
+            Loaded {formatNumber(reports.loaded)}
+          </span>
+          <span>
+            Empty {formatNumber(reports.empty)}
+            <span className={`${styles.dot} ${styles.emptyDot}`} aria-hidden="true" />
+          </span>
+        </p>
+        <span className={`${styles.track} ${styles.splitTrack}`} aria-hidden="true">
+          <span className={styles.fill} style={{ width: `${share(reports.loaded, total)}%` }} />
+        </span>
+      </div>
+      <SegmentedTabs<LoadView>
+        idBase={idBase}
+        label="Reports to show"
+        tabs={[
+          { id: 'all', label: 'All', count: total },
+          { id: 'loaded', label: 'Loaded', count: reports.loaded },
+          { id: 'empty', label: 'Empty', count: reports.empty },
+        ]}
+        value={view}
+        onChange={setView}
+      />
+      <div id={panelId(idBase)} role="tabpanel" aria-labelledby={tabId(idBase, view)}>
+        {items.length === 0 ? (
+          <p className={styles.empty}>
+            {view === 'all'
+              ? 'No loaded or empty status was reported in this window.'
+              : `No vehicle was reported ${view} in this window.`}
+          </p>
+        ) : (
+          <ul className={styles.reports}>
+            {items.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className={`${styles.report} ${styles.loadEntry}`}
+                  onClick={() => onSelect(item.id)}
+                >
+                  <span className={styles.loadMain}>
+                    <span className={styles.plate}>{item.plate}</span>
+                    <span className={styles.small}>
+                      {item.agent.name} · {item.location.name}
+                    </span>
+                    <ReceivedTime item={item} />
+                  </span>
+                  <StatusLabel tone={item.load === 'loaded' ? 'info' : 'neutral'}>
+                    {loadLabel(item.load)}
+                  </StatusLabel>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </DashboardCard>
+  )
+}
+
+/** When CHL received the entry; for one made offline, when it was recorded too. */
+function ReceivedTime({ item }: { item: FeedItem }) {
+  const received = item.receivedAt ?? item.recordedAt
+  return (
+    <span className={styles.small}>
+      <time dateTime={received}>{formatShortDateTime(received)}</time>
+      {item.source === 'offline' && (
+        <span className={styles.offline}>
+          {' '}
+          · offline, recorded{' '}
+          <time dateTime={item.recordedAt}>{formatShortDateTime(item.recordedAt)}</time>
+        </span>
+      )}
+    </span>
   )
 }
 

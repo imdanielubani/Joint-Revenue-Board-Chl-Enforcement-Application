@@ -20,6 +20,13 @@
   gap: 14px;
 }
 
+/* Locations and loaded / empty reports: the same 737 / 391 split. */
+.splitRow {
+  display: grid;
+  grid-template-columns: minmax(0, 737fr) minmax(0, 391fr);
+  gap: 14px;
+}
+
 .row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -48,7 +55,8 @@
 }
 
 @media (max-width: 1180px) {
-  .feedRow {
+  .feedRow,
+  .splitRow {
     grid-template-columns: minmax(0, 1fr);
   }
 }

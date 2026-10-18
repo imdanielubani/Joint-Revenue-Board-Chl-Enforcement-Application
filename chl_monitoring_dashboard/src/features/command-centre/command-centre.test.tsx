@@ -54,6 +54,27 @@ describe('command centre page', () => {
     expect(await screen.findByText(/National scope · Last 7 days/)).toBeInTheDocument()
   })
 
+  it('lists loaded and empty reports, and shows one in the incident context', async () => {
+    const sample = summarizeCommandCentre({ scope: 'ng', window: '7d' }).loadReports
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/command-centre?window=7d')
+    const loads = await card('Loaded / empty reports')
+    expect(within(loads).getByRole('tab', { name: /^All/ })).toHaveTextContent(
+      String(sample.loaded + sample.empty),
+    )
+
+    await userEvent.click(within(loads).getByRole('tab', { name: /^Empty/ }))
+    const entries = within(loads).getAllByRole('button')
+    expect(entries.length).toBeGreaterThan(0)
+    for (const entry of entries) expect(entry).toHaveTextContent('Empty')
+
+    const plate = sample.items.find((item) => item.load === 'empty')!.plate!
+    await userEvent.click(entries[0]!)
+    const context = await card('Incident context')
+    expect(within(context).getByText('Reported empty')).toBeInTheDocument()
+    expect(within(context).getByText(plate)).toBeInTheDocument()
+  })
+
   it('says it is not live tracking or dispatch', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/command-centre')

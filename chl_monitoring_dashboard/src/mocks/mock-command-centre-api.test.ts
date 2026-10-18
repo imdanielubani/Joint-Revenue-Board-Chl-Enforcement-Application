@@ -45,11 +45,22 @@ describe('summarizeCommandCentre', () => {
     expect(week).toBeGreaterThan(day)
   })
 
-  it('counts field reports and loaded / empty confirmations from the feed', () => {
-    const { counts, feed } = summarizeCommandCentre({ scope: 'ng', window: '24h' }, NOW)
-    expect(counts.fieldReports).toBe(feed.filter((item) => item.kind === 'field_report').length)
-    expect(counts.loaded).toBe(feed.filter((item) => item.load === 'loaded').length)
-    expect(counts.empty).toBe(feed.filter((item) => item.load === 'empty').length)
+  it('lists field reports and loaded / empty confirmations apart from the feed', () => {
+    const { feed, fieldReports, loadReports, counts } = summarizeCommandCentre(
+      { scope: 'ng', window: '7d' },
+      NOW,
+    )
+    expect(fieldReports.items.every((item) => item.kind === 'field_report')).toBe(true)
+    expect(fieldReports.byType.reduce((sum, entry) => sum + entry.count, 0)).toBe(
+      fieldReports.total,
+    )
+    expect(loadReports.items.every((item) => item.kind === 'load_status')).toBe(true)
+    expect(loadReports.loaded + loadReports.empty).toBeGreaterThan(0)
+    // The week's sample fits in the feed, so the lists must agree with it.
+    expect(feed).toHaveLength(counts.activity)
+    expect(fieldReports.total).toBe(feed.filter((item) => item.kind === 'field_report').length)
+    expect(loadReports.loaded).toBe(feed.filter((item) => item.load === 'loaded').length)
+    expect(loadReports.empty).toBe(feed.filter((item) => item.load === 'empty').length)
   })
 
   it('narrows everything to the chosen area', () => {
