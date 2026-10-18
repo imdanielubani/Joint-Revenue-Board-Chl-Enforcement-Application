@@ -1,0 +1,139 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tabs {
+  align-self: flex-start;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* The list scrolls inside the card, so the cards beside it stay in view. */
+.panel {
+  max-height: 486px;
+  margin: 0 -8px;
+  padding: 0 8px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 78px 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0.8px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.entry:hover {
+  background: var(--card-bg);
+}
+
+.selected,
+.selected:hover {
+  border-color: #cfe3d5;
+  background: #f3f9f5;
+}
+
+.time {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--card-title);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.offline {
+  color: var(--status-amber-text);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kind {
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.title {
+  overflow: hidden;
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  overflow: hidden;
+  color: var(--card-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.status {
+  justify-self: end;
+}
+
+.empty {
+  padding: 32px 0;
+  color: var(--card-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.footer {
+  padding: 8px 12px 10px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 19.8px;
+}
+
+@media (max-width: 600px) {
+  .entry {
+    grid-template-columns: 64px 8px minmax(0, 1fr);
+  }
+
+  .status {
+    grid-column: 3;
+    justify-self: start;
+  }
+}

@@ -295,6 +295,18 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre page built in the Overview's design: banner with Refresh;
+  area and time-window filters (kept in the address) with the field-data
+  freshness line; the summary strip; four headline figures (activity
+  received, cases needing attention, escalated cases, repeat vehicles without
+  follow-up); the operational activity feed, with tabs for verifications,
+  violations, payments and field reports, beside the incident context of the
+  chosen entry (vehicle, agent, location, recorded and received times, live or
+  offline, violation, demand notice, photographs, the agent's note, and links
+  to the records the user may open); cases requiring attention and
+  repeat-vehicle alerts; field reports with loaded / empty confirmations; and
+  recorded locations. The page monitors only: no dispatch, messaging, device
+  control or live tracking. SOS alerts will be added later.
 - Command centre data (SRD 3): the operational activity feed (verifications,
   violations, payment updates, field reports and loaded / empty
   confirmations, each with when it was recorded and when CHL received it),

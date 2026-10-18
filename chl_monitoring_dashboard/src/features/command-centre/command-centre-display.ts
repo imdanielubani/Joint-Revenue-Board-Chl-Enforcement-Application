@@ -1,0 +1,116 @@
+import {
+  actionStatusLabel,
+  actionStatusTone,
+  humanize,
+  outcomeLabel,
+  outcomeStyle,
+} from '@/features/overview/overview-display'
+import type { StatusTone } from '@/shared/ui/StatusLabel'
+import {
+  FEED_KIND_LABELS,
+  FIELD_REPORT_LABELS,
+  type FeedItem,
+  type FeedKind,
+  type FieldReportType,
+} from './command-centre.schemas'
+
+const isKind = (value: string): value is FeedKind => Object.hasOwn(FEED_KIND_LABELS, value)
+
+export function feedKindLabel(kind: FeedItem['kind']): string {
+  return isKind(kind) ? FEED_KIND_LABELS[kind] : humanize(kind)
+}
+
+export function fieldReportLabel(type: string): string {
+  return Object.hasOwn(FIELD_REPORT_LABELS, type)
+    ? FIELD_REPORT_LABELS[type as FieldReportType]
+    : humanize(type)
+}
+
+/** The coloured marker on each feed entry: what kind of event it is. */
+const KIND_COLORS: Record<FeedKind, string> = {
+  verification: 'var(--color-primary)',
+  violation: 'var(--color-danger-strong)',
+  payment: 'var(--amber)',
+  field_report: 'var(--method-qr)',
+  load_status: 'var(--status-neutral-dot)',
+}
+
+export function feedKindColor(kind: FeedItem['kind']): string {
+  return isKind(kind) ? KIND_COLORS[kind] : 'var(--status-neutral-dot)'
+}
+
+/** The entry's headline: what happened, in a few words. */
+export function feedTitle(item: FeedItem): string {
+  if (item.kind === 'verification' && item.result) return outcomeLabel(item.result)
+  if (item.kind === 'violation' && item.violation) return `Violation ${item.violation.id} issued`
+  if (item.kind === 'payment' && item.payment) {
+    if (item.payment.status === 'received') {
+      return item.payment.tripActivated
+        ? 'Payment received · trip activated'
+        : 'Payment received · trip not yet activated'
+    }
+    if (item.payment.status === 'pending') return `Demand notice ${item.payment.noticeId} issued`
+    return `${item.payment.noticeId}: ${humanize(item.payment.status)}`
+  }
+  if (item.kind === 'field_report' && item.report) return fieldReportLabel(item.report.type)
+  if (item.kind === 'load_status' && item.load) {
+    return item.load === 'loaded'
+      ? 'Confirmed loaded'
+      : item.load === 'empty'
+        ? 'Confirmed empty'
+        : humanize(item.load)
+  }
+  return feedKindLabel(item.kind)
+}
+
+/** The entry's status pill, where it has one. */
+export function feedStatus(
+  item: FeedItem,
+): { tone: StatusTone; label: string; icon?: string } | null {
+  if (item.kind === 'verification' && item.result) {
+    return { ...outcomeStyle(item.result), label: outcomeLabel(item.result) }
+  }
+  if (item.violation) {
+    return {
+      tone: actionStatusTone(item.violation.status),
+      label: actionStatusLabel(item.violation.status),
+    }
+  }
+  if (item.payment) {
+    if (item.payment.status === 'received') {
+      return item.payment.tripActivated
+        ? { tone: 'success', label: 'Trip activated' }
+        : { tone: 'amber', label: 'Paid · not activated' }
+    }
+    return item.payment.status === 'pending'
+      ? { tone: 'amber', label: 'Awaiting payment' }
+      : { tone: 'neutral', label: humanize(item.payment.status) }
+  }
+  if (item.load) {
+    return item.load === 'loaded'
+      ? { tone: 'info', label: 'Loaded' }
+      : item.load === 'empty'
+        ? { tone: 'neutral', label: 'Empty' }
+        : { tone: 'neutral', label: humanize(item.load) }
+  }
+  if (item.report) return { tone: 'info', label: fieldReportLabel(item.report.type) }
+  return null
+}
+
+/** The feed's tabs; "Field reports" includes loaded / empty confirmations. */
+export const FEED_VIEWS = ['all', 'verification', 'violation', 'payment', 'field'] as const
+export type FeedView = (typeof FEED_VIEWS)[number]
+
+export const VIEW_LABELS: Record<FeedView, string> = {
+  all: 'All',
+  verification: 'Verifications',
+  violation: 'Violations',
+  payment: 'Payments',
+  field: 'Field reports',
+}
+
+export function inView(item: FeedItem, view: FeedView): boolean {
+  if (view === 'all') return true
+  if (view === 'field') return item.kind === 'field_report' || item.kind === 'load_status'
+  return item.kind === view
+}

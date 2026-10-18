@@ -1,0 +1,60 @@
+/* As the Overview: sections 24px apart; banner, filters and strip as one block. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 8px;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+/* The feed and the incident context side by side: 737px and 391px of 1144px. */
+.feedRow {
+  display: grid;
+  grid-template-columns: minmax(0, 737fr) minmax(0, 391fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.stale {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid #f5d9a8;
+  border-radius: 8px;
+  background: var(--status-warning-bg);
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+}
+
+.footnote {
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 18px;
+}
+
+@media (max-width: 1280px) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .feedRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
