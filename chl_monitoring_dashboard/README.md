@@ -302,6 +302,18 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agents & organizations page (SRD 5): area, period, organization and
+  agent filters as on the Overview; headline figures for the agents in view;
+  an agent register with each agent's ID, name, organization, the scope CHL
+  assigns them ("Not exposed by CHL" where it exposes none) and their
+  recorded verifications, violations, unresolved cases and last activity,
+  listed by agent ID and never ranked; an organizations summary that narrows
+  the page to one organization. Choosing an agent (or opening
+  `/agents?agent=…`) shows their identity and a performance overview of the
+  documented metrics: verifications, violations issued, evidence submitted,
+  demand notices, unresolved cases, repeat alerts, trip activation and
+  locations. No scores, rankings, attendance, shifts or payroll; the module
+  never creates or administers agent accounts.
 - Agents & organizations data: each agent the user may see in an area, with
   their identity, the scope CHL assigns them (or none where CHL does not
   expose it) and the documented metrics for the period (verifications and

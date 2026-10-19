@@ -1,0 +1,192 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footer {
+  padding: 8px 12px 10px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.empty {
+  padding: var(--space-6) 0;
+  color: var(--card-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sub {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.muted {
+  color: var(--card-muted);
+}
+
+.nameRow {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* An agent's or organization's name: opens it on the page. */
+.open {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+
+.open:hover {
+  text-decoration: underline;
+}
+
+.selectedChip {
+  padding: 1px 6px;
+  border: 0.8px solid #cfe3d5;
+  border-radius: 6px;
+  background: #f3f9f5;
+  color: var(--color-primary);
+  font-size: 9px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 14px;
+}
+
+/* Agent identity */
+.identityHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 0.8px solid var(--card-line);
+}
+
+.avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0.8px solid #cfe3d5;
+  border-radius: 50%;
+  background: #f3f9f5;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.identityName {
+  color: var(--card-title);
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 20px;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+  gap: 12px;
+  padding: 9px 0;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.fact + .fact {
+  border-top: 0.8px solid var(--card-line);
+}
+
+.fact dt {
+  color: var(--card-muted);
+}
+
+.fact dd {
+  margin: 0;
+  color: var(--card-title);
+  font-weight: var(--font-weight-medium);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.areaChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 6px;
+  color: var(--card-title);
+  font-size: 11px;
+}
+
+/* Performance overview: two rows of four figures. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+}
+
+.tileLabel {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.tileValue {
+  margin: 0;
+  color: var(--card-title);
+  font-size: 20px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tileNote {
+  margin: 0;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+@media (max-width: 1280px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
