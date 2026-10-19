@@ -211,6 +211,67 @@
   font-size: 11px;
 }
 
+/* Locations recorded: as the geography page's locations in view. */
+.places {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.places li + li {
+  border-top: 0.8px solid var(--card-line);
+}
+
+.place {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px;
+}
+
+.placeIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+}
+
+.placeText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.placeName {
+  overflow: hidden;
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.placeFigures {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 13px;
+}
+
+.placeFigures strong {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 16px;
+}
+
 /* Performance overview: two rows of four figures. */
 .tiles {
   display: grid;

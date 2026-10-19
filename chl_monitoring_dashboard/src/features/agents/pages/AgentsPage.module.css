@@ -81,8 +81,29 @@
   line-height: 18px;
 }
 
+/* The map beside the agent's locations: 737px and 391px of 1144px, as the geography page. */
+.splitRow {
+  display: grid;
+  grid-template-columns: minmax(0, 737fr) minmax(0, 391fr);
+  gap: 14px;
+}
+
+/* Follow-up: unresolved cases beside repeat-vehicle reports, each as tall as the taller. */
+.pairRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
 @media (max-width: 1180px) {
-  .profileRow {
+  .profileRow,
+  .splitRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .pairRow {
     grid-template-columns: minmax(0, 1fr);
   }
 }

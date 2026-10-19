@@ -132,16 +132,27 @@ function CaseStatus({ status }: { status: CaseItem['status'] }) {
   return <StatusLabel tone={actionStatusTone(status)}>{actionStatusLabel(status)}</StatusLabel>
 }
 
-/** Adds the page's area to a module link, when the page is narrowed to one. */
-const withScope = (to: string, scope: string | undefined) =>
-  scope ? `${to}${to.includes('?') ? '&' : '?'}scope=${encodeURIComponent(scope)}` : to
+/** What a page is narrowed to, for the links to the full lists. */
+interface Narrowing {
+  /** The area the page shows. */
+  scope?: string | undefined
+  /** The agent the page shows. */
+  agentId?: string | undefined
+}
 
-interface CasesCardProps {
+/** Adds the page's area and agent to a module link, where the page is narrowed to them. */
+function narrowed(to: string, { scope, agentId }: Narrowing): string {
+  const params = [
+    scope ? `scope=${encodeURIComponent(scope)}` : null,
+    agentId ? `agent=${encodeURIComponent(agentId)}` : null,
+  ].filter(Boolean)
+  return params.length > 0 ? `${to}${to.includes('?') ? '&' : '?'}${params.join('&')}` : to
+}
+
+interface CasesCardProps extends Narrowing {
   cases: Overview['cases']
   title?: string
   subtitle?: string
-  /** The area the page shows; links to the full lists are narrowed to it. */
-  scope?: string | undefined
   /** Above the tabs, such as the counts the cases come from. */
   intro?: ReactNode
   /** Under the list, such as repeat vehicles still waiting for follow-up. */
@@ -154,6 +165,7 @@ export function CasesCard({
   title = 'Cases requiring attention',
   subtitle = 'Unresolved cases, including escalated violations',
   scope,
+  agentId,
   intro,
   children,
 }: CasesCardProps) {
@@ -171,7 +183,7 @@ export function CasesCard({
       icon="overview/card-cases.svg"
       footer={{
         label: 'View all cases',
-        to: link('violations', withScope(paths.violations, scope)),
+        to: link('violations', narrowed(paths.violations, { scope, agentId })),
       }}
     >
       {intro}
@@ -232,8 +244,20 @@ export function CasesCard({
 
 type RepeatView = 'open' | 'no_follow_up'
 
+interface RepeatVehiclesCardProps extends Narrowing {
+  repeat: Overview['repeatVehicles']
+  title?: string
+  subtitle?: string
+}
+
 /** "Repeat-vehicle alerts": vehicles reported more than once, and whether anyone followed up. */
-export function RepeatVehiclesCard({ repeat }: { repeat: Overview['repeatVehicles'] }) {
+export function RepeatVehiclesCard({
+  repeat,
+  title = 'Repeat-vehicle alerts',
+  subtitle = 'Repeated reports and follow-up visibility',
+  scope,
+  agentId,
+}: RepeatVehiclesCardProps) {
   const link = useModuleLink()
   const idBase = useId()
   const [view, setView] = useState<RepeatView>('open')
@@ -243,12 +267,15 @@ export function RepeatVehiclesCard({ repeat }: { repeat: Overview['repeatVehicle
 
   return (
     <DashboardCard
-      title="Repeat-vehicle alerts"
-      subtitle="Repeated reports and follow-up visibility"
+      title={title}
+      subtitle={subtitle}
       icon="overview/card-repeat.svg"
       footer={{
         label: 'View repeat-vehicle alerts',
-        to: link('violations', `${paths.violations}?view=repeat-vehicles`),
+        to: link(
+          'violations',
+          narrowed(`${paths.violations}?view=repeat-vehicles`, { scope, agentId }),
+        ),
       }}
     >
       <SegmentedTabs<RepeatView>

@@ -302,6 +302,15 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agents & organizations: the chosen agent's activity by location (the
+  enforcement points they recorded at on the map, with the GPS recorded with
+  their verifications under "Event GPS", and a list of those locations with
+  their counts and last activity) and follow-up monitoring (their unresolved
+  and escalated cases, and repeat-vehicle alerts for vehicles they reported),
+  with links to the full lists narrowed to the area and the agent. The
+  Overview's cases and repeat-vehicle cards and the geography footprint map
+  now take a title and an agent; the map shows "Selected" in its legend only
+  where a location can be chosen.
 - Agents & organizations: the chosen agent's verification activity (every
   result with its count, each one a filter, and the agent's verification
   records with method, result, time, sync status and recorded GPS) and

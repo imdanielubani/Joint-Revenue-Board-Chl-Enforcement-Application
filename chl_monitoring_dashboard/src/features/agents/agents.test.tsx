@@ -194,4 +194,29 @@ describe('agents and organizations page', () => {
     const evidence = within(enforcement).getByRole('table', { name: 'Evidence submitted' })
     expect(bodyRows(evidence)).toHaveLength(Math.min(records.evidence.length, 10))
   })
+  it('shows where the agent recorded activity and what still needs follow-up', async () => {
+    const { locations, cases, repeatVehicles } = expectedActivity('JRB-AG-0142')
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents?agent=JRB-AG-0142')
+
+    expect(await card('Activity by location')).toBeVisible()
+    const recorded = await card('Locations recorded')
+    for (const location of locations) expect(recorded).toHaveTextContent(location.name)
+
+    const unresolved = await card('Unresolved cases')
+    expect(within(unresolved).getByRole('tab', { name: /^Unresolved/ })).toHaveTextContent(
+      String(cases.unresolved),
+    )
+    expect(within(unresolved).getByRole('link', { name: 'View all cases' })).toHaveAttribute(
+      'href',
+      '/violations?scope=ng&agent=JRB-AG-0142',
+    )
+    const repeats = await card('Repeat-vehicle reports')
+    expect(within(repeats).getByRole('tab', { name: /^All Open/ })).toHaveTextContent(
+      String(repeatVehicles.open),
+    )
+    for (const item of repeatVehicles.items.slice(0, 3)) {
+      expect(repeats).toHaveTextContent(item.plate)
+    }
+  })
 })

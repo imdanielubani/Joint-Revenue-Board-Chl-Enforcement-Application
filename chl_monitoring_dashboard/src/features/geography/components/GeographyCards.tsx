@@ -23,24 +23,38 @@ const mapAvailable = env.mapTileUrl !== ''
 /** What the map's circles are sized by. */
 export type MarkerMetric = 'verifications' | 'violations'
 
+/** An enforcement location as the footprint map needs it. */
+export type FootprintPoint = Pick<
+  EnforcementPoint,
+  'id' | 'name' | 'area' | 'code' | 'position' | 'verifications' | 'violations' | 'lastRecordedAt'
+>
+
 /* ------------------------------------------------------------ Enforcement footprint */
 
 /**
  * "Enforcement footprint": the enforcement locations in view at their recorded
- * positions. Choosing one focuses the page's figures and records on it.
+ * positions. Where the page can focus on a location, choosing one does so.
  */
 export function EnforcementFootprintCard({
+  title = 'Enforcement footprint',
+  subtitle = 'Select a location to focus metrics and underlying records',
   points,
   verifications,
   selectedId,
   onSelect,
+  agentId,
 }: {
-  points: readonly EnforcementPoint[]
-  /** The scope's verifications in the period, whose recorded GPS the map can show. */
+  title?: string
+  subtitle?: string
+  points: readonly FootprintPoint[]
+  /** The verifications in the period, whose recorded GPS the map can show. */
   verifications: readonly VerificationRecord[]
   /** The location the page is focused on, if it is one. */
   selectedId: string | null
-  onSelect(id: string): void
+  /** Focuses the page on a location; absent where the page cannot. */
+  onSelect?: ((id: string) => void) | undefined
+  /** The agent the page shows: a location's records are narrowed to theirs. */
+  agentId?: string | undefined
 }) {
   const link = useModuleLink()
   const navigate = useNavigate()
@@ -89,8 +103,8 @@ export function EnforcementFootprintCard({
 
   return (
     <DashboardCard
-      title="Enforcement footprint"
-      subtitle="Select a location to focus metrics and underlying records"
+      title={title}
+      subtitle={subtitle}
       icon="overview/card-location.svg"
       bodyClassName={styles.footprintBody}
       footer={
@@ -150,13 +164,17 @@ export function EnforcementFootprintCard({
             fitRequest={fitRequest}
             events={events}
             countText={(count) => `${formatNumber(count)} ${metric} in this period`}
-            primary={{ label: 'Focus on this location', run: (point) => onSelect(point.id) }}
+            primary={
+              onSelect
+                ? { label: 'Focus on this location', run: (point) => onSelect(point.id) }
+                : undefined
+            }
             link={{
               label: 'Open its verification records',
               to: (point) =>
                 link(
                   'verifications',
-                  `${paths.verifications}?scope=${encodeURIComponent(point.id)}`,
+                  `${paths.verifications}?scope=${encodeURIComponent(point.id)}${agentId ? `&agent=${encodeURIComponent(agentId)}` : ''}`,
                 ),
             }}
             onNavigate={(to) => void navigate(to)}
@@ -173,10 +191,12 @@ export function EnforcementFootprintCard({
           <span className={`${styles.dot} ${styles.recorded}`} aria-hidden="true" />
           Recorded location
         </span>
-        <span>
-          <span className={`${styles.dot} ${styles.selected}`} aria-hidden="true" />
-          Selected
-        </span>
+        {onSelect && (
+          <span>
+            <span className={`${styles.dot} ${styles.selected}`} aria-hidden="true" />
+            Selected
+          </span>
+        )}
         {showEvents && (
           <span>
             <span className={`${styles.dot} ${styles.event}`} aria-hidden="true" />

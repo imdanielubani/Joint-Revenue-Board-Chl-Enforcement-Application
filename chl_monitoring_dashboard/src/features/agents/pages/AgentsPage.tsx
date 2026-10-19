@@ -4,7 +4,9 @@ import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { useAreas } from '@/features/geography/areas.queries'
+import { EnforcementFootprintCard } from '@/features/geography/components/GeographyCards'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
+import { CasesCard, RepeatVehiclesCard } from '@/features/overview/components/AttentionCards'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
@@ -15,6 +17,7 @@ import { totalsOf } from '../agents-display'
 import { useAgentActivity, useAgents, useAgentsMonitoring } from '../agents.queries'
 import type { AgentActivity, AgentsFilters, AgentSummary } from '../agents.schemas'
 import { EnforcementActivityCard, VerificationActivityCard } from '../components/AgentActivityCards'
+import { AgentLocationsCard } from '../components/AgentLocationsCard'
 import { AgentIdentityCard, PerformanceOverviewCard } from '../components/AgentProfileCards'
 import { AgentRegisterCard } from '../components/AgentRegisterCard'
 import { OrganizationsCard } from '../components/OrganizationsCard'
@@ -203,6 +206,7 @@ function AgentsContent({
               agentName={filter.agent?.name ?? filters.agentId}
               agent={selected}
               activity={activity}
+              scope={scope.value}
               scopeName={scope.name}
               periodText={periodText}
               onClose={() => setAgent(null)}
@@ -235,6 +239,7 @@ function SelectedAgent({
   agentName,
   agent,
   activity,
+  scope,
   scopeName,
   periodText,
   onClose,
@@ -246,6 +251,8 @@ function SelectedAgent({
   agent: AgentSummary | null
   /** The agent's records and follow-up, loaded once they are known to be in the area. */
   activity: UseQueryResult<AgentActivity>
+  /** The area's id, for links into the modules. */
+  scope: string
   scopeName: string
   periodText: string
   onClose(): void
@@ -274,6 +281,33 @@ function SelectedAgent({
             <>
               <VerificationActivityCard activity={activity.data} />
               <EnforcementActivityCard activity={activity.data} />
+              <div className={styles.splitRow}>
+                <EnforcementFootprintCard
+                  title="Activity by location"
+                  subtitle="Enforcement points and the GPS recorded with the agent’s verifications"
+                  points={activity.data.locations}
+                  verifications={activity.data.records.verifications}
+                  selectedId={null}
+                  agentId={agent.id}
+                />
+                <AgentLocationsCard locations={activity.data.locations} />
+              </div>
+              <div className={styles.pairRow}>
+                <CasesCard
+                  cases={activity.data.cases}
+                  title="Unresolved cases"
+                  subtitle="Follow-up: the agent’s violations not yet resolved, escalated included"
+                  scope={scope}
+                  agentId={agent.id}
+                />
+                <RepeatVehiclesCard
+                  repeat={activity.data.repeatVehicles}
+                  title="Repeat-vehicle reports"
+                  subtitle="Follow-up: alerts for vehicles the agent reported"
+                  scope={scope}
+                  agentId={agent.id}
+                />
+              </div>
             </>
           ) : activity.isPending ? (
             <StatePanel kind="loading" message={`Loading ${agent.name}’s records…`} />
