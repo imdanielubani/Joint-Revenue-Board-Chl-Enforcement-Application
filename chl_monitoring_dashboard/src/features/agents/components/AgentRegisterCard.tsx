@@ -22,12 +22,13 @@ function columns(
   selectedId: string | null,
   onSelect: (agentId: string) => void,
 ): Column<AgentSummary>[] {
+  // The figures cannot be sorted: ordering agents by them would rank agents, which
+  // this module does not do (agent scoring is a future extension).
   const figure = (key: keyof AgentMetrics & string, header: string): Column<AgentSummary> => ({
     key,
     header,
     align: 'end',
     render: (row) => formatNumber(Number(row.metrics[key])),
-    sortValue: (row) => Number(row.metrics[key]),
   })
   return [
     {

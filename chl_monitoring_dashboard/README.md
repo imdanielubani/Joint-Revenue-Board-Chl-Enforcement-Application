@@ -302,6 +302,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agents & organizations: the agent register's figure columns
+  (verifications, violations, unresolved) can no longer be sorted, so the
+  page never orders agents by their activity — that would rank them, which
+  the module does not do. Agent, organization, assigned scope and last
+  recorded still sort.
 - Agents & organizations: the chosen agent's activity by location (the
   enforcement points they recorded at on the map, with the GPS recorded with
   their verifications under "Event GPS", and a list of those locations with

@@ -84,6 +84,21 @@ describe('agents and organizations page', () => {
     expect(ada).toHaveTextContent('Not exposed by CHL')
   })
 
+  it('never orders agents by their figures', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents')
+    const table = within(await card('Agent register')).getByRole('table', { name: 'Agents' })
+    for (const figure of ['Verifications', 'Violations', 'Unresolved']) {
+      const header = within(table).getByRole('columnheader', { name: figure })
+      expect(within(header).queryByRole('button')).toBeNull()
+      expect(header).not.toHaveAttribute('aria-sort')
+    }
+    for (const identity of ['Agent', 'Organization', 'Assigned scope']) {
+      const header = within(table).getByRole('columnheader', { name: identity })
+      expect(within(header).getByRole('button', { name: identity })).toBeInTheDocument()
+    }
+  })
+
   it('opens an agent’s identity and documented metrics, and closes them', async () => {
     const tunde = expected('ng').agents.find((agent) => agent.id === 'JRB-AG-0142')!
     signInAs('admin@jrb.gov.ng')
