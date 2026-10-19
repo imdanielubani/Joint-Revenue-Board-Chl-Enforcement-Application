@@ -193,12 +193,12 @@ function GeographyContent({
 
           <div className={styles.row}>
             <GeoOutcomesCard scopeId={scope.value} overview={overview} />
-            <EnforcementFollowUpCard
+            <EnforcementFollowUpCard scopeId={scope.value} overview={overview} />
+            <PaymentFollowUpCard
               scopeId={scope.value}
-              overview={overview}
-              violations={geography.records.violations}
+              payments={overview.payments}
+              notices={geography.records.notices}
             />
-            <PaymentFollowUpCard scopeId={scope.value} notices={geography.records.notices} />
           </div>
 
           <UnderlyingRecordsCard

@@ -132,8 +132,31 @@ function CaseStatus({ status }: { status: CaseItem['status'] }) {
   return <StatusLabel tone={actionStatusTone(status)}>{actionStatusLabel(status)}</StatusLabel>
 }
 
+/** Adds the page's area to a module link, when the page is narrowed to one. */
+const withScope = (to: string, scope: string | undefined) =>
+  scope ? `${to}${to.includes('?') ? '&' : '?'}scope=${encodeURIComponent(scope)}` : to
+
+interface CasesCardProps {
+  cases: Overview['cases']
+  title?: string
+  subtitle?: string
+  /** The area the page shows; links to the full lists are narrowed to it. */
+  scope?: string | undefined
+  /** Above the tabs, such as the counts the cases come from. */
+  intro?: ReactNode
+  /** Under the list, such as repeat vehicles still waiting for follow-up. */
+  children?: ReactNode
+}
+
 /** "Cases requiring attention": unresolved cases, or only the escalated ones. */
-export function CasesCard({ cases }: { cases: Overview['cases'] }) {
+export function CasesCard({
+  cases,
+  title = 'Cases requiring attention',
+  subtitle = 'Unresolved cases, including escalated violations',
+  scope,
+  intro,
+  children,
+}: CasesCardProps) {
   const link = useModuleLink()
   const idBase = useId()
   const [view, setView] = useState<CaseView>('unresolved')
@@ -143,11 +166,15 @@ export function CasesCard({ cases }: { cases: Overview['cases'] }) {
 
   return (
     <DashboardCard
-      title="Cases requiring attention"
-      subtitle="Unresolved cases, including escalated violations"
+      title={title}
+      subtitle={subtitle}
       icon="overview/card-cases.svg"
-      footer={{ label: 'View all cases', to: link('violations', paths.violations) }}
+      footer={{
+        label: 'View all cases',
+        to: link('violations', withScope(paths.violations, scope)),
+      }}
     >
+      {intro}
       <SegmentedTabs<CaseView>
         idBase={idBase}
         label="Cases to show"
@@ -196,6 +223,7 @@ export function CasesCard({ cases }: { cases: Overview['cases'] }) {
           </ul>
         )}
       </div>
+      {children}
     </DashboardCard>
   )
 }

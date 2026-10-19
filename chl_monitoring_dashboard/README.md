@@ -302,6 +302,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring's Enforcement follow-up and Payment follow-up
+  cards now use the Overview's Cases requiring attention and Payment status
+  cards, narrowed to the chosen area: the unresolved / escalated tabs and
+  case list, then the repeat-alert reminder; the received / pending figures,
+  then the latest linked demand notices. No Active Trip is shown in blue
+  rather than red wherever verification results appear.
 - E-Tag Missing and Invalid E-Tag verification results have their own
   icons (a tag struck through; a tag with a cross) in place of a plain dash,
   in every register and card that shows verification results.

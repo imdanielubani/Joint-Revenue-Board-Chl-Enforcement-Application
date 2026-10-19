@@ -1,30 +1,22 @@
-import { useId, useState } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
-import {
-  actionStatusLabel,
-  actionStatusTone,
-  outcomeLabel,
-  outcomeStyle,
-  plural,
-  share,
-} from '@/features/overview/overview-display'
+import { CasesCard } from '@/features/overview/components/AttentionCards'
+import { PaymentStatusCard } from '@/features/overview/components/InsightCards'
+import { outcomeLabel, outcomeStyle, plural } from '@/features/overview/overview-display'
 import {
   VERIFICATION_OUTCOMES,
   type Overview,
   type VerificationOutcome,
 } from '@/features/overview/overview.schemas'
 import { assetUrl } from '@/shared/lib/asset-url'
-import { formatNumber, formatPercent, formatShortDateTime } from '@/shared/lib/format'
+import { formatNumber, formatPercent } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
-import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatusLabel, type StatusTone } from '@/shared/ui/StatusLabel'
-import { panelId, tabId } from '@/shared/ui/tab-ids'
-import type { NoticeRecord, ViolationRecord } from '../geography.schemas'
+import type { NoticeRecord } from '../geography.schemas'
 import styles from './FollowUpCards.module.css'
 
-/** How many cases and notices each card lists before pointing to the full records. */
+/** How many demand notices the payment card lists before pointing to the full records. */
 const LIST_LIMIT = 3
 
 /** Each tone's colour in the outcome bar. */
@@ -166,106 +158,35 @@ export function GeoOutcomesCard({ scopeId, overview }: { scopeId: string; overvi
 
 /* ------------------------------------------------------------ Enforcement follow-up */
 
-type CaseView = 'unresolved' | 'escalated'
-
 /**
- * "Enforcement follow-up": unresolved and escalated cases, and repeat vehicles
- * still waiting for follow-up. A review queue, not a response workflow.
+ * "Enforcement follow-up": the Overview's cases card for this scope, with the
+ * violations the cases come from and the repeat vehicles still waiting for
+ * follow-up. A review queue, not a response workflow.
  */
 export function EnforcementFollowUpCard({
   scopeId,
   overview,
-  violations,
 }: {
   scopeId: string
   overview: Overview
-  /** The scope's violations in the period, newest first. */
-  violations: readonly ViolationRecord[]
 }) {
   const scoped = useScopedLink(scopeId)
-  const idBase = useId()
-  const [view, setView] = useState<CaseView>('unresolved')
-  // The unresolved cases are the ones the Overview counts; escalated ones are among them.
-  const open = new Set(overview.cases.items.map((item) => item.id))
-  const unresolved = violations.filter((violation) => open.has(violation.id))
-  const listed = (
-    view === 'escalated'
-      ? unresolved.filter((violation) => violation.status === 'escalated')
-      : unresolved
-  ).slice(0, LIST_LIMIT)
   const { kpis, repeatVehicles } = overview
 
   return (
-    <DashboardCard
+    <CasesCard
+      cases={overview.cases}
       title="Enforcement follow-up"
       subtitle="A review queue, not a response workflow"
-      icon="overview/card-cases.svg"
-      bodyClassName={styles.body}
-      footer={{ label: 'View violation register', to: scoped('violations', paths.violations) }}
+      scope={scopeId}
+      intro={
+        <p className={styles.intro}>
+          <strong>{formatNumber(kpis.unresolvedViolations)}</strong> unresolved of{' '}
+          {plural(kpis.violationsIssued, 'violation')} issued ·{' '}
+          {formatNumber(kpis.escalatedViolations)} escalated, included in the unresolved total
+        </p>
+      }
     >
-      <div>
-        <p className={styles.eyebrow}>Unresolved cases</p>
-        <p className={styles.big}>
-          <strong>{formatNumber(kpis.unresolvedViolations)}</strong>
-          <span>of {plural(kpis.violationsIssued, 'violation')} issued</span>
-        </p>
-        <p className={styles.small}>
-          {formatNumber(kpis.escalatedViolations)} escalated · included in the unresolved total
-        </p>
-      </div>
-      <SegmentedTabs<CaseView>
-        idBase={idBase}
-        label="Cases to show"
-        tabs={[
-          { id: 'unresolved', label: 'Unresolved', count: kpis.unresolvedViolations },
-          { id: 'escalated', label: 'Escalated', count: kpis.escalatedViolations },
-        ]}
-        value={view}
-        onChange={setView}
-      />
-      <div id={panelId(idBase)} role="tabpanel" aria-labelledby={tabId(idBase, view)}>
-        {listed.length === 0 ? (
-          <p className={styles.empty}>
-            {view === 'escalated' ? 'No escalated cases.' : 'No unresolved cases.'}
-          </p>
-        ) : (
-          <ul className={styles.items}>
-            {listed.map((violation) => {
-              const to = scoped('violations', `${paths.violations}?case=${violation.id}`)
-              return (
-                <li key={violation.id} className={styles.item}>
-                  <span className={styles.itemHead}>
-                    <span className={styles.small}>{violation.id}</span>
-                    <StatusLabel tone={actionStatusTone(violation.status)}>
-                      {actionStatusLabel(violation.status)}
-                    </StatusLabel>
-                  </span>
-                  {to ? (
-                    <Link className={styles.plateLink} to={to}>
-                      {violation.plate}
-                      <img
-                        src={assetUrl('overview/arrow-up-right.svg')}
-                        alt=""
-                        width={14}
-                        height={14}
-                      />
-                    </Link>
-                  ) : (
-                    <span className={styles.plate}>{violation.plate}</span>
-                  )}
-                  <span className={styles.small}>{violation.category}</span>
-                  <span className={styles.small}>
-                    {formatShortDateTime(violation.recordedAt)} · {violation.location.area}
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-        <ArrowLink to={scoped('violations', `${paths.violations}?status=unresolved`)}>
-          {`View all ${formatNumber(kpis.unresolvedViolations)} unresolved cases`}
-        </ArrowLink>
-      </div>
       <div className={styles.callout}>
         <img src={assetUrl('overview/kpi-bell.svg')} alt="" width={16} height={16} />
         <span className={styles.calloutText}>
@@ -282,69 +203,36 @@ export function EnforcementFollowUpCard({
           Open
         </ArrowLink>
       </div>
-    </DashboardCard>
+    </CasesCard>
   )
 }
 
 /* ------------------------------------------------------------ Payment follow-up */
 
 /**
- * "Payment follow-up": the demand notices linked to the scope's violations.
- * Payment received and trip activation are separate outcomes (SRD 10).
+ * "Payment follow-up": the Overview's payment card for this scope, with the
+ * latest demand notices linked to its violations. Payment received and trip
+ * activation are separate outcomes (SRD 10).
  */
 export function PaymentFollowUpCard({
   scopeId,
+  payments,
   notices,
 }: {
   scopeId: string
+  payments: Overview['payments']
   /** Demand notices linked to the scope's violations in the period, newest first. */
   notices: readonly NoticeRecord[]
 }) {
   const scoped = useScopedLink(scopeId)
-  const received = notices.filter((notice) => notice.status === 'received').length
-  const pending = notices.filter((notice) => notice.status === 'pending').length
-  const activated = notices.filter((notice) => notice.tripActivated).length
 
   return (
-    <DashboardCard
+    <PaymentStatusCard
+      payments={payments}
       title="Payment follow-up"
       subtitle="Linked demand notices, not revenue targets"
-      icon="overview/card-payment.svg"
-      bodyClassName={styles.body}
-      footer={
-        <p className={styles.footer}>
-          Payment received does not confirm trip activation or compliance. Payment update times are
-          not supplied.
-        </p>
-      }
+      scope={scopeId}
     >
-      <div>
-        <p className={styles.eyebrow}>Linked demand notices</p>
-        <p className={styles.big}>
-          <strong>{formatNumber(notices.length)}</strong>
-          <span>within the selected scope</span>
-        </p>
-      </div>
-      <div className={styles.tiles}>
-        <div className={styles.tile}>
-          <img src={assetUrl('overview/kpi-check.svg')} alt="" width={16} height={16} />
-          <p className={styles.small}>Payment received</p>
-          <p className={styles.tileFigure}>
-            <strong>{formatNumber(received)}</strong>
-          </p>
-          <p className={styles.small}>
-            {Math.round(share(received, notices.length))}% of linked notices
-          </p>
-        </div>
-        <div className={styles.tile}>
-          <img src={assetUrl('overview/status-pending.svg')} alt="" width={16} height={16} />
-          <p className={styles.small}>Payment pending</p>
-          <p className={styles.tileFigure}>
-            <strong>{formatNumber(pending)}</strong>
-          </p>
-          <p className={styles.small}>Awaiting recorded payment</p>
-        </div>
-      </div>
       <div>
         <p className={styles.listHead}>
           <span>Linked notice records</span>
@@ -375,13 +263,6 @@ export function PaymentFollowUpCard({
         )}
         <ArrowLink to={scoped('payments', paths.payments)}>Review all demand notices</ArrowLink>
       </div>
-      <p className={styles.activation}>
-        <span>
-          <img src={assetUrl('overview/payment-trip.svg')} alt="" width={14} height={14} />
-          Trip activation recorded
-        </span>
-        <strong>{formatNumber(activated)}</strong>
-      </p>
-    </DashboardCard>
+    </PaymentStatusCard>
   )
 }

@@ -230,7 +230,27 @@ describe('geographical monitoring page', () => {
     renderApp('/geography')
     const payments = await card('Payment follow-up')
     expect(payments).toHaveTextContent('Trip activation recorded')
-    expect(payments).toHaveTextContent('Payment received does not confirm trip activation')
+    expect(payments).toHaveTextContent('Payment received and trip activated are distinct outcomes')
+  })
+
+  it('shows enforcement follow-up as the Overview shows cases requiring attention', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/geography?scope=ng')
+    const { overview } = expected('ng')
+    const followUp = await card('Enforcement follow-up')
+    expect(within(followUp).getByRole('tab', { name: /^Unresolved/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(within(followUp).getByRole('tab', { name: /^Escalated/ })).toBeInTheDocument()
+    expect(followUp).toHaveTextContent(
+      `${overview.kpis.unresolvedViolations} unresolved of ${overview.kpis.violationsIssued}`,
+    )
+    expect(followUp).toHaveTextContent(/repeat alerts? needs? follow-up/)
+    expect(within(followUp).getByRole('link', { name: 'View all cases' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('scope=ng'),
+    )
   })
 
   it('keeps national visibility to authorized users', async () => {

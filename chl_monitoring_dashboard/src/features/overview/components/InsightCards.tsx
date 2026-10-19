@@ -306,8 +306,24 @@ export function ViolationCategoriesCard({
 
 /* --------------------------------------------------------------- Payments */
 
+interface PaymentStatusCardProps {
+  payments: Overview['payments']
+  title?: string
+  subtitle?: string
+  /** The area the page shows; links to the payment lists are narrowed to it. */
+  scope?: string | undefined
+  /** Under the received and pending figures, such as the latest notices. */
+  children?: ReactNode
+}
+
 /** "Payment status": demand notices paid and pending, kept apart from trip activation. */
-export function PaymentStatusCard({ payments }: { payments: Overview['payments'] }) {
+export function PaymentStatusCard({
+  payments,
+  title = 'Payment status',
+  subtitle = 'Demand-notice payment follow-up',
+  scope,
+  children,
+}: PaymentStatusCardProps) {
   const link = useModuleLink()
   const { received, pending, tripActivatedOnPaid } = payments
   const linked = received + pending
@@ -315,8 +331,8 @@ export function PaymentStatusCard({ payments }: { payments: Overview['payments']
 
   return (
     <DashboardCard
-      title="Payment status"
-      subtitle="Demand-notice payment follow-up"
+      title={title}
+      subtitle={subtitle}
       icon="overview/card-payment.svg"
       footer={
         <p className={styles.paymentNote}>
@@ -362,7 +378,10 @@ export function PaymentStatusCard({ payments }: { payments: Overview['payments']
           <li key={status}>
             <MaybeLink
               className={styles.paymentTile}
-              to={link('payments', `${paths.payments}?status=${status}`)}
+              to={link(
+                'payments',
+                `${paths.payments}?status=${status}${scope ? `&scope=${encodeURIComponent(scope)}` : ''}`,
+              )}
             >
               <span className={`${styles.dot} ${dot}`} aria-hidden="true" />
               <span className={styles.paymentTileMain}>
@@ -374,6 +393,8 @@ export function PaymentStatusCard({ payments }: { payments: Overview['payments']
           </li>
         ))}
       </ul>
+
+      {children}
 
       <p className={styles.tripRow}>
         <span className={styles.tripLabel}>

@@ -17,13 +17,6 @@
   text-align: center;
 }
 
-.footer {
-  padding: 8px 12px 10px;
-  color: var(--card-muted);
-  font-size: 10px;
-  line-height: 16px;
-}
-
 .eyebrow {
   color: var(--card-muted);
   font-size: 10px;
@@ -103,7 +96,6 @@
 }
 
 .outcomes,
-.items,
 .notices {
   display: flex;
   flex-direction: column;
@@ -158,26 +150,17 @@
   line-height: 16px;
 }
 
-/* Enforcement follow-up */
-.items {
-  gap: 8px;
-  padding-bottom: 8px;
+/* Enforcement follow-up: the counts above the Overview's case tabs. */
+.intro {
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 17px;
 }
 
-.item {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px 12px;
-  border: 0.8px solid var(--card-line);
-  border-radius: 10px;
-}
-
-.itemHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.intro strong {
+  color: var(--card-title);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
 }
 
 .plate {
@@ -185,21 +168,6 @@
   font-size: 12px;
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.275px;
-}
-
-.plateLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--card-title);
-  font-size: 12px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.275px;
-  text-decoration: none;
-}
-
-.plateLink:hover {
-  text-decoration: underline;
 }
 
 .inlineLink {
@@ -256,26 +224,4 @@
 
 .notices + .inlineLink {
   margin-top: 8px;
-}
-
-.activation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--card-bg);
-  color: var(--card-title);
-  font-size: 11px;
-}
-
-.activation > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.activation strong {
-  font-weight: var(--font-weight-semibold);
 }
