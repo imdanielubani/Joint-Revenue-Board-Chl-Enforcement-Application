@@ -159,7 +159,9 @@ describe('agents and organizations page', () => {
       expect(router.state.location.search).toBe('?scope=la&range=7d')
       expect(screen.getByRole('heading', { level: 1, name: 'Agent activity' })).toBeVisible()
 
-      await userEvent.click(screen.getByRole('button', { name: 'All agents' }))
+      const back = screen.getByRole('link', { name: 'Back to all agents' })
+      expect(back).toHaveAttribute('href', '/agents?scope=la&range=7d')
+      await userEvent.click(back)
       expect(
         await screen.findByRole(
           'heading',

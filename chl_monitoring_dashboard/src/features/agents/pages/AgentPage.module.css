@@ -55,19 +55,28 @@
   }
 }
 
-/* "Back to all agents", under a message that the agent is not in the area. */
-.backLink {
-  padding: 6px 12px;
-  border: 0.8px solid var(--card-line);
-  border-radius: 7px;
-  background: var(--color-surface);
+/* "Back to all agents": top left, above the banner. */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 8px;
   color: var(--card-title);
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: var(--font-weight-semibold);
+  line-height: 18px;
   text-decoration: none;
 }
 
-.backLink:hover {
+.back:hover {
   background: var(--card-bg);
+  color: var(--color-primary);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useParams } from 'react-router'
 import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -10,7 +10,8 @@ import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { isApiError } from '@/shared/api/api-error'
-import { HeroButton, PageHero, RefreshButton } from '@/shared/ui/PageHero'
+import { MaskIcon } from '@/shared/ui/MaskIcon'
+import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { organizationLabel } from '../agents-display'
 import { agentsListLink } from '../agents-links'
@@ -66,7 +67,6 @@ function AgentContent({
   /** True until CHL's area tree has loaded; until then only the user's own areas are known. */
   areasPending: boolean
 }) {
-  const navigate = useNavigate()
   const { search } = useLocation()
   // The area and period only: this page is about one agent already.
   const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: [] })
@@ -91,6 +91,10 @@ function AgentContent({
   return (
     <div className={styles.page}>
       <div>
+        <Link className={styles.back} to={backToList}>
+          <MaskIcon src="agents/back-arrow.svg" size={16} />
+          Back to all agents
+        </Link>
         <PageHero
           title={name}
           lede={[
@@ -103,19 +107,10 @@ function AgentContent({
           section="Enforcement"
           icons="agents"
           actions={
-            <>
-              <HeroButton
-                variant="outline"
-                icon="agents/hero-back.svg"
-                onClick={() => void navigate(backToList)}
-              >
-                All agents
-              </HeroButton>
-              <RefreshButton
-                refreshing={activity.isFetching && !activity.isPending}
-                onRefresh={() => void activity.refetch()}
-              />
-            </>
+            <RefreshButton
+              refreshing={activity.isFetching && !activity.isPending}
+              onRefresh={() => void activity.refetch()}
+            />
           }
         />
         <OverviewFilterBar
@@ -137,11 +132,6 @@ function AgentContent({
         <StatePanel
           kind="empty"
           message={`${name} has no assignment or recorded activity in ${scope.name}, or is not visible to your account. Choose another area, or go back to all agents.`}
-          action={
-            <Link className={styles.backLink} to={backToList}>
-              Back to all agents
-            </Link>
-          }
         />
       ) : !data ? (
         <StatePanel kind="error" error={activity.error} onRetry={() => void activity.refetch()} />

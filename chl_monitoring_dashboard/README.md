@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agent page: "Back to all agents" is now a link at the top left of the
+  page, above the banner, instead of a button inside it; the banner keeps
+  Refresh. It keeps the area and period, and also serves the message shown
+  when the agent has nothing in the chosen area.
 - Each agent now has a page of their own, `/agents/{agent ID}` (top bar:
   Enforcement › Agents & organizations · Agent activity): the agent's name
   and ID in the banner with "All agents" and Refresh, the area and period
