@@ -43,9 +43,12 @@ export function EnforcementFootprintCard({
   selectedId,
   onSelect,
   agentId,
+  emptyText = 'No enforcement locations are configured in this scope.',
 }: {
   title?: string
   subtitle?: string
+  /** Shown in place of the map when there are no locations. */
+  emptyText?: string
   points: readonly FootprintPoint[]
   /** The verifications in the period, whose recorded GPS the map can show. */
   verifications: readonly VerificationRecord[]
@@ -155,7 +158,7 @@ export function EnforcementFootprintCard({
       </div>
 
       {points.length === 0 ? (
-        <p className={styles.empty}>No enforcement locations are configured in this scope.</p>
+        <p className={styles.empty}>{emptyText}</p>
       ) : mapAvailable ? (
         <Suspense fallback={<p className={styles.empty}>Loading the map…</p>}>
           <EnforcementMap

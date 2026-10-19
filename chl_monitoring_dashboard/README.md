@@ -302,6 +302,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Sample data: a fifth agent, Chidi Eze (JRB-AG-0146), newly assigned to
+  Ikeja LGA with no organization recorded by CHL and nothing recorded yet, so
+  Agents & organizations shows "Not recorded" and an agent without activity
+  as they are. The sample records and field reports are still drawn from the
+  original four field agents (`FIELD_AGENTS`), so no other figure changes.
+  The activity-by-location map now says when the agent recorded no activity
+  at an enforcement location.
 - Agents & organizations: the agent register's figure columns
   (verifications, violations, unresolved) can no longer be sorted, so the
   page never orders agents by their activity — that would rank them, which

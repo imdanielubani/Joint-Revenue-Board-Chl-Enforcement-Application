@@ -25,6 +25,7 @@ const ASSIGNED_AREAS: Record<string, readonly string[] | null> = {
   'JRB-AG-0143': ['fct'],
   'JRB-AG-0144': ['kn'],
   'JRB-AG-0145': null,
+  'JRB-AG-0146': ['la-ikeja'],
 }
 
 function assignedScope(agentId: string): GeoScope[] | null {

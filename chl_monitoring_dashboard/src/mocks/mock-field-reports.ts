@@ -1,6 +1,6 @@
 import type { FieldReportType, LoadStatus } from '@/features/command-centre/command-centre.schemas'
 import { addDays, type CalendarDay } from '@/shared/lib/dates'
-import { MOCK_AGENTS } from './mock-agent-list'
+import { FIELD_AGENTS } from './mock-agent-list'
 import { AGENT_POINTS, HISTORY_DAYS, PLATES, pick, seeded, startOfDay } from './mock-records'
 
 /**
@@ -95,7 +95,7 @@ function generate(today: CalendarDay, now: number) {
     return Math.round(recordedAt)
   }
   const agentAndPoint = () => {
-    const agent = MOCK_AGENTS[Math.floor(random() * MOCK_AGENTS.length)]!
+    const agent = FIELD_AGENTS[Math.floor(random() * FIELD_AGENTS.length)]!
     const points = AGENT_POINTS[agent.id] ?? []
     return {
       agentId: agent.id,
@@ -235,7 +235,7 @@ function generateSos(today: CalendarDay, now: number): MockSos[] {
   const alerts: MockSos[] = []
   let daysAgo = 3
   while (daysAgo < HISTORY_DAYS) {
-    const agent = MOCK_AGENTS[Math.floor(random() * MOCK_AGENTS.length)]!
+    const agent = FIELD_AGENTS[Math.floor(random() * FIELD_AGENTS.length)]!
     const points = AGENT_POINTS[agent.id] ?? []
     const recordedAt = Math.round(
       startOfDay(addDays(today, -daysAgo)) + (8 + random() * 9) * 3_600_000,

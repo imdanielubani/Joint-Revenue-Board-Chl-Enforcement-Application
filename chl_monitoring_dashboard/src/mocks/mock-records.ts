@@ -6,7 +6,7 @@ import type {
   VerificationOutcome,
 } from '@/features/overview/overview.schemas'
 import { addDays, type CalendarDay } from '@/shared/lib/dates'
-import { MOCK_AGENTS } from './mock-agent-list'
+import { FIELD_AGENTS } from './mock-agent-list'
 
 /**
  * Sample field records behind the sample Overview: 90 days of verifications,
@@ -74,12 +74,13 @@ export const MOCK_POINTS: MockPoint[] = [
   },
 ]
 
-/** Where each sample agent works. */
+/** Where each sample agent works. Chidi Eze is newly assigned and has recorded nothing yet. */
 export const AGENT_POINTS: Record<string, string[]> = {
   'JRB-AG-0142': ['loc_ojota', 'loc_ikeja_gate'],
   'JRB-AG-0143': ['loc_zuba'],
   'JRB-AG-0144': ['loc_kano_zaria'],
   'JRB-AG-0145': ['loc_apapa', 'loc_eleme'],
+  'JRB-AG-0146': ['loc_ikeja_gate'],
 }
 
 /** The first plates come up far more often, so repeat-vehicle alerts arise. */
@@ -281,7 +282,7 @@ function generate(today: CalendarDay, now: number): MockRecord[] {
           ? 0
           : Math.floor(random() * 4)
     for (let index = 0; index < count; index += 1) {
-      const agentId = MOCK_AGENTS[Math.floor(random() * MOCK_AGENTS.length)]!.id
+      const agentId = FIELD_AGENTS[Math.floor(random() * FIELD_AGENTS.length)]!.id
       const points = AGENT_POINTS[agentId] ?? []
       const pointId = points[Math.floor(random() * points.length)] ?? MOCK_POINTS[0]!.id
       const start = startOfDay(day)

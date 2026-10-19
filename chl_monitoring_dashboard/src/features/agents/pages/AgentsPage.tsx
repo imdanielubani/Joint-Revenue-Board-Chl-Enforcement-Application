@@ -289,6 +289,7 @@ function SelectedAgent({
                   verifications={activity.data.records.verifications}
                   selectedId={null}
                   agentId={agent.id}
+                  emptyText="The agent recorded no activity at an enforcement location in this period."
                 />
                 <AgentLocationsCard locations={activity.data.locations} />
               </div>

@@ -44,7 +44,21 @@ describe('summarizeAgents', () => {
     ])
     const national = summarizeAgents(filters('ng'), NOW).agents.map((agent) => agent.id)
     expect(national).toEqual([...national].sort())
-    expect(national).toHaveLength(4)
+    expect(national).toHaveLength(5)
+  })
+
+  it('lists an agent with nothing recorded yet and no organization, as they are', () => {
+    const chidi = summarizeAgents(filters('ng'), NOW).agents.find(
+      (agent) => agent.id === 'JRB-AG-0146',
+    )!
+    expect(chidi.organization).toBeNull()
+    expect(chidi.lastRecordedAt).toBeNull()
+    expect(chidi.metrics.verifications).toBe(0)
+    expect(chidi.metrics.outcomes.every((entry) => entry.count === 0)).toBe(true)
+    const activity = agentActivity('JRB-AG-0146', filters('la'), NOW)
+    expect(activity.records.verifications).toEqual([])
+    expect(activity.locations).toEqual([])
+    expect(activity.cases.unresolved).toBe(0)
   })
 
   it('gives the assigned scope CHL exposes, and none where it exposes none', () => {

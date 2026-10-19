@@ -234,4 +234,22 @@ describe('agents and organizations page', () => {
       expect(repeats).toHaveTextContent(item.plate)
     }
   })
+  it('shows an agent with no organization and nothing recorded, as they are', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents?agent=JRB-AG-0146')
+    const identity = await card('Agent identity')
+    expect(identity).toHaveTextContent('Chidi Eze')
+    expect(identity).toHaveTextContent('Vendor / organizationNot recorded')
+    expect(identity).toHaveTextContent('Nothing recorded in this area')
+    expect(
+      await screen.findByText(
+        'The agent recorded no activity at an enforcement location in this period.',
+      ),
+    ).toBeVisible()
+    const organizations = await card('Organizations')
+    const rows = within(organizations).getAllByRole('row')
+    // Agents with no organization come last, and cannot be chosen as a filter.
+    expect(rows[rows.length - 1]).toHaveTextContent('Not recorded')
+    expect(within(rows[rows.length - 1]!).queryByRole('button')).toBeNull()
+  })
 })
