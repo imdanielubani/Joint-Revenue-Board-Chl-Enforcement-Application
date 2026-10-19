@@ -11,6 +11,8 @@ export const paths = {
   commandCentre: '/command-centre',
   geography: '/geography',
   agents: '/agents',
+  /** One agent's page: their identity, activity and follow-up. */
+  agent: (agentId: string) => `/agents/${encodeURIComponent(agentId)}`,
   verifications: '/verifications',
   trips: '/trips',
   violations: '/violations',

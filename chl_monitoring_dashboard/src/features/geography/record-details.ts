@@ -230,9 +230,7 @@ export function agentDetails(row: AgentRow, ctx: RecordsContext): RecordDetails 
       { term: 'Repeat alerts', value: formatNumber(row.repeatAlerts) },
       { term: 'Recorded in', value: row.locations },
     ],
-    links: links([
-      { label: 'Open the agent', to: ctx.link('agents', `${paths.agents}?agent=${row.agentId}`) },
-    ]),
+    links: links([{ label: 'Open the agent', to: ctx.link('agents', paths.agent(row.agentId)) }]),
   }
 }
 

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
@@ -19,8 +20,7 @@ const withScope = (to: string, scope: string) =>
 function columns(
   link: ModuleLink,
   scope: string,
-  selectedId: string | null,
-  onSelect: (agentId: string) => void,
+  agentLink: (agentId: string) => string,
   onViewDetails: (agentId: string) => void,
 ): Column<AgentSummary>[] {
   // The figures cannot be sorted: ordering agents by them would rank agents, which
@@ -37,17 +37,9 @@ function columns(
       header: 'Agent',
       render: (row) => (
         <span className={styles.stack}>
-          <span className={styles.nameRow}>
-            <button
-              type="button"
-              className={styles.open}
-              aria-pressed={row.id === selectedId}
-              onClick={() => onSelect(row.id)}
-            >
-              {row.name}
-            </button>
-            {row.id === selectedId && <span className={styles.selectedChip}>Selected</span>}
-          </span>
+          <Link className={styles.open} to={agentLink(row.id)}>
+            {row.name}
+          </Link>
           <span className={styles.sub}>{row.id}</span>
         </span>
       ),
@@ -110,14 +102,13 @@ const searchText = (row: AgentSummary) =>
 /**
  * "Agent register": every agent in view — identity, the scope CHL assigns
  * them and what they recorded in the period. Listed by agent ID, never ranked;
- * a name opens that agent's activity below, and "View details" a popup.
+ * a name opens the agent's own page, and "View details" a popup.
  */
 export function AgentRegisterCard({
   agents,
   scope,
   scopeName,
-  selectedId,
-  onSelect,
+  agentLink,
   onViewDetails,
 }: {
   agents: readonly AgentSummary[]
@@ -125,15 +116,15 @@ export function AgentRegisterCard({
   scope: string
   /** "National", "Lagos state". */
   scopeName: string
-  selectedId: string | null
-  onSelect(agentId: string): void
+  /** The agent's own page. */
+  agentLink(agentId: string): string
   /** Opens the agent's details in a popup. */
   onViewDetails(agentId: string): void
 }) {
   const link = useModuleLink()
   const tableColumns = useMemo(
-    () => columns(link, scope, selectedId, onSelect, onViewDetails),
-    [link, scope, selectedId, onSelect, onViewDetails],
+    () => columns(link, scope, agentLink, onViewDetails),
+    [link, scope, agentLink, onViewDetails],
   )
 
   return (

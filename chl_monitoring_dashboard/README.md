@@ -302,6 +302,18 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Each agent now has a page of their own, `/agents/{agent ID}` (top bar:
+  Enforcement › Agents & organizations · Agent activity): the agent's name
+  and ID in the banner with "All agents" and Refresh, the area and period
+  filters, then identity, performance overview, verification activity,
+  enforcement activity, activity by location and follow-up. It says so when
+  the agent has nothing in the chosen area or is not known, with a way back.
+  On Agents & organizations, an agent's name and the popup's "Show full
+  activity" open that page, keeping the area and period; the in-page
+  selected-agent section and the agent filter are gone (the organization
+  filter stays). Links from the Overview, Command centre and geographical
+  monitoring open the agent's page, and the old `/agents?agent=…` address
+  forwards to it.
 - Agents & organizations: the agent register's Actions menu opens "View
   details", a popup with the agent's identity, assigned scope, documented
   metrics and verification results for the period; "Show full activity" opens

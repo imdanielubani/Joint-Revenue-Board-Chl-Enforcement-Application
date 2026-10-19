@@ -173,7 +173,7 @@ function AgentRegister({ rows }: { rows: readonly AgentRow[] }) {
         align: 'end',
         render: (row) => {
           const actions = [
-            { label: 'View agent', to: link('agents', `${paths.agents}?agent=${row.agentId}`) },
+            { label: 'View agent', to: link('agents', paths.agent(row.agentId)) },
             {
               label: 'View violations issued',
               to: link('violations', `${paths.violations}?agent=${row.agentId}`),

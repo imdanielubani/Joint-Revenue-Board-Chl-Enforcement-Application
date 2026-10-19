@@ -1,0 +1,73 @@
+/* As the Overview: sections 24px apart; banner and filters as one block. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 8px;
+}
+
+/* Identity beside the performance figures: 391px and 737px of 1144px, as the geography page. */
+.profileRow {
+  display: grid;
+  grid-template-columns: minmax(0, 391fr) minmax(0, 737fr);
+  gap: 14px;
+}
+
+.stale {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid #f5d9a8;
+  border-radius: 8px;
+  background: var(--status-warning-bg);
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+}
+
+.note {
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 18px;
+}
+
+/* The map beside the agent's locations: 737px and 391px of 1144px, as the geography page. */
+.splitRow {
+  display: grid;
+  grid-template-columns: minmax(0, 737fr) minmax(0, 391fr);
+  gap: 14px;
+}
+
+/* Follow-up: unresolved cases beside repeat-vehicle reports, each as tall as the taller. */
+.pairRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
+@media (max-width: 1180px) {
+  .profileRow,
+  .splitRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .pairRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* "Back to all agents", under a message that the agent is not in the area. */
+.backLink {
+  padding: 6px 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 7px;
+  background: var(--color-surface);
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  background: var(--card-bg);
+}

@@ -33,17 +33,21 @@ const NOT_FOUND: PageMeta = {
   tileIcon: 'shell/tile-overview.svg',
 }
 
-/** The top bar's title, breadcrumb and icon for a path (a module's sub-pages count as the module). */
+/**
+ * The top bar's title, breadcrumb and icon for a path. A module's page for one
+ * record has the module in its breadcrumb and its own title.
+ */
 export function pageMeta(pathname: string): PageMeta {
   const module = MODULES.find(
     (candidate) => pathname === candidate.path || pathname.startsWith(`${candidate.path}/`),
   )
   if (module) {
-    return {
-      title: module.title ?? module.label,
-      crumbs: module.crumbs ?? [module.section, module.label],
-      tileIcon: module.tileIcon ?? module.icon,
+    const crumbs = module.crumbs ?? [module.section, module.label]
+    const tileIcon = module.tileIcon ?? module.icon
+    if (pathname !== module.path && module.recordTitle) {
+      return { title: module.recordTitle, crumbs: [module.section, module.label], tileIcon }
     }
+    return { title: module.title ?? module.label, crumbs, tileIcon }
   }
   return OTHER_PAGES[pathname] ?? NOT_FOUND
 }

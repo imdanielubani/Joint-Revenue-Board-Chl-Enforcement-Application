@@ -6,66 +6,6 @@
   padding-bottom: 8px;
 }
 
-/* The chosen agent: its heading, then its cards. Clear of the sticky top bar when scrolled to. */
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  scroll-margin-top: 96px;
-}
-
-.detailHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 8px 16px;
-}
-
-.eyebrow {
-  color: var(--card-muted);
-  font-size: 10px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-}
-
-.detailTitle {
-  color: var(--card-title);
-  font-size: 18px;
-  font-weight: var(--font-weight-semibold);
-  line-height: 26px;
-}
-
-.detailId {
-  color: var(--card-muted);
-  font-size: 13px;
-  font-weight: var(--font-weight-medium);
-}
-
-.back {
-  padding: 6px 12px;
-  border: 0.8px solid var(--card-line);
-  border-radius: 7px;
-  background: var(--color-surface);
-  color: var(--card-title);
-  font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-}
-
-.back:hover {
-  background: var(--card-bg);
-}
-
-/* Identity beside the performance figures: 391px and 737px of 1144px, as the geography page. */
-.profileRow {
-  display: grid;
-  grid-template-columns: minmax(0, 391fr) minmax(0, 737fr);
-  gap: 14px;
-}
-
 .stale {
   padding: var(--space-2) var(--space-3);
   border: 1px solid #f5d9a8;
@@ -79,31 +19,4 @@
   color: var(--card-muted);
   font-size: 11px;
   line-height: 18px;
-}
-
-/* The map beside the agent's locations: 737px and 391px of 1144px, as the geography page. */
-.splitRow {
-  display: grid;
-  grid-template-columns: minmax(0, 737fr) minmax(0, 391fr);
-  gap: 14px;
-}
-
-/* Follow-up: unresolved cases beside repeat-vehicle reports, each as tall as the taller. */
-.pairRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 17px;
-}
-
-@media (max-width: 1180px) {
-  .profileRow,
-  .splitRow {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 760px) {
-  .pairRow {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

@@ -46,6 +46,12 @@ const MODULE_PAGES: Record<ModuleKey, LazyPage> = {
   sync: () => import('@/features/sync/pages/SyncPage').then((m) => ({ Component: m.SyncPage })),
 }
 
+// A module's page for one record, at `path/<id>`, where it has one.
+const RECORD_PAGES: Partial<Record<ModuleKey, LazyPage>> = {
+  agents: () =>
+    import('@/features/agents/pages/AgentPage').then((m) => ({ Component: m.AgentPage })),
+}
+
 export const routes: RouteObject[] = [
   {
     // Notifications live here, inside the router, so a notification's action can be a link,
@@ -110,7 +116,12 @@ export const routes: RouteObject[] = [
               ...MODULES.map<RouteObject>((module) => ({
                 path: module.path,
                 element: <RequireModule module={module.key} />,
-                children: [{ index: true, lazy: MODULE_PAGES[module.key] }],
+                children: [
+                  { index: true, lazy: MODULE_PAGES[module.key] },
+                  ...(RECORD_PAGES[module.key]
+                    ? [{ path: ':recordId', lazy: RECORD_PAGES[module.key] }]
+                    : []),
+                ],
               })),
               { path: '*', element: <NotFoundPage /> },
             ],

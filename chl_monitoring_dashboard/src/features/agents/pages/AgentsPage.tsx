@@ -1,39 +1,42 @@
-import type { UseQueryResult } from '@tanstack/react-query'
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type Ref } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { useAreas } from '@/features/geography/areas.queries'
-import { EnforcementFootprintCard } from '@/features/geography/components/GeographyCards'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
-import { CasesCard, RepeatVehiclesCard } from '@/features/overview/components/AttentionCards'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
-import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { FILTER_PARAMS, useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { totalsOf } from '../agents-display'
-import { useAgentActivity, useAgents, useAgentsMonitoring } from '../agents.queries'
-import type { AgentActivity, AgentsFilters, AgentSummary } from '../agents.schemas'
-import { EnforcementActivityCard, VerificationActivityCard } from '../components/AgentActivityCards'
+import { agentPageLink } from '../agents-links'
+import { useAgents, useAgentsMonitoring } from '../agents.queries'
+import type { AgentsFilters } from '../agents.schemas'
 import { AgentDetailsDialog } from '../components/AgentDetailsDialog'
-import { AgentLocationsCard } from '../components/AgentLocationsCard'
-import { AgentIdentityCard, PerformanceOverviewCard } from '../components/AgentProfileCards'
 import { AgentRegisterCard } from '../components/AgentRegisterCard'
 import { OrganizationsCard } from '../components/OrganizationsCard'
 import styles from './AgentsPage.module.css'
 
 /**
  * Agents & organizations (SRD 5): the existing agents the user may see — who
- * they are, the scope CHL assigns them, what they recorded and what still needs
- * follow-up. A monitoring view: it never creates or administers agent accounts,
- * and never scores or ranks agents.
+ * they are, the scope CHL assigns them and what they recorded — by vendor or
+ * organization. Each agent has their own page for their full activity. A
+ * monitoring view: it never creates or administers agent accounts, and never
+ * scores or ranks agents.
  */
 export function AgentsPage() {
   const user = useCurrentUser()
   const areas = useAreas()
   const scopes = useMemo(() => scopeOptions(user, areas.data), [user, areas.data])
+  const [params] = useSearchParams()
+  const { search } = useLocation()
+
+  // An agent named the old way ("/agents?agent=…") has their own page now.
+  const requestedAgent = params.get(FILTER_PARAMS.agent)
+  if (requestedAgent) return <Navigate replace to={agentPageLink(requestedAgent, search)} />
 
   const [first] = scopes
   if (!first) {
@@ -59,6 +62,8 @@ function AgentsContent({
   areasPending: boolean
 }) {
   const link = useModuleLink()
+  const navigate = useNavigate()
+  const { search } = useLocation()
   const agentList = useAgents()
   const filter = useOverviewFilters({
     scopes,
@@ -66,7 +71,7 @@ function AgentsContent({
     areasPending,
     agents: agentList.data,
   })
-  const { scope, filters, setAgent, setOrganization } = filter
+  const { scope, filters, setOrganization } = filter
   const period: AgentsFilters = {
     scope: filters.scope,
     range: filters.range,
@@ -85,40 +90,14 @@ function AgentsContent({
     [monitoring, filters.organization],
   )
   const totals = totalsOf(inView)
-  const selected = filters.agentId
-    ? (inView.find((agent) => agent.id === filters.agentId) ?? null)
-    : null
-  // The chosen agent's records, once they are known to be in the area.
-  const activity = useAgentActivity(selected?.id ?? null, period, { enabled: !filter.waiting })
 
   // The agent whose details are open in a popup, from the register's actions.
   const [detailsFor, setDetailsFor] = useState<string | null>(null)
   const detailsAgent = detailsFor ? (inView.find((agent) => agent.id === detailsFor) ?? null) : null
-
-  // A name chosen in the register brings its activity into view.
-  const detailRef = useRef<HTMLElement>(null)
-  const scrollPending = useRef(false)
-  const selectAgent = useCallback(
-    (agentId: string) => {
-      scrollPending.current = true
-      setAgent(agentId)
-    },
-    [setAgent],
-  )
-  useEffect(() => {
-    if (!scrollPending.current || !detailRef.current) return
-    scrollPending.current = false
-    detailRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [filters.agentId, monitoring])
+  const agentLink = useCallback((agentId: string) => agentPageLink(agentId, search), [search])
 
   const scoped = (to: string) =>
     `${to}${to.includes('?') ? '&' : '?'}scope=${encodeURIComponent(scope.value)}`
-  const refreshing =
-    (query.isFetching && !query.isPending) || (activity.isFetching && !activity.isPending)
-  const refresh = () => {
-    void query.refetch()
-    if (selected) void activity.refetch()
-  }
   const periodText = periodLabel(filters.range, filters)
 
   return (
@@ -129,7 +108,12 @@ function AgentsContent({
           lede="Each agent’s recorded verification and enforcement activity, by vendor or organization."
           section="Enforcement"
           icons="agents"
-          actions={<RefreshButton refreshing={refreshing} onRefresh={refresh} />}
+          actions={
+            <RefreshButton
+              refreshing={query.isFetching && !query.isPending}
+              onRefresh={() => void query.refetch()}
+            />
+          }
         />
         <OverviewFilterBar
           scopes={scopes}
@@ -143,9 +127,10 @@ function AgentsContent({
             organizations: filter.organizations,
             organization: filters.organization,
             onOrganizationChange: setOrganization,
-            agents: filter.agentOptions,
-            agentId: filters.agentId,
-            onAgentChange: setAgent,
+            // Each agent has a page of their own: the register opens it, so no agent filter here.
+            agents: [],
+            agentId: null,
+            onAgentChange: () => {},
             onClear: filter.clearPeopleFilters,
           }}
           checkedAt={query.dataUpdatedAt}
@@ -200,8 +185,7 @@ function AgentsContent({
             agents={inView}
             scope={scope.value}
             scopeName={scope.name}
-            selectedId={selected?.id ?? null}
-            onSelect={selectAgent}
+            agentLink={agentLink}
             onViewDetails={setDetailsFor}
           />
 
@@ -212,22 +196,8 @@ function AgentsContent({
               onClose={() => setDetailsFor(null)}
               onShowActivity={() => {
                 setDetailsFor(null)
-                selectAgent(detailsAgent.id)
+                void navigate(agentLink(detailsAgent.id))
               }}
-            />
-          )}
-
-          {filters.agentId && (
-            <SelectedAgent
-              ref={detailRef}
-              agentId={filters.agentId}
-              agentName={filter.agent?.name ?? filters.agentId}
-              agent={selected}
-              activity={activity}
-              scope={scope.value}
-              scopeName={scope.name}
-              periodText={periodText}
-              onClose={() => setAgent(null)}
             />
           )}
 
@@ -244,106 +214,5 @@ function AgentsContent({
         </>
       )}
     </div>
-  )
-}
-
-/**
- * The chosen agent's identity, documented metrics and records, or why they are
- * not shown for this area.
- */
-function SelectedAgent({
-  ref,
-  agentId,
-  agentName,
-  agent,
-  activity,
-  scope,
-  scopeName,
-  periodText,
-  onClose,
-}: {
-  ref: Ref<HTMLElement>
-  agentId: string
-  agentName: string
-  /** Null when the agent has no assignment or activity in the area. */
-  agent: AgentSummary | null
-  /** The agent's records and follow-up, loaded once they are known to be in the area. */
-  activity: UseQueryResult<AgentActivity>
-  /** The area's id, for links into the modules. */
-  scope: string
-  scopeName: string
-  periodText: string
-  onClose(): void
-}) {
-  const headingId = useId()
-  return (
-    <section ref={ref} className={styles.detail} aria-labelledby={headingId}>
-      <div className={styles.detailHead}>
-        <div>
-          <p className={styles.eyebrow}>Selected agent</p>
-          <h2 id={headingId} className={styles.detailTitle}>
-            {agentName} <span className={styles.detailId}>· {agentId}</span>
-          </h2>
-        </div>
-        <button type="button" className={styles.back} onClick={onClose}>
-          Show all agents
-        </button>
-      </div>
-      {agent ? (
-        <>
-          <div className={styles.profileRow}>
-            <AgentIdentityCard agent={agent} />
-            <PerformanceOverviewCard agent={agent} periodText={periodText} />
-          </div>
-          {activity.data ? (
-            <>
-              <VerificationActivityCard activity={activity.data} />
-              <EnforcementActivityCard activity={activity.data} />
-              <div className={styles.splitRow}>
-                <EnforcementFootprintCard
-                  title="Activity by location"
-                  subtitle="Enforcement points and the GPS recorded with the agent’s verifications"
-                  points={activity.data.locations}
-                  verifications={activity.data.records.verifications}
-                  selectedId={null}
-                  agentId={agent.id}
-                  emptyText="The agent recorded no activity at an enforcement location in this period."
-                />
-                <AgentLocationsCard locations={activity.data.locations} />
-              </div>
-              <div className={styles.pairRow}>
-                <CasesCard
-                  cases={activity.data.cases}
-                  title="Unresolved cases"
-                  subtitle="Follow-up: the agent’s violations not yet resolved, escalated included"
-                  scope={scope}
-                  agentId={agent.id}
-                />
-                <RepeatVehiclesCard
-                  repeat={activity.data.repeatVehicles}
-                  title="Repeat-vehicle reports"
-                  subtitle="Follow-up: alerts for vehicles the agent reported"
-                  scope={scope}
-                  agentId={agent.id}
-                />
-              </div>
-            </>
-          ) : activity.isPending ? (
-            <StatePanel kind="loading" message={`Loading ${agent.name}’s records…`} />
-          ) : (
-            <StatePanel
-              kind="error"
-              error={activity.error}
-              onRetry={() => void activity.refetch()}
-            />
-          )}
-        </>
-      ) : (
-        <StatePanel
-          kind="empty"
-          message={`${agentName} has no assignment or recorded activity in ${scopeName}. Choose another area, or another agent from the register.`}
-        />
-      )}
-    </section>
   )
 }

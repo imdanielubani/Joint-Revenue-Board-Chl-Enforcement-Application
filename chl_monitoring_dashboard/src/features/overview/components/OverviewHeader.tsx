@@ -66,7 +66,8 @@ interface FilterBarProps {
   /** The days reported on: shown beside a preset, editable for a custom range. */
   period: Period
   onCustomPeriodChange(period: Period): void
-  people: PeopleFilter
+  /** The organization and agent filters; absent where the page has none. */
+  people?: PeopleFilter | undefined
   /** When the figures on screen were fetched (ms); 0 before the first answer. */
   checkedAt: number
   /** When CHL last received a field record for these figures; null when none came. */
@@ -88,7 +89,9 @@ export function OverviewFilterBar({
   checkedAt,
   latestReceivedAt,
 }: FilterBarProps) {
-  const filtered = people.agentId !== null || people.organization !== null
+  const filtered = people !== undefined && (people.agentId !== null || people.organization !== null)
+  const showPeople =
+    people !== undefined && (people.agents.length > 0 || people.organizations.length > 0)
   return (
     <FilterBar end={<FreshnessLine checkedAt={checkedAt} latestReceivedAt={latestReceivedAt} />}>
       <img src={assetUrl('overview/scope-globe.svg')} alt="" width={17} height={17} />
@@ -103,7 +106,7 @@ export function OverviewFilterBar({
         onCustomPeriodChange={onCustomPeriodChange}
       />
 
-      {people.agents.length > 0 && (
+      {people && showPeople && (
         <>
           <FilterDivider />
           <MaskIcon className={styles.peopleIcon} src="overview/kpi-agents.svg" size={17} />
@@ -122,19 +125,21 @@ export function OverviewFilterBar({
               onChange={(value) => people.onOrganizationChange(value || null)}
             />
           )}
-          <FilterSelect
-            label="Agent"
-            value={people.agentId ?? ''}
-            active={people.agentId !== null}
-            options={[
-              { value: '', label: 'All agents' },
-              ...people.agents.map((agent) => ({
-                value: agent.id,
-                label: `${agent.name} · ${agent.id}`,
-              })),
-            ]}
-            onChange={(value) => people.onAgentChange(value || null)}
-          />
+          {people.agents.length > 0 && (
+            <FilterSelect
+              label="Agent"
+              value={people.agentId ?? ''}
+              active={people.agentId !== null}
+              options={[
+                { value: '', label: 'All agents' },
+                ...people.agents.map((agent) => ({
+                  value: agent.id,
+                  label: `${agent.name} · ${agent.id}`,
+                })),
+              ]}
+              onChange={(value) => people.onAgentChange(value || null)}
+            />
+          )}
           {filtered && (
             <button type="button" className={styles.clearFilters} onClick={people.onClear}>
               Clear

@@ -70,7 +70,7 @@ function primaryLink(item: FeedItem, link: ModuleLink): CardLink | undefined {
   if (item.kind === 'sos') {
     return {
       label: 'Open the agent',
-      to: link('agents', `${paths.agents}?agent=${encodeURIComponent(item.agent.id)}`),
+      to: link('agents', paths.agent(item.agent.id)),
     }
   }
   return undefined

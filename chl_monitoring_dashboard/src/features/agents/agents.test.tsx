@@ -9,6 +9,10 @@ import { renderApp, signInAs } from '@/test/render-app'
 import { totalsOf } from './agents-display'
 
 const card = (title: string) => screen.findByRole('region', { name: title })
+/** Waits for a page opened by navigating: its code loads the first time it is opened. */
+const AFTER_NAVIGATION = { timeout: 10_000 }
+/** For tests that open one page from another: each waits on a page loading. */
+const NAVIGATES = { timeout: 30_000 }
 const figure = async (label: string) => {
   const figures = await screen.findByRole('list', { name: 'Headline figures' })
   return within(figures).getByText(label).closest('li')!
@@ -52,6 +56,14 @@ describe('agents and organizations page', () => {
     )
   })
 
+  it('filters by organization, with no agent filter: each agent has a page of their own', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents')
+    await card('Agent register')
+    expect(screen.getByRole('combobox', { name: 'Organization' })).toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Agent' })).toBeNull()
+  })
+
   it('lists each agent’s identity, assigned scope and recorded activity, never a score', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/agents')
@@ -72,15 +84,15 @@ describe('agents and organizations page', () => {
       'Actions',
     ])
     for (const agent of expected('ng').agents) {
-      const row = within(table).getByRole('button', { name: agent.name }).closest('tr')!
+      const row = within(table).getByRole('link', { name: agent.name }).closest('tr')!
       expect(row).toHaveTextContent(agent.id)
       expect(row).toHaveTextContent(agent.organization ?? 'Not recorded')
       expect(row.querySelectorAll('td')[3]).toHaveTextContent(String(agent.metrics.verifications))
     }
-    const tunde = within(table).getByRole('button', { name: 'Tunde Okafor' }).closest('tr')!
+    const tunde = within(table).getByRole('link', { name: 'Tunde Okafor' }).closest('tr')!
     expect(tunde).toHaveTextContent('Ikeja LGA')
     // CHL does not expose Ada Nwosu's scope: it is said, not guessed.
-    const ada = within(table).getByRole('button', { name: 'Ada Nwosu' }).closest('tr')!
+    const ada = within(table).getByRole('link', { name: 'Ada Nwosu' }).closest('tr')!
     expect(ada).toHaveTextContent('Not exposed by CHL')
   })
 
@@ -99,50 +111,6 @@ describe('agents and organizations page', () => {
     }
   })
 
-  it('opens an agent’s identity and documented metrics, and closes them', async () => {
-    const tunde = expected('ng').agents.find((agent) => agent.id === 'JRB-AG-0142')!
-    signInAs('admin@jrb.gov.ng')
-    renderApp('/agents')
-    const register = await card('Agent register')
-    await userEvent.click(within(register).getByRole('button', { name: 'Tunde Okafor' }))
-
-    const identity = await card('Agent identity')
-    expect(identity).toHaveTextContent('JRB-AG-0142')
-    expect(identity).toHaveTextContent('Zone 1')
-    expect(identity).toHaveTextContent('Ikeja LGA')
-    const performance = await card('Performance overview')
-    expect(performance).toHaveTextContent(`Verifications${tunde.metrics.verifications}`)
-    expect(performance).toHaveTextContent(`Violations issued${tunde.metrics.violationsIssued}`)
-    expect(performance).toHaveTextContent(`Demand notices${tunde.metrics.demandNotices.issued}`)
-    expect(performance).toHaveTextContent('Agent performance scoring is a future extension')
-    expect(within(register).getByRole('button', { name: 'Tunde Okafor' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-
-    await userEvent.click(screen.getByRole('button', { name: 'Show all agents' }))
-    await waitFor(() =>
-      expect(screen.queryByRole('region', { name: 'Agent identity' })).not.toBeInTheDocument(),
-    )
-  })
-
-  it('opens the agent named in the address, and says so when they are not in the area', async () => {
-    signInAs('admin@jrb.gov.ng')
-    renderApp('/agents?agent=JRB-AG-0145')
-    const identity = await card('Agent identity')
-    expect(identity).toHaveTextContent('Ada Nwosu')
-    expect(identity).toHaveTextContent('Not exposed by CHL')
-  })
-
-  it('says when the chosen agent has nothing in the area', async () => {
-    signInAs('admin@jrb.gov.ng')
-    renderApp('/agents?agent=JRB-AG-0142&scope=kn')
-    expect(
-      await screen.findByText(/Tunde Okafor has no assignment or recorded activity in Kano state/),
-    ).toBeVisible()
-    expect(screen.queryByRole('region', { name: 'Agent identity' })).not.toBeInTheDocument()
-  })
-
   it('narrows the page to one organization’s agents', async () => {
     const zone2 = expected('ng').agents.filter((agent) => agent.organization === 'Zone 2')
     signInAs('admin@jrb.gov.ng')
@@ -155,18 +123,163 @@ describe('agents and organizations page', () => {
     )
     const register = await card('Agent register')
     for (const agent of zone2) {
-      expect(within(register).getByRole('button', { name: agent.name })).toBeInTheDocument()
+      expect(within(register).getByRole('link', { name: agent.name })).toBeInTheDocument()
     }
-    expect(within(register).queryByRole('button', { name: 'Tunde Okafor' })).toBeNull()
+    expect(within(register).queryByRole('link', { name: 'Tunde Okafor' })).toBeNull()
     expect(within(organizations).getByRole('button', { name: 'Zone 2' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
   })
+
+  it('lists agents with no organization last, not as a filter', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents')
+    const organizations = await card('Organizations')
+    const rows = within(organizations).getAllByRole('row')
+    expect(rows[rows.length - 1]).toHaveTextContent('Not recorded')
+    expect(within(rows[rows.length - 1]!).queryByRole('button')).toBeNull()
+  })
+
+  it(
+    'opens an agent’s page from their name, keeping the area and period, and comes back',
+    NAVIGATES,
+    async () => {
+      signInAs('admin@jrb.gov.ng')
+      const { router } = renderApp('/agents?scope=la&range=7d')
+      const register = await card('Agent register')
+      const name = within(register).getByRole('link', { name: 'Tunde Okafor' })
+      expect(name).toHaveAttribute('href', '/agents/JRB-AG-0142?scope=la&range=7d')
+      await userEvent.click(name)
+
+      expect(
+        await screen.findByRole('heading', { level: 2, name: 'Tunde Okafor' }, AFTER_NAVIGATION),
+      ).toBeVisible()
+      expect(router.state.location.pathname).toBe('/agents/JRB-AG-0142')
+      expect(router.state.location.search).toBe('?scope=la&range=7d')
+      expect(screen.getByRole('heading', { level: 1, name: 'Agent activity' })).toBeVisible()
+
+      await userEvent.click(screen.getByRole('button', { name: 'All agents' }))
+      expect(
+        await screen.findByRole(
+          'heading',
+          { level: 2, name: 'Agents & organizations' },
+          AFTER_NAVIGATION,
+        ),
+      ).toBeVisible()
+      expect(router.state.location.pathname).toBe('/agents')
+      expect(router.state.location.search).toBe('?scope=la&range=7d')
+    },
+  )
+
+  it('opens an agent’s details in a popup from the actions menu', NAVIGATES, async () => {
+    const tunde = expected('ng').agents.find((agent) => agent.id === 'JRB-AG-0142')!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/agents')
+    const register = await card('Agent register')
+    const actions = within(register).getByRole('button', { name: 'Actions for Tunde Okafor' })
+    await userEvent.click(actions)
+    expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+      'View details',
+      'View verifications',
+      'View violations',
+    ])
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Agent details' })
+    expect(dialog).toHaveTextContent('Tunde Okafor')
+    expect(dialog).toHaveTextContent('Agent IDJRB-AG-0142')
+    expect(dialog).toHaveTextContent('Vendor / organizationZone 1')
+    expect(dialog).toHaveTextContent('Ikeja LGA')
+    expect(dialog).toHaveTextContent(`Verifications${tunde.metrics.verifications}`)
+    expect(dialog).toHaveTextContent(`Demand notices${tunde.metrics.demandNotices.issued}`)
+    for (const entry of tunde.metrics.outcomes.filter((outcome) => outcome.count > 0)) {
+      expect(dialog).toHaveTextContent(`${outcomeLabel(entry.outcome)}${entry.count}`)
+    }
+
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(actions).toHaveFocus()
+
+    await userEvent.click(actions)
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Show full activity' }),
+    )
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Tunde Okafor' }, AFTER_NAVIGATION),
+    ).toBeVisible()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/agents/JRB-AG-0142')
+  })
+
+  it('sends the old address for an agent to their page', NAVIGATES, async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/agents?agent=JRB-AG-0145&scope=ng&org=Zone+2')
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Ada Nwosu' }, AFTER_NAVIGATION),
+    ).toBeVisible()
+    expect(router.state.location.pathname).toBe('/agents/JRB-AG-0145')
+    expect(router.state.location.search).toBe('?scope=ng')
+  })
+})
+
+describe('an agent’s page', () => {
+  it('shows the agent’s identity and documented metrics', async () => {
+    const { agent } = expectedActivity('JRB-AG-0142')
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents/JRB-AG-0142')
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Tunde Okafor' }, AFTER_NAVIGATION),
+    ).toBeVisible()
+    const identity = await card('Agent identity')
+    expect(identity).toHaveTextContent('JRB-AG-0142')
+    expect(identity).toHaveTextContent('Zone 1')
+    expect(identity).toHaveTextContent('Ikeja LGA')
+    const performance = await card('Performance overview')
+    expect(performance).toHaveTextContent(`Verifications${agent.metrics.verifications}`)
+    expect(performance).toHaveTextContent(`Violations issued${agent.metrics.violationsIssued}`)
+    expect(performance).toHaveTextContent(`Demand notices${agent.metrics.demandNotices.issued}`)
+    expect(performance).toHaveTextContent('Agent performance scoring is a future extension')
+    // Area and period only: the page is about one agent already.
+    expect(screen.queryByRole('combobox', { name: 'Agent' })).toBeNull()
+    expect(screen.queryByRole('combobox', { name: 'Organization' })).toBeNull()
+  })
+
+  it('shows an agent whose scope CHL does not expose, as such', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents/JRB-AG-0145')
+    const identity = await card('Agent identity')
+    expect(identity).toHaveTextContent('Ada Nwosu')
+    expect(identity).toHaveTextContent('Not exposed by CHL')
+  })
+
+  it('says when the agent has nothing in the area, with a way back', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents/JRB-AG-0142?scope=kn')
+    expect(
+      await screen.findByText(/Tunde Okafor has no assignment or recorded activity in Kano state/),
+    ).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Back to all agents' })).toHaveAttribute(
+      'href',
+      '/agents?scope=kn',
+    )
+    expect(screen.queryByRole('region', { name: 'Agent identity' })).not.toBeInTheDocument()
+  })
+
+  it('says when the agent is not known', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents/JRB-AG-9999')
+    expect(
+      await screen.findByText(/JRB-AG-9999 has no assignment or recorded activity in National/),
+    ).toBeVisible()
+  })
+
   it('lists the agent’s verification records and filters them by result', async () => {
     const { records } = expectedActivity('JRB-AG-0142')
     signInAs('admin@jrb.gov.ng')
-    renderApp('/agents?agent=JRB-AG-0142')
+    renderApp('/agents/JRB-AG-0142')
     const activity = await card('Verification activity')
     const table = within(activity).getByRole('table', { name: 'Verification records' })
     expect(bodyRows(table)).toHaveLength(Math.min(records.verifications.length, 10))
@@ -192,7 +305,7 @@ describe('agents and organizations page', () => {
   it('shows the violations the agent issued with their action status, their notices and evidence', async () => {
     const { records } = expectedActivity('JRB-AG-0142')
     signInAs('admin@jrb.gov.ng')
-    renderApp('/agents?agent=JRB-AG-0142')
+    renderApp('/agents/JRB-AG-0142')
     const enforcement = await card('Enforcement activity')
     expect(within(enforcement).getByRole('tab', { name: /^Violations issued/ })).toHaveTextContent(
       String(records.violations.length),
@@ -209,10 +322,11 @@ describe('agents and organizations page', () => {
     const evidence = within(enforcement).getByRole('table', { name: 'Evidence submitted' })
     expect(bodyRows(evidence)).toHaveLength(Math.min(records.evidence.length, 10))
   })
+
   it('shows where the agent recorded activity and what still needs follow-up', async () => {
     const { locations, cases, repeatVehicles } = expectedActivity('JRB-AG-0142')
     signInAs('admin@jrb.gov.ng')
-    renderApp('/agents?agent=JRB-AG-0142')
+    renderApp('/agents/JRB-AG-0142')
 
     expect(await card('Activity by location')).toBeVisible()
     const recorded = await card('Locations recorded')
@@ -234,9 +348,10 @@ describe('agents and organizations page', () => {
       expect(repeats).toHaveTextContent(item.plate)
     }
   })
+
   it('shows an agent with no organization and nothing recorded, as they are', async () => {
     signInAs('admin@jrb.gov.ng')
-    renderApp('/agents?agent=JRB-AG-0146')
+    renderApp('/agents/JRB-AG-0146')
     const identity = await card('Agent identity')
     expect(identity).toHaveTextContent('Chidi Eze')
     expect(identity).toHaveTextContent('Vendor / organizationNot recorded')
@@ -246,49 +361,12 @@ describe('agents and organizations page', () => {
         'The agent recorded no activity at an enforcement location in this period.',
       ),
     ).toBeVisible()
-    const organizations = await card('Organizations')
-    const rows = within(organizations).getAllByRole('row')
-    // Agents with no organization come last, and cannot be chosen as a filter.
-    expect(rows[rows.length - 1]).toHaveTextContent('Not recorded')
-    expect(within(rows[rows.length - 1]!).queryByRole('button')).toBeNull()
   })
-  it('opens an agent’s details in a popup from the actions menu', async () => {
-    const tunde = expected('ng').agents.find((agent) => agent.id === 'JRB-AG-0142')!
-    signInAs('admin@jrb.gov.ng')
-    renderApp('/agents')
-    const register = await card('Agent register')
-    const actions = within(register).getByRole('button', { name: 'Actions for Tunde Okafor' })
-    await userEvent.click(actions)
-    expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
-      'View details',
-      'View verifications',
-      'View violations',
-    ])
-    await userEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
 
-    const dialog = screen.getByRole('dialog', { name: 'Agent details' })
-    expect(dialog).toHaveTextContent('Tunde Okafor')
-    expect(dialog).toHaveTextContent('Agent IDJRB-AG-0142')
-    expect(dialog).toHaveTextContent('Vendor / organizationZone 1')
-    expect(dialog).toHaveTextContent('Ikeja LGA')
-    expect(dialog).toHaveTextContent(`Verifications${tunde.metrics.verifications}`)
-    expect(dialog).toHaveTextContent(`Demand notices${tunde.metrics.demandNotices.issued}`)
-    for (const entry of tunde.metrics.outcomes.filter((outcome) => outcome.count > 0)) {
-      expect(dialog).toHaveTextContent(`${outcomeLabel(entry.outcome)}${entry.count}`)
-    }
-    // Opening the details does not open the agent's activity on the page.
+  it('is closed to a role without the agents module', async () => {
+    signInAs('po@jrb.gov.ng')
+    renderApp('/agents/JRB-AG-0142')
+    expect(await screen.findByText(/Your account can.t open this page/)).toBeVisible()
     expect(screen.queryByRole('region', { name: 'Agent identity' })).not.toBeInTheDocument()
-
-    await userEvent.keyboard('{Escape}')
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(actions).toHaveFocus()
-
-    await userEvent.click(actions)
-    await userEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
-    await userEvent.click(
-      within(screen.getByRole('dialog')).getByRole('button', { name: 'Show full activity' }),
-    )
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(await card('Agent identity')).toHaveTextContent('JRB-AG-0142')
   })
 })

@@ -158,7 +158,7 @@ export function RecentActivityCard({ records }: { records: readonly ActivityReco
             },
             {
               label: 'View agent',
-              to: link('agents', `${paths.agents}?agent=${row.agent.id}`),
+              to: link('agents', paths.agent(row.agent.id)),
             },
           ].filter((action): action is RowAction => action.to !== undefined)
           return actions.length > 0 ? (

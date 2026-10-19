@@ -19,6 +19,8 @@ export interface ModuleDefinition {
   icon: string
   /** The top-bar icon, when the design gives one of its own. */
   tileIcon?: string
+  /** The top-bar title on the module's page for one record (`path/<id>`), where it has one. */
+  recordTitle?: string
 }
 
 /** The dashboard's modules, in menu order. The router, the sidebar and the top bar read this. */
@@ -71,6 +73,7 @@ export const MODULES: readonly ModuleDefinition[] = [
   {
     key: 'agents',
     label: 'Agents & organizations',
+    recordTitle: 'Agent activity',
     path: paths.agents,
     section: 'Enforcement',
     icon: 'nav/agents.svg',

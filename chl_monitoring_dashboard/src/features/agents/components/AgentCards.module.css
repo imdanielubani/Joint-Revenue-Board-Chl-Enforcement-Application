@@ -51,6 +51,7 @@
   font-size: inherit;
   font-weight: var(--font-weight-semibold);
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 

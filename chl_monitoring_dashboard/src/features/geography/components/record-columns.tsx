@@ -136,7 +136,7 @@ export function verificationColumns(
           },
           {
             label: 'View agent',
-            to: withAgent ? link('agents', `${paths.agents}?agent=${row.agent.id}`) : undefined,
+            to: withAgent ? link('agents', paths.agent(row.agent.id)) : undefined,
           },
         ])
         return actions.length > 0 ? (
@@ -193,7 +193,7 @@ export function agentColumns(
       align: 'end',
       render: (row) => {
         const actions = actionsOf([
-          { label: 'View agent', to: link('agents', `${paths.agents}?agent=${row.agentId}`) },
+          { label: 'View agent', to: link('agents', paths.agent(row.agentId)) },
         ])
         return actions.length > 0 ? (
           <RowActions label={`Actions for ${row.name}`} actions={actions} />
