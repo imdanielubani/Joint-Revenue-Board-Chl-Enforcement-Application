@@ -28,13 +28,16 @@
 
 .item {
   padding: 8px 10px;
+  border: 0;
   border-radius: 6px;
+  background: transparent;
   color: var(--card-title);
   font-family: var(--font-ui);
   font-size: 13px;
   line-height: 18px;
   text-align: left;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .item:hover,

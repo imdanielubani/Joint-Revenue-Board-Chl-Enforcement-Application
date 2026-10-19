@@ -3,21 +3,28 @@ import { Link } from 'react-router'
 import { assetUrl } from '@/shared/lib/asset-url'
 import styles from './RowActions.module.css'
 
+/** A menu item opening another page. */
 export interface RowAction {
   label: string
   to: string
 }
 
+/** A menu item acting on this page, such as opening a popup. */
+export interface RowCommand {
+  label: string
+  onSelect(): void
+}
+
 interface RowActionsProps {
   /** Names the row, for the button: "Actions for KDN-512-ZA". */
   label: string
-  actions: readonly RowAction[]
+  actions: readonly (RowAction | RowCommand)[]
 }
 
 const MENU_WIDTH = 180
 
 /**
- * The "⋮" button at the end of a record row, opening a short menu of links.
+ * The "⋮" button at the end of a record row, opening a short menu of links and actions.
  * The menu is placed against the window, so a scrolling table never clips it.
  */
 export function RowActions({ label, actions }: RowActionsProps) {
@@ -102,17 +109,33 @@ export function RowActions({ label, actions }: RowActionsProps) {
           style={{ top: position.top, left: position.left, width: MENU_WIDTH }}
           onKeyDown={onKeyDown}
         >
-          {actions.map((action) => (
-            <Link
-              key={action.label}
-              role="menuitem"
-              className={styles.item}
-              to={action.to}
-              onClick={() => close(false)}
-            >
-              {action.label}
-            </Link>
-          ))}
+          {actions.map((action) =>
+            'to' in action ? (
+              <Link
+                key={action.label}
+                role="menuitem"
+                className={styles.item}
+                to={action.to}
+                onClick={() => close(false)}
+              >
+                {action.label}
+              </Link>
+            ) : (
+              <button
+                key={action.label}
+                type="button"
+                role="menuitem"
+                className={styles.item}
+                onClick={() => {
+                  // Back to the "⋮" button first, so whatever opens returns focus there.
+                  close(true)
+                  action.onSelect()
+                }}
+              >
+                {action.label}
+              </button>
+            ),
+          )}
         </div>
       )}
     </>

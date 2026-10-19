@@ -5,7 +5,7 @@ import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions, type RowAction } from '@/shared/ui/RowActions'
+import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
 import { assignedScopeText, organizationLabel, SCOPE_NOT_EXPOSED } from '../agents-display'
 import type { AgentMetrics, AgentSummary } from '../agents.schemas'
 import styles from './AgentCards.module.css'
@@ -21,6 +21,7 @@ function columns(
   scope: string,
   selectedId: string | null,
   onSelect: (agentId: string) => void,
+  onViewDetails: (agentId: string) => void,
 ): Column<AgentSummary>[] {
   // The figures cannot be sorted: ordering agents by them would rank agents, which
   // this module does not do (agent scoring is a future extension).
@@ -86,7 +87,7 @@ function columns(
       align: 'end',
       render: (row) => {
         const agent = `agent=${encodeURIComponent(row.id)}`
-        const actions = [
+        const links = [
           {
             label: 'View verifications',
             to: link('verifications', withScope(`${paths.verifications}?${agent}`, scope)),
@@ -96,9 +97,8 @@ function columns(
             to: link('violations', withScope(`${paths.violations}?${agent}`, scope)),
           },
         ].filter((action): action is RowAction => action.to !== undefined)
-        return actions.length > 0 ? (
-          <RowActions label={`Actions for ${row.name}`} actions={actions} />
-        ) : null
+        const details: RowCommand = { label: 'View details', onSelect: () => onViewDetails(row.id) }
+        return <RowActions label={`Actions for ${row.name}`} actions={[details, ...links]} />
       },
     },
   ]
@@ -110,7 +110,7 @@ const searchText = (row: AgentSummary) =>
 /**
  * "Agent register": every agent in view — identity, the scope CHL assigns
  * them and what they recorded in the period. Listed by agent ID, never ranked;
- * a name opens that agent's activity below.
+ * a name opens that agent's activity below, and "View details" a popup.
  */
 export function AgentRegisterCard({
   agents,
@@ -118,6 +118,7 @@ export function AgentRegisterCard({
   scopeName,
   selectedId,
   onSelect,
+  onViewDetails,
 }: {
   agents: readonly AgentSummary[]
   /** The area's id, for links into the modules. */
@@ -126,11 +127,13 @@ export function AgentRegisterCard({
   scopeName: string
   selectedId: string | null
   onSelect(agentId: string): void
+  /** Opens the agent's details in a popup. */
+  onViewDetails(agentId: string): void
 }) {
   const link = useModuleLink()
   const tableColumns = useMemo(
-    () => columns(link, scope, selectedId, onSelect),
-    [link, scope, selectedId, onSelect],
+    () => columns(link, scope, selectedId, onSelect, onViewDetails),
+    [link, scope, selectedId, onSelect, onViewDetails],
   )
 
   return (

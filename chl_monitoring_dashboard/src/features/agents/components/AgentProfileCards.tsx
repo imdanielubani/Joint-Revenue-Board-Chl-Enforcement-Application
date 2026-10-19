@@ -7,21 +7,11 @@ import styles from './AgentCards.module.css'
 
 /* ------------------------------------------------------------ Agent identity */
 
-/** "Agent identity": who the agent is and where CHL assigns them, as CHL records it. */
-export function AgentIdentityCard({ agent }: { agent: AgentSummary }) {
+/** Who the agent is and where CHL assigns them: on the identity card and in the details popup. */
+export function AgentIdentityDetails({ agent }: { agent: AgentSummary }) {
   const areas = assignedAreas(agent)
   return (
-    <DashboardCard
-      title="Agent identity"
-      subtitle="As CHL records the agent"
-      icon="agents/card-identity.svg"
-      bodyClassName={styles.body}
-      footer={
-        <p className={styles.footer}>
-          Read-only. Accounts, assignments and organizations are managed in CHL.
-        </p>
-      }
-    >
+    <>
       <div className={styles.identityHead}>
         <span className={styles.avatar} aria-hidden="true">
           {initials(agent.name)}
@@ -75,6 +65,25 @@ export function AgentIdentityCard({ agent }: { agent: AgentSummary }) {
           </dd>
         </div>
       </dl>
+    </>
+  )
+}
+
+/** "Agent identity": who the agent is and where CHL assigns them, as CHL records it. */
+export function AgentIdentityCard({ agent }: { agent: AgentSummary }) {
+  return (
+    <DashboardCard
+      title="Agent identity"
+      subtitle="As CHL records the agent"
+      icon="agents/card-identity.svg"
+      bodyClassName={styles.body}
+      footer={
+        <p className={styles.footer}>
+          Read-only. Accounts, assignments and organizations are managed in CHL.
+        </p>
+      }
+    >
+      <AgentIdentityDetails agent={agent} />
     </DashboardCard>
   )
 }
@@ -92,10 +101,60 @@ function Tile({ label, value, note }: { label: string; value: number; note: stri
 }
 
 /**
- * "Performance overview": the documented verification and enforcement metrics
- * for the agent, as counts. No score, rank or target: agent scoring is a
- * future extension.
+ * The documented verification and enforcement metrics for the agent, as
+ * counts: on the performance card and in the details popup. No score, rank or
+ * target: agent scoring is a future extension.
  */
+export function AgentMetricTiles({ agent }: { agent: AgentSummary }) {
+  const { metrics } = agent
+  const notices = metrics.demandNotices
+  return (
+    <dl className={styles.tiles}>
+      <Tile
+        label="Verifications"
+        value={metrics.verifications}
+        note="Outcomes recorded, not unique trips"
+      />
+      <Tile
+        label="Violations issued"
+        value={metrics.violationsIssued}
+        note="From the agent’s verifications"
+      />
+      <Tile
+        label="Evidence submitted"
+        value={metrics.evidenceSubmitted}
+        note="Violations with photographs"
+      />
+      <Tile
+        label="Demand notices"
+        value={notices.issued}
+        note={`${notices.paymentReceived} payment received · ${notices.paymentPending} pending`}
+      />
+      <Tile
+        label="Unresolved cases"
+        value={metrics.unresolved}
+        note={`${metrics.escalated} escalated within this total`}
+      />
+      <Tile
+        label="Repeat-vehicle alerts"
+        value={metrics.repeatAlerts}
+        note="Vehicles the agent reported"
+      />
+      <Tile
+        label="Trip activation recorded"
+        value={notices.tripActivatedOnPaid}
+        note="On paid notices · separate from payment"
+      />
+      <Tile
+        label="Enforcement locations"
+        value={metrics.enforcementLocations}
+        note="With recorded activity"
+      />
+    </dl>
+  )
+}
+
+/** "Performance overview": the agent's documented metrics for the period. */
 export function PerformanceOverviewCard({
   agent,
   periodText,
@@ -104,8 +163,6 @@ export function PerformanceOverviewCard({
   /** "Last 14 days", or the dates of a custom range. */
   periodText: string
 }) {
-  const { metrics } = agent
-  const notices = metrics.demandNotices
   return (
     <DashboardCard
       title="Performance overview"
@@ -119,48 +176,7 @@ export function PerformanceOverviewCard({
         </p>
       }
     >
-      <dl className={styles.tiles}>
-        <Tile
-          label="Verifications"
-          value={metrics.verifications}
-          note="Outcomes recorded, not unique trips"
-        />
-        <Tile
-          label="Violations issued"
-          value={metrics.violationsIssued}
-          note="From the agent’s verifications"
-        />
-        <Tile
-          label="Evidence submitted"
-          value={metrics.evidenceSubmitted}
-          note="Violations with photographs"
-        />
-        <Tile
-          label="Demand notices"
-          value={notices.issued}
-          note={`${notices.paymentReceived} payment received · ${notices.paymentPending} pending`}
-        />
-        <Tile
-          label="Unresolved cases"
-          value={metrics.unresolved}
-          note={`${metrics.escalated} escalated within this total`}
-        />
-        <Tile
-          label="Repeat-vehicle alerts"
-          value={metrics.repeatAlerts}
-          note="Vehicles the agent reported"
-        />
-        <Tile
-          label="Trip activation recorded"
-          value={notices.tripActivatedOnPaid}
-          note="On paid notices · separate from payment"
-        />
-        <Tile
-          label="Enforcement locations"
-          value={metrics.enforcementLocations}
-          note="With recorded activity"
-        />
-      </dl>
+      <AgentMetricTiles agent={agent} />
     </DashboardCard>
   )
 }

@@ -134,6 +134,72 @@
   gap: 6px 8px;
 }
 
+/* Agent details popup */
+.dialogSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dialogHeading {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 18px;
+}
+
+.resultList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resultItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 7px;
+  color: var(--card-title);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+}
+
+.secondaryButton,
+.primaryButton {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.secondaryButton {
+  border: 0.8px solid var(--card-line);
+  background: var(--color-surface);
+  color: var(--card-title);
+}
+
+.secondaryButton:hover {
+  background: var(--card-bg);
+}
+
+.primaryButton {
+  border: 0.8px solid var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.primaryButton:hover {
+  border-color: var(--color-primary-hover);
+  background: var(--color-primary-hover);
+}
+
 /* Agent identity */
 .identityHead {
   display: flex;

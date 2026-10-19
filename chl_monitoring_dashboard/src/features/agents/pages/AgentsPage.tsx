@@ -1,5 +1,5 @@
 import type { UseQueryResult } from '@tanstack/react-query'
-import { useCallback, useEffect, useId, useMemo, useRef, type Ref } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type Ref } from 'react'
 import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useModuleLink } from '@/features/auth/use-module-link'
@@ -17,6 +17,7 @@ import { totalsOf } from '../agents-display'
 import { useAgentActivity, useAgents, useAgentsMonitoring } from '../agents.queries'
 import type { AgentActivity, AgentsFilters, AgentSummary } from '../agents.schemas'
 import { EnforcementActivityCard, VerificationActivityCard } from '../components/AgentActivityCards'
+import { AgentDetailsDialog } from '../components/AgentDetailsDialog'
 import { AgentLocationsCard } from '../components/AgentLocationsCard'
 import { AgentIdentityCard, PerformanceOverviewCard } from '../components/AgentProfileCards'
 import { AgentRegisterCard } from '../components/AgentRegisterCard'
@@ -89,6 +90,10 @@ function AgentsContent({
     : null
   // The chosen agent's records, once they are known to be in the area.
   const activity = useAgentActivity(selected?.id ?? null, period, { enabled: !filter.waiting })
+
+  // The agent whose details are open in a popup, from the register's actions.
+  const [detailsFor, setDetailsFor] = useState<string | null>(null)
+  const detailsAgent = detailsFor ? (inView.find((agent) => agent.id === detailsFor) ?? null) : null
 
   // A name chosen in the register brings its activity into view.
   const detailRef = useRef<HTMLElement>(null)
@@ -197,7 +202,20 @@ function AgentsContent({
             scopeName={scope.name}
             selectedId={selected?.id ?? null}
             onSelect={selectAgent}
+            onViewDetails={setDetailsFor}
           />
+
+          {detailsAgent && (
+            <AgentDetailsDialog
+              agent={detailsAgent}
+              periodText={periodText}
+              onClose={() => setDetailsFor(null)}
+              onShowActivity={() => {
+                setDetailsFor(null)
+                selectAgent(detailsAgent.id)
+              }}
+            />
+          )}
 
           {filters.agentId && (
             <SelectedAgent

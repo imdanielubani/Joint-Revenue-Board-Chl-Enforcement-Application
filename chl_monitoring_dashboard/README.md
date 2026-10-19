@@ -302,6 +302,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agents & organizations: the agent register's Actions menu opens "View
+  details", a popup with the agent's identity, assigned scope, documented
+  metrics and verification results for the period; "Show full activity" opens
+  the agent's records below the register. A shared popup (`shared/ui/Dialog`)
+  closes with Escape, its close button or a click outside, keeps the keyboard
+  inside it, stops the page behind from scrolling and gives focus back to the
+  "⋮" button. Row action menus can now hold actions as well as links.
 - Sample data: a fifth agent, Chidi Eze (JRB-AG-0146), newly assigned to
   Ikeja LGA with no organization recorded by CHL and nothing recorded yet, so
   Agents & organizations shows "Not recorded" and an agent without activity

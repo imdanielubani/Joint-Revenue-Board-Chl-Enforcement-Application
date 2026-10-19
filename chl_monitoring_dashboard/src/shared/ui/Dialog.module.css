@@ -1,0 +1,84 @@
+/* The page dimmed behind the popup, as behind the sidebar on a phone; above menus, under toasts. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: rgb(19 44 29 / 0.35);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 48px);
+  border: 0.8px solid var(--card-line);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-toast);
+  outline: none;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 0.8px solid var(--card-line);
+}
+
+.title {
+  color: var(--card-title);
+  font-size: 16px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 22px;
+}
+
+.subtitle {
+  margin-top: 2px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.close {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--card-title);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--card-bg);
+}
+
+/* The content scrolls inside the popup when it is taller than the window. */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+  border-top: 0.8px solid var(--card-line);
+}

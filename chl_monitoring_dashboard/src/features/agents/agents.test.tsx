@@ -252,4 +252,43 @@ describe('agents and organizations page', () => {
     expect(rows[rows.length - 1]).toHaveTextContent('Not recorded')
     expect(within(rows[rows.length - 1]!).queryByRole('button')).toBeNull()
   })
+  it('opens an agent’s details in a popup from the actions menu', async () => {
+    const tunde = expected('ng').agents.find((agent) => agent.id === 'JRB-AG-0142')!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents')
+    const register = await card('Agent register')
+    const actions = within(register).getByRole('button', { name: 'Actions for Tunde Okafor' })
+    await userEvent.click(actions)
+    expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+      'View details',
+      'View verifications',
+      'View violations',
+    ])
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Agent details' })
+    expect(dialog).toHaveTextContent('Tunde Okafor')
+    expect(dialog).toHaveTextContent('Agent IDJRB-AG-0142')
+    expect(dialog).toHaveTextContent('Vendor / organizationZone 1')
+    expect(dialog).toHaveTextContent('Ikeja LGA')
+    expect(dialog).toHaveTextContent(`Verifications${tunde.metrics.verifications}`)
+    expect(dialog).toHaveTextContent(`Demand notices${tunde.metrics.demandNotices.issued}`)
+    for (const entry of tunde.metrics.outcomes.filter((outcome) => outcome.count > 0)) {
+      expect(dialog).toHaveTextContent(`${outcomeLabel(entry.outcome)}${entry.count}`)
+    }
+    // Opening the details does not open the agent's activity on the page.
+    expect(screen.queryByRole('region', { name: 'Agent identity' })).not.toBeInTheDocument()
+
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(actions).toHaveFocus()
+
+    await userEvent.click(actions)
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Show full activity' }),
+    )
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(await card('Agent identity')).toHaveTextContent('JRB-AG-0142')
+  })
 })
