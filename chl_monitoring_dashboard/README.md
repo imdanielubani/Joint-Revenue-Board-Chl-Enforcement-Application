@@ -302,6 +302,16 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agents & organizations data: each agent the user may see in an area, with
+  their identity, the scope CHL assigns them (or none where CHL does not
+  expose it) and the documented metrics for the period (verifications and
+  their results, violations issued, evidence submitted, demand notices,
+  unresolved and escalated cases, repeat alerts, locations), plus one agent's
+  records, locations, unresolved cases and repeat-vehicle alerts. Counts only,
+  never scores or rankings. Sample data is counted from the same records as
+  the Overview (`mocks/mock-agents-api.ts`); backend paths
+  `/api/v1/agents/monitoring` and `/api/v1/agents/{id}/activity`
+  (provisional). The sample agent list moved to `mocks/mock-agent-list.ts`.
 - Geographical monitoring's Enforcement follow-up and Payment follow-up
   cards now use the Overview's Cases requiring attention and Payment status
   cards, narrowed to the chosen area: the unresolved / escalated tabs and

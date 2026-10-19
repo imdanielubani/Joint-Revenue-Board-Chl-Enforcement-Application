@@ -2,7 +2,7 @@ import type { GeographyApi } from '@/features/geography/geography.api'
 import type { Geography, GeographyFilters } from '@/features/geography/geography.schemas'
 import { lagosDay } from '@/shared/lib/dates'
 import { delay } from './delay'
-import { MOCK_AGENTS } from './mock-agents-api'
+import { MOCK_AGENTS } from './mock-agent-list'
 import { pointsWithin, summarize } from './mock-overview-api'
 import { mockRecords, pointById, type MockRecord } from './mock-records'
 

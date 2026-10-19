@@ -19,7 +19,7 @@ const gps = z
   .nullable()
 
 /** A verification received in the scope and period. */
-const verificationRecordSchema = z.object({
+export const verificationRecordSchema = z.object({
   id: z.string(),
   reference: z.string(),
   plate: z.string(),
@@ -36,7 +36,7 @@ const verificationRecordSchema = z.object({
 })
 
 /** A violation issued in the scope and period, and its demand notice if one was issued. */
-const violationRecordSchema = z.object({
+export const violationRecordSchema = z.object({
   id: z.string(),
   plate: z.string(),
   category: z.string(),
@@ -51,7 +51,7 @@ const violationRecordSchema = z.object({
 })
 
 /** The photographs supplied with a violation, as Evidence records holds them. */
-const evidenceRecordSchema = z.object({
+export const evidenceRecordSchema = z.object({
   id: z.string(),
   violationId: z.string(),
   plate: z.string(),
@@ -64,7 +64,7 @@ const evidenceRecordSchema = z.object({
 })
 
 /** A demand notice linked to a violation in the scope and period. */
-const noticeRecordSchema = z.object({
+export const noticeRecordSchema = z.object({
   id: z.string(),
   violationId: z.string(),
   plate: z.string(),

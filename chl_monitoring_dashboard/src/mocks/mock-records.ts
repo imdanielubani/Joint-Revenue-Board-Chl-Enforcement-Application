@@ -6,7 +6,7 @@ import type {
   VerificationOutcome,
 } from '@/features/overview/overview.schemas'
 import { addDays, type CalendarDay } from '@/shared/lib/dates'
-import { MOCK_AGENTS } from './mock-agents-api'
+import { MOCK_AGENTS } from './mock-agent-list'
 
 /**
  * Sample field records behind the sample Overview: 90 days of verifications,

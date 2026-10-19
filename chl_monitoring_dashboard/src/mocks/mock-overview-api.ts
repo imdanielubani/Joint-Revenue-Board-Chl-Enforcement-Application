@@ -15,7 +15,7 @@ import {
 import { periodDays } from '@/features/overview/overview-period'
 import { addDays, lagosDay } from '@/shared/lib/dates'
 import { delay } from './delay'
-import { MOCK_AGENTS } from './mock-agents-api'
+import { MOCK_AGENTS } from './mock-agent-list'
 import { MOCK_AREAS } from './mock-areas-api'
 import { mockRecords, pointById, type MockRecord } from './mock-records'
 

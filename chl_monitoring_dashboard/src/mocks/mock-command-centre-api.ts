@@ -9,7 +9,7 @@ import {
 import { presetPeriod } from '@/features/overview/overview-period'
 import { lagosDay } from '@/shared/lib/dates'
 import { delay } from './delay'
-import { MOCK_AGENTS } from './mock-agents-api'
+import { MOCK_AGENTS } from './mock-agent-list'
 import { mockFieldReports, mockSos } from './mock-field-reports'
 import { pointsWithin, summarize } from './mock-overview-api'
 import { mockRecords, pointById, startOfDay, type MockRecord } from './mock-records'

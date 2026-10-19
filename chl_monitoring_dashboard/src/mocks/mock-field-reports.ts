@@ -1,6 +1,6 @@
 import type { FieldReportType, LoadStatus } from '@/features/command-centre/command-centre.schemas'
 import { addDays, type CalendarDay } from '@/shared/lib/dates'
-import { MOCK_AGENTS } from './mock-agents-api'
+import { MOCK_AGENTS } from './mock-agent-list'
 import { AGENT_POINTS, HISTORY_DAYS, PLATES, pick, seeded, startOfDay } from './mock-records'
 
 /**
