@@ -302,6 +302,15 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agents & organizations: the chosen agent's verification activity (every
+  result with its count, each one a filter, and the agent's verification
+  records with method, result, time, sync status and recorded GPS) and
+  enforcement activity (violations issued with a count per action status,
+  demand notices with payment and trip activation kept apart, and evidence
+  submitted). Any record opens its details on the page. The underlying-record
+  columns are now shared with geographical monitoring
+  (`geography/components/record-columns.tsx`), with the agent column left
+  out on an agent's own records.
 - Agents & organizations page (SRD 5): area, period, organization and
   agent filters as on the Overview; headline figures for the agents in view;
   an agent register with each agent's ID, name, organization, the scope CHL

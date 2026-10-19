@@ -69,6 +69,71 @@
   line-height: 14px;
 }
 
+.small {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.tabs {
+  align-self: flex-start;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Verification activity: every result, each a filter for the records below. */
+.resultFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resultChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 7px;
+  background: var(--color-surface);
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.resultChip:hover:not(:disabled) {
+  background: var(--card-bg);
+}
+
+.resultChip[aria-pressed='true'] {
+  border-color: #cfe3d5;
+  background: #f3f9f5;
+  color: var(--color-primary);
+}
+
+.resultChip:disabled {
+  color: var(--card-muted);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.chipCount {
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Enforcement activity: how many violations are at each action status. */
+.statusSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
 /* Agent identity */
 .identityHead {
   display: flex;

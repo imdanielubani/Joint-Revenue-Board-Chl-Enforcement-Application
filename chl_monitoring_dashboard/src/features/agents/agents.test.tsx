@@ -1,8 +1,9 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import { outcomeLabel } from '@/features/overview/overview-display'
 import { presetPeriod } from '@/features/overview/overview-period'
-import { summarizeAgents } from '@/mocks/mock-agents-api'
+import { agentActivity, summarizeAgents } from '@/mocks/mock-agents-api'
 import { lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
 import { totalsOf } from './agents-display'
@@ -13,11 +14,20 @@ const figure = async (label: string) => {
   return within(figures).getByText(label).closest('li')!
 }
 
+const period = (scope: string) => ({
+  scope,
+  range: '14d' as const,
+  ...presetPeriod('14d', lagosDay()),
+})
+
 /** What the page must show for an area: the same records every view counts, last 14 days. */
-function expected(scope: string) {
-  const today = lagosDay()
-  return summarizeAgents({ scope, range: '14d', ...presetPeriod('14d', today) })
-}
+const expected = (scope: string) => summarizeAgents(period(scope))
+
+/** One agent's records in the area, last 14 days. */
+const expectedActivity = (agentId: string, scope = 'ng') => agentActivity(agentId, period(scope))
+
+/** The rows on a register's first page, header row left out. */
+const bodyRows = (table: HTMLElement) => within(table).getAllByRole('row').slice(1)
 
 describe('agents and organizations page', () => {
   it('adds up the agents in view in the headline figures', async () => {
@@ -137,5 +147,51 @@ describe('agents and organizations page', () => {
       'aria-pressed',
       'true',
     )
+  })
+  it('lists the agent’s verification records and filters them by result', async () => {
+    const { records } = expectedActivity('JRB-AG-0142')
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents?agent=JRB-AG-0142')
+    const activity = await card('Verification activity')
+    const table = within(activity).getByRole('table', { name: 'Verification records' })
+    expect(bodyRows(table)).toHaveLength(Math.min(records.verifications.length, 10))
+    // Every record is the agent's: no agent column.
+    expect(within(table).queryByRole('columnheader', { name: /^Agent/ })).toBeNull()
+
+    const [first] = records.verifications
+    const result = first!.result!
+    const results = within(activity).getByRole('group', { name: 'Verification results' })
+    const chip = within(results)
+      .getAllByRole('button')
+      .find((button) => button.textContent?.startsWith(outcomeLabel(result)))!
+    await userEvent.click(chip)
+    expect(chip).toHaveAttribute('aria-pressed', 'true')
+    const matching = records.verifications.filter((record) => record.result === result)
+    const filtered = within(activity).getByRole('table', { name: 'Verification records' })
+    expect(bodyRows(filtered)).toHaveLength(Math.min(matching.length, 10))
+
+    await userEvent.click(within(filtered).getByRole('button', { name: first!.reference }))
+    expect(within(activity).getByRole('heading', { name: first!.reference })).toBeVisible()
+  })
+
+  it('shows the violations the agent issued with their action status, their notices and evidence', async () => {
+    const { records } = expectedActivity('JRB-AG-0142')
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/agents?agent=JRB-AG-0142')
+    const enforcement = await card('Enforcement activity')
+    expect(within(enforcement).getByRole('tab', { name: /^Violations issued/ })).toHaveTextContent(
+      String(records.violations.length),
+    )
+    expect(enforcement).toHaveTextContent('Action status')
+    const violations = within(enforcement).getByRole('table', { name: 'Violations issued' })
+    expect(bodyRows(violations)).toHaveLength(Math.min(records.violations.length, 10))
+
+    await userEvent.click(within(enforcement).getByRole('tab', { name: /^Demand notices/ }))
+    const notices = within(enforcement).getByRole('table', { name: 'Demand notices' })
+    expect(bodyRows(notices)).toHaveLength(Math.min(records.notices.length, 10))
+
+    await userEvent.click(within(enforcement).getByRole('tab', { name: /^Evidence submitted/ }))
+    const evidence = within(enforcement).getByRole('table', { name: 'Evidence submitted' })
+    expect(bodyRows(evidence)).toHaveLength(Math.min(records.evidence.length, 10))
   })
 })

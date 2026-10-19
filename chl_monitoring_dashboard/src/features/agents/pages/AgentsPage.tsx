@@ -1,3 +1,4 @@
+import type { UseQueryResult } from '@tanstack/react-query'
 import { useCallback, useEffect, useId, useMemo, useRef, type Ref } from 'react'
 import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
@@ -11,8 +12,9 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { totalsOf } from '../agents-display'
-import { useAgents, useAgentsMonitoring } from '../agents.queries'
-import type { AgentsFilters, AgentSummary } from '../agents.schemas'
+import { useAgentActivity, useAgents, useAgentsMonitoring } from '../agents.queries'
+import type { AgentActivity, AgentsFilters, AgentSummary } from '../agents.schemas'
+import { EnforcementActivityCard, VerificationActivityCard } from '../components/AgentActivityCards'
 import { AgentIdentityCard, PerformanceOverviewCard } from '../components/AgentProfileCards'
 import { AgentRegisterCard } from '../components/AgentRegisterCard'
 import { OrganizationsCard } from '../components/OrganizationsCard'
@@ -82,6 +84,8 @@ function AgentsContent({
   const selected = filters.agentId
     ? (inView.find((agent) => agent.id === filters.agentId) ?? null)
     : null
+  // The chosen agent's records, once they are known to be in the area.
+  const activity = useAgentActivity(selected?.id ?? null, period, { enabled: !filter.waiting })
 
   // A name chosen in the register brings its activity into view.
   const detailRef = useRef<HTMLElement>(null)
@@ -101,7 +105,12 @@ function AgentsContent({
 
   const scoped = (to: string) =>
     `${to}${to.includes('?') ? '&' : '?'}scope=${encodeURIComponent(scope.value)}`
-  const refreshing = query.isFetching && !query.isPending
+  const refreshing =
+    (query.isFetching && !query.isPending) || (activity.isFetching && !activity.isPending)
+  const refresh = () => {
+    void query.refetch()
+    if (selected) void activity.refetch()
+  }
   const periodText = periodLabel(filters.range, filters)
 
   return (
@@ -112,7 +121,7 @@ function AgentsContent({
           lede="Each agent’s recorded verification and enforcement activity, by vendor or organization."
           section="Enforcement"
           icons="agents"
-          actions={<RefreshButton refreshing={refreshing} onRefresh={() => void query.refetch()} />}
+          actions={<RefreshButton refreshing={refreshing} onRefresh={refresh} />}
         />
         <OverviewFilterBar
           scopes={scopes}
@@ -193,6 +202,7 @@ function AgentsContent({
               agentId={filters.agentId}
               agentName={filter.agent?.name ?? filters.agentId}
               agent={selected}
+              activity={activity}
               scopeName={scope.name}
               periodText={periodText}
               onClose={() => setAgent(null)}
@@ -216,14 +226,15 @@ function AgentsContent({
 }
 
 /**
- * The chosen agent's identity and documented metrics, or why they are not
- * shown for this area.
+ * The chosen agent's identity, documented metrics and records, or why they are
+ * not shown for this area.
  */
 function SelectedAgent({
   ref,
   agentId,
   agentName,
   agent,
+  activity,
   scopeName,
   periodText,
   onClose,
@@ -233,6 +244,8 @@ function SelectedAgent({
   agentName: string
   /** Null when the agent has no assignment or activity in the area. */
   agent: AgentSummary | null
+  /** The agent's records and follow-up, loaded once they are known to be in the area. */
+  activity: UseQueryResult<AgentActivity>
   scopeName: string
   periodText: string
   onClose(): void
@@ -252,10 +265,26 @@ function SelectedAgent({
         </button>
       </div>
       {agent ? (
-        <div className={styles.profileRow}>
-          <AgentIdentityCard agent={agent} />
-          <PerformanceOverviewCard agent={agent} periodText={periodText} />
-        </div>
+        <>
+          <div className={styles.profileRow}>
+            <AgentIdentityCard agent={agent} />
+            <PerformanceOverviewCard agent={agent} periodText={periodText} />
+          </div>
+          {activity.data ? (
+            <>
+              <VerificationActivityCard activity={activity.data} />
+              <EnforcementActivityCard activity={activity.data} />
+            </>
+          ) : activity.isPending ? (
+            <StatePanel kind="loading" message={`Loading ${agent.name}’s records…`} />
+          ) : (
+            <StatePanel
+              kind="error"
+              error={activity.error}
+              onRetry={() => void activity.refetch()}
+            />
+          )}
+        </>
       ) : (
         <StatePanel
           kind="empty"

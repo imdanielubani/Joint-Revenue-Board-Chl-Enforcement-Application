@@ -1,0 +1,59 @@
+.stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sub {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.plate {
+  color: var(--card-title);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.275px;
+}
+
+.gps {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A record's reference or name: opens its details on the page. */
+.open {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+
+.open:hover {
+  text-decoration: underline;
+}
+
+/* The verification method, as the Overview's register shows it. */
+.tag {
+  display: inline-block;
+  height: 20px;
+  padding: 3px 5px;
+  border: 1px solid var(--tag-border);
+  border-radius: 4px;
+  color: var(--tag-text);
+  font-family: var(--font-sans);
+  font-size: 9px;
+  line-height: 13px;
+  white-space: nowrap;
+}
+
+.missing {
+  color: var(--color-text-subtle);
+  font-size: 12px;
+}
