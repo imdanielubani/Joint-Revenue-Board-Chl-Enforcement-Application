@@ -87,7 +87,7 @@ describe('verifications and E-Tags page', () => {
     for (const row of bodyRows(table)) expect(row).toHaveTextContent('RFID')
   })
 
-  it('shows the design’s columns and never a raw RFID value', async () => {
+  it('shows the verification cells as other modules do, and never a raw RFID value', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/verifications')
     const register = await card('Verification record register')
@@ -99,8 +99,8 @@ describe('verifications and E-Tags page', () => {
     ).toEqual([
       'Reference',
       'Plate',
-      'Method',
-      'Outcome',
+      'Verification method',
+      'Verification result',
       'E-Tag',
       'Agent',
       'Recorded (WAT)',
@@ -170,7 +170,7 @@ describe('verifications and E-Tags page', () => {
     renderApp('/verifications?view=outcomes')
     const outcomes = await card('Verification outcomes')
     expect(within(outcomes).getAllByRole('listitem')).toHaveLength(OUTCOME_ORDER.length)
-    expect(outcomes).toHaveTextContent('CHL could not be reached or answer — not “No Active Trip”')
+    expect(outcomes).toHaveTextContent('A network failure is not “No Active Trip.”')
   })
 
   it('lists only the records still uploading or received late under Source & synchronization', async () => {

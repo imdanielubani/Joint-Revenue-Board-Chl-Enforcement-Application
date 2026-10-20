@@ -79,9 +79,9 @@ const ETAG_PILLS: Record<EtagResult, Pill> = {
   },
 }
 
-/** The E-Tag result's pill; a verification that read no tag had no tag check. */
+/** The E-Tag result's pill (SRD 6.3); "Not supplied" when CHL gave the verification none. */
 export function etagPill(result: Open<EtagResult> | null): Pill {
-  if (result === null) return { tone: 'neutral', label: 'No tag check' }
+  if (result === null) return NOT_SUPPLIED
   return isKnown(ETAG_PILLS, result)
     ? ETAG_PILLS[result]
     : { tone: 'neutral', label: etagResultLabel(result) }
@@ -93,13 +93,6 @@ export const PROVENANCE_LABELS: Record<Provenance, string> = {
   live_backend: 'Live backend',
   cached_result: 'Cached result',
   offline_origin: 'Offline-origin',
-}
-
-/** What each source means, where the page explains it. */
-export const PROVENANCE_NOTES: Record<Provenance, string> = {
-  live_backend: 'Answered by CHL’s backend when the agent checked',
-  cached_result: 'Answered from CHL data cached on the phone; sent once connected',
-  offline_origin: 'Recorded with no connection; uploaded later',
 }
 
 const PROVENANCE_PILLS: Record<Provenance, Pill> = {
@@ -149,12 +142,6 @@ const SYNC_PILLS: Record<SyncState, Pill> = {
   },
 }
 
-export const SYNC_NOTES: Record<SyncState, string> = {
-  synced: 'Stored by CHL with everything uploaded',
-  received_late: 'Stored by CHL, but sent well after it was recorded',
-  upload_pending: 'Stored by CHL; evidence still uploading from the device',
-}
-
 /**
  * The record's synchronization as stored with it: evidence still uploading,
  * or received, on time or late. Null when CHL supplied no status.
@@ -201,19 +188,6 @@ export function pendingActions(entry: VerificationEntry): string[] {
 }
 
 /* ------------------------------------------------------------ Outcomes (SRD 6.4) */
-
-/** What each result means, kept apart from its cause. */
-export const OUTCOME_NOTES: Record<VerificationOutcome, string> = {
-  active_trip: 'CHL holds an active trip for the vehicle',
-  no_active_trip: 'CHL answered and holds no active trip for the vehicle',
-  etag_missing: 'The vehicle carries no E-Tag',
-  invalid_etag: 'The E-Tag read is not a valid CHL tag',
-  tag_vehicle_mismatch: 'The E-Tag belongs to another vehicle',
-  vehicle_not_found: 'The plate matches no vehicle in CHL',
-  no_trip_history: 'The vehicle has no trips on record',
-  verification_unavailable: 'CHL could not be reached or answer — not “No Active Trip”',
-  expired_trip: 'Only an expired or previous trip was found',
-}
 
 /** The design's order for the outcomes. */
 export const OUTCOME_ORDER: readonly VerificationOutcome[] = [

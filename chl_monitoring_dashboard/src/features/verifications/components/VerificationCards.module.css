@@ -401,36 +401,6 @@
   white-space: nowrap;
 }
 
-.agent {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 140px;
-}
-
-.avatar {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #f3f9f5;
-  color: #22a06b;
-  font-size: 12px;
-  font-weight: var(--font-weight-semibold);
-  line-height: 16px;
-}
-
-.agentId {
-  display: block;
-  padding-top: 2px;
-  color: var(--card-muted);
-  font-size: 12px;
-  line-height: 16px;
-}
-
 .list {
   display: flex;
   flex-wrap: wrap;
@@ -449,7 +419,7 @@
 
 .outcomeRow {
   display: grid;
-  grid-template-columns: minmax(0, 220px) minmax(0, 1fr) 64px minmax(0, 160px) auto;
+  grid-template-columns: minmax(0, 240px) 64px minmax(0, 1fr) auto;
   gap: 16px;
   align-items: center;
   padding: 14px 4px;
@@ -458,12 +428,6 @@
 
 .outcomeList li:last-child .outcomeRow {
   border-bottom: 0;
-}
-
-.outcomeNote {
-  color: var(--card-muted);
-  font-size: 11px;
-  line-height: 16.5px;
 }
 
 .outcomeCount {
@@ -545,10 +509,6 @@
 
 .breakdownRow > :first-child {
   justify-self: start;
-}
-
-.breakdownRow .outcomeNote {
-  grid-column: 1 / -1;
 }
 
 .small {
@@ -694,7 +654,7 @@
     grid-template-columns: minmax(0, 1fr) 64px;
   }
 
-  .outcomeRow > :nth-child(2),
+  .outcomeRow > :nth-child(3),
   .outcomeRow > :nth-child(4) {
     grid-column: 1 / -1;
   }

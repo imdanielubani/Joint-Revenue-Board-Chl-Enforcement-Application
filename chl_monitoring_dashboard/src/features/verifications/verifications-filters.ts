@@ -1,8 +1,6 @@
 import { syncStateOf, searchTextOf } from './verifications-display'
 import type { VerificationEntry } from './verifications.schemas'
 
-/** "No tag check": the filter value for verifications that read no tag. */
-export const NO_TAG_CHECK = 'none'
 /** The filter value for records whose attempt status CHL did not supply. */
 export const NOT_SUPPLIED = 'not_supplied'
 
@@ -49,7 +47,7 @@ export function applyFilters(
       is(filters.method, record.method, '') &&
       is(filters.outcome, record.result, '') &&
       is(filters.provenance, record.provenance, '') &&
-      is(filters.etag, record.etag, NO_TAG_CHECK) &&
+      is(filters.etag, record.etag, '') &&
       is(filters.sync, syncStateOf(record), '') &&
       is(filters.attempt, record.attempt, NOT_SUPPLIED) &&
       (words.length === 0 ||

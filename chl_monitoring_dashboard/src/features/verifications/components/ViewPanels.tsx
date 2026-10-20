@@ -9,15 +9,12 @@ import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
-  OUTCOME_NOTES,
   OUTCOME_ORDER,
   pendingActions,
-  PROVENANCE_NOTES,
   provenancePill,
   syncPill,
   syncStateOf,
   syncStatePill,
-  SYNC_NOTES,
   SYNC_STATES,
   vehiclesOf,
   type VehicleSummary,
@@ -219,11 +216,6 @@ export function OutcomesPanel({
                 <span>
                   <StatusLabel {...outcomeStyle(outcome)}>{outcomeLabel(outcome)}</StatusLabel>
                 </span>
-                <span className={styles.outcomeNote}>
-                  {Object.hasOwn(OUTCOME_NOTES, outcome)
-                    ? OUTCOME_NOTES[outcome as keyof typeof OUTCOME_NOTES]
-                    : 'A result CHL added; shown as it comes'}
-                </span>
                 <span className={styles.outcomeCount}>{formatNumber(count)}</span>
                 <span className={styles.bar} aria-hidden="true">
                   <span
@@ -246,8 +238,8 @@ export function OutcomesPanel({
         })}
       </ul>
       <p className={styles.small}>
-        Counts are verification outcomes, not unique trips or vehicles. “Verification Unavailable”
-        means CHL could not answer; it is never counted as “No Active Trip”.
+        Counts are verification outcomes, not unique trips or vehicles. A network failure is not “No
+        Active Trip.”
       </p>
     </DashboardCard>
   )
@@ -366,7 +358,6 @@ export function SyncPanel({
                 >
                   {formatNumber(count)} records
                 </button>
-                <span className={styles.outcomeNote}>{PROVENANCE_NOTES[provenance]}</span>
               </div>
             )
           })}
@@ -388,7 +379,6 @@ export function SyncPanel({
                 >
                   {formatNumber(count)} records
                 </button>
-                <span className={styles.outcomeNote}>{SYNC_NOTES[state]}</span>
               </div>
             )
           })}

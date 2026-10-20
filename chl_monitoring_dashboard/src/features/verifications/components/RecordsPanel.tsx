@@ -1,11 +1,12 @@
 import { useId, useMemo, useState } from 'react'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
-import { methodLabel, outcomeLabel, outcomeStyle } from '@/features/overview/overview-display'
+import { verificationColumns } from '@/features/geography/components/record-columns'
+import { Stack } from '@/features/geography/components/RecordCells'
+import { methodLabel, outcomeLabel } from '@/features/overview/overview-display'
 import { ETAG_RESULTS, VERIFICATION_METHODS } from '@/features/overview/overview.schemas'
 import { assetUrl } from '@/shared/lib/asset-url'
-import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
-import { initials } from '@/shared/lib/initials'
+import { formatNumber } from '@/shared/lib/format'
 import { useRecordRegister } from '@/shared/lib/use-record-register'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { DataTable, type Column } from '@/shared/ui/DataTable'
@@ -28,7 +29,6 @@ import {
 import {
   applyFilters,
   hasColumnFilters,
-  NO_TAG_CHECK,
   NOT_SUPPLIED,
   type RegisterFilters,
 } from '../verifications-filters'
@@ -53,76 +53,36 @@ interface ColumnHandlers {
 
 /** The register's columns, as the design lists them; the actions stay last. */
 function columnsFor({ link, onOpen, onVehicle }: ColumnHandlers): Column<VerificationEntry>[] {
+  // The columns other modules show for a verification, exactly as they show them.
+  // This register's rows are all entries, so the row a shared cell opens is one.
+  const shared = verificationColumns(link, (row) => onOpen(row as VerificationEntry))
+  const column = (key: string): Column<VerificationEntry> => {
+    const found = shared.find((entry) => entry.key === key)
+    if (!found) throw new Error(`No shared verification column "${key}"`)
+    return found
+  }
   return [
-    {
-      key: 'reference',
-      header: 'Reference',
-      render: (row) => (
-        <button type="button" className={styles.reference} onClick={() => onOpen(row)}>
-          {row.reference}
-        </button>
-      ),
-      sortValue: (row) => row.reference,
-    },
-    {
-      key: 'plate',
-      header: 'Plate',
-      render: (row) => <span className={styles.muted}>{row.plate}</span>,
-      sortValue: (row) => row.plate,
-    },
-    {
-      key: 'method',
-      header: 'Method',
-      render: (row) => (
-        <span className={styles.muted}>
-          {row.method ? methodLabel(row.method) : 'Not supplied'}
-        </span>
-      ),
-      sortValue: (row) => (row.method ? methodLabel(row.method) : ''),
-    },
-    {
-      key: 'outcome',
-      header: 'Outcome',
-      render: (row) =>
-        row.result ? (
-          <StatusLabel {...outcomeStyle(row.result)}>{outcomeLabel(row.result)}</StatusLabel>
-        ) : (
-          <span className={styles.muted}>Not supplied</span>
-        ),
-      sortValue: (row) => (row.result ? outcomeLabel(row.result) : ''),
-    },
+    column('reference'),
+    column('plate'),
+    column('method'),
+    column('outcome'),
     {
       key: 'etag',
       header: 'E-Tag',
       render: (row) => <PillLabel pill={etagPill(row.etag)} />,
       sortValue: (row) => etagPill(row.etag).label,
     },
-    {
-      key: 'agent',
-      header: 'Agent',
-      render: (row) => (
-        <span className={styles.agent}>
-          <span className={styles.avatar} aria-hidden="true">
-            {initials(row.agent.name)}
-          </span>
-          <span>
-            {row.agent.name}
-            <span className={styles.agentId}>{row.agent.id}</span>
-          </span>
-        </span>
-      ),
-      sortValue: (row) => row.agent.name,
-    },
-    {
-      key: 'recorded',
-      header: 'Recorded (WAT)',
-      render: (row) => <span className={styles.muted}>{formatShortDateTime(row.recordedAt)}</span>,
-      sortValue: (row) => Date.parse(row.recordedAt),
-    },
+    column('agent'),
+    column('recorded'),
     {
       key: 'location',
       header: 'Location',
-      render: (row) => <span className={styles.muted}>{placeText(row.location)}</span>,
+      render: (row) => (
+        <Stack
+          main={row.location.name}
+          sub={[row.location.area, row.location.code].filter(Boolean).join(' · ')}
+        />
+      ),
       sortValue: (row) => placeText(row.location),
     },
     {
@@ -224,10 +184,7 @@ function LabeledSelect({ label, value, options, onChange }: FilterSelectProps) {
 const METHOD_OPTIONS = VERIFICATION_METHODS.map((value) => ({ value, label: methodLabel(value) }))
 const OUTCOME_OPTIONS = OUTCOME_ORDER.map((value) => ({ value, label: outcomeLabel(value) }))
 const SOURCE_OPTIONS = PROVENANCES.map((value) => ({ value, label: PROVENANCE_LABELS[value] }))
-const ETAG_OPTIONS = [
-  ...ETAG_RESULTS.map((value) => ({ value, label: etagPill(value).label })),
-  { value: NO_TAG_CHECK, label: 'No tag check' },
-]
+const ETAG_OPTIONS = ETAG_RESULTS.map((value) => ({ value, label: etagPill(value).label }))
 const SYNC_OPTIONS = SYNC_STATES.map((value) => ({ value, label: SYNC_LABELS[value] }))
 const ATTEMPT_OPTIONS = [
   ...ATTEMPT_STATUSES.map((value) => ({ value, label: attemptPill(value).label })),

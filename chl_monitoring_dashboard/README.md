@@ -302,6 +302,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verifications & E-Tags: the record register shows reference, plate,
+  verification method, verification result, agent and recorded time exactly as
+  the other modules' registers do (the same columns). A verification with no
+  E-Tag result from CHL shows "Not supplied", as other missing values do; the
+  E-Tag filter lists only the four results the document names. The outcome,
+  source and sync breakdowns no longer add descriptions the document does not
+  give.
 - Verifications & E-Tags page (`/verifications`): the banner, the area, period,
   organization and agent filters, and four headline figures (verification
   records; verification unavailable, "not equivalent to No Active Trip";
