@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Top bar: no blurred band behind it any more. The bar itself is white glass
+  (a slightly see-through white panel with a fine white edge and a soft
+  shadow, no blur), shaped exactly as the bar, so nothing wider sits behind it
+  as the page scrolls under.
 - Trip monitoring: transaction references in the tables are plain text, not
   links; a trip's details open from its row's actions (View trip details, or
   Most recent previous trip).

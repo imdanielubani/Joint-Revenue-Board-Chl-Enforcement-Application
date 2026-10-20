@@ -70,7 +70,7 @@ export function AppShell() {
         <div className={styles.backdrop} aria-hidden="true" onClick={() => setOverlayOpen(false)} />
       )}
       <div className={styles.body}>
-        {/* The top bar sits on a frosted band, so the page blurs away as it scrolls under it. */}
+        {/* The top bar stays in view as the page scrolls under it. */}
         <div className={styles.topbarDock}>
           <Topbar
             sidebarOpen={sidebarOpen}
