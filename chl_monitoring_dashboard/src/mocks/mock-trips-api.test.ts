@@ -63,6 +63,21 @@ describe('summarizeTrips', () => {
     }
   })
 
+  it('gives each trip its transaction, channel and CHL status as CHL records them', () => {
+    const { trips } = summarizeTrips(filters('ng'), NOW)
+    expect(new Set(trips.map((trip) => trip.reference)).size).toBe(trips.length)
+    for (const trip of trips) {
+      expect(trip.reference).toMatch(/^\d{12}$/)
+      expect(trip.terminalId).toMatch(/^\d{4}[A-Z]{4}$/)
+      expect(trip.contactNumber).toMatch(/^\d{10}$/)
+      expect(trip.transactionStatus).toBe('Successful')
+      expect([trip.channel, trip.channelType]).toEqual(['Fortis', 'POS'])
+      // Only CHL says why a trip closed; an active trip carries no such message.
+      if (trip.status === 'active') expect(trip.statusMessage).toBeNull()
+      if (trip.statusMessage) expect(trip.statusMessage).toMatch(/^This trip has expired \(/)
+    }
+  })
+
   it('reports trip activation or compliance status only after a confirmed payment', () => {
     const { postPayment, trips } = summarizeTrips(filters('ng'), NOW)
     const references = new Set(trips.map((trip) => trip.reference))

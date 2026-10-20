@@ -19,6 +19,10 @@ const iso = (ms: number) => new Date(ms).toISOString()
 function tripEntry(trip: MockTrip): Trip {
   return {
     reference: trip.reference,
+    transactionAt: iso(trip.transactionAt),
+    transactionStatus: trip.transactionStatus,
+    terminalId: trip.terminalId,
+    contactNumber: trip.contactNumber,
     plate: trip.plate,
     vehicleType: VEHICLE_TYPES[trip.plate] ?? null,
     transactionType: trip.transactionType,
@@ -27,6 +31,9 @@ function tripEntry(trip: MockTrip): Trip {
     origin: trip.origin,
     destination: trip.destination,
     status: trip.status,
+    statusMessage: trip.statusMessage,
+    channel: trip.channel,
+    channelType: trip.channelType,
     validity: {
       remainingSeconds: trip.validity.remainingSeconds,
       reportedAt: iso(trip.validity.reportedAt),

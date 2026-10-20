@@ -106,19 +106,29 @@ describe('trip monitoring page', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Trip details' })
     for (const term of [
       'Transaction reference',
-      'Trip start date/time',
+      'Transaction date',
+      'Transaction status',
       'Payment date/time',
+      'Terminal ID',
+      'Contact number',
       'Vehicle plate number',
       'Vehicle type',
-      'Transaction type',
-      'Originating state and LGA',
-      'Destination state and LGA',
+      'Transaction type (trip type)',
       'Trip status',
+      'Trip start date/time',
       'Trip validity countdown',
+      'Origin state',
+      'Origin LGA',
+      'Destination state',
+      'Destination LGA',
+      'Channel',
+      'Channel type',
     ]) {
       expect(within(dialog).getByText(term)).toBeInTheDocument()
     }
     expect(dialog).toHaveTextContent(trip.plate)
+    expect(dialog).toHaveTextContent(trip.terminalId!)
+    expect(dialog).toHaveTextContent(trip.channel!)
     expect(dialog).toHaveTextContent('As reported by CHL')
 
     await userEvent.keyboard('{Escape}')
@@ -138,6 +148,15 @@ describe('trip monitoring page', () => {
       )
       expect(row).toHaveTextContent(payment.complianceStatus ?? 'Not updated by CHL')
     }
+  })
+
+  it('shows CHL’s own message for a closed trip, word for word', async () => {
+    const closed = expected().trips.find((entry) => entry.statusMessage !== null)!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/trips?range=30d&trip=${closed.reference}`)
+    const dialog = await screen.findByRole('dialog', { name: 'Trip details' })
+    expect(dialog).toHaveTextContent('Trip Closed')
+    expect(dialog).toHaveTextContent(closed.statusMessage!)
   })
 
   it('opens the vehicle’s submodule for a plate from a link', async () => {

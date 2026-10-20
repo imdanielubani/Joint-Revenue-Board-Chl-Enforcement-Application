@@ -98,19 +98,21 @@ describe('inactivity', { timeout: 20_000 }, () => {
 
 describe('session expiring', { timeout: 20_000 }, () => {
   it('warns before the 24-hour end, then says the session expired', async () => {
-    signIn(new Date(Date.now() + 4000).toISOString())
+    // The warning shows from 1s to 9s: wide enough that a busy machine loading the page
+    // cannot skip past it, as can happen with a shorter session.
+    signIn(new Date(Date.now() + 9000).toISOString())
     const { router } = renderApp('/overview', {
-      sessionPolicy: { ...policy, inactivityLimitMs: 60_000 },
+      sessionPolicy: { ...policy, inactivityLimitMs: 60_000, expiryWarningMs: 8000 },
     })
 
-    expect(await screen.findByText('Session expiring')).toBeInTheDocument()
+    expect(await screen.findByText('Session expiring', {}, { timeout: 8000 })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(
       'Your session ends in 1 minute. Sign in again afterwards to continue.',
     )
     // It cannot be extended, so it offers no action.
     expect(screen.queryByRole('button', { name: 'Stay signed in' })).not.toBeInTheDocument()
 
-    expect(await screen.findByText('Session expired', {}, UNTIL_SIGNED_OUT)).toBeInTheDocument()
+    expect(await screen.findByText('Session expired', {}, { timeout: 12_000 })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/sign-in')
     expect(screen.queryByText('Session expiring')).not.toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(

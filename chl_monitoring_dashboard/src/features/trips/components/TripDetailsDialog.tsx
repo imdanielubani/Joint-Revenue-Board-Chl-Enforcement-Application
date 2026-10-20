@@ -4,7 +4,7 @@ import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { formatDateTime } from '@/shared/lib/format'
 import { Dialog } from '@/shared/ui/Dialog'
-import { detectionPill, placeText, tripStatusPill, validityText } from '../trips-display'
+import { detectionPill, tripStatusPill, validityText } from '../trips-display'
 import type { Trip } from '../trips.schemas'
 import { PillLabel } from './TripPanels'
 import styles from './TripCards.module.css'
@@ -30,9 +30,13 @@ function Fact({ term, children }: { term: string; children: ReactNode }) {
   )
 }
 
+const supplied = (value: string | null | undefined) => value ?? 'Not supplied'
+const when = (value: string | null) => (value ? formatDateTime(value) : 'Not supplied')
+
 /**
- * "Trip details": the document's trip detail fields, and destination
- * detection where CHL reports it — all as CHL returned them.
+ * "Trip details": the trip as CHL returns it — the transaction, the vehicle,
+ * the trip's status in CHL's own words, the route and the channel — with the
+ * document's trip detail fields and destination detection where CHL reports it.
  */
 export function TripDetailsDialog({ trip, onClose }: { trip: Trip; onClose(): void }) {
   const link = useModuleLink()
@@ -49,32 +53,43 @@ export function TripDetailsDialog({ trip, onClose }: { trip: Trip; onClose(): vo
         </button>
       }
     >
-      <Facts title="Trip">
+      <Facts title="Transaction">
         <Fact term="Transaction reference">{trip.reference}</Fact>
-        <Fact term="Transaction type">{trip.transactionType ?? 'Not supplied'}</Fact>
+        <Fact term="Transaction date">{when(trip.transactionAt)}</Fact>
+        <Fact term="Transaction status">{supplied(trip.transactionStatus)}</Fact>
+        <Fact term="Payment date/time">{when(trip.paidAt)}</Fact>
+        <Fact term="Terminal ID">{supplied(trip.terminalId)}</Fact>
+        <Fact term="Contact number">{supplied(trip.contactNumber)}</Fact>
+      </Facts>
+
+      <Facts title="Vehicle information">
+        <Fact term="Vehicle plate number">{trip.plate}</Fact>
+        <Fact term="Vehicle type">{supplied(trip.vehicleType)}</Fact>
+        <Fact term="Transaction type (trip type)">{supplied(trip.transactionType)}</Fact>
+      </Facts>
+
+      <Facts title="Trip status information">
         <Fact term="Trip status">
           <PillLabel pill={tripStatusPill(trip.status)} />
+          {trip.statusMessage && <span className={styles.factNote}>{trip.statusMessage}</span>}
         </Fact>
+        <Fact term="Trip start date/time">{when(trip.startedAt)}</Fact>
         <Fact term="Trip validity countdown">
           {validity.main}
           {validity.sub && <span className={styles.factNote}>{validity.sub}</span>}
         </Fact>
       </Facts>
 
-      <Facts title="Vehicle">
-        <Fact term="Vehicle plate number">{trip.plate}</Fact>
-        <Fact term="Vehicle type">{trip.vehicleType ?? 'Not supplied'}</Fact>
+      <Facts title="Route information">
+        <Fact term="Origin state">{supplied(trip.origin?.state)}</Fact>
+        <Fact term="Origin LGA">{supplied(trip.origin?.lga)}</Fact>
+        <Fact term="Destination state">{supplied(trip.destination?.state)}</Fact>
+        <Fact term="Destination LGA">{supplied(trip.destination?.lga)}</Fact>
       </Facts>
 
-      <Facts title="Times and route">
-        <Fact term="Trip start date/time">
-          {trip.startedAt ? formatDateTime(trip.startedAt) : 'Not supplied'}
-        </Fact>
-        <Fact term="Payment date/time">
-          {trip.paidAt ? formatDateTime(trip.paidAt) : 'Not supplied'}
-        </Fact>
-        <Fact term="Originating state and LGA">{placeText(trip.origin)}</Fact>
-        <Fact term="Destination state and LGA">{placeText(trip.destination)}</Fact>
+      <Facts title="Channel information">
+        <Fact term="Channel">{supplied(trip.channel)}</Fact>
+        <Fact term="Channel type">{supplied(trip.channelType)}</Fact>
       </Facts>
 
       <Facts title="Destination detection">

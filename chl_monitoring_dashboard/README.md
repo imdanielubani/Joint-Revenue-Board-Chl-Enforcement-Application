@@ -302,6 +302,16 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Trip monitoring: trip details now carry everything CHL's trip record has —
+  transaction date, transaction status, terminal ID and contact number, CHL's
+  own trip status message ("This trip has expired (…)", shown word for word),
+  and channel and channel type — grouped as CHL groups them (transaction,
+  vehicle information, trip status information, route information with origin
+  and destination state and LGA on their own rows, channel information). Trip
+  statuses are CHL's: Trip Active and Trip Closed. Sample transaction
+  references are 12-digit numbers, as CHL's are.
+- The session-expiry test gives the warning a wider window, so a busy machine
+  can no longer skip past it.
 - Trip monitoring page (`/trips`): a read-only view of trip information
   returned by CHL, for the area and period. Headline figures for active trips,
   no active trip, no trip history and trips activated after payment, then a tab

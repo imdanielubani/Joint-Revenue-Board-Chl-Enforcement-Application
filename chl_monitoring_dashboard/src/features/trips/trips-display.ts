@@ -16,9 +16,8 @@ function isKnown<K extends string>(table: Record<K, unknown>, value: string): va
 }
 
 const TRIP_STATUS_PILLS: Record<TripStatus, Pill> = {
-  active: { tone: 'success', label: 'Active', icon: 'overview/result-active.svg' },
-  expired: { tone: 'amber', label: 'Expired', icon: 'overview/result-expired.svg' },
-  completed: { tone: 'info', label: 'Completed' },
+  active: { tone: 'success', label: 'Trip Active', icon: 'overview/result-active.svg' },
+  closed: { tone: 'neutral', label: 'Trip Closed' },
 }
 
 /** The trip status CHL returned; one it adds later is shown as it comes. */

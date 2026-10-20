@@ -7,8 +7,11 @@ import type {
 
 const open = <T extends string>() => z.custom<Open<T>>((value) => typeof value === 'string')
 
-/** A trip's status as CHL returns it. The dashboard never changes or works it out. */
-export const TRIP_STATUSES = ['active', 'expired', 'completed'] as const
+/**
+ * A trip's status as CHL returns it: "Trip Active" or "Trip Closed". The
+ * dashboard never changes or works it out; why a trip closed is in CHL's message.
+ */
+export const TRIP_STATUSES = ['active', 'closed'] as const
 export type TripStatus = (typeof TRIP_STATUSES)[number]
 
 /** What CHL returned when a verified vehicle's trip was checked. */
@@ -26,14 +29,30 @@ const tripPlaceSchema = z.object({ state: z.string(), lga: z.string().nullable()
 export const tripSchema = z.object({
   /** The transaction reference. */
   reference: z.string(),
+  /** When the transaction was made, as CHL records it. */
+  transactionAt: z.string().nullable(),
+  /** The transaction's status as CHL returns it: "Successful". */
+  transactionStatus: z.string().nullable(),
+  /** The payment terminal's ID. */
+  terminalId: z.string().nullable(),
+  /** The contact number recorded with the transaction. */
+  contactNumber: z.string().nullable(),
+  /** The vehicle license (plate) number. */
   plate: z.string(),
   vehicleType: z.string().nullable(),
+  /** The transaction type (trip type): "Complete Leg". */
   transactionType: z.string().nullable(),
   startedAt: z.string().nullable(),
   paidAt: z.string().nullable(),
   origin: tripPlaceSchema.nullable(),
   destination: tripPlaceSchema.nullable(),
   status: open<TripStatus>(),
+  /** CHL's own words about the trip's status, shown exactly as sent: "This trip has expired (…)". */
+  statusMessage: z.string().nullable(),
+  /** The channel the transaction came through: "Fortis". */
+  channel: z.string().nullable(),
+  /** The channel type: "POS". */
+  channelType: z.string().nullable(),
   /**
    * The trip validity countdown as CHL reported it: the time left, and when
    * CHL reported it. Shown as reported — never counted down or acted on here.
