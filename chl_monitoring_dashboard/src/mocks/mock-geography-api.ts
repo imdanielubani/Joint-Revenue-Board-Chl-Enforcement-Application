@@ -6,11 +6,11 @@ import { MOCK_AGENTS } from './mock-agent-list'
 import { pointsWithin, summarize } from './mock-overview-api'
 import { mockRecords, pointById, type MockRecord } from './mock-records'
 
-const agentOf = (record: MockRecord) => ({
+export const agentOf = (record: MockRecord) => ({
   id: record.agentId,
   name: MOCK_AGENTS.find((agent) => agent.id === record.agentId)?.name ?? record.agentId,
 })
-const placeOf = (record: MockRecord) => {
+export const placeOf = (record: MockRecord) => {
   const point = pointById.get(record.pointId)
   return {
     id: record.pointId,
@@ -21,7 +21,7 @@ const placeOf = (record: MockRecord) => {
 }
 const numberOf = (violationId: string) => Number(violationId.replace(/\D/g, ''))
 /** The demand notice's reference, as the Command centre names it. */
-const noticeIdOf = (violationId: string) => `DN-${numberOf(violationId)}`
+export const noticeIdOf = (violationId: string) => `DN-${numberOf(violationId)}`
 /** How many photographs came with a violation, as the Command centre counts them. */
 const photographsOf = (violationId: string) => 2 + (numberOf(violationId) % 4)
 

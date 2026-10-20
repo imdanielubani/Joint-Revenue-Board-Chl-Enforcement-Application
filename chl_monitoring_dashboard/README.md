@@ -302,6 +302,14 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verifications & E-Tags data: `GET /api/v1/verifications/monitoring` (provisional;
+  sample data in mock mode) returns the verifications for the area, period, agent
+  and organization, newest first. Each carries its E-Tag result (only when a tag
+  was checked: a failed read is never a missing tag), where its result came from
+  (live backend, cached result or offline-origin), the request's attempt status
+  where CHL supplies it, the vehicle ID and type where the plate resolved, the
+  trip found, the action taken, the violation issued and the payment request
+  generated. Raw RFID values are not part of it.
 - Agent page: "Back to all agents" is now a link at the top left of the
   page, above the banner, instead of a button inside it; the banner keeps
   Refresh. It keeps the area and period, and also serves the message shown

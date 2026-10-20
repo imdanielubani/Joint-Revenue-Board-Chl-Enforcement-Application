@@ -244,7 +244,7 @@ function violationFor(
 }
 
 /** A stable number in [0, 1) from an integer, so positions need no draw from the generator. */
-function unit(n: number): number {
+export function unit(n: number): number {
   let x = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b)
   x ^= x >>> 13
   x = Math.imul(x, 0xc2b2ae35)
