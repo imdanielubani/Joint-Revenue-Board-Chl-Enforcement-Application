@@ -21,15 +21,25 @@
   min-width: 0;
 }
 
-/* The top bar stays in view as the page scrolls, 16px from the top of the window.
-   Only the bar itself has a background (white glass, in Topbar.module.css): nothing
-   wider or blurred sits behind it. */
+/* The top bar stays in view as the page scrolls, 16px from the top of the window,
+   white on a plain backing in the page's colour: from the top of the window to the
+   bar's bottom edge, exactly as wide as the bar, with no blur or fade. Content
+   scrolling up ends cleanly at the bar, and at rest the backing cannot be seen. */
 .topbarDock {
   position: sticky;
   top: 0;
   z-index: 20;
   margin: -16px 0 -16px;
   padding: 16px 0;
+}
+
+.topbarDock::before {
+  position: absolute;
+  inset: 0 0 16px;
+  z-index: -1;
+  background: var(--color-bg);
+  content: '';
+  pointer-events: none;
 }
 
 .main {

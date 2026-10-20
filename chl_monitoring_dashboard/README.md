@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Top bar: solid white again, on a plain backing in the page's colour that runs
+  from the top of the window to the bar's bottom edge, exactly as wide as the
+  bar (no blur, no fade). Content scrolling up ends cleanly at the bar.
 - Top bar: no blurred band behind it any more. The bar itself is white glass
   (a slightly see-through white panel with a fine white edge and a soft
   shadow, no blur), shaped exactly as the bar, so nothing wider sits behind it
