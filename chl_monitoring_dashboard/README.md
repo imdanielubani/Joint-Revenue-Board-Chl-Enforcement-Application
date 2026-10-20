@@ -302,6 +302,16 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Trip monitoring data: `GET /api/v1/trips/monitoring` (provisional; sample
+  data in mock mode) returns, for the area and period, every trip CHL returned
+  with the document's trip detail fields (transaction reference, trip start,
+  payment, plate, vehicle type, transaction type, origin and destination state
+  and LGA, trip status, and the trip validity countdown as CHL reported it and
+  when), destination detection or completion where CHL reports it, each
+  verified vehicle's latest trip check (active trip, no active trip with the
+  most recent previous trip where CHL has one, or no trip history), and the
+  trip activation or compliance status CHL recorded after confirmed payments.
+  Verifications now link to the same trip references.
 - Verifications & E-Tags: the record register's method and result columns
   keep the other registers' cells under the design's headings, "Method" and
   "Outcome".

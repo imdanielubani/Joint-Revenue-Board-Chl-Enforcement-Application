@@ -67,9 +67,12 @@ describe('summarizeVerifications', () => {
     const { records } = summarizeVerifications(filters('ng'), NOW)
     for (const record of records) {
       expect(record.vehicle.id === null).toBe(record.result === 'vehicle_not_found')
-      expect(record.tripId !== null).toBe(
-        record.result === 'active_trip' || record.result === 'expired_trip',
-      )
+      // An active or previous trip was found; "No Active Trip" may carry the most recent previous one.
+      if (record.result === 'active_trip' || record.result === 'expired_trip') {
+        expect(record.tripId).not.toBeNull()
+      } else if (record.result !== 'no_active_trip') {
+        expect(record.tripId).toBeNull()
+      }
       if (record.payment) expect(record.violation).not.toBeNull()
       expect(record.actionTaken === 'violation_issued').toBe(record.violation !== null)
     }
