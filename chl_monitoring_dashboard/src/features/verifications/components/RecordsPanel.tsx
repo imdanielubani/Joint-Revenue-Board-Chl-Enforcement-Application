@@ -64,8 +64,9 @@ function columnsFor({ link, onOpen, onVehicle }: ColumnHandlers): Column<Verific
   return [
     column('reference'),
     column('plate'),
-    column('method'),
-    column('outcome'),
+    // The cells as other modules draw them, under the design's headings.
+    { ...column('method'), header: 'Method' },
+    { ...column('outcome'), header: 'Outcome' },
     {
       key: 'etag',
       header: 'E-Tag',

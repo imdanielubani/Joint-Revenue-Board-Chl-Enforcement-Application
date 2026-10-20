@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verifications & E-Tags: the record register's method and result columns
+  keep the other registers' cells under the design's headings, "Method" and
+  "Outcome".
 - Verifications & E-Tags: the record register shows reference, plate,
   verification method, verification result, agent and recorded time exactly as
   the other modules' registers do (the same columns). A verification with no

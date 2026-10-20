@@ -99,8 +99,8 @@ describe('verifications and E-Tags page', () => {
     ).toEqual([
       'Reference',
       'Plate',
-      'Verification method',
-      'Verification result',
+      'Method',
+      'Outcome',
       'E-Tag',
       'Agent',
       'Recorded (WAT)',
