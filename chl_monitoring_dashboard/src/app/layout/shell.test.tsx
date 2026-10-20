@@ -128,8 +128,13 @@ describe('top bar', () => {
 
     await user.click(await within(await sidebar()).findByRole('link', { name: 'Trip monitoring' }))
 
+    // The page's code loads the first time it is opened.
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Trip monitoring' }),
+      await screen.findByRole(
+        'heading',
+        { level: 1, name: 'Trip monitoring' },
+        { timeout: 10_000 },
+      ),
     ).toBeInTheDocument()
     const crumbs = within(screen.getByRole('navigation', { name: 'Breadcrumb' }))
     expect(crumbs.getAllByRole('listitem').map((item) => item.textContent)).toEqual([

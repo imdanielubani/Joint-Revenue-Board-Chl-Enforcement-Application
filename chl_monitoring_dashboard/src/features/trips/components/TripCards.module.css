@@ -1,0 +1,137 @@
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* A link in a table cell, drawn as the cells that open a record. */
+.link {
+  text-decoration: none;
+}
+
+.small {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+/* ------------------------------------------------------------ The closing note */
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.note img {
+  flex-shrink: 0;
+  margin-top: 2.4px;
+}
+
+.noteTitle {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+}
+
+.noteText {
+  max-width: 1040px;
+  padding-top: 6.4px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 19px;
+}
+
+/* ------------------------------------------------------------ The trip popup */
+
+.dialogSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dialogHeading {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 18px;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 9px 0;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.fact + .fact {
+  border-top: 0.8px solid var(--card-line);
+}
+
+.fact dt {
+  color: var(--card-muted);
+}
+
+.fact dd {
+  margin: 0;
+  color: var(--card-title);
+  font-weight: var(--font-weight-medium);
+}
+
+.factNote {
+  display: block;
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-regular, 400);
+  line-height: 15px;
+}
+
+.dialogLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dialogLink {
+  padding: 6px 10px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.dialogLink:hover {
+  border-color: var(--color-primary);
+}
+
+.secondaryButton {
+  padding: 8px 14px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.secondaryButton:hover {
+  background: var(--card-bg);
+}

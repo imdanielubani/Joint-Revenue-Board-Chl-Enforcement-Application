@@ -302,6 +302,19 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Trip monitoring page (`/trips`): a read-only view of trip information
+  returned by CHL, for the area and period. Headline figures for active trips,
+  no active trip, no trip history and trips activated after payment, then a tab
+  for each of the document's submodules: Active Trip Details, No Active Trip
+  (verified vehicles, with the most recent previous trip where CHL returned
+  one), Most Recent Previous Trip, No Trip History, Destination Detection and
+  Post-Payment Trip Status (trip activation or the compliance status CHL
+  recorded after confirmed payment). Trip registers show the document's trip
+  detail fields; a transaction reference opens the trip's details in a popup.
+  The validity countdown is shown as CHL reported it, with when it was
+  reported: the dashboard never works out validity, expires a trip or creates
+  one. `?trip=` and `?plate=` links (as Verifications & E-Tags uses) open the
+  trip or the vehicle's submodule.
 - Trip monitoring data: `GET /api/v1/trips/monitoring` (provisional; sample
   data in mock mode) returns, for the area and period, every trip CHL returned
   with the document's trip detail fields (transaction reference, trip start,
