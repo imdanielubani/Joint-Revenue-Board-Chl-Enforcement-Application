@@ -302,6 +302,28 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verifications & E-Tags page (`/verifications`): the banner, the area, period,
+  organization and agent filters, and four headline figures (verification
+  records; verification unavailable, "not equivalent to No Active Trip";
+  cached / offline-origin; pending synchronization). Then Verification
+  methods (RFID, QR, manual plate, OCR-confirmed), E-Tag results (valid,
+  missing, invalid / fake, tag-vehicle mismatch; a failed read is never a
+  missing tag) and Recorded provenance (live backend, cached result,
+  offline-origin); choosing any of them lists those records. Four tabs:
+  Verification records (search, Method / Outcome / Recorded source filters and
+  E-Tag, sync and attempt status under "More filters", with every column the
+  design lists), Vehicle identity (each plate's vehicle ID and type where CHL
+  resolved it, with its related trips and violations), Verification outcomes
+  (all nine, each with its count and meaning) and Source & synchronization
+  (where results came from, sync status, and records still uploading or
+  received late). A verification's reference opens its details in a popup:
+  method and outcome, vehicle and trip, action taken, violation, payment
+  request, pending action and sync status, with links to the case, payment,
+  trip and agent. The tab, filters and open record stay in the address, so
+  `?ref=` and `?plate=` links from other pages open the right record or
+  vehicle. Raw RFID values never appear.
+- Record registers can open with a search filled in, or leave the search to
+  the page above them.
 - Verifications & E-Tags data: `GET /api/v1/verifications/monitoring` (provisional;
   sample data in mock mode) returns the verifications for the area, period, agent
   and organization, newest first. Each carries its E-Tag result (only when a tag

@@ -11,6 +11,8 @@ interface RegisterTableProps<T> {
   /** The text a search is matched against; must be stable (defined outside the component). */
   searchText(row: T): string
   pageSize?: number
+  /** The search the register opens with. */
+  initialQuery?: string
 }
 
 /** A record register with its table: search, sortable columns and pages, over the rows given. */
@@ -21,8 +23,15 @@ export function RegisterTable<T>({
   rowKey,
   searchText,
   pageSize,
+  initialQuery,
 }: RegisterTableProps<T>) {
-  const register = useRecordRegister({ rows, columns, searchText, pageSize })
+  const register = useRecordRegister({
+    rows,
+    columns,
+    searchText,
+    ...(pageSize === undefined ? {} : { pageSize }),
+    ...(initialQuery === undefined ? {} : { initialQuery }),
+  })
   return (
     <RecordRegister
       total={rows.length}

@@ -1,0 +1,14 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon">
+<mask id="path-1-inside-1_0_38" fill="white">
+<path d="M0 8C0 3.58172 3.58172 0 8 0H24C28.4183 0 32 3.58172 32 8V24C32 28.4183 28.4183 32 24 32H8C3.58172 32 0 28.4183 0 24V8Z"/>
+</mask>
+<path d="M0 8C0 3.58172 3.58172 0 8 0H24C28.4183 0 32 3.58172 32 8V24C32 28.4183 28.4183 32 24 32H8C3.58172 32 0 28.4183 0 24V8Z" fill="white"/>
+<path d="M8 0V0.8H24V0V-0.8H8V0ZM32 8H31.2V24H32H32.8V8H32ZM24 32V31.2H8V32V32.8H24V32ZM0 24H0.8V8H0H-0.8V24H0ZM8 32V31.2C4.02355 31.2 0.8 27.9764 0.8 24H0H-0.8C-0.8 28.8601 3.13989 32.8 8 32.8V32ZM32 24H31.2C31.2 27.9764 27.9764 31.2 24 31.2V32V32.8C28.8601 32.8 32.8 28.8601 32.8 24H32ZM24 0V0.8C27.9764 0.8 31.2 4.02355 31.2 8H32H32.8C32.8 3.13989 28.8601 -0.8 24 -0.8V0ZM8 0V-0.8C3.13989 -0.8 -0.8 3.13989 -0.8 8H0H0.8C0.8 4.02355 4.02355 0.8 8 0.8V0Z" fill="#E4E4E7" mask="url(#path-1-inside-1_0_38)"/>
+<path id="Vector" d="M19.1145 12.8914C19.938 13.7163 20.4005 14.8344 20.4005 16C20.4005 17.1656 19.938 18.2837 19.1145 19.1086" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round" stroke="#22A06B"/>
+<path id="Vector_2" d="M21.1883 10.8175C22.5618 12.1926 23.3332 14.0565 23.3332 16C23.3332 17.9435 22.5618 19.8074 21.1883 21.1825" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round" stroke="#22A06B"/>
+<path id="Vector_3" d="M10.8117 21.1825C9.43822 19.8074 8.66676 17.9435 8.66676 16C8.66676 14.0565 9.43822 12.1926 10.8117 10.8175" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round" stroke="#22A06B"/>
+<path id="Vector_4" d="M12.8855 19.1086C12.062 18.2837 11.5995 17.1656 11.5995 16C11.5995 14.8344 12.062 13.7163 12.8855 12.8914" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round" stroke="#22A06B"/>
+<path id="Vector_5" d="M17.4667 16C17.4667 16.81 16.81 17.4667 16 17.4667C15.19 17.4667 14.5333 16.81 14.5333 16C14.5333 15.19 15.19 14.5333 16 14.5333C16.81 14.5333 17.4667 15.19 17.4667 16Z" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round" stroke="#22A06B"/>
+</g>
+</svg>

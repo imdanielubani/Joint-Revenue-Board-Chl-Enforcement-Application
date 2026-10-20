@@ -19,6 +19,8 @@ interface RegisterOptions<T> {
   /** The text a search is matched against, for one row. */
   searchText(row: T): string
   pageSize?: number
+  /** The search the register opens with, such as a plate from a link. */
+  initialQuery?: string
 }
 
 const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
@@ -32,8 +34,9 @@ export function useRecordRegister<T>({
   columns,
   searchText,
   pageSize = 10,
+  initialQuery = '',
 }: RegisterOptions<T>) {
-  const [query, setQueryState] = useState('')
+  const [query, setQueryState] = useState(initialQuery)
   const [sort, setSort] = useState<SortState | null>(null)
   const [page, setPage] = useState(1)
 

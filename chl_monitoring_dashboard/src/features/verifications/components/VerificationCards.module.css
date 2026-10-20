@@ -1,0 +1,712 @@
+/* ------------------------------------------------------------ The three summary cards */
+
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.summaryCard {
+  height: 100%;
+}
+
+.summaryBody {
+  flex: 1;
+}
+
+/* Verification methods: one row per method. */
+.methodList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.methodRow {
+  display: flex;
+  align-items: center;
+  gap: 11.2px;
+  width: 100%;
+  padding: 16px 0;
+  border: 0;
+  border-bottom: 0.8px solid var(--card-line);
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.methodList li:first-child .methodRow {
+  padding-top: 4px;
+}
+
+.methodList li:last-child .methodRow {
+  border-bottom: 0;
+}
+
+.methodRow:hover .methodName {
+  color: var(--color-primary);
+}
+
+.methodIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 35.2px;
+  height: 35.2px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 9.6px;
+  background: var(--card-bg);
+}
+
+.methodText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.methodName {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 18px;
+}
+
+.methodNote {
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 16.2px;
+}
+
+.methodCount {
+  color: var(--card-title);
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* E-Tag results: four numbered tiles. */
+.tileGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9.6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  padding: 14px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: inherit;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tile:hover {
+  border-color: var(--color-primary);
+}
+
+.tileIndex {
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 13.5px;
+}
+
+.tileArrow {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+.tileCount {
+  padding: 8px 0 10.4px;
+  color: var(--card-title);
+  font-size: 30px;
+  font-weight: 550;
+  line-height: 45px;
+  letter-spacing: -1.2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tileLabel {
+  display: flex;
+  align-items: center;
+  gap: 6.4px;
+  padding: 4px 8px 4px 4.8px;
+  color: var(--card-title);
+  font-size: 9px;
+  font-weight: var(--font-weight-medium);
+  line-height: 13.5px;
+}
+
+.tileLabel img {
+  flex-shrink: 0;
+  margin: 3px;
+}
+
+.cardNote {
+  padding-top: 16px;
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 17.1px;
+}
+
+/* Recorded provenance: the live-backend count, then each source. */
+.bigFigure {
+  padding: 8px 0 18px;
+  border-bottom: 0.8px solid var(--card-line);
+}
+
+.bigValue {
+  color: var(--card-title);
+  font-size: 36px;
+  font-weight: 550;
+  line-height: 54px;
+  letter-spacing: -1.8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bigCaption {
+  padding-top: 5.6px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.sourceList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sourceRow {
+  display: flex;
+  align-items: center;
+  gap: 9.6px;
+  width: 100%;
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 0.8px solid var(--card-line);
+  background: transparent;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 16.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sourceRow:hover .sourceName {
+  color: var(--color-primary);
+}
+
+.sourceName {
+  flex: 1;
+}
+
+.sourceCount {
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 21px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ The record register */
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 10.4px;
+}
+
+.search {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 192px;
+  padding: 11.2px 12.8px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.search:focus-within {
+  border-color: var(--color-primary);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.search input::placeholder {
+  color: rgb(9 9 11 / 50%);
+}
+
+.moreButton {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6.4px;
+  padding: 10.4px 12.8px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--card-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 16.5px;
+  cursor: pointer;
+}
+
+.moreButton:hover,
+.moreButton[aria-expanded='true'] {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.selects {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10.4px;
+}
+
+.selectBox {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 9.6px 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.selectBox:focus-within {
+  border-color: var(--color-primary);
+}
+
+.selectLabel {
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 13.5px;
+}
+
+.selectBox select {
+  width: 100%;
+  margin-top: 4.8px;
+  padding: 0 20px 0 0;
+  border: 0;
+  outline: none;
+  appearance: none;
+  background: transparent;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 16.5px;
+  cursor: pointer;
+}
+
+.selectChevron {
+  position: absolute;
+  right: 12px;
+  bottom: 12.5px;
+  pointer-events: none;
+}
+
+.selectActive {
+  border-color: var(--color-primary);
+}
+
+.selectActive select {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.countLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 17px;
+}
+
+.clearButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.clearButton:hover {
+  text-decoration: underline;
+}
+
+/* Table cells. The reference opens the verification's details. */
+.reference {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.reference:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.muted {
+  color: var(--card-muted);
+  white-space: nowrap;
+}
+
+.agent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 140px;
+}
+
+.avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f3f9f5;
+  color: #22a06b;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 16px;
+}
+
+.agentId {
+  display: block;
+  padding-top: 2px;
+  color: var(--card-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ------------------------------------------------------------ Outcomes and sources */
+
+.outcomeList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outcomeRow {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr) 64px minmax(0, 160px) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 4px;
+  border-bottom: 0.8px solid var(--card-line);
+}
+
+.outcomeList li:last-child .outcomeRow {
+  border-bottom: 0;
+}
+
+.outcomeNote {
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 16.5px;
+}
+
+.outcomeCount {
+  color: var(--card-title);
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 24px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--card-bg);
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+}
+
+.linkButton {
+  padding: 6px 10px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.linkButton:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.linkButton:disabled {
+  color: var(--color-text-subtle);
+  cursor: default;
+}
+
+.sourceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+}
+
+.breakdownTitle {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 18px;
+}
+
+.breakdownRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 0.8px solid var(--card-line);
+}
+
+.breakdownRow > :first-child {
+  justify-self: start;
+}
+
+.breakdownRow .outcomeNote {
+  grid-column: 1 / -1;
+}
+
+.small {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+/* ------------------------------------------------------------ The closing note */
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.note img {
+  flex-shrink: 0;
+  margin-top: 2.4px;
+}
+
+.noteTitle {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+}
+
+.noteText {
+  max-width: 1040px;
+  padding-top: 6.4px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 19px;
+}
+
+/* ------------------------------------------------------------ The detail popup */
+
+.dialogSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dialogHeading {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 18px;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: minmax(0, 160px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 9px 0;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.fact + .fact {
+  border-top: 0.8px solid var(--card-line);
+}
+
+.fact dt {
+  color: var(--card-muted);
+}
+
+.fact dd {
+  margin: 0;
+  color: var(--card-title);
+  font-weight: var(--font-weight-medium);
+}
+
+.dialogLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dialogLink {
+  padding: 6px 10px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.dialogLink:hover {
+  border-color: var(--color-primary);
+}
+
+.secondaryButton,
+.primaryButton {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.secondaryButton {
+  border: 0.8px solid var(--card-line);
+  background: var(--color-surface);
+  color: var(--card-title);
+}
+
+.secondaryButton:hover {
+  background: var(--card-bg);
+}
+
+.primaryButton {
+  border: 0.8px solid var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.primaryButton:hover {
+  border-color: var(--color-primary-hover);
+  background: var(--color-primary-hover);
+}
+
+@media (max-width: 1100px) {
+  .summaryRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .outcomeRow {
+    grid-template-columns: minmax(0, 1fr) 64px;
+  }
+
+  .outcomeRow > :nth-child(2),
+  .outcomeRow > :nth-child(4) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .selects,
+  .sourceGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .searchRow {
+    flex-wrap: wrap;
+  }
+}

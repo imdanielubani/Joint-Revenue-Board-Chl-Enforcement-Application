@@ -5,8 +5,9 @@ import styles from './RecordRegister.module.css'
 interface RecordRegisterProps {
   /** Every record in the register, before any search. */
   total: number
-  query: string
-  onQueryChange(query: string): void
+  /** The search box's text; without `onQueryChange` the register has no search of its own. */
+  query?: string
+  onQueryChange?(query: string): void
   page: number
   pageCount: number
   onPageChange(page: number): void
@@ -19,8 +20,8 @@ interface RecordRegisterProps {
 }
 
 /**
- * A read-only record register: its title and count, a search box, the table,
- * and the page controls.
+ * A read-only record register: its title and count, a search box (unless the
+ * page searches above it), the table, and the page controls.
  */
 export function RecordRegister({
   total,
@@ -48,16 +49,18 @@ export function RecordRegister({
             <p className={styles.subtitle}>Read-only records</p>
           </div>
         </div>
-        <label className={styles.search}>
-          <img src={assetUrl('overview/search.svg')} alt="" width={16} height={16} />
-          <span className="visually-hidden">Search records</span>
-          <input
-            type="search"
-            placeholder="Search records…"
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-          />
-        </label>
+        {onQueryChange && (
+          <label className={styles.search}>
+            <img src={assetUrl('overview/search.svg')} alt="" width={16} height={16} />
+            <span className="visually-hidden">Search records</span>
+            <input
+              type="search"
+              placeholder="Search records…"
+              value={query ?? ''}
+              onChange={(event) => onQueryChange(event.target.value)}
+            />
+          </label>
+        )}
       </div>
 
       <div className={styles.table}>{children}</div>
