@@ -99,6 +99,22 @@ describe('trip monitoring page', () => {
     }
   })
 
+  it('shows transaction references as plain text; a trip’s details open from its row’s actions', async () => {
+    const vehicle = expected().vehicles.find((v) => v.result === 'active_trip')!
+    const reference = vehicle.activeTripReference!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/trips?range=30d')
+    const panel = await card('Active Trip Details')
+    const table = within(panel).getByRole('table', { name: 'Active trips' })
+    const cell = within(table).getByText(reference)
+    expect(cell.closest('button, a')).toBeNull()
+
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${reference}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View trip details' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Trip details' })
+    expect(dialog).toHaveTextContent(reference)
+  })
+
   it('opens a trip’s details, with no validity worked out by the dashboard', async () => {
     const trip = expected().trips.find((entry) => entry.status === 'active')!
     signInAs('admin@jrb.gov.ng')

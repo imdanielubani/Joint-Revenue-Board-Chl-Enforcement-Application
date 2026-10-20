@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Trip monitoring: transaction references in the tables are plain text, not
+  links; a trip's details open from its row's actions (View trip details, or
+  Most recent previous trip).
 - Trip monitoring: trip details now carry everything CHL's trip record has —
   transaction date, transaction status, terminal ID and contact number, CHL's
   own trip status message ("This trip has expired (…)", shown word for word),

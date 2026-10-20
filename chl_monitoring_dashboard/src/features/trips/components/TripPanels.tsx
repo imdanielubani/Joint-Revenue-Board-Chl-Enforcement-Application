@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
-import { OpenButton, Stack } from '@/features/geography/components/RecordCells'
+import { Stack } from '@/features/geography/components/RecordCells'
 import cells from '@/features/geography/components/RecordColumns.module.css'
 import { outcomeLabel, outcomeStyle } from '@/features/overview/overview-display'
 import { formatShortDateTime } from '@/shared/lib/format'
@@ -49,9 +49,7 @@ function tripColumns(
     {
       key: 'reference',
       header: 'Transaction reference',
-      render: (row) => (
-        <OpenButton onClick={() => onOpenTrip(row.reference)}>{row.reference}</OpenButton>
-      ),
+      render: (row) => <span className={cells.plate}>{row.reference}</span>,
       sortValue: (row) => row.reference,
     },
     {
@@ -159,7 +157,10 @@ const tripSearchText = (row: Trip) =>
     tripStatusPill(row.status).label,
   ].join(' ')
 
-/** A register of trips with the document's trip detail fields. */
+/**
+ * A register of trips with the document's trip detail fields. References are
+ * plain text; a trip's details open from its row's actions.
+ */
 export function TripsPanel({
   trips,
   only,
@@ -294,9 +295,7 @@ export function VehiclesPanel({
               header: 'Most recent previous trip',
               render: (row: VehicleTripCheck) =>
                 row.previousTripReference ? (
-                  <OpenButton onClick={() => onOpenTrip(row.previousTripReference!)}>
-                    {row.previousTripReference}
-                  </OpenButton>
+                  <span className={cells.plate}>{row.previousTripReference}</span>
                 ) : (
                   <span className={cells.sub}>None returned by CHL</span>
                 ),
@@ -409,9 +408,7 @@ export function PostPaymentPanel({
         header: 'Trip',
         render: (row) =>
           row.tripReference ? (
-            <OpenButton onClick={() => onOpenTrip(row.tripReference!)}>
-              {row.tripReference}
-            </OpenButton>
+            <span className={cells.plate}>{row.tripReference}</span>
           ) : (
             <span className={cells.sub}>None</span>
           ),
