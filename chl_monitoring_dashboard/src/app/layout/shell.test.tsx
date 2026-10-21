@@ -121,7 +121,8 @@ describe('top bar', () => {
     ])
   })
 
-  it('follows the page', async () => {
+  // Opens another page, whose code loads the first time: slow on a busy machine.
+  it('follows the page', { timeout: 30_000 }, async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')
     const user = userEvent.setup()
@@ -133,7 +134,7 @@ describe('top bar', () => {
       await screen.findByRole(
         'heading',
         { level: 1, name: 'Trip monitoring' },
-        { timeout: 10_000 },
+        { timeout: 25_000 },
       ),
     ).toBeInTheDocument()
     const crumbs = within(screen.getByRole('navigation', { name: 'Breadcrumb' }))

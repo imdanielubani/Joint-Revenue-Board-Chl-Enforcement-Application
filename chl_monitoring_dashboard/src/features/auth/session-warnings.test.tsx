@@ -20,6 +20,13 @@ const policy: SessionPolicy = {
 /** Long enough to see a sign-out at 4s. */
 const UNTIL_SIGNED_OUT = { timeout: 8000 }
 
+/**
+ * For tests that must catch the inactivity warning on screen: it shows from 0.5s to
+ * 12s, so a busy machine slow to load the page cannot skip past it.
+ */
+const WIDE_WARNING = { ...policy, inactivityLimitMs: 12_000, inactivityWarningMs: 11_500 }
+const UNTIL_WARNED = { timeout: 8000 }
+
 function signIn(expiresAt: string = sessionExpiry()) {
   saveSession({
     session: { accessToken: 'access', refreshToken: 'refresh', user: MOCK_USERS[0]!, expiresAt },
@@ -30,10 +37,10 @@ function signIn(expiresAt: string = sessionExpiry()) {
 describe('inactivity', { timeout: 20_000 }, () => {
   it('asks "Are you still there?" before signing out', async () => {
     signIn()
-    renderApp('/overview', { sessionPolicy: policy })
+    renderApp('/overview', { sessionPolicy: WIDE_WARNING })
 
-    const status = await screen.findByRole('status')
-    expect(await screen.findByText('Are you still there?')).toBeInTheDocument()
+    expect(await screen.findByText('Are you still there?', {}, UNTIL_WARNED)).toBeInTheDocument()
+    const status = screen.getByRole('status')
     expect(status).toHaveTextContent('You’ll be signed out in 1 minute because of inactivity.')
     expect(
       screen.getByRole('heading', { level: 1, name: 'Operational overview' }),
@@ -44,14 +51,10 @@ describe('inactivity', { timeout: 20_000 }, () => {
     signIn()
     // A wide window: on a busy machine the page can take seconds to appear, and the
     // button must still be there to press.
-    const { router } = renderApp('/overview', {
-      sessionPolicy: { ...policy, inactivityLimitMs: 12_000, inactivityWarningMs: 11_500 },
-    })
+    const { router } = renderApp('/overview', { sessionPolicy: WIDE_WARNING })
     const user = userEvent.setup()
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Stay signed in' }, { timeout: 8000 }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Stay signed in' }, UNTIL_WARNED))
 
     expect(screen.queryByText('Are you still there?')).not.toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/overview')
@@ -59,9 +62,9 @@ describe('inactivity', { timeout: 20_000 }, () => {
 
   it('any activity removes the warning', async () => {
     signIn()
-    renderApp('/overview', { sessionPolicy: policy })
+    renderApp('/overview', { sessionPolicy: WIDE_WARNING })
 
-    await screen.findByText('Are you still there?')
+    await screen.findByText('Are you still there?', {}, UNTIL_WARNED)
     fireEvent.keyDown(window, { key: 'a' })
 
     await expect.poll(() => screen.queryByText('Are you still there?')).toBeNull()

@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Tests: the navigation test and the inactivity-warning tests give a busy
+  machine more time (the warning stays up longer, and opening a page may take
+  up to 25 seconds), so they no longer fail at random under load.
 - Sample data: every sample vehicle's type is CHL's category "12/14 tyres and
   its equivalent", on Verifications & E-Tags and Trip monitoring alike.
 - Top bar: solid white again, on a plain backing in the page's colour that runs
