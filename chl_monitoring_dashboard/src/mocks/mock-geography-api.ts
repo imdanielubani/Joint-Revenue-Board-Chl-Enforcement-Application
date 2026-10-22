@@ -19,11 +19,11 @@ export const placeOf = (record: MockRecord) => {
     code: point?.code ?? '',
   }
 }
-const numberOf = (violationId: string) => Number(violationId.replace(/\D/g, ''))
+export const numberOf = (violationId: string) => Number(violationId.replace(/\D/g, ''))
 /** The demand notice's reference, as the Command centre names it. */
 export const noticeIdOf = (violationId: string) => `DN-${numberOf(violationId)}`
 /** How many photographs came with a violation, as the Command centre counts them. */
-const photographsOf = (violationId: string) => 2 + (numberOf(violationId) % 4)
+export const photographsOf = (violationId: string) => 2 + (numberOf(violationId) % 4)
 
 /**
  * The geography for an area and period: its enforcement points with their

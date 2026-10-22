@@ -302,6 +302,15 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Evidence records data: `GET /api/v1/evidence/monitoring` (provisional; sample
+  data in mock mode) returns the evidence captured in the area, period, agent
+  and organization, one record per violation: its photographs (vehicle
+  evidence: front, rear, side and haulage bay; E-Tag evidence: missing-tag,
+  fake/invalid-tag and other relevant photographs), each with its capture
+  timestamp and GPS, the agent, the violation reference, the agents' notes, and
+  the related vehicle, verification and enforcement location. A photograph
+  still uploading has no image yet. Read-only: there is no way to upload or
+  change evidence.
 - Tests: the navigation test and the inactivity-warning tests give a busy
   machine more time (the warning stays up longer, and opening a page may take
   up to 25 seconds), so they no longer fail at random under load.
