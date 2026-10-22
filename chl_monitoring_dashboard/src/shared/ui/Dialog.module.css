@@ -21,6 +21,10 @@
   outline: none;
 }
 
+.wide {
+  width: min(1040px, 100%);
+}
+
 .head {
   display: flex;
   align-items: flex-start;

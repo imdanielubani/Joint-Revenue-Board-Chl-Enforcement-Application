@@ -1,0 +1,319 @@
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.small {
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+/* A note, wrapped rather than cut off. */
+.noteCell {
+  display: block;
+  min-width: 260px;
+  max-width: 420px;
+  color: var(--card-title);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: normal;
+}
+
+/* ------------------------------------------------------------ The evidence viewer */
+
+/* The photographs on the left; metadata, notes and related records beside them. */
+.viewer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 18px;
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: #0f2a20;
+}
+
+.stage:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.uploading {
+  padding: 24px;
+  color: #e3f0e8;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.navButton {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0.8px solid rgb(255 255 255 / 0.4);
+  border-radius: 50%;
+  background: rgb(9 9 11 / 0.45);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.navButton:hover {
+  background: rgb(9 9 11 / 0.65);
+}
+
+.previous {
+  left: 10px;
+}
+
+.next {
+  right: 10px;
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--card-muted);
+  font-size: 11px;
+  line-height: 16.5px;
+}
+
+.captionTitle {
+  color: var(--card-title);
+  font-weight: var(--font-weight-semibold);
+}
+
+.thumbGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.thumbLabel {
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.3px;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.thumb {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 104px;
+  padding: 4px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.thumb:hover,
+.thumb[aria-pressed='true'] {
+  border-color: var(--color-primary);
+}
+
+.thumb[aria-pressed='true'] {
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.thumb img,
+.thumbUploading {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.thumbUploading {
+  display: grid;
+  place-items: center;
+  background: #0f2a20;
+  color: #e3f0e8;
+  font-size: 9px;
+}
+
+.thumbName {
+  overflow: hidden;
+  color: var(--card-title);
+  font-size: 10px;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: minmax(0, 130px) minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.fact + .fact {
+  border-top: 0.8px solid var(--card-line);
+}
+
+.fact dt {
+  color: var(--card-muted);
+}
+
+.fact dd {
+  margin: 0;
+  color: var(--card-title);
+  font-weight: var(--font-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.relatedLink {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.relatedLink:hover {
+  text-decoration: underline;
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note {
+  padding: 10px 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--card-title);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.noteBy {
+  padding-top: 4px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.secondaryButton {
+  padding: 8px 14px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.secondaryButton:hover {
+  background: var(--card-bg);
+}
+
+/* ------------------------------------------------------------ The closing note */
+
+.pageNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.pageNote img {
+  flex-shrink: 0;
+  margin-top: 2.4px;
+}
+
+.pageNoteTitle {
+  color: var(--card-title);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+}
+
+.pageNoteText {
+  max-width: 1040px;
+  padding-top: 6.4px;
+  color: var(--card-muted);
+  font-size: 10px;
+  line-height: 19px;
+}
+
+@media (max-width: 900px) {
+  .viewer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

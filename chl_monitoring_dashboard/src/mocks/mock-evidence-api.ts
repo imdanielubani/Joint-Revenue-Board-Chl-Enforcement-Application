@@ -47,7 +47,7 @@ const LABELS: Record<PhotoKind, string> = {
   haulage_bay: 'Haulage bay',
   missing_tag: 'Missing E-Tag',
   invalid_tag: 'Fake / invalid E-Tag',
-  other_etag: 'Other E-Tag evidence',
+  other_etag: 'Other relevant photograph',
 }
 
 /**

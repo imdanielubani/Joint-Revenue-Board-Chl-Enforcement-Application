@@ -9,6 +9,8 @@ interface DialogProps {
   children: ReactNode
   /** The buttons along the bottom. */
   footer?: ReactNode
+  /** Wider, for content such as a photograph viewer. */
+  wide?: boolean
 }
 
 const FOCUSABLE =
@@ -20,7 +22,7 @@ const FOCUSABLE =
  * the keyboard stays inside it and the page behind does not scroll. Focus goes
  * back to where it was when it closes.
  */
-export function Dialog({ title, subtitle, onClose, children, footer }: DialogProps) {
+export function Dialog({ title, subtitle, onClose, children, footer, wide = false }: DialogProps) {
   const titleId = useId()
   const subtitleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
@@ -79,7 +81,7 @@ export function Dialog({ title, subtitle, onClose, children, footer }: DialogPro
         aria-labelledby={titleId}
         aria-describedby={subtitle ? subtitleId : undefined}
         tabIndex={-1}
-        className={styles.panel}
+        className={wide ? `${styles.panel} ${styles.wide}` : styles.panel}
         onKeyDown={onKeyDown}
       >
         <header className={styles.head}>

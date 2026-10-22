@@ -302,6 +302,20 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Evidence records page (`/evidence`): a read-only viewer for evidence captured
+  through the mobile application, for the area, period, organization and agent.
+  Headline figures for evidence records, photographs, vehicle evidence and E-Tag
+  evidence, then tabs: Evidence records, Vehicle Evidence (front, rear, side and
+  haulage-bay photographs), E-Tag Evidence (missing-tag, fake/invalid-tag and
+  other relevant photographs) and Enforcement Notes (the agents' submitted
+  notes). A record's evidence opens from its row's actions in a viewer: the
+  photograph viewer (previous/next, arrow keys and thumbnails grouped by kind),
+  each photograph's metadata (capture timestamp, GPS coordinates, location,
+  agent, violation reference), the notes, and links to the related vehicle,
+  verification, violation and enforcement location. A photograph still
+  uploading says so. There is no way to upload, replace, edit or alter
+  evidence; `?record=` links from other pages open the violation's evidence.
+- Popups can be wide, for content such as the photograph viewer.
 - Evidence records data: `GET /api/v1/evidence/monitoring` (provisional; sample
   data in mock mode) returns the evidence captured in the area, period, agent
   and organization, one record per violation: its photographs (vehicle
