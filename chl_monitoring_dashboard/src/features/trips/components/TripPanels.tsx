@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { Stack } from '@/features/geography/components/RecordCells'
@@ -13,6 +12,7 @@ import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActi
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { detectionPill, placeText, tripStatusPill, validityText, type Pill } from '../trips-display'
 import type { PostPayment, Trip, VehicleTripCheck } from '../trips.schemas'
+import type { TripRelated } from './TripRelatedDialog'
 import styles from './TripCards.module.css'
 
 type ModuleLink = ReturnType<typeof useModuleLink>
@@ -36,6 +36,8 @@ interface PanelProps {
   /** A plate to look up first, from a link. */
   initialQuery: string
   onOpenTrip(reference: string): void
+  /** Opens a row's verification or case in its own popup on this page. */
+  onRelated(related: TripRelated): void
 }
 
 /* ------------------------------------------------------------ Trips */
@@ -222,7 +224,7 @@ export function VehiclesPanel({
   label: string
 }) {
   const link = useModuleLink()
-  const { onOpenTrip } = panel
+  const { onOpenTrip, onRelated } = panel
   const columns = useMemo<Column<VehicleTripCheck>[]>(
     () => [
       {
@@ -240,19 +242,7 @@ export function VehiclesPanel({
       {
         key: 'verification',
         header: 'Verification',
-        render: (row) => {
-          const to = link(
-            'verifications',
-            `${paths.verifications}?ref=${row.verification.reference}`,
-          )
-          return to ? (
-            <Link className={`${cells.open} ${styles.link}`} to={to}>
-              {row.verification.reference}
-            </Link>
-          ) : (
-            row.verification.reference
-          )
-        },
+        render: (row) => <span className={cells.plate}>{row.verification.reference}</span>,
         sortValue: (row) => row.verification.reference,
       },
       {
@@ -308,19 +298,23 @@ export function VehiclesPanel({
         header: 'Actions',
         align: 'end',
         render: (row) => {
-          const commands: RowCommand[] = row.previousTripReference
-            ? [
-                {
-                  label: 'Most recent previous trip',
-                  onSelect: () => onOpenTrip(row.previousTripReference!),
-                },
-              ]
-            : []
-          const links = actionsOf([
+          const commands: RowCommand[] = [
+            ...(row.previousTripReference
+              ? [
+                  {
+                    label: 'Most recent previous trip',
+                    onSelect: () => onOpenTrip(row.previousTripReference!),
+                  },
+                ]
+              : []),
             {
               label: 'View verification',
-              to: link('verifications', `${paths.verifications}?ref=${row.verification.reference}`),
+              onSelect: () =>
+                onRelated({ kind: 'verification', reference: row.verification.reference }),
             },
+          ]
+          // The vehicle's verifications are a list: they stay a page of their own.
+          const links = actionsOf([
             {
               label: 'Vehicle verifications',
               to: link('verifications', `${paths.verifications}?plate=${row.plate}`),
@@ -330,7 +324,7 @@ export function VehiclesPanel({
         },
       },
     ],
-    [link, onOpenTrip, withPreviousTrip],
+    [link, onOpenTrip, onRelated, withPreviousTrip],
   )
   return (
     <DashboardCard
@@ -367,8 +361,7 @@ export function PostPaymentPanel({
   payments,
   ...panel
 }: PanelProps & { payments: readonly PostPayment[] }) {
-  const link = useModuleLink()
-  const { onOpenTrip } = panel
+  const { onOpenTrip, onRelated } = panel
   const columns = useMemo<Column<PostPayment>[]>(
     () => [
       {
@@ -433,26 +426,20 @@ export function PostPaymentPanel({
         header: 'Actions',
         align: 'end',
         render: (row) => {
-          const commands: RowCommand[] = row.tripReference
-            ? [{ label: 'View trip details', onSelect: () => onOpenTrip(row.tripReference!) }]
-            : []
-          const links = actionsOf([
-            {
-              label: 'Open the payment',
-              to: link('payments', `${paths.payments}?notice=${row.noticeId}`),
-            },
+          const commands: RowCommand[] = [
+            ...(row.tripReference
+              ? [{ label: 'View trip details', onSelect: () => onOpenTrip(row.tripReference!) }]
+              : []),
             {
               label: 'Open the case',
-              to: link('violations', `${paths.violations}?case=${row.violationId}`),
+              onSelect: () => onRelated({ kind: 'case', violationId: row.violationId }),
             },
-          ])
-          return (
-            <RowActions label={`Actions for ${row.noticeId}`} actions={[...commands, ...links]} />
-          )
+          ]
+          return <RowActions label={`Actions for ${row.noticeId}`} actions={commands} />
         },
       },
     ],
-    [link, onOpenTrip],
+    [onOpenTrip, onRelated],
   )
   return (
     <DashboardCard

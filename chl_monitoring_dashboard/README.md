@@ -302,6 +302,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Trip monitoring: View verification (vehicle tabs) and Open the case
+  (post-payment tab) open as popups on the page, the same popups Verifications &
+  E-Tags and Violations & cases show; from a case, its evidence, verification and
+  agent open in place of it. The verification reference in the vehicle tables is
+  plain text. Open the payment is left out until the Payments module is built.
 - Violations & cases: View evidence, View verification and View agent open as
   popups on the page, from a row's actions or from the case record (the same
   popups Evidence records, Verifications & E-Tags and Agents & organizations

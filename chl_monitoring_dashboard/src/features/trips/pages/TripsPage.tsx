@@ -1,4 +1,4 @@
-import { useId, useMemo } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
@@ -12,6 +12,7 @@ import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { TripDetailsDialog } from '../components/TripDetailsDialog'
+import { TripRelatedDialog, type TripRelated } from '../components/TripRelatedDialog'
 import { PostPaymentPanel, TripsPanel, VehiclesPanel } from '../components/TripPanels'
 import cards from '../components/TripCards.module.css'
 import { useTripsMonitoring } from '../trips.queries'
@@ -76,6 +77,8 @@ function TripsContent({
   const query = useTripsMonitoring(period, { enabled: !filter.waiting })
   const monitoring = query.data
   const page = useTripsView((plate) => viewForPlate(monitoring, plate))
+  // A row's verification or case, open in its own popup on this page.
+  const [related, setRelated] = useState<TripRelated | null>(null)
   const scopeText = `${scope.name} · ${periodLabel(filters.range, filters)}`
 
   const sections = useMemo(() => {
@@ -108,6 +111,7 @@ function TripsContent({
   const panel = {
     initialQuery: page.plate,
     onOpenTrip: page.openTrip,
+    onRelated: setRelated,
   }
 
   return (
@@ -278,6 +282,15 @@ function TripsContent({
           </section>
 
           {open && <TripDetailsDialog trip={open} onClose={() => page.openTrip(null)} />}
+          {related && (
+            <TripRelatedDialog
+              key={related.kind === 'case' ? related.violationId : related.reference}
+              related={related}
+              filters={period}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
+            />
+          )}
           {page.trip && !open && (
             <p className={styles.stale} role="status">
               Trip {page.trip} is not among the trips CHL returned for this area and period. Choose

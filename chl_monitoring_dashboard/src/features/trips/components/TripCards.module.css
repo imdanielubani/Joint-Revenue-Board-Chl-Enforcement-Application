@@ -4,11 +4,6 @@
   gap: 14px;
 }
 
-/* A link in a table cell, drawn as the cells that open a record. */
-.link {
-  text-decoration: none;
-}
-
 .small {
   color: var(--card-muted);
   font-size: 10px;

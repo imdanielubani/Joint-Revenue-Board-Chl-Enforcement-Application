@@ -93,10 +93,43 @@ describe('trip monitoring page', () => {
     for (const vehicle of noActive.slice(0, 10)) {
       const row = within(table).getByText(vehicle.plate).closest('tr')!
       expect(row).toHaveTextContent(vehicle.previousTripReference ?? 'None returned by CHL')
-      expect(
-        within(row).getByRole('link', { name: vehicle.verification.reference }),
-      ).toHaveAttribute('href', `/verifications?ref=${vehicle.verification.reference}`)
+      // The verification reference is plain text; it opens from the row's actions.
+      expect(within(row).getByText(vehicle.verification.reference).closest('button, a')).toBeNull()
     }
+  })
+
+  it('opens a vehicle’s verification as a popup, without leaving the page', async () => {
+    const vehicle = expected().vehicles.find((v) => v.result === 'no_active_trip')!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/trips?range=30d&view=no-active')
+    const table = await screen.findByRole('table', { name: 'Vehicles with no active trip' })
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${vehicle.plate}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View verification' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(dialog).toHaveTextContent(vehicle.verification.reference)
+    expect(router.state.location.pathname).toBe('/trips')
+  })
+
+  it('opens a paid violation’s case as a popup; payments wait for the Payments module', async () => {
+    const payment = expected().postPayment[0]!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/trips?range=30d&view=post-payment')
+    const table = await screen.findByRole('table', { name: 'Confirmed payments' })
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${payment.noticeId}` }),
+    )
+    const menu = await screen.findByRole('menu')
+    expect(within(menu).queryByRole('menuitem', { name: 'Open the payment' })).toBeNull()
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Open the case' }))
+    const dialog = await screen.findByRole('dialog', { name: `Case ${payment.violationId}` })
+    expect(dialog).toHaveTextContent(payment.noticeId)
+
+    // From the case, its evidence opens in its own popup, in place of the case.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'View evidence' }))
+    expect(await screen.findByRole('dialog', { name: /^Evidence EV-/ })).toBeInTheDocument()
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
   })
 
   it('shows transaction references as plain text; a trip’s details open from its row’s actions', async () => {
