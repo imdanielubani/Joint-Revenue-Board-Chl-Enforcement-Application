@@ -1,6 +1,4 @@
 import { useMemo } from 'react'
-import { paths } from '@/config/paths'
-import { useModuleLink } from '@/features/auth/use-module-link'
 import { Stack } from '@/features/geography/components/RecordCells'
 import cells from '@/features/geography/components/RecordColumns.module.css'
 import { actionStatusLabel, followUpLabel, share } from '@/features/overview/overview-display'
@@ -9,7 +7,7 @@ import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
+import { RowActions, type RowCommand } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
   actionLabel,
@@ -23,9 +21,8 @@ import {
   type Pill,
 } from '../violations-display'
 import { STATUS_VIEWS, VIOLATION_CATEGORIES, type ViolationCase } from '../violations.schemas'
+import type { RelatedKind } from './RelatedDialog'
 import styles from './ViolationCards.module.css'
-
-type ModuleLink = ReturnType<typeof useModuleLink>
 
 export function PillLabel({ pill }: { pill: Pill }) {
   return (
@@ -40,8 +37,7 @@ const notSupplied = (text = 'Not supplied') => <span className={cells.sub}>{text
 /** The register's columns; the last ones depend on the view. */
 function caseColumns(
   kind: 'register' | 'unresolved' | 'history',
-  link: ModuleLink,
-  onOpen: (item: ViolationCase) => void,
+  onOpen: PanelProps['onOpen'],
 ): Column<ViolationCase>[] {
   const lead: Column<ViolationCase>[] = [
     {
@@ -88,25 +84,16 @@ function caseColumns(
     header: 'Actions',
     align: 'end',
     render: (row) => {
-      const view: RowCommand = { label: 'View case', onSelect: () => onOpen(row) }
-      const links = [
-        {
-          label: 'View evidence',
-          to: row.evidence ? link('evidence', `${paths.evidence}?record=${row.id}`) : undefined,
-        },
-        {
-          label: 'Open the payment',
-          to: row.notice
-            ? link('payments', `${paths.payments}?notice=${row.notice.id}`)
-            : undefined,
-        },
-        {
-          label: 'View verification',
-          to: link('verifications', `${paths.verifications}?ref=${row.verification.reference}`),
-        },
-        { label: 'View agent', to: link('agents', paths.agent(row.agent.id)) },
-      ].filter((action): action is RowAction => action.to !== undefined)
-      return <RowActions label={`Actions for ${row.id}`} actions={[view, ...links]} />
+      // The case and its related records open as popups on this page.
+      const commands: RowCommand[] = [
+        { label: 'View case', onSelect: () => onOpen(row) },
+        ...(row.evidence
+          ? [{ label: 'View evidence', onSelect: () => onOpen(row, 'evidence') }]
+          : []),
+        { label: 'View verification', onSelect: () => onOpen(row, 'verification') },
+        { label: 'View agent', onSelect: () => onOpen(row, 'agent') },
+      ]
+      return <RowActions label={`Actions for ${row.id}`} actions={commands} />
     },
   }
 
@@ -232,12 +219,12 @@ function caseColumns(
 interface PanelProps {
   cases: readonly ViolationCase[]
   subtitle: string
-  onOpen(item: ViolationCase): void
+  /** Opens the case, or with `related`, its evidence, verification or agent. */
+  onOpen(item: ViolationCase, related?: RelatedKind): void
 }
 
 function useColumns(kind: 'register' | 'unresolved' | 'history', onOpen: PanelProps['onOpen']) {
-  const link = useModuleLink()
-  return useMemo(() => caseColumns(kind, link, onOpen), [kind, link, onOpen])
+  return useMemo(() => caseColumns(kind, onOpen), [kind, onOpen])
 }
 
 const option = (value: string) => ({ value, label: value })

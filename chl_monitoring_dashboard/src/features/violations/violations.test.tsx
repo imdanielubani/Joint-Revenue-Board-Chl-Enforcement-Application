@@ -88,10 +88,11 @@ describe('violations and cases page', () => {
     expect(dialog).toHaveTextContent(item.notice!.id)
     expect(dialog).toHaveTextContent(item.notes[0]!.text)
     expect(dialog).toHaveTextContent(item.agent.name)
-    expect(within(dialog).getByRole('link', { name: 'View evidence' })).toHaveAttribute(
-      'href',
-      `/evidence?record=${item.id}`,
-    )
+    // The related records open as popups here; payments wait for the Payments module.
+    for (const name of ['View evidence', 'View verification', 'View agent']) {
+      expect(within(dialog).getByRole('button', { name })).toBeInTheDocument()
+    }
+    expect(within(dialog).queryByRole('link', { name: 'Open the payment' })).toBeNull()
     // Read-only: no way to close or cancel a case.
     expect(
       within(dialog).queryByRole('button', { name: /close case|cancel|resolve|edit/i }),
@@ -99,6 +100,41 @@ describe('violations and cases page', () => {
 
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  })
+
+  it('opens the case’s evidence in its viewer, in place of the case', async () => {
+    const item = expected().find((entry) => entry.evidence)!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/violations?range=30d&case=${item.id}`)
+    const dialog = await screen.findByRole('dialog', { name: `Case ${item.id}` })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'View evidence' }))
+
+    const viewer = await screen.findByRole('dialog', { name: `Evidence ${item.evidence!.id}` })
+    expect(within(viewer).getByRole('heading', { name: 'Photograph viewer' })).toBeInTheDocument()
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+  })
+
+  it('opens a violation’s verification and agent from its row, without leaving the page', async () => {
+    const item = expected()[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/violations?range=30d')
+    const table = await screen.findByRole('table', { name: 'Violations' })
+    const actions = within(table).getByRole('button', { name: `Actions for ${item.id}` })
+
+    await userEvent.click(actions)
+    const menu = await screen.findByRole('menu')
+    expect(within(menu).queryByRole('menuitem', { name: 'Open the payment' })).toBeNull()
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'View verification' }))
+    const verification = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(verification).toHaveTextContent(item.verification.reference)
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    await userEvent.click(actions)
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View agent' }))
+    const agent = await screen.findByRole('dialog', { name: 'Agent details' })
+    expect(agent).toHaveTextContent(item.agent.id)
+    expect(router.state.location.pathname).toBe('/violations')
   })
 
   it('lists the documented categories, the tag-vehicle mismatch as a documented breach', async () => {

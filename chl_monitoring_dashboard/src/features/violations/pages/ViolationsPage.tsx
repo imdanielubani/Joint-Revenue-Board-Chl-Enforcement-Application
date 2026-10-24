@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -13,6 +13,7 @@ import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { CaseDialog } from '../components/CaseDialog'
+import { RelatedDialog, type Related, type RelatedKind } from '../components/RelatedDialog'
 import cards from '../components/ViolationCards.module.css'
 import {
   CategoriesPanel,
@@ -72,7 +73,20 @@ function ViolationsContent({
   const open = cases.find((item) => item.id === page.caseId) ?? null
 
   const { openCase, showInRegister } = page
-  const onOpen = useCallback((item: ViolationCase) => openCase(item.id), [openCase])
+  // A case's evidence, verification or agent, open in its own popup in place of the case.
+  const [related, setRelated] = useState<Related | null>(null)
+  const onOpen = useCallback(
+    (item: ViolationCase, kind?: RelatedKind) => {
+      if (kind) {
+        setRelated({ kind, item })
+        openCase(null)
+      } else {
+        setRelated(null)
+        openCase(item.id)
+      }
+    },
+    [openCase],
+  )
 
   const counts = useMemo(
     () => ({
@@ -228,7 +242,23 @@ function ViolationsContent({
             </div>
           </section>
 
-          {open && <CaseDialog key={open.id} item={open} onClose={() => page.openCase(null)} />}
+          {open && (
+            <CaseDialog
+              key={open.id}
+              item={open}
+              onClose={() => page.openCase(null)}
+              onRelated={(kind) => onOpen(open, kind)}
+            />
+          )}
+          {related && (
+            <RelatedDialog
+              key={`${related.kind}:${related.item.id}`}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
+            />
+          )}
           {page.caseId && !open && (
             <p className={styles.stale} role="status">
               Violation {page.caseId} is not in this area and period. Choose another area or period

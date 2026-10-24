@@ -15,6 +15,7 @@ import {
   statusPill,
 } from '../violations-display'
 import type { ViolationCase } from '../violations.schemas'
+import type { RelatedKind } from './RelatedDialog'
 import { PillLabel } from './ViolationPanels'
 import styles from './ViolationCards.module.css'
 
@@ -45,27 +46,24 @@ function Fact({ term, children }: { term: string; children: ReactNode }) {
  * actions and pending follow-up (8.4); and how it was closed or cancelled
  * (8.5). Read-only: cases are not closed, cancelled or edited here.
  */
-export function CaseDialog({ item, onClose }: { item: ViolationCase; onClose(): void }) {
+export function CaseDialog({
+  item,
+  onClose,
+  onRelated,
+}: {
+  item: ViolationCase
+  onClose(): void
+  /** Opens the case's evidence, verification or agent in its own popup. */
+  onRelated(kind: RelatedKind): void
+}) {
   const link = useModuleLink()
-  const links = [
-    {
-      label: 'View evidence',
-      to: item.evidence ? link('evidence', `${paths.evidence}?record=${item.id}`) : undefined,
-    },
-    {
-      label: 'Open the payment',
-      to: item.notice ? link('payments', `${paths.payments}?notice=${item.notice.id}`) : undefined,
-    },
-    {
-      label: 'View verification',
-      to: link('verifications', `${paths.verifications}?ref=${item.verification.reference}`),
-    },
-    {
-      label: 'Vehicle verifications',
-      to: link('verifications', `${paths.verifications}?plate=${item.plate}`),
-    },
-    { label: 'View agent', to: link('agents', paths.agent(item.agent.id)) },
-  ].flatMap((entry) => (entry.to ? [{ label: entry.label, to: entry.to }] : []))
+  // Still a page of their own: the vehicle's verifications. The rest open here as popups.
+  const vehicleLink = link('verifications', `${paths.verifications}?plate=${item.plate}`)
+  const popups: { label: string; kind: RelatedKind }[] = [
+    ...(item.evidence ? [{ label: 'View evidence', kind: 'evidence' as const }] : []),
+    { label: 'View verification', kind: 'verification' },
+    { label: 'View agent', kind: 'agent' },
+  ]
 
   return (
     <Dialog
@@ -206,15 +204,23 @@ export function CaseDialog({ item, onClose }: { item: ViolationCase; onClose(): 
         </div>
       </div>
 
-      {links.length > 0 && (
-        <nav className={styles.dialogLinks} aria-label="Related records">
-          {links.map((entry) => (
-            <Link key={entry.label} className={styles.dialogLink} to={entry.to}>
-              {entry.label}
-            </Link>
-          ))}
-        </nav>
-      )}
+      <nav className={styles.dialogLinks} aria-label="Related records">
+        {popups.map((entry) => (
+          <button
+            key={entry.kind}
+            type="button"
+            className={styles.dialogLink}
+            onClick={() => onRelated(entry.kind)}
+          >
+            {entry.label}
+          </button>
+        ))}
+        {vehicleLink && (
+          <Link className={styles.dialogLink} to={vehicleLink}>
+            Vehicle verifications
+          </Link>
+        )}
+      </nav>
 
       <p className={styles.small}>
         Read-only monitoring. Closing or cancelling a violation is done in CHL by authorised roles;

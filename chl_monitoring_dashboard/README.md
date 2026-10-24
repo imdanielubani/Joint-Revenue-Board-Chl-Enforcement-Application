@@ -302,6 +302,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Violations & cases: View evidence, View verification and View agent open as
+  popups on the page, from a row's actions or from the case record (the same
+  popups Evidence records, Verifications & E-Tags and Agents & organizations
+  show), in place of the case so only one is open at a time. Open the payment is
+  left out until the Payments module is built.
 - Violations & cases page (`/violations`): a read-only monitoring view of the
   violations received by CHL, for the area, period, organization and agent.
   Headline figures for violations received, unresolved cases, payment pending
