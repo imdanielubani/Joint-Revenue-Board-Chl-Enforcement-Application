@@ -1,0 +1,23 @@
+/* As the Overview: sections 24px apart; banner and filters as one block. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 8px;
+}
+
+.stale {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid #f5d9a8;
+  border-radius: 8px;
+  background: var(--status-warning-bg);
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+}
+
+/* The tabs, then the chosen register 16px below. */
+.views {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

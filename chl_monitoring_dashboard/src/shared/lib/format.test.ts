@@ -4,6 +4,7 @@ import {
   formatDateTime,
   formatDelay,
   formatDuration,
+  formatNaira,
   formatNumber,
   formatPercent,
   formatShortDateTime,
@@ -42,6 +43,14 @@ describe('formatPercent', () => {
   it('shows one decimal, and 0.0% without a total', () => {
     expect(formatPercent(9, 27)).toBe('33.3%')
     expect(formatPercent(0, 0)).toBe('0.0%')
+  })
+})
+
+describe('formatNaira', () => {
+  it('shows whole naira without kobo, and two places when there are kobo', () => {
+    expect(formatNaira(70_000)).toBe('₦70,000')
+    expect(formatNaira(0)).toBe('₦0')
+    expect(formatNaira(70_000.5)).toBe('₦70,000.50')
   })
 })
 

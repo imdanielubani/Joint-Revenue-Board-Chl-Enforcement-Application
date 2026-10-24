@@ -37,7 +37,13 @@ const percentFormat = new Intl.NumberFormat('en-NG', {
 const nairaFormat = new Intl.NumberFormat('en-NG', {
   style: 'currency',
   currency: 'NGN',
+  minimumFractionDigits: 2,
   maximumFractionDigits: 2,
+})
+const wholeNairaFormat = new Intl.NumberFormat('en-NG', {
+  style: 'currency',
+  currency: 'NGN',
+  maximumFractionDigits: 0,
 })
 
 /** "17 Oct 2026, 05:30 pm". An empty or unreadable value becomes "—". */
@@ -100,6 +106,7 @@ export function formatPercent(part: number, total: number): string {
   return `${percentFormat.format(total > 0 ? (part / total) * 100 : 0)}%`
 }
 
+/** "₦70,000" for whole naira, "₦70,000.50" when there are kobo. */
 export function formatNaira(value: number): string {
-  return nairaFormat.format(value)
+  return (Number.isInteger(value) ? wholeNairaFormat : nairaFormat).format(value)
 }

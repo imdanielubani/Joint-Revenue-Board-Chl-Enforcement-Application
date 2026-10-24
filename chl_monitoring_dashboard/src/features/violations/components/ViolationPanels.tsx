@@ -291,7 +291,6 @@ export function RegisterPanel({
   )
 }
 
-/** A count with its share of the total, and a way to list the violations. */
 /** A category's colour in the distribution: the design's four, then the dashboard's own. */
 const CATEGORY_COLORS = [
   'var(--share-1)',

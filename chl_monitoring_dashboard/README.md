@@ -302,6 +302,21 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Payments & compliance page (`/payments`): a read-only monitoring view of the
+  demand notices CHL generated, for the area, period, organization and agent.
+  Headline figures for demand notices, payment pending, payment received and
+  trips activated after payment (counted on their own), then a Payment Status
+  card (Payment Pending and Payment Received as CHL reports them, with their
+  share and payable total) and tabs: Demand Notice Register (payment status and
+  method filters, search), Post-Payment Compliance (trip activation,
+  tagging-process initiation and compliance outcome) and Related Transactions
+  (transaction references and times). A notice opens from its row's actions:
+  vehicle, CHL levy, penalty, total payable, payment reference, payment method,
+  payment status, post-payment compliance and related transactions; its case and
+  verification open as popups. No tariff editing, invoice generation, payment
+  confirmation, refunds or reconciliation. The `?notice=` and `?status=` links
+  other pages use open the right notice or status.
+- Naira amounts show without kobo when they are whole: ₦70,000.
 - Payments & compliance data: the demand notices CHL generated for violations
   in the area and period, each with its violation, vehicle, CHL levy, penalty,
   total payable, payment reference, payment method (QR, USSD, transfer,
