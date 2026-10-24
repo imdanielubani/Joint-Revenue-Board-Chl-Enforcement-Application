@@ -1,4 +1,4 @@
-import { useRef, type KeyboardEvent } from 'react'
+import { useEffect, useRef, type KeyboardEvent } from 'react'
 import { panelId, tabId } from './tab-ids'
 import styles from './SegmentedTabs.module.css'
 
@@ -21,7 +21,8 @@ interface SegmentedTabsProps<T extends string> {
 
 /**
  * Tabs drawn as a segmented control ("By agent · By location · Corporate
- * summary"). Arrow keys move between them, as for any tab list.
+ * summary"). Arrow keys move between them, as for any tab list. Where the
+ * labels cannot all fit, the strip scrolls sideways rather than squash them.
  */
 export function SegmentedTabs<T extends string>({
   idBase,
@@ -32,6 +33,30 @@ export function SegmentedTabs<T extends string>({
   className,
 }: SegmentedTabsProps<T>) {
   const listRef = useRef<HTMLDivElement>(null)
+
+  // Where the strip scrolls, keep the selected tab in view. Only the strip
+  // moves, never the page, so the page does not jump on load.
+  useEffect(() => {
+    const reveal = () => {
+      const list = listRef.current
+      const tab = list?.querySelector<HTMLElement>('[aria-selected="true"]')
+      if (!list || !tab || list.scrollWidth <= list.clientWidth) return
+      const start =
+        tab.getBoundingClientRect().left - list.getBoundingClientRect().left + list.scrollLeft
+      const end = start + tab.offsetWidth
+      if (start < list.scrollLeft) list.scrollLeft = start
+      else if (end > list.scrollLeft + list.clientWidth) list.scrollLeft = end - list.clientWidth
+    }
+    reveal()
+    // The labels widen once the web font loads: measure again then.
+    let active = true
+    void document.fonts?.ready.then(() => {
+      if (active) reveal()
+    })
+    return () => {
+      active = false
+    }
+  }, [value])
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const index = tabs.findIndex((tab) => tab.id === value)

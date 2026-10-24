@@ -3,7 +3,10 @@
   gap: 4px;
   height: 57px;
   padding: 6.4px;
-  overflow: hidden;
+  /* When the labels cannot all fit, as on a phone, the strip scrolls sideways. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
   border: 0.8px solid var(--card-line);
   border-radius: 12.8px;
   background: var(--color-surface);
@@ -15,7 +18,8 @@
   align-items: center;
   justify-content: center;
   gap: 9.6px;
-  min-width: 0;
+  /* Equal widths where there is room, never narrower than the label. */
+  min-width: max-content;
   padding: 12px 9.6px;
   border: 0;
   border-radius: 8px;
@@ -26,6 +30,10 @@
   line-height: 16.5px;
   white-space: nowrap;
   cursor: pointer;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab:hover {

@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Tabs: where the labels cannot all fit, as on a phone, the tab strip scrolls
+  sideways instead of squashing the labels over each other, and the selected
+  tab is kept in view. Where there is room the tabs look as before.
 - Violations & cases, Violation Categories: drawn as a distribution, as designed:
   the period in the header's chip, the number of categories, a bar with a
   segment for each category sized by its violations, and a legend of each
