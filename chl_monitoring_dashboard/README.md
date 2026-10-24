@@ -302,6 +302,14 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Violations & cases data: `GET /api/v1/violations/monitoring` (provisional;
+  sample data in mock mode) returns the violations received by CHL in the area,
+  period, agent and organization as case records: category (the six initial
+  categories and the tag-vehicle mismatch), status as CHL returns it, vehicle,
+  agent, location and time, the evidence and notes, the linked demand notice and
+  payment status, the recorded actions, how and by whom a case was closed or
+  cancelled with its audit reference where available, and any repeat-vehicle
+  alert. The notes are the same ones Evidence records shows.
 - Evidence records page (`/evidence`): a read-only viewer for evidence captured
   through the mobile application, for the area, period, organization and agent.
   Headline figures for evidence records, photographs, vehicle evidence and E-Tag

@@ -1,5 +1,6 @@
 import type { EvidenceApi } from '@/features/evidence/evidence.api'
 import type {
+  EnforcementNote,
   EvidenceEntry,
   EvidenceFilters,
   EvidenceMonitoring,
@@ -86,7 +87,6 @@ function entryOf(record: MockRecord): EvidenceEntry | null {
     position: record.position,
   }))
   const agent = agentOf(record)
-  const hasNote = unit(number * 13 + 7) < 0.7
   return {
     id: `EV-${number}`,
     status: pending ? 'pending' : 'received',
@@ -97,17 +97,28 @@ function entryOf(record: MockRecord): EvidenceEntry | null {
     agent,
     location: placeOf(record),
     photographs,
-    notes: hasNote
-      ? [
-          {
-            id: `NT-${number}`,
-            text: SAMPLE_NOTES[violation.category] ?? 'Evidence captured at the enforcement point.',
-            submittedAt: iso(record.recordedAt + (kinds.length + 1) * 40_000),
-            agent,
-          },
-        ]
-      : [],
+    notes: notesOf(record),
   }
+}
+
+/**
+ * The notes the agent submitted with a violation's evidence, after its
+ * photographs; about seven in ten violations have one. Violations & cases
+ * shows the same notes.
+ */
+export function notesOf(record: MockRecord): EnforcementNote[] {
+  const violation = record.violation
+  if (!violation) return []
+  const number = numberOf(violation.id)
+  if (unit(number * 13 + 7) >= 0.7) return []
+  return [
+    {
+      id: `NT-${number}`,
+      text: SAMPLE_NOTES[violation.category] ?? 'Evidence captured at the enforcement point.',
+      submittedAt: iso(record.recordedAt + (photographsOf(violation.id) + 1) * 40_000),
+      agent: agentOf(record),
+    },
+  ]
 }
 
 /**
