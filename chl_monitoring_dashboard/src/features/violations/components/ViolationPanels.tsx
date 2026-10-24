@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import { Stack } from '@/features/geography/components/RecordCells'
 import cells from '@/features/geography/components/RecordColumns.module.css'
 import { actionStatusLabel, followUpLabel, share } from '@/features/overview/overview-display'
-import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
+import { assetUrl } from '@/shared/lib/asset-url'
+import { formatNumber, formatPercent, formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { LabeledSelect } from '@/shared/ui/LabeledSelect'
@@ -291,44 +292,6 @@ export function RegisterPanel({
 }
 
 /** A count with its share of the total, and a way to list the violations. */
-function CountRow({
-  label,
-  note,
-  count,
-  total,
-  onShow,
-  pill,
-}: {
-  label: string
-  note?: string
-  count: number
-  total: number
-  onShow(): void
-  pill?: Pill
-}) {
-  return (
-    <li className={styles.countRow}>
-      <span className={styles.countName}>
-        {pill ? <PillLabel pill={pill} /> : label}
-        {note && <span className={styles.countNote}>{note}</span>}
-      </span>
-      <span className={styles.count}>{formatNumber(count)}</span>
-      <span className={styles.bar} aria-hidden="true">
-        <span className={styles.barFill} style={{ width: `${share(count, total)}%` }} />
-      </span>
-      <button
-        type="button"
-        className={styles.linkButton}
-        disabled={count === 0}
-        onClick={onShow}
-        aria-label={`View ${label} violations`}
-      >
-        View violations
-      </button>
-    </li>
-  )
-}
-
 /** A category's colour in the distribution: the design's four, then the dashboard's own. */
 const CATEGORY_COLORS = [
   'var(--share-1)',
@@ -409,7 +372,21 @@ export function CategoriesPanel({
   )
 }
 
-/** 8.3 Status Views: Payment Pending, Resolved, Escalated, Cancelled, and any other state. */
+/** The colour of a status's share bar: its pill's text colour. */
+const TONE_COLORS: Record<Pill['tone'], string> = {
+  success: 'var(--status-success-text)',
+  warning: 'var(--status-warning-text)',
+  amber: 'var(--status-amber-text)',
+  danger: 'var(--status-danger-text)',
+  info: 'var(--card-title)',
+  neutral: 'var(--status-neutral-dot)',
+}
+
+/**
+ * 8.3 Status Views: a tile for Payment Pending, Resolved, Escalated, Cancelled
+ * and any other state CHL returns, with its count and share; a tile lists its
+ * violations in the register.
+ */
 export function StatusesPanel({
   cases,
   subtitle,
@@ -417,26 +394,56 @@ export function StatusesPanel({
 }: Omit<PanelProps, 'onOpen'> & { onShow(status: string): void }) {
   const known: readonly string[] = STATUS_VIEWS
   const others = [...new Set(cases.map((item) => item.status))].filter((s) => !known.includes(s))
-  const countOf = (status: string) => cases.filter((item) => item.status === status).length
   return (
     <DashboardCard
       title="Status Views"
       subtitle={subtitle}
       icon="overview/card-payment.svg"
-      bodyClassName={styles.panelBody}
+      bodyClassName={styles.statusBody}
     >
-      <ul className={styles.countList}>
-        {[...STATUS_VIEWS, ...others].map((status) => (
-          <CountRow
-            key={status}
-            label={actionStatusLabel(status)}
-            pill={statusPill(status)}
-            {...(!known.includes(status) ? { note: 'Another state returned by CHL' } : {})}
-            count={countOf(status)}
-            total={cases.length}
-            onShow={() => onShow(status)}
-          />
-        ))}
+      <ul className={styles.statusTiles}>
+        {[...STATUS_VIEWS, ...others].map((status) => {
+          const pill = statusPill(status)
+          const count = cases.filter((item) => item.status === status).length
+          return (
+            <li key={status}>
+              <button
+                type="button"
+                className={styles.statusTile}
+                disabled={count === 0}
+                onClick={() => onShow(status)}
+                aria-label={`View ${pill.label} violations`}
+              >
+                <span className={styles.statusTileHead}>
+                  <PillLabel pill={pill} />
+                  <img
+                    className={styles.statusTileArrow}
+                    src={assetUrl('overview/tile-arrow.svg')}
+                    alt=""
+                    width={12}
+                    height={12}
+                  />
+                </span>
+                <span className={styles.statusTileValue}>{formatNumber(count)}</span>
+                <span className={styles.statusTileShare}>
+                  {formatPercent(count, cases.length)} of violations
+                </span>
+                <span className={styles.statusTrack} aria-hidden="true">
+                  <span
+                    className={styles.statusFill}
+                    style={{
+                      width: `${share(count, cases.length)}%`,
+                      background: TONE_COLORS[pill.tone],
+                    }}
+                  />
+                </span>
+                {!known.includes(status) && (
+                  <span className={styles.statusTileNote}>Another state returned by CHL</span>
+                )}
+              </button>
+            </li>
+          )
+        })}
       </ul>
     </DashboardCard>
   )

@@ -47,7 +47,7 @@ describe('violations and cases page', () => {
     )
   })
 
-  it('shows the categories on their own above the tabs for the other sections', async () => {
+  it('shows the categories and status views on their own above the tabs', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/violations')
     const tabs = await screen.findByRole('tablist', { name: 'Violation views' })
@@ -55,27 +55,29 @@ describe('violations and cases page', () => {
       within(tabs)
         .getAllByRole('tab')
         .map((tab) => tab.textContent?.replace(/\d+$/, '')),
-    ).toEqual([
-      'Violation Register',
-      'Status Views',
-      'Unresolved Cases',
-      'Closure & Cancellation History',
-    ])
-    // 8.2 is its own card, outside the tabs and above them.
+    ).toEqual(['Violation Register', 'Unresolved Cases', 'Closure & Cancellation History'])
+    // 8.2 then 8.3, each its own card, outside the tabs and above them.
     const categories = await card('Violation Categories')
+    const statuses = await card('Status Views')
     const views = screen.getByRole('region', { name: 'Violation views' })
+    const follows = (a: Node, b: Node) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
     expect(views).not.toContainElement(categories)
-    expect(
-      categories.compareDocumentPosition(views) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    expect(views).not.toContainElement(statuses)
+    expect(follows(categories, statuses)).toBe(true)
+    expect(follows(statuses, views)).toBe(true)
   })
 
-  it('opens an older categories link on the register, under the categories', async () => {
-    signInAs('admin@jrb.gov.ng')
-    renderApp('/violations?range=30d&view=categories')
-    expect(await card('Violation Categories')).toBeInTheDocument()
-    expect(await card('Violation Register')).toBeInTheDocument()
-  })
+  it.each(['categories', 'statuses'])(
+    'opens an older ?view=%s link on the register, under the cards',
+    async (view) => {
+      signInAs('admin@jrb.gov.ng')
+      renderApp(`/violations?range=30d&view=${view}`)
+      expect(await card('Violation Register')).toBeInTheDocument()
+      expect(screen.getByRole('region', { name: 'Violation Categories' })).toBeInTheDocument()
+      expect(screen.getByRole('region', { name: 'Status Views' })).toBeInTheDocument()
+    },
+  )
 
   it('opens a case with its vehicle, agent, location, time, evidence, notes and demand notice', async () => {
     const item = expected().find((entry) => entry.notice && entry.notes.length > 0)!
@@ -185,15 +187,35 @@ describe('violations and cases page', () => {
     for (const row of bodyRows(table)) expect(row).toHaveTextContent(category)
   })
 
-  it('shows the status views and any other state CHL returns', async () => {
+  it('shows a tile for each status view and any other state CHL returns', async () => {
+    const cases = expected()
     signInAs('admin@jrb.gov.ng')
-    renderApp('/violations?range=30d&view=statuses')
+    renderApp('/violations?range=30d')
     const panel = await card('Status Views')
-    for (const label of ['Payment Pending', 'Resolved', 'Escalated', 'Cancelled']) {
-      expect(within(panel).getByText(label)).toBeInTheDocument()
+    for (const [label, status] of [
+      ['Payment Pending', 'payment_pending'],
+      ['Resolved', 'resolved'],
+      ['Escalated', 'escalated'],
+      ['Cancelled', 'cancelled'],
+      ['Awaiting Action', 'awaiting_action'],
+    ] as const) {
+      const tile = within(panel).getByRole('button', { name: `View ${label} violations` })
+      const count = cases.filter((item) => item.status === status).length
+      expect(tile).toHaveTextContent(`${label}${count}`)
     }
-    expect(panel).toHaveTextContent('Awaiting Action')
     expect(panel).toHaveTextContent('Another state returned by CHL')
+  })
+
+  it('lists a status’s violations in the register when its tile is chosen', async () => {
+    const count = expected().filter((item) => item.status === 'escalated').length
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/violations?range=30d')
+    const panel = await card('Status Views')
+    await userEvent.click(within(panel).getByRole('button', { name: 'View Escalated violations' }))
+    const register = await card('Violation Register')
+    expect(within(register).getByRole('combobox', { name: 'Status' })).toHaveValue('escalated')
+    const table = within(register).getByRole('table', { name: 'Violations' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, count))
   })
 
   it('lists only outstanding cases under Unresolved Cases, with follow-up and repeat alerts', async () => {

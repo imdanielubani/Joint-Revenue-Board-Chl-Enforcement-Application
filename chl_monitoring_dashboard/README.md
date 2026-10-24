@@ -302,6 +302,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Violations & cases: Status Views is a card of its own under Violation
+  Categories, above the tabs, drawn as a tile for each status (Payment Pending,
+  Resolved, Escalated, Cancelled and any other state CHL returns) with its
+  count, share of violations and a bar in the status's colour. Choosing a tile
+  lists its violations in the register and scrolls down to it. The tabs are
+  Violation Register, Unresolved Cases and Closure & Cancellation History; an
+  older `?view=statuses` link opens the register under the cards.
 - Violations & cases: Violation Categories is a card of its own under the
   headline figures, above the tabs, rather than a tab. The tabs are Violation
   Register, Status Views, Unresolved Cases and Closure & Cancellation History.

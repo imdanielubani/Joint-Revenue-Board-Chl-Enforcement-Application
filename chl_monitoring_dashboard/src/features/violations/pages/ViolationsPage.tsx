@@ -30,8 +30,8 @@ import styles from './ViolationsPage.module.css'
 
 /**
  * Violations & cases (SRD 8): a monitoring view of the violations received by
- * CHL — the categories, then tabs for the register, status views, unresolved
- * cases, and closure and cancellation history. Read-only: no case is closed, cancelled or edited here.
+ * CHL — the categories and status views, then tabs for the register,
+ * unresolved cases, and closure and cancellation history. Read-only: no case is closed, cancelled or edited here.
  */
 export function ViolationsPage() {
   const user = useCurrentUser()
@@ -74,6 +74,13 @@ function ViolationsContent({
   const open = cases.find((item) => item.id === page.caseId) ?? null
 
   const { openCase, showInRegister } = page
+  /** Lists these violations in the register below, and brings it into view. */
+  const showBelow = (filters: { category?: string; status?: string }) => {
+    showInRegister(filters)
+    requestAnimationFrame(() =>
+      document.getElementById(viewsId)?.scrollIntoView?.({ behavior: 'smooth' }),
+    )
+  }
   // A case's evidence, verification or agent, open in its own popup in place of the case.
   const [related, setRelated] = useState<Related | null>(null)
   const onOpen = useCallback(
@@ -97,7 +104,6 @@ function ViolationsContent({
       closed: cases.filter(isClosed).length,
       resolved: cases.filter((item) => item.closure?.outcome === 'resolved').length,
       cancelled: cases.filter((item) => item.closure?.outcome === 'cancelled').length,
-      statuses: new Set(cases.map((item) => item.status)).size,
     }),
     [cases],
   )
@@ -187,13 +193,13 @@ function ViolationsContent({
             cases={cases}
             subtitle={`The documented violation categories · ${scope.name}`}
             periodText={periodLabel(filters.range, filters)}
-            onShow={(category) => {
-              showInRegister({ category })
-              // The register is below: bring it into view with the category chosen.
-              requestAnimationFrame(() =>
-                document.getElementById(viewsId)?.scrollIntoView?.({ behavior: 'smooth' }),
-              )
-            }}
+            onShow={(category) => showBelow({ category })}
+          />
+
+          <StatusesPanel
+            cases={cases}
+            subtitle={`Payment Pending, Resolved, Escalated, Cancelled and any other state CHL returns · ${subtitle}`}
+            onShow={(status) => showBelow({ status })}
           />
 
           <section id={viewsId} className={styles.views} aria-label="Violation views">
@@ -202,7 +208,6 @@ function ViolationsContent({
               label="Violation views"
               tabs={[
                 { id: 'register', label: 'Violation Register', count: cases.length },
-                { id: 'statuses', label: 'Status Views', count: counts.statuses },
                 { id: 'unresolved', label: 'Unresolved Cases', count: counts.unresolved },
                 { id: 'history', label: 'Closure & Cancellation History', count: counts.closed },
               ]}
@@ -220,13 +225,6 @@ function ViolationsContent({
                   plate={page.plate}
                   onCategoryChange={page.setCategory}
                   onStatusChange={page.setStatus}
-                />
-              )}
-              {page.view === 'statuses' && (
-                <StatusesPanel
-                  cases={cases}
-                  subtitle={`Payment Pending, Resolved, Escalated, Cancelled and any other state CHL returns · ${subtitle}`}
-                  onShow={(status) => showInRegister({ status })}
                 />
               )}
               {page.view === 'unresolved' && (
