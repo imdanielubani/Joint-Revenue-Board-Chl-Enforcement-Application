@@ -302,6 +302,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Trip monitoring: Vehicle verifications opens as a popup, from the trip tables,
+  the vehicle tables and a trip's details: the vehicle as Vehicle identity shows
+  it (vehicle ID, type, latest outcome, related trips, violations, last verified)
+  and the plate's verifications in the area and period. A verification opens
+  from it in place, and the verification's Vehicle identity button brings the
+  vehicle back. The popups are offered only to roles that can see Verifications
+  & E-Tags or Violations & cases, as the links were.
 - Trip monitoring: View verification (vehicle tabs) and Open the case
   (post-payment tab) open as popups on the page, the same popups Verifications &
   E-Tags and Violations & cases show; from a case, its evidence, verification and

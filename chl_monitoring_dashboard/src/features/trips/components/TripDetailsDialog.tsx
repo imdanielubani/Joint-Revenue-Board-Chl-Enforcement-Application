@@ -1,5 +1,4 @@
 import { useId, type ReactNode } from 'react'
-import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { formatDateTime } from '@/shared/lib/format'
@@ -38,10 +37,19 @@ const when = (value: string | null) => (value ? formatDateTime(value) : 'Not sup
  * the trip's status in CHL's own words, the route and the channel — with the
  * document's trip detail fields and destination detection where CHL reports it.
  */
-export function TripDetailsDialog({ trip, onClose }: { trip: Trip; onClose(): void }) {
+export function TripDetailsDialog({
+  trip,
+  onClose,
+  onVehicle,
+}: {
+  trip: Trip
+  onClose(): void
+  /** Opens the vehicle's verifications in their own popup, in place of the trip. */
+  onVehicle(plate: string): void
+}) {
   const link = useModuleLink()
   const validity = validityText(trip.validity)
-  const verifications = link('verifications', `${paths.verifications}?plate=${trip.plate}`)
+  const verifications = link('verifications', paths.verifications) !== undefined
   return (
     <Dialog
       title="Trip details"
@@ -107,9 +115,9 @@ export function TripDetailsDialog({ trip, onClose }: { trip: Trip; onClose(): vo
 
       {verifications && (
         <nav className={styles.dialogLinks} aria-label="Related records">
-          <Link className={styles.dialogLink} to={verifications}>
+          <button type="button" className={styles.dialogLink} onClick={() => onVehicle(trip.plate)}>
             Vehicle verifications
-          </Link>
+          </button>
         </nav>
       )}
 

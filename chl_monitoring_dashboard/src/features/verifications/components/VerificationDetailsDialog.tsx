@@ -25,7 +25,7 @@ import type { VerificationEntry } from '../verifications.schemas'
 import { PillLabel } from './RecordsPanel'
 import styles from './VerificationCards.module.css'
 
-function Facts({ title, children }: { title: string; children: ReactNode }) {
+export function Facts({ title, children }: { title: string; children: ReactNode }) {
   const id = useId()
   return (
     <section className={styles.dialogSection} aria-labelledby={id}>
@@ -37,7 +37,7 @@ function Facts({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-function Fact({ term, children }: { term: string; children: ReactNode }) {
+export function Fact({ term, children }: { term: string; children: ReactNode }) {
   return (
     <div className={styles.fact}>
       <dt>{term}</dt>

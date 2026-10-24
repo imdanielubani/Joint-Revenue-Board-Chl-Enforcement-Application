@@ -8,7 +8,7 @@ import { formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
+import { RowActions, type RowCommand } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { detectionPill, placeText, tripStatusPill, validityText, type Pill } from '../trips-display'
 import type { PostPayment, Trip, VehicleTripCheck } from '../trips.schemas'
@@ -26,8 +26,9 @@ export function PillLabel({ pill }: { pill: Pill }) {
 }
 
 const notSupplied = <span className={cells.sub}>Not supplied</span>
-const actionsOf = (actions: { label: string; to: string | undefined }[]) =>
-  actions.filter((action): action is RowAction => action.to !== undefined)
+/** Whether the signed-in role may see a module's records, as its links are offered. */
+const canSee = (link: ModuleLink, module: 'verifications' | 'violations') =>
+  link(module, paths[module]) !== undefined
 
 interface PanelProps {
   title: string
@@ -45,6 +46,7 @@ interface PanelProps {
 function tripColumns(
   link: ModuleLink,
   onOpenTrip: (reference: string) => void,
+  onRelated: (related: TripRelated) => void,
   only?: readonly string[],
 ): Column<Trip>[] {
   const columns: Column<Trip>[] = [
@@ -131,17 +133,18 @@ function tripColumns(
       header: 'Actions',
       align: 'end',
       render: (row) => {
-        const details: RowCommand = {
-          label: 'View trip details',
-          onSelect: () => onOpenTrip(row.reference),
-        }
-        const links = actionsOf([
-          {
-            label: 'Vehicle verifications',
-            to: link('verifications', `${paths.verifications}?plate=${row.plate}`),
-          },
-        ])
-        return <RowActions label={`Actions for ${row.reference}`} actions={[details, ...links]} />
+        const commands: RowCommand[] = [
+          { label: 'View trip details', onSelect: () => onOpenTrip(row.reference) },
+          ...(canSee(link, 'verifications')
+            ? [
+                {
+                  label: 'Vehicle verifications',
+                  onSelect: () => onRelated({ kind: 'vehicle', plate: row.plate }),
+                },
+              ]
+            : []),
+        ]
+        return <RowActions label={`Actions for ${row.reference}`} actions={commands} />
       },
     },
   ]
@@ -177,8 +180,11 @@ export function TripsPanel({
   emptyNote?: string
 }) {
   const link = useModuleLink()
-  const { onOpenTrip } = panel
-  const columns = useMemo(() => tripColumns(link, onOpenTrip, only), [link, onOpenTrip, only])
+  const { onOpenTrip, onRelated } = panel
+  const columns = useMemo(
+    () => tripColumns(link, onOpenTrip, onRelated, only),
+    [link, onOpenTrip, onRelated, only],
+  )
   return (
     <DashboardCard
       title={panel.title}
@@ -307,20 +313,21 @@ export function VehiclesPanel({
                   },
                 ]
               : []),
-            {
-              label: 'View verification',
-              onSelect: () =>
-                onRelated({ kind: 'verification', reference: row.verification.reference }),
-            },
+            ...(canSee(link, 'verifications')
+              ? [
+                  {
+                    label: 'View verification',
+                    onSelect: () =>
+                      onRelated({ kind: 'verification', reference: row.verification.reference }),
+                  },
+                  {
+                    label: 'Vehicle verifications',
+                    onSelect: () => onRelated({ kind: 'vehicle', plate: row.plate }),
+                  },
+                ]
+              : []),
           ]
-          // The vehicle's verifications are a list: they stay a page of their own.
-          const links = actionsOf([
-            {
-              label: 'Vehicle verifications',
-              to: link('verifications', `${paths.verifications}?plate=${row.plate}`),
-            },
-          ])
-          return <RowActions label={`Actions for ${row.plate}`} actions={[...commands, ...links]} />
+          return <RowActions label={`Actions for ${row.plate}`} actions={commands} />
         },
       },
     ],
@@ -361,6 +368,7 @@ export function PostPaymentPanel({
   payments,
   ...panel
 }: PanelProps & { payments: readonly PostPayment[] }) {
+  const link = useModuleLink()
   const { onOpenTrip, onRelated } = panel
   const columns = useMemo<Column<PostPayment>[]>(
     () => [
@@ -430,16 +438,20 @@ export function PostPaymentPanel({
             ...(row.tripReference
               ? [{ label: 'View trip details', onSelect: () => onOpenTrip(row.tripReference!) }]
               : []),
-            {
-              label: 'Open the case',
-              onSelect: () => onRelated({ kind: 'case', violationId: row.violationId }),
-            },
+            ...(canSee(link, 'violations')
+              ? [
+                  {
+                    label: 'Open the case',
+                    onSelect: () => onRelated({ kind: 'case', violationId: row.violationId }),
+                  },
+                ]
+              : []),
           ]
           return <RowActions label={`Actions for ${row.noticeId}`} actions={commands} />
         },
       },
     ],
-    [onOpenTrip, onRelated],
+    [link, onOpenTrip, onRelated],
   )
   return (
     <DashboardCard

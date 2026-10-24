@@ -112,6 +112,47 @@ describe('trip monitoring page', () => {
     expect(router.state.location.pathname).toBe('/trips')
   })
 
+  it('opens a vehicle’s verifications as a popup, and a verification from it in place', async () => {
+    const vehicle = expected().vehicles.find((v) => v.result === 'no_active_trip')!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/trips?range=30d&view=no-active')
+    const table = await screen.findByRole('table', { name: 'Vehicles with no active trip' })
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${vehicle.plate}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Vehicle verifications' }))
+
+    const dialog = await screen.findByRole('dialog', { name: 'Vehicle verifications' })
+    expect(within(dialog).getByRole('heading', { name: 'Vehicle identity' })).toBeInTheDocument()
+    const list = within(dialog).getByRole('table', { name: `Verifications of ${vehicle.plate}` })
+    const row = within(list).getByText(vehicle.verification.reference).closest('tr')!
+    await userEvent.click(
+      within(row).getByRole('button', { name: `Actions for ${vehicle.verification.reference}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View details' }))
+
+    const details = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(details).toHaveTextContent(vehicle.verification.reference)
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+
+    // And back: the verification's "Vehicle identity" shows the vehicle's verifications again.
+    await userEvent.click(within(details).getByRole('button', { name: 'Vehicle identity' }))
+    expect(await screen.findByRole('dialog', { name: 'Vehicle verifications' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/trips')
+  })
+
+  it('opens the vehicle’s verifications from a trip’s details, in place of the trip', async () => {
+    const trip = expected().trips.find((t) => expected().vehicles.some((v) => v.plate === t.plate))!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/trips?range=30d&trip=${trip.reference}`)
+    const details = await screen.findByRole('dialog', { name: 'Trip details' })
+    await userEvent.click(within(details).getByRole('button', { name: 'Vehicle verifications' }))
+
+    const dialog = await screen.findByRole('dialog', { name: 'Vehicle verifications' })
+    expect(dialog).toHaveTextContent(trip.plate)
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+  })
+
   it('opens a paid violation’s case as a popup; payments wait for the Payments module', async () => {
     const payment = expected().postPayment[0]!
     signInAs('admin@jrb.gov.ng')

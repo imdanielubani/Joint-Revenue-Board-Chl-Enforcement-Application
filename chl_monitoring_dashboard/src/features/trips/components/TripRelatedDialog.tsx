@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router'
-import { paths } from '@/config/paths'
+import { useMemo, useState } from 'react'
 import type { OverviewFilters } from '@/features/overview/overview.schemas'
+import { VehicleVerificationsDialog } from '@/features/verifications/components/VehicleVerificationsDialog'
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
+import { vehiclesOf } from '@/features/verifications/verifications-display'
 import { useVerificationsMonitoring } from '@/features/verifications/verifications.queries'
 import { CaseDialog } from '@/features/violations/components/CaseDialog'
 import { RelatedDialog, type Related } from '@/features/violations/components/RelatedDialog'
@@ -14,7 +14,9 @@ import styles from './TripCards.module.css'
 
 /** A record a trip row links to, opened in its own module's popup on this page. */
 export type TripRelated =
-  { kind: 'verification'; reference: string } | { kind: 'case'; violationId: string }
+  | { kind: 'verification'; reference: string }
+  | { kind: 'vehicle'; plate: string }
+  | { kind: 'case'; violationId: string }
 
 /** While the record loads, or when it cannot be found: a popup saying so. */
 function Placeholder({
@@ -51,28 +53,66 @@ function VerificationPopup({
   reference,
   filters,
   onClose,
+  onVehicle,
 }: {
   reference: string
   filters: OverviewFilters
   onClose(): void
+  /** Shows the vehicle's verifications in place of this one. */
+  onVehicle(plate: string): void
 }) {
-  const navigate = useNavigate()
   const query = useVerificationsMonitoring(filters)
   const entry = query.data?.records.find((record) => record.reference === reference)
   if (entry) {
-    return (
-      <VerificationDetailsDialog
-        entry={entry}
-        onClose={onClose}
-        onVehicle={(plate) => void navigate(`${paths.verifications}?plate=${plate}`)}
-      />
-    )
+    return <VerificationDetailsDialog entry={entry} onClose={onClose} onVehicle={onVehicle} />
   }
   return (
     <Placeholder
       title="Verification details"
       loading={query.isPending}
       message={`Verification ${reference} was not found in this area and period.`}
+      onClose={onClose}
+    />
+  )
+}
+
+function VehiclePopup({
+  plate,
+  filters,
+  periodText,
+  onClose,
+  onOpen,
+}: {
+  plate: string
+  filters: OverviewFilters
+  periodText: string
+  onClose(): void
+  /** Opens one of the plate's verifications in place of the vehicle. */
+  onOpen(reference: string): void
+}) {
+  const query = useVerificationsMonitoring(filters)
+  const vehicle = useMemo(
+    () =>
+      query.data
+        ? vehiclesOf(query.data.records).find((entry) => entry.plate === plate)
+        : undefined,
+    [query.data, plate],
+  )
+  if (vehicle) {
+    return (
+      <VehicleVerificationsDialog
+        vehicle={vehicle}
+        periodText={periodText}
+        onClose={onClose}
+        onOpen={(entry) => onOpen(entry.reference)}
+      />
+    )
+  }
+  return (
+    <Placeholder
+      title="Vehicle verifications"
+      loading={query.isPending}
+      message={`No verifications of ${plate} were found in this area and period.`}
       onClose={onClose}
     />
   )
@@ -107,8 +147,9 @@ function CasePopup({
 }
 
 /**
- * A trip row's verification or case, in the same popup its own module shows.
- * From a case, its evidence, verification or agent open in place of it.
+ * A trip row's verification, vehicle verifications or case, in the same popup
+ * its own module shows. One opens in place of another: a verification's
+ * vehicle, a vehicle's verification, or a case's evidence, verification or agent.
  */
 export function TripRelatedDialog({
   related,
@@ -123,6 +164,7 @@ export function TripRelatedDialog({
   periodText: string
   onClose(): void
 }) {
+  const [current, setCurrent] = useState<TripRelated>(related)
   const [fromCase, setFromCase] = useState<Related | null>(null)
   const all: OverviewFilters = { ...filters, agentId: null, organization: null }
   if (fromCase) {
@@ -130,12 +172,32 @@ export function TripRelatedDialog({
       <RelatedDialog related={fromCase} filters={all} periodText={periodText} onClose={onClose} />
     )
   }
-  if (related.kind === 'verification') {
-    return <VerificationPopup reference={related.reference} filters={all} onClose={onClose} />
+  if (current.kind === 'verification') {
+    return (
+      <VerificationPopup
+        key={current.reference}
+        reference={current.reference}
+        filters={all}
+        onClose={onClose}
+        onVehicle={(plate) => setCurrent({ kind: 'vehicle', plate })}
+      />
+    )
+  }
+  if (current.kind === 'vehicle') {
+    return (
+      <VehiclePopup
+        key={current.plate}
+        plate={current.plate}
+        filters={all}
+        periodText={periodText}
+        onClose={onClose}
+        onOpen={(reference) => setCurrent({ kind: 'verification', reference })}
+      />
+    )
   }
   return (
     <CasePopup
-      violationId={related.violationId}
+      violationId={current.violationId}
       filters={all}
       onClose={onClose}
       onRelated={setFromCase}

@@ -36,6 +36,14 @@ function viewForPlate(monitoring: TripsMonitoring | undefined, plate: string): T
  * the existing CHL system. The dashboard never calculates trip validity,
  * expires a trip because a countdown reaches zero, or creates trips.
  */
+/** One popup per record: opening another replaces it. */
+const relatedKey = (related: TripRelated) =>
+  related.kind === 'case'
+    ? `case:${related.violationId}`
+    : related.kind === 'vehicle'
+      ? `vehicle:${related.plate}`
+      : `verification:${related.reference}`
+
 export function TripsPage() {
   const user = useCurrentUser()
   const areas = useAreas()
@@ -281,10 +289,19 @@ function TripsContent({
             </div>
           </section>
 
-          {open && <TripDetailsDialog trip={open} onClose={() => page.openTrip(null)} />}
+          {open && (
+            <TripDetailsDialog
+              trip={open}
+              onClose={() => page.openTrip(null)}
+              onVehicle={(plate) => {
+                page.openTrip(null)
+                setRelated({ kind: 'vehicle', plate })
+              }}
+            />
+          )}
           {related && (
             <TripRelatedDialog
-              key={related.kind === 'case' ? related.violationId : related.reference}
+              key={relatedKey(related)}
               related={related}
               filters={period}
               periodText={periodLabel(filters.range, filters)}
