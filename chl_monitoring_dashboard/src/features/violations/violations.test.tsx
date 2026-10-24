@@ -47,7 +47,7 @@ describe('violations and cases page', () => {
     )
   })
 
-  it('has a tab for each of the document’s sections 8.1 to 8.5', async () => {
+  it('shows the categories on their own above the tabs for the other sections', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/violations')
     const tabs = await screen.findByRole('tablist', { name: 'Violation views' })
@@ -57,11 +57,24 @@ describe('violations and cases page', () => {
         .map((tab) => tab.textContent?.replace(/\d+$/, '')),
     ).toEqual([
       'Violation Register',
-      'Violation Categories',
       'Status Views',
       'Unresolved Cases',
       'Closure & Cancellation History',
     ])
+    // 8.2 is its own card, outside the tabs and above them.
+    const categories = await card('Violation Categories')
+    const views = screen.getByRole('region', { name: 'Violation views' })
+    expect(views).not.toContainElement(categories)
+    expect(
+      categories.compareDocumentPosition(views) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('opens an older categories link on the register, under the categories', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/violations?range=30d&view=categories')
+    expect(await card('Violation Categories')).toBeInTheDocument()
+    expect(await card('Violation Register')).toBeInTheDocument()
   })
 
   it('opens a case with its vehicle, agent, location, time, evidence, notes and demand notice', async () => {
@@ -139,7 +152,7 @@ describe('violations and cases page', () => {
 
   it('lists the documented categories, the tag-vehicle mismatch as a documented breach', async () => {
     signInAs('admin@jrb.gov.ng')
-    renderApp('/violations?range=30d&view=categories')
+    renderApp('/violations?range=30d')
     const panel = await card('Violation Categories')
     // The distribution: how many categories, then each with its count in the legend.
     expect(panel).toHaveTextContent(`${VIOLATION_CATEGORIES.length} categories`)
@@ -160,7 +173,7 @@ describe('violations and cases page', () => {
     const category = 'Expired Trip'
     const count = expected().filter((item) => item.category === category).length
     signInAs('admin@jrb.gov.ng')
-    renderApp('/violations?range=30d&view=categories')
+    renderApp('/violations?range=30d')
     const panel = await card('Violation Categories')
     await userEvent.click(
       within(panel).getByRole('button', { name: `View ${category} violations` }),

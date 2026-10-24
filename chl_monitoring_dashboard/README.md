@@ -302,6 +302,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Violations & cases: Violation Categories is a card of its own under the
+  headline figures, above the tabs, rather than a tab. The tabs are Violation
+  Register, Status Views, Unresolved Cases and Closure & Cancellation History.
+  Choosing a category lists it in the register and scrolls down to it; an older
+  `?view=categories` link opens the register under the card.
 - Tabs: where the labels cannot all fit, as on a phone, the tab strip scrolls
   sideways instead of squashing the labels over each other, and the selected
   tab is kept in view. Where there is room the tabs look as before.

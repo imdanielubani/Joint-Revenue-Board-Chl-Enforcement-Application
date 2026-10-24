@@ -2,14 +2,12 @@ import { useCallback } from 'react'
 import { useLocation, useSearchParams } from 'react-router'
 import { FILTER_PARAMS } from '@/features/overview/use-overview-filters'
 
-/** The page's tabs: the document's sections 8.1 to 8.5. */
-export const VIOLATION_VIEWS = [
-  'register',
-  'categories',
-  'statuses',
-  'unresolved',
-  'history',
-] as const
+/**
+ * The page's tabs: the document's sections 8.1, 8.3, 8.4 and 8.5. The
+ * categories (8.2) are a card of their own above them; an older
+ * `?view=categories` link opens the register under that card.
+ */
+export const VIOLATION_VIEWS = ['register', 'statuses', 'unresolved', 'history'] as const
 export type ViolationsView = (typeof VIOLATION_VIEWS)[number]
 
 /** The address parameters other pages link with, and the page keeps its state in. */
