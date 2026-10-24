@@ -302,6 +302,16 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Payments & compliance data: the demand notices CHL generated for violations
+  in the area and period, each with its violation, vehicle, CHL levy, penalty,
+  total payable, payment reference, payment method (QR, USSD, transfer,
+  generated account, POS/card or the CHL platform), Payment Pending or Payment
+  Received, and, once paid, the post-payment compliance CHL recorded (trip
+  activation, tagging-process initiation, compliance outcome) kept apart from
+  the payment, with the related transaction references and times. Provisional
+  path `/api/v1/payments/monitoring`. The sample levy and penalties are sample
+  figures only: the document gives no tariff, and the real amounts come from
+  CHL.
 - Tests: each test file runs as if it started at midday in Lagos, so a run that
   crosses midnight no longer sees one day in a test's expectations and the next
   in the sample data. The clock is moved by a fixed amount and keeps real time,
