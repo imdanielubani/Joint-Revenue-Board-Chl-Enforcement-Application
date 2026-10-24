@@ -147,6 +147,11 @@
   --method-qr: #43bc8d;
   --method-ocr: #8dcbb7;
   --method-manual: #c6e4d8;
+  /* The segments of a distribution bar, in order. */
+  --share-1: #17694f;
+  --share-2: #22a06b;
+  --share-3: #6ee7a8;
+  --share-4: #f59e0b;
   --hero-gradient: linear-gradient(158.51deg, #132c1d 8.486%, #17472c 56.642%, #137836 91.514%);
   --hero-border: #245b37;
   --strip-gradient: linear-gradient(166.61deg, #edf5ee 7.735%, #f3f8f3 58.453%, #edf5ed 92.265%);

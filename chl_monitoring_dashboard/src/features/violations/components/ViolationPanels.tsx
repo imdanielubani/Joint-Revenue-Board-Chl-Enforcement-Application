@@ -329,38 +329,82 @@ function CountRow({
   )
 }
 
-/** 8.2 Violation Categories: the documented categories, each with its count. */
+/** A category's colour in the distribution: the design's four, then the dashboard's own. */
+const CATEGORY_COLORS = [
+  'var(--share-1)',
+  'var(--share-2)',
+  'var(--share-3)',
+  'var(--share-4)',
+  'var(--amber)',
+  'var(--status-danger-text)',
+  'var(--etag-invalid)',
+]
+const colorOf = (index: number) => CATEGORY_COLORS[index] ?? 'var(--status-neutral-dot)'
+
+/**
+ * 8.2 Violation Categories: the documented categories as a distribution, each
+ * sized by its violations; a category in the legend lists them in the register.
+ */
 export function CategoriesPanel({
   cases,
   subtitle,
+  periodText,
   onShow,
-}: Omit<PanelProps, 'onOpen'> & { onShow(category: string): void }) {
+}: Omit<PanelProps, 'onOpen'> & {
+  /** "Last 30 days", in the header's chip. */
+  periodText: string
+  onShow(category: string): void
+}) {
   const known: readonly string[] = VIOLATION_CATEGORIES
   const others = [...new Set(cases.map((item) => item.category))].filter((c) => !known.includes(c))
-  const countOf = (category: string) => cases.filter((item) => item.category === category).length
+  const categories = [...VIOLATION_CATEGORIES, ...others].map((category, index) => ({
+    category,
+    count: cases.filter((item) => item.category === category).length,
+    // Categories CHL returns outside the documented list are drawn grey.
+    color: known.includes(category) ? colorOf(index) : colorOf(CATEGORY_COLORS.length),
+  }))
   return (
     <DashboardCard
       title="Violation Categories"
       subtitle={subtitle}
-      icon="overview/card-cases.svg"
-      bodyClassName={styles.panelBody}
+      aside={periodText}
+      bodyClassName={styles.distribution}
     >
-      <ul className={styles.countList}>
-        {[...VIOLATION_CATEGORIES, ...others].map((category) => (
-          <CountRow
-            key={category}
-            label={category}
-            {...(category === 'Tag-Vehicle Mismatch'
-              ? { note: 'A documented breach, not in the SRD’s initial category list' }
-              : !known.includes(category)
-                ? { note: 'A category CHL returned' }
-                : {})}
-            count={countOf(category)}
-            total={cases.length}
-            onShow={() => onShow(category)}
-          />
+      <p className={styles.distributionTotal}>
+        <strong>{formatNumber(categories.length)}</strong> categories
+      </p>
+      <div className={styles.distributionBar} aria-hidden="true">
+        {categories
+          .filter((entry) => entry.count > 0)
+          .map((entry) => (
+            <span
+              key={entry.category}
+              className={styles.distributionSegment}
+              style={{ flexGrow: entry.count, background: entry.color }}
+              title={`${entry.category} · ${formatNumber(entry.count)}`}
+            />
+          ))}
+      </div>
+      <ul className={styles.distributionLegend}>
+        {categories.map((entry) => (
+          <li key={entry.category}>
+            <button
+              type="button"
+              className={styles.legendItem}
+              disabled={entry.count === 0}
+              onClick={() => onShow(entry.category)}
+              aria-label={`View ${entry.category} violations`}
+            >
+              <span className={styles.legendDot} style={{ background: entry.color }} />
+              {entry.category} · {formatNumber(entry.count)}
+            </button>
+          </li>
         ))}
       </ul>
+      <p className={styles.small}>
+        Tag-Vehicle Mismatch is a documented breach, not in the SRD’s initial category list.
+        {others.length > 0 && ' Grey: a category CHL returned outside the documented list.'}
+      </p>
     </DashboardCard>
   )
 }

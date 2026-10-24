@@ -15,6 +15,8 @@ interface DashboardCardProps {
   subtitle?: string
   /** The 32px header icon, in public/assets/. */
   icon?: string
+  /** A chip on the right of the header, such as the period shown, in place of the icon. */
+  aside?: string
   /** The link along the bottom of the card, or a note in its place. */
   footer?: CardLink | ReactNode
   children: ReactNode
@@ -36,6 +38,7 @@ export function DashboardCard({
   title,
   subtitle,
   icon,
+  aside,
   footer,
   children,
   className,
@@ -56,7 +59,11 @@ export function DashboardCard({
           </h3>
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
-        {icon && <img className={styles.icon} src={assetUrl(icon)} alt="" width={32} height={32} />}
+        {aside ? (
+          <span className={styles.aside}>{aside}</span>
+        ) : (
+          icon && <img className={styles.icon} src={assetUrl(icon)} alt="" width={32} height={32} />
+        )}
       </header>
       <div className={bodyClassName ? `${styles.body} ${bodyClassName}` : styles.body}>
         {children}

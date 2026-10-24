@@ -47,6 +47,19 @@
   flex-shrink: 0;
 }
 
+.aside {
+  flex-shrink: 0;
+  padding: 5.6px 9.6px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--card-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  line-height: 15px;
+  white-space: nowrap;
+}
+
 .body {
   flex: 1;
   min-width: 0;

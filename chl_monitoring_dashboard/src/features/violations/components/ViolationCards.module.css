@@ -18,6 +18,88 @@
 
 /* ------------------------------------------------------------ Categories and status views */
 
+/* Violation Categories: the total, a bar of segments by share, and its legend. */
+.distribution {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.distributionTotal {
+  margin: 0;
+  color: var(--card-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.distributionTotal strong {
+  margin-right: 4px;
+  color: var(--card-title);
+  font-size: 22px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 33px;
+}
+
+.distributionBar {
+  display: flex;
+  gap: 4px;
+  height: 12px;
+  margin-top: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--status-neutral-bg);
+}
+
+.distributionSegment {
+  flex: 0 0 0;
+  min-width: 1px;
+  border-radius: 999px;
+}
+
+.distributionLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--card-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 16.5px;
+  cursor: pointer;
+}
+
+.legendItem:hover:not(:disabled) {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.legendItem:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.legendDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.distribution .small {
+  margin-top: 12px;
+}
+
 .countList {
   display: flex;
   flex-direction: column;

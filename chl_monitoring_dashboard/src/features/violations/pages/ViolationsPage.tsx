@@ -213,7 +213,8 @@ function ViolationsContent({
               {page.view === 'categories' && (
                 <CategoriesPanel
                   cases={cases}
-                  subtitle={`The documented violation categories · ${subtitle}`}
+                  subtitle={`The documented violation categories · ${scope.name}`}
+                  periodText={periodLabel(filters.range, filters)}
                   onShow={(category) => showInRegister({ category })}
                 />
               )}

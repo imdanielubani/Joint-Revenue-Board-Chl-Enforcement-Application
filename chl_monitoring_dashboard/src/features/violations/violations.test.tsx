@@ -141,13 +141,18 @@ describe('violations and cases page', () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/violations?range=30d&view=categories')
     const panel = await card('Violation Categories')
-    const rows = within(panel).getAllByRole('listitem')
-    expect(rows.map((row) => row.querySelector('span')?.textContent)).toEqual(
-      VIOLATION_CATEGORIES.map((category) =>
-        category === 'Tag-Vehicle Mismatch'
-          ? `${category}A documented breach, not in the SRD’s initial category list`
-          : category,
+    // The distribution: how many categories, then each with its count in the legend.
+    expect(panel).toHaveTextContent(`${VIOLATION_CATEGORIES.length} categories`)
+    expect(panel).toHaveTextContent('Last 30 days')
+    const items = within(panel).getAllByRole('listitem')
+    expect(items.map((item) => item.textContent)).toEqual(
+      VIOLATION_CATEGORIES.map(
+        (category) =>
+          `${category} · ${expected().filter((item) => item.category === category).length}`,
       ),
+    )
+    expect(panel).toHaveTextContent(
+      'Tag-Vehicle Mismatch is a documented breach, not in the SRD’s initial category list.',
     )
   })
 

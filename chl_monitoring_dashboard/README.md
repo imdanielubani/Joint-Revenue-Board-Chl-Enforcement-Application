@@ -302,6 +302,14 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Violations & cases, Violation Categories: drawn as a distribution, as designed:
+  the period in the header's chip, the number of categories, a bar with a
+  segment for each category sized by its violations, and a legend of each
+  category and its count. A category in the legend lists its violations in the
+  register. The note that Tag-Vehicle Mismatch is a documented breach, not in
+  the SRD's initial category list, stays under the legend.
+- The monitoring card can show a chip on the right of its header in place of
+  the icon.
 - Trip monitoring: Vehicle verifications opens as a popup, from the trip tables,
   the vehicle tables and a trip's details: the vehicle as Vehicle identity shows
   it (vehicle ID, type, latest outcome, related trips, violations, last verified)
