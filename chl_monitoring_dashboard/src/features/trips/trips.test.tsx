@@ -153,7 +153,21 @@ describe('trip monitoring page', () => {
     expect(screen.getAllByRole('dialog')).toHaveLength(1)
   })
 
-  it('opens a paid violation’s case as a popup; payments wait for the Payments module', async () => {
+  it('opens a confirmed payment’s demand notice as a popup, without leaving the page', async () => {
+    const payment = expected().postPayment[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/trips?range=30d&view=post-payment')
+    const table = await screen.findByRole('table', { name: 'Confirmed payments' })
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${payment.noticeId}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Open the payment' }))
+    const dialog = await screen.findByRole('dialog', { name: `Demand notice ${payment.noticeId}` })
+    expect(dialog).toHaveTextContent('Payment Received')
+    expect(router.state.location.pathname).toBe('/trips')
+  })
+
+  it('opens a paid violation’s case as a popup, and its evidence in place of it', async () => {
     const payment = expected().postPayment[0]!
     signInAs('admin@jrb.gov.ng')
     renderApp('/trips?range=30d&view=post-payment')
@@ -162,7 +176,6 @@ describe('trip monitoring page', () => {
       within(table).getByRole('button', { name: `Actions for ${payment.noticeId}` }),
     )
     const menu = await screen.findByRole('menu')
-    expect(within(menu).queryByRole('menuitem', { name: 'Open the payment' })).toBeNull()
     await userEvent.click(within(menu).getByRole('menuitem', { name: 'Open the case' }))
     const dialog = await screen.findByRole('dialog', { name: `Case ${payment.violationId}` })
     expect(dialog).toHaveTextContent(payment.noticeId)

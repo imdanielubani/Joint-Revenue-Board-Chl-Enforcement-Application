@@ -22,7 +22,7 @@ import {
   type Pill,
 } from '../violations-display'
 import { STATUS_VIEWS, VIOLATION_CATEGORIES, type ViolationCase } from '../violations.schemas'
-import type { RelatedKind } from './RelatedDialog'
+import { useCanSeeRelated, type RelatedKind } from '../related-records'
 import styles from './ViolationCards.module.css'
 
 export function PillLabel({ pill }: { pill: Pill }) {
@@ -39,6 +39,7 @@ const notSupplied = (text = 'Not supplied') => <span className={cells.sub}>{text
 function caseColumns(
   kind: 'register' | 'unresolved' | 'history',
   onOpen: PanelProps['onOpen'],
+  canSee: (kind: RelatedKind) => boolean,
 ): Column<ViolationCase>[] {
   const lead: Column<ViolationCase>[] = [
     {
@@ -85,14 +86,18 @@ function caseColumns(
     header: 'Actions',
     align: 'end',
     render: (row) => {
-      // The case and its related records open as popups on this page.
+      // The case and its related records open as popups on this page, for roles that may see them.
+      const related: { label: string; kind: RelatedKind; offered: boolean }[] = [
+        { label: 'View evidence', kind: 'evidence', offered: row.evidence !== null },
+        { label: 'View verification', kind: 'verification', offered: true },
+        { label: 'View agent', kind: 'agent', offered: true },
+        { label: 'Open the payment', kind: 'payment', offered: row.notice !== null },
+      ]
       const commands: RowCommand[] = [
         { label: 'View case', onSelect: () => onOpen(row) },
-        ...(row.evidence
-          ? [{ label: 'View evidence', onSelect: () => onOpen(row, 'evidence') }]
-          : []),
-        { label: 'View verification', onSelect: () => onOpen(row, 'verification') },
-        { label: 'View agent', onSelect: () => onOpen(row, 'agent') },
+        ...related
+          .filter((entry) => entry.offered && canSee(entry.kind))
+          .map((entry) => ({ label: entry.label, onSelect: () => onOpen(row, entry.kind) })),
       ]
       return <RowActions label={`Actions for ${row.id}`} actions={commands} />
     },
@@ -225,7 +230,8 @@ interface PanelProps {
 }
 
 function useColumns(kind: 'register' | 'unresolved' | 'history', onOpen: PanelProps['onOpen']) {
-  return useMemo(() => caseColumns(kind, onOpen), [kind, onOpen])
+  const canSee = useCanSeeRelated()
+  return useMemo(() => caseColumns(kind, onOpen, canSee), [kind, onOpen, canSee])
 }
 
 const option = (value: string) => ({ value, label: value })

@@ -302,6 +302,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Open the payment opens the demand notice as a popup, the one Payments &
+  compliance shows: on Violations & cases from a row's actions and from the case
+  record, where a notice was issued, and on Trip monitoring from a confirmed
+  payment's actions. The related-record popups on Violations & cases are offered
+  only to roles that can see their module, as on Trip monitoring.
 - Payments & compliance page (`/payments`): a read-only monitoring view of the
   demand notices CHL generated, for the area, period, organization and agent.
   Headline figures for demand notices, payment pending, payment received and

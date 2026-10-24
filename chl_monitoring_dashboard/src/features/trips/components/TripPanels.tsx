@@ -27,7 +27,7 @@ export function PillLabel({ pill }: { pill: Pill }) {
 
 const notSupplied = <span className={cells.sub}>Not supplied</span>
 /** Whether the signed-in role may see a module's records, as its links are offered. */
-const canSee = (link: ModuleLink, module: 'verifications' | 'violations') =>
+const canSee = (link: ModuleLink, module: 'verifications' | 'violations' | 'payments') =>
   link(module, paths[module]) !== undefined
 
 interface PanelProps {
@@ -437,6 +437,14 @@ export function PostPaymentPanel({
           const commands: RowCommand[] = [
             ...(row.tripReference
               ? [{ label: 'View trip details', onSelect: () => onOpenTrip(row.tripReference!) }]
+              : []),
+            ...(canSee(link, 'payments')
+              ? [
+                  {
+                    label: 'Open the payment',
+                    onSelect: () => onRelated({ kind: 'payment', noticeId: row.noticeId }),
+                  },
+                ]
               : []),
             ...(canSee(link, 'violations')
               ? [

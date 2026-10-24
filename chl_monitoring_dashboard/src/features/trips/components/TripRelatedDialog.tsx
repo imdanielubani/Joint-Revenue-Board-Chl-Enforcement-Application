@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { OverviewFilters } from '@/features/overview/overview.schemas'
+import { NoticePopup } from '@/features/payments/components/NoticePopup'
 import { VehicleVerificationsDialog } from '@/features/verifications/components/VehicleVerificationsDialog'
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
 import { vehiclesOf } from '@/features/verifications/verifications-display'
@@ -17,6 +18,7 @@ export type TripRelated =
   | { kind: 'verification'; reference: string }
   | { kind: 'vehicle'; plate: string }
   | { kind: 'case'; violationId: string }
+  | { kind: 'payment'; noticeId: string }
 
 /** While the record loads, or when it cannot be found: a popup saying so. */
 function Placeholder({
@@ -182,6 +184,9 @@ export function TripRelatedDialog({
         onVehicle={(plate) => setCurrent({ kind: 'vehicle', plate })}
       />
     )
+  }
+  if (current.kind === 'payment') {
+    return <NoticePopup noticeId={current.noticeId} filters={all} onClose={onClose} />
   }
   if (current.kind === 'vehicle') {
     return (

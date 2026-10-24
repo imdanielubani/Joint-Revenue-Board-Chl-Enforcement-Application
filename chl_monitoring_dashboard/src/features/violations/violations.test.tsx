@@ -103,11 +103,10 @@ describe('violations and cases page', () => {
     expect(dialog).toHaveTextContent(item.notice!.id)
     expect(dialog).toHaveTextContent(item.notes[0]!.text)
     expect(dialog).toHaveTextContent(item.agent.name)
-    // The related records open as popups here; payments wait for the Payments module.
-    for (const name of ['View evidence', 'View verification', 'View agent']) {
+    // The related records, the demand notice among them, open as popups here.
+    for (const name of ['View evidence', 'View verification', 'View agent', 'Open the payment']) {
       expect(within(dialog).getByRole('button', { name })).toBeInTheDocument()
     }
-    expect(within(dialog).queryByRole('link', { name: 'Open the payment' })).toBeNull()
     // Read-only: no way to close or cancel a case.
     expect(
       within(dialog).queryByRole('button', { name: /close case|cancel|resolve|edit/i }),
@@ -115,6 +114,19 @@ describe('violations and cases page', () => {
 
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  })
+
+  it('opens the case’s demand notice in its own popup, in place of the case', async () => {
+    const item = expected().find((entry) => entry.notice)!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/violations?range=30d&case=${item.id}`)
+    const dialog = await screen.findByRole('dialog', { name: `Case ${item.id}` })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Open the payment' }))
+
+    const notice = await screen.findByRole('dialog', { name: `Demand notice ${item.notice!.id}` })
+    expect(notice).toHaveTextContent('Total payable')
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+    expect(router.state.location.pathname).toBe('/violations')
   })
 
   it('opens the case’s evidence in its viewer, in place of the case', async () => {
@@ -138,7 +150,10 @@ describe('violations and cases page', () => {
 
     await userEvent.click(actions)
     const menu = await screen.findByRole('menu')
-    expect(within(menu).queryByRole('menuitem', { name: 'Open the payment' })).toBeNull()
+    // The payment is offered only where a demand notice was issued.
+    expect(Boolean(within(menu).queryByRole('menuitem', { name: 'Open the payment' }))).toBe(
+      item.notice !== null,
+    )
     await userEvent.click(within(menu).getByRole('menuitem', { name: 'View verification' }))
     const verification = await screen.findByRole('dialog', { name: 'Verification details' })
     expect(verification).toHaveTextContent(item.verification.reference)

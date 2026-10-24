@@ -256,7 +256,7 @@ function PaymentsContent({
           )}
           {related && (
             <TripRelatedDialog
-              key={related.kind === 'case' ? related.violationId : JSON.stringify(related)}
+              key={related.kind === 'case' ? related.violationId : related.kind}
               related={related}
               filters={filters}
               periodText={periodLabel(filters.range, filters)}

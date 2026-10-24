@@ -37,12 +37,18 @@ function viewForPlate(monitoring: TripsMonitoring | undefined, plate: string): T
  * expires a trip because a countdown reaches zero, or creates trips.
  */
 /** One popup per record: opening another replaces it. */
-const relatedKey = (related: TripRelated) =>
-  related.kind === 'case'
-    ? `case:${related.violationId}`
-    : related.kind === 'vehicle'
-      ? `vehicle:${related.plate}`
-      : `verification:${related.reference}`
+const relatedKey = (related: TripRelated) => {
+  switch (related.kind) {
+    case 'case':
+      return `case:${related.violationId}`
+    case 'payment':
+      return `payment:${related.noticeId}`
+    case 'vehicle':
+      return `vehicle:${related.plate}`
+    case 'verification':
+      return `verification:${related.reference}`
+  }
+}
 
 export function TripsPage() {
   const user = useCurrentUser()

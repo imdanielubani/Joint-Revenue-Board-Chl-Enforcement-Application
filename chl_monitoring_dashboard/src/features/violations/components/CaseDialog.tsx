@@ -15,7 +15,7 @@ import {
   statusPill,
 } from '../violations-display'
 import type { ViolationCase } from '../violations.schemas'
-import type { RelatedKind } from './RelatedDialog'
+import { useCanSeeRelated, type RelatedKind } from '../related-records'
 import { PillLabel } from './ViolationPanels'
 import styles from './ViolationCards.module.css'
 
@@ -59,11 +59,15 @@ export function CaseDialog({
   const link = useModuleLink()
   // Still a page of their own: the vehicle's verifications. The rest open here as popups.
   const vehicleLink = link('verifications', `${paths.verifications}?plate=${item.plate}`)
-  const popups: { label: string; kind: RelatedKind }[] = [
-    ...(item.evidence ? [{ label: 'View evidence', kind: 'evidence' as const }] : []),
-    { label: 'View verification', kind: 'verification' },
-    { label: 'View agent', kind: 'agent' },
-  ]
+  const canSee = useCanSeeRelated()
+  const popups = (
+    [
+      { label: 'View evidence', kind: 'evidence', offered: item.evidence !== null },
+      { label: 'View verification', kind: 'verification', offered: true },
+      { label: 'View agent', kind: 'agent', offered: true },
+      { label: 'Open the payment', kind: 'payment', offered: item.notice !== null },
+    ] satisfies { label: string; kind: RelatedKind; offered: boolean }[]
+  ).filter((entry) => entry.offered && canSee(entry.kind))
 
   return (
     <Dialog

@@ -6,15 +6,16 @@ import { AgentDetailsDialog } from '@/features/agents/components/AgentDetailsDia
 import { EvidenceViewer } from '@/features/evidence/components/EvidenceViewer'
 import { useEvidenceMonitoring } from '@/features/evidence/evidence.queries'
 import type { OverviewFilters } from '@/features/overview/overview.schemas'
+import { NoticePopup } from '@/features/payments/components/NoticePopup'
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
 import { useVerificationsMonitoring } from '@/features/verifications/verifications.queries'
 import { Dialog } from '@/shared/ui/Dialog'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import type { ViolationCase } from '../violations.schemas'
+import type { RelatedKind } from '../related-records'
 import styles from './ViolationCards.module.css'
 
-/** The records a case links to, opened in their own module's popup on this page. */
-export type RelatedKind = 'evidence' | 'verification' | 'agent'
+export type { RelatedKind }
 
 export interface Related {
   kind: RelatedKind
@@ -129,8 +130,8 @@ function AgentPopup({ item, filters, periodText, onClose }: RelatedProps & { per
 }
 
 /**
- * A case's evidence, verification or agent, in the same popup its own module
- * shows, so the case need not be left to see them.
+ * A case's evidence, verification, agent or demand notice, in the same popup
+ * its own module shows, so the case need not be left to see them.
  */
 export function RelatedDialog({
   related,
@@ -147,5 +148,17 @@ export function RelatedDialog({
   const props = { item: related.item, filters, onClose }
   if (related.kind === 'evidence') return <EvidencePopup {...props} />
   if (related.kind === 'verification') return <VerificationPopup {...props} />
+  if (related.kind === 'payment') {
+    return related.item.notice ? (
+      <NoticePopup noticeId={related.item.notice.id} filters={filters} onClose={onClose} />
+    ) : (
+      <Placeholder
+        title="Demand notice"
+        loading={false}
+        message={`No demand notice was issued for ${related.item.id}.`}
+        onClose={onClose}
+      />
+    )
+  }
   return <AgentPopup {...props} periodText={periodText} />
 }
