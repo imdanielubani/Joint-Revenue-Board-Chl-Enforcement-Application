@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Tests: each test file runs as if it started at midday in Lagos, so a run that
+  crosses midnight no longer sees one day in a test's expectations and the next
+  in the sample data. The clock is moved by a fixed amount and keeps real time,
+  so timers, waits and session expiry behave as before.
 - Violations & cases: Status Views is a card of its own under Violation
   Categories, above the tabs, drawn as a tile for each status (Payment Pending,
   Resolved, Escalated, Cancelled and any other state CHL returns) with its
