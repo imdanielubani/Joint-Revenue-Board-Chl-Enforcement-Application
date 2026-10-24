@@ -9,6 +9,7 @@ import { assetUrl } from '@/shared/lib/asset-url'
 import { formatNumber } from '@/shared/lib/format'
 import { useRecordRegister } from '@/shared/lib/use-record-register'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
+import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import { DataTable, type Column } from '@/shared/ui/DataTable'
 import { RecordRegister } from '@/shared/ui/RecordRegister'
 import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
@@ -140,46 +141,6 @@ function columnsFor({ link, onOpen, onVehicle }: ColumnHandlers): Column<Verific
       },
     },
   ]
-}
-
-interface FilterSelectProps {
-  label: string
-  value: string | null
-  options: readonly { value: string; label: string }[]
-  onChange(value: string | null): void
-}
-
-/** A filter box as the design draws it: a small label over the choice. */
-function LabeledSelect({ label, value, options, onChange }: FilterSelectProps) {
-  const id = useId()
-  return (
-    <div
-      className={value === null ? styles.selectBox : `${styles.selectBox} ${styles.selectActive}`}
-    >
-      <label className={styles.selectLabel} htmlFor={id}>
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value ?? ''}
-        onChange={(event) => onChange(event.target.value === '' ? null : event.target.value)}
-      >
-        <option value="">All</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <img
-        className={styles.selectChevron}
-        src={assetUrl('verifications/select-chevron.svg')}
-        alt=""
-        width={12}
-        height={12}
-      />
-    </div>
-  )
 }
 
 const METHOD_OPTIONS = VERIFICATION_METHODS.map((value) => ({ value, label: methodLabel(value) }))

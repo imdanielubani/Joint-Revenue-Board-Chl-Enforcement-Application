@@ -302,6 +302,23 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Violations & cases page (`/violations`): a read-only monitoring view of the
+  violations received by CHL, for the area, period, organization and agent.
+  Headline figures for violations received, unresolved cases, payment pending
+  and closed or cancelled, then a tab for each of the document's sections:
+  Violation Register (category and status filters, search), Violation
+  Categories (the six initial categories and the tag-vehicle mismatch as a
+  documented breach), Status Views (Payment Pending, Resolved, Escalated,
+  Cancelled and any other state CHL returns), Unresolved Cases (pending
+  follow-up, last recorded action, repeat-vehicle alert) and Closure &
+  Cancellation History (outcome, when, responsible actor, reason, audit
+  reference). A case opens from its row's actions: vehicle, agent, location,
+  time, evidence, notes, demand notice and payment, recorded actions, pending
+  follow-up and closure. There are no close or cancel actions. The links other
+  pages already use (`?case=`, `?category=`, `?plate=`, `?status=`,
+  `?view=repeat-vehicles`, `?agent=`) open the right view.
+- The labelled register filter is shared by Verifications & E-Tags and
+  Violations & cases.
 - Violations & cases data: `GET /api/v1/violations/monitoring` (provisional;
   sample data in mock mode) returns the violations received by CHL in the area,
   period, agent and organization as case records: category (the six initial

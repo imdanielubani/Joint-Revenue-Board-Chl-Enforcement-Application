@@ -16,7 +16,9 @@ describe('signing in', () => {
     await user.type(screen.getByLabelText('Password'), MOCK_PASSWORD)
     await user.click(screen.getByRole('button', { name: 'Sign In' }))
 
-    expect(await screen.findByRole('heading', { name: 'Violations & cases' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Violations & cases' }),
+    ).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/violations')
   })
 

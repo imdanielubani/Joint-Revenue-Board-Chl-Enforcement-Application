@@ -1,0 +1,464 @@
+import { useMemo } from 'react'
+import { paths } from '@/config/paths'
+import { useModuleLink } from '@/features/auth/use-module-link'
+import { Stack } from '@/features/geography/components/RecordCells'
+import cells from '@/features/geography/components/RecordColumns.module.css'
+import { actionStatusLabel, followUpLabel, share } from '@/features/overview/overview-display'
+import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
+import { DashboardCard } from '@/shared/ui/DashboardCard'
+import type { Column } from '@/shared/ui/DataTable'
+import { LabeledSelect } from '@/shared/ui/LabeledSelect'
+import { RegisterTable } from '@/shared/ui/RegisterTable'
+import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
+import { StatusLabel } from '@/shared/ui/StatusLabel'
+import {
+  actionLabel,
+  closurePill,
+  isClosed,
+  isUnresolved,
+  pendingFollowUp,
+  placeText,
+  searchTextOf,
+  statusPill,
+  type Pill,
+} from '../violations-display'
+import { STATUS_VIEWS, VIOLATION_CATEGORIES, type ViolationCase } from '../violations.schemas'
+import styles from './ViolationCards.module.css'
+
+type ModuleLink = ReturnType<typeof useModuleLink>
+
+export function PillLabel({ pill }: { pill: Pill }) {
+  return (
+    <StatusLabel tone={pill.tone} {...(pill.icon ? { icon: pill.icon } : {})}>
+      {pill.label}
+    </StatusLabel>
+  )
+}
+
+const notSupplied = (text = 'Not supplied') => <span className={cells.sub}>{text}</span>
+
+/** The register's columns; the last ones depend on the view. */
+function caseColumns(
+  kind: 'register' | 'unresolved' | 'history',
+  link: ModuleLink,
+  onOpen: (item: ViolationCase) => void,
+): Column<ViolationCase>[] {
+  const lead: Column<ViolationCase>[] = [
+    {
+      key: 'violation',
+      header: 'Violation',
+      render: (row) => <span className={cells.plate}>{row.id}</span>,
+      sortValue: (row) => row.id,
+    },
+    {
+      key: 'category',
+      header: 'Category',
+      render: (row) => row.category,
+      sortValue: (row) => row.category,
+    },
+    {
+      key: 'plate',
+      header: 'Plate',
+      render: (row) => <span className={cells.plate}>{row.plate}</span>,
+      sortValue: (row) => row.plate,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (row) => <PillLabel pill={statusPill(row.status)} />,
+      sortValue: (row) => actionStatusLabel(row.status),
+    },
+  ]
+  const recorded: Column<ViolationCase> = {
+    key: 'recorded',
+    header: 'Recorded (WAT)',
+    render: (row) => (
+      <Stack main={formatShortDateTime(row.recordedAt)} sub={placeText(row.location)} />
+    ),
+    sortValue: (row) => Date.parse(row.recordedAt),
+  }
+  const agent: Column<ViolationCase> = {
+    key: 'agent',
+    header: 'Agent',
+    render: (row) => <Stack main={row.agent.name} sub={row.agent.id} />,
+    sortValue: (row) => row.agent.name,
+  }
+  const actions: Column<ViolationCase> = {
+    key: 'actions',
+    header: 'Actions',
+    align: 'end',
+    render: (row) => {
+      const view: RowCommand = { label: 'View case', onSelect: () => onOpen(row) }
+      const links = [
+        {
+          label: 'View evidence',
+          to: row.evidence ? link('evidence', `${paths.evidence}?record=${row.id}`) : undefined,
+        },
+        {
+          label: 'Open the payment',
+          to: row.notice
+            ? link('payments', `${paths.payments}?notice=${row.notice.id}`)
+            : undefined,
+        },
+        {
+          label: 'View verification',
+          to: link('verifications', `${paths.verifications}?ref=${row.verification.reference}`),
+        },
+        { label: 'View agent', to: link('agents', paths.agent(row.agent.id)) },
+      ].filter((action): action is RowAction => action.to !== undefined)
+      return <RowActions label={`Actions for ${row.id}`} actions={[view, ...links]} />
+    },
+  }
+
+  if (kind === 'unresolved') {
+    return [
+      ...lead,
+      agent,
+      recorded,
+      {
+        key: 'followUp',
+        header: 'Pending follow-up',
+        render: (row) => pendingFollowUp(row),
+        sortValue: (row) => pendingFollowUp(row),
+      },
+      {
+        key: 'lastAction',
+        header: 'Last recorded action',
+        render: (row) => {
+          const last = row.actions[row.actions.length - 1]
+          return last ? (
+            <Stack main={actionLabel(last.action)} sub={formatShortDateTime(last.at)} />
+          ) : (
+            notSupplied()
+          )
+        },
+        sortValue: (row) => Date.parse(row.actions[row.actions.length - 1]?.at ?? '') || 0,
+      },
+      {
+        key: 'repeat',
+        header: 'Repeat-vehicle alert',
+        render: (row) =>
+          row.repeatAlert ? (
+            <Stack
+              main={`${formatNumber(row.repeatAlert.reports)} reports`}
+              sub={followUpLabel(row.repeatAlert.followUp)}
+            />
+          ) : (
+            notSupplied('None')
+          ),
+        sortValue: (row) => row.repeatAlert?.reports ?? 0,
+      },
+      actions,
+    ]
+  }
+  if (kind === 'history') {
+    return [
+      ...lead.filter((column) => column.key !== 'status'),
+      {
+        key: 'outcome',
+        header: 'Closed or cancelled',
+        render: (row) =>
+          row.closure ? <PillLabel pill={closurePill(row.closure.outcome)} /> : null,
+        sortValue: (row) => row.closure?.outcome ?? '',
+      },
+      {
+        key: 'closedAt',
+        header: 'When (WAT)',
+        render: (row) => (row.closure ? formatShortDateTime(row.closure.at) : notSupplied()),
+        sortValue: (row) => (row.closure ? Date.parse(row.closure.at) : 0),
+      },
+      {
+        key: 'actor',
+        header: 'Responsible actor',
+        render: (row) =>
+          row.closure?.actor ? (
+            <Stack main={row.closure.actor.name} sub={row.closure.actor.role} />
+          ) : (
+            notSupplied('Not supplied by CHL')
+          ),
+        sortValue: (row) => row.closure?.actor?.name ?? '',
+      },
+      {
+        key: 'reason',
+        header: 'Reason',
+        render: (row) => row.closure?.reason ?? notSupplied(),
+        sortValue: (row) => row.closure?.reason ?? '',
+      },
+      {
+        key: 'audit',
+        header: 'Audit reference',
+        render: (row) => row.closure?.auditReference ?? notSupplied('Not available'),
+        sortValue: (row) => row.closure?.auditReference ?? '',
+      },
+      actions,
+    ]
+  }
+  return [
+    ...lead,
+    agent,
+    recorded,
+    {
+      key: 'notice',
+      header: 'Demand notice',
+      render: (row) =>
+        row.notice ? (
+          <Stack
+            main={row.notice.id}
+            sub={row.notice.status === 'received' ? 'Payment received' : 'Payment pending'}
+          />
+        ) : (
+          notSupplied('None issued')
+        ),
+      sortValue: (row) => row.notice?.id ?? '',
+    },
+    {
+      key: 'evidence',
+      header: 'Evidence',
+      render: (row) =>
+        row.evidence ? (
+          <Stack
+            main={`${row.evidence.photographs} photographs`}
+            sub={`${row.notes.length} ${row.notes.length === 1 ? 'note' : 'notes'}`}
+          />
+        ) : (
+          notSupplied('None')
+        ),
+      sortValue: (row) => row.evidence?.photographs ?? 0,
+    },
+    actions,
+  ]
+}
+
+interface PanelProps {
+  cases: readonly ViolationCase[]
+  subtitle: string
+  onOpen(item: ViolationCase): void
+}
+
+function useColumns(kind: 'register' | 'unresolved' | 'history', onOpen: PanelProps['onOpen']) {
+  const link = useModuleLink()
+  return useMemo(() => caseColumns(kind, link, onOpen), [kind, link, onOpen])
+}
+
+const option = (value: string) => ({ value, label: value })
+
+/** 8.1 Violation Register: every violation received, by category and status, searchable. */
+export function RegisterPanel({
+  cases,
+  subtitle,
+  onOpen,
+  category,
+  status,
+  plate,
+  onCategoryChange,
+  onStatusChange,
+}: PanelProps & {
+  category: string | null
+  status: string | null
+  /** A plate to search for first, from a link. */
+  plate: string
+  onCategoryChange(value: string | null): void
+  onStatusChange(value: string | null): void
+}) {
+  const columns = useColumns('register', onOpen)
+  const known: readonly string[] = VIOLATION_CATEGORIES
+  const categories = [
+    ...VIOLATION_CATEGORIES.map(option),
+    ...[...new Set(cases.map((item) => item.category))]
+      .filter((c) => !known.includes(c))
+      .map(option),
+  ]
+  const statuses = [...new Set([...STATUS_VIEWS, ...cases.map((item) => item.status)])].map(
+    (value) => ({ value, label: actionStatusLabel(value) }),
+  )
+  const rows = cases.filter(
+    (item) => (!category || item.category === category) && (!status || item.status === status),
+  )
+  return (
+    <DashboardCard
+      title="Violation Register"
+      subtitle={subtitle}
+      icon="overview/card-violations.svg"
+      bodyClassName={styles.panelBody}
+    >
+      <div className={styles.selects}>
+        <LabeledSelect
+          label="Category"
+          value={category}
+          options={categories}
+          onChange={onCategoryChange}
+        />
+        <LabeledSelect label="Status" value={status} options={statuses} onChange={onStatusChange} />
+      </div>
+      <RegisterTable
+        key={`${category ?? ''}|${status ?? ''}`}
+        label="Violations"
+        rows={rows}
+        columns={columns}
+        rowKey={(row) => row.id}
+        searchText={searchTextOf}
+        initialQuery={plate}
+      />
+    </DashboardCard>
+  )
+}
+
+/** A count with its share of the total, and a way to list the violations. */
+function CountRow({
+  label,
+  note,
+  count,
+  total,
+  onShow,
+  pill,
+}: {
+  label: string
+  note?: string
+  count: number
+  total: number
+  onShow(): void
+  pill?: Pill
+}) {
+  return (
+    <li className={styles.countRow}>
+      <span className={styles.countName}>
+        {pill ? <PillLabel pill={pill} /> : label}
+        {note && <span className={styles.countNote}>{note}</span>}
+      </span>
+      <span className={styles.count}>{formatNumber(count)}</span>
+      <span className={styles.bar} aria-hidden="true">
+        <span className={styles.barFill} style={{ width: `${share(count, total)}%` }} />
+      </span>
+      <button
+        type="button"
+        className={styles.linkButton}
+        disabled={count === 0}
+        onClick={onShow}
+        aria-label={`View ${label} violations`}
+      >
+        View violations
+      </button>
+    </li>
+  )
+}
+
+/** 8.2 Violation Categories: the documented categories, each with its count. */
+export function CategoriesPanel({
+  cases,
+  subtitle,
+  onShow,
+}: Omit<PanelProps, 'onOpen'> & { onShow(category: string): void }) {
+  const known: readonly string[] = VIOLATION_CATEGORIES
+  const others = [...new Set(cases.map((item) => item.category))].filter((c) => !known.includes(c))
+  const countOf = (category: string) => cases.filter((item) => item.category === category).length
+  return (
+    <DashboardCard
+      title="Violation Categories"
+      subtitle={subtitle}
+      icon="overview/card-cases.svg"
+      bodyClassName={styles.panelBody}
+    >
+      <ul className={styles.countList}>
+        {[...VIOLATION_CATEGORIES, ...others].map((category) => (
+          <CountRow
+            key={category}
+            label={category}
+            {...(category === 'Tag-Vehicle Mismatch'
+              ? { note: 'A documented breach, not in the SRD’s initial category list' }
+              : !known.includes(category)
+                ? { note: 'A category CHL returned' }
+                : {})}
+            count={countOf(category)}
+            total={cases.length}
+            onShow={() => onShow(category)}
+          />
+        ))}
+      </ul>
+    </DashboardCard>
+  )
+}
+
+/** 8.3 Status Views: Payment Pending, Resolved, Escalated, Cancelled, and any other state. */
+export function StatusesPanel({
+  cases,
+  subtitle,
+  onShow,
+}: Omit<PanelProps, 'onOpen'> & { onShow(status: string): void }) {
+  const known: readonly string[] = STATUS_VIEWS
+  const others = [...new Set(cases.map((item) => item.status))].filter((s) => !known.includes(s))
+  const countOf = (status: string) => cases.filter((item) => item.status === status).length
+  return (
+    <DashboardCard
+      title="Status Views"
+      subtitle={subtitle}
+      icon="overview/card-payment.svg"
+      bodyClassName={styles.panelBody}
+    >
+      <ul className={styles.countList}>
+        {[...STATUS_VIEWS, ...others].map((status) => (
+          <CountRow
+            key={status}
+            label={actionStatusLabel(status)}
+            pill={statusPill(status)}
+            {...(!known.includes(status) ? { note: 'Another state returned by CHL' } : {})}
+            count={countOf(status)}
+            total={cases.length}
+            onShow={() => onShow(status)}
+          />
+        ))}
+      </ul>
+    </DashboardCard>
+  )
+}
+
+/** 8.4 Unresolved Cases: outstanding violations, their recorded actions and pending follow-up. */
+export function UnresolvedPanel({
+  cases,
+  subtitle,
+  onOpen,
+  repeatOnly,
+}: PanelProps & { repeatOnly: boolean }) {
+  const columns = useColumns('unresolved', onOpen)
+  const rows = cases.filter((item) => isUnresolved(item) && (!repeatOnly || item.repeatAlert))
+  return (
+    <DashboardCard
+      title={repeatOnly ? 'Unresolved Cases · repeat-vehicle alerts' : 'Unresolved Cases'}
+      subtitle={subtitle}
+      icon="overview/card-repeat.svg"
+      bodyClassName={styles.panelBody}
+    >
+      <RegisterTable
+        label="Unresolved cases"
+        rows={rows}
+        columns={columns}
+        rowKey={(row) => row.id}
+        searchText={searchTextOf}
+      />
+    </DashboardCard>
+  )
+}
+
+/** 8.5 Closure and Cancellation History: how each case was closed or cancelled, and by whom. */
+export function HistoryPanel({ cases, subtitle, onOpen }: PanelProps) {
+  const columns = useColumns('history', onOpen)
+  // The most recently closed or cancelled first.
+  const rows = cases
+    .filter(isClosed)
+    .sort((a, b) => Date.parse(b.closure?.at ?? '') - Date.parse(a.closure?.at ?? ''))
+  return (
+    <DashboardCard
+      title="Closure and Cancellation History"
+      subtitle={subtitle}
+      icon="overview/card-recent.svg"
+      bodyClassName={styles.panelBody}
+    >
+      <RegisterTable
+        label="Closed and cancelled cases"
+        rows={rows}
+        columns={columns}
+        rowKey={(row) => row.id}
+        searchText={searchTextOf}
+      />
+    </DashboardCard>
+  )
+}

@@ -1,0 +1,51 @@
+/* A filter box: a small label over the choice, and a chevron. Green when it narrows. */
+.box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 9.6px 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.box:focus-within {
+  border-color: var(--color-primary);
+}
+
+.label {
+  color: var(--card-muted);
+  font-size: 9px;
+  line-height: 13.5px;
+}
+
+.box select {
+  width: 100%;
+  margin-top: 4.8px;
+  padding: 0 20px 0 0;
+  border: 0;
+  outline: none;
+  appearance: none;
+  background: transparent;
+  color: var(--card-title);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 16.5px;
+  cursor: pointer;
+}
+
+.chevron {
+  position: absolute;
+  right: 12px;
+  bottom: 12.5px;
+  pointer-events: none;
+}
+
+.active {
+  border-color: var(--color-primary);
+}
+
+.active select {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}

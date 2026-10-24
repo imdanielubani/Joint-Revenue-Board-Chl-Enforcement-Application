@@ -302,57 +302,6 @@
   gap: 10.4px;
 }
 
-.selectBox {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: 9.6px 12px;
-  border: 0.8px solid var(--card-line);
-  border-radius: 8px;
-  background: var(--color-surface);
-}
-
-.selectBox:focus-within {
-  border-color: var(--color-primary);
-}
-
-.selectLabel {
-  color: var(--card-muted);
-  font-size: 9px;
-  line-height: 13.5px;
-}
-
-.selectBox select {
-  width: 100%;
-  margin-top: 4.8px;
-  padding: 0 20px 0 0;
-  border: 0;
-  outline: none;
-  appearance: none;
-  background: transparent;
-  color: var(--card-title);
-  font-family: var(--font-ui);
-  font-size: 11px;
-  line-height: 16.5px;
-  cursor: pointer;
-}
-
-.selectChevron {
-  position: absolute;
-  right: 12px;
-  bottom: 12.5px;
-  pointer-events: none;
-}
-
-.selectActive {
-  border-color: var(--color-primary);
-}
-
-.selectActive select {
-  color: var(--color-primary);
-  font-weight: var(--font-weight-semibold);
-}
-
 .countLine {
   display: flex;
   flex-wrap: wrap;
