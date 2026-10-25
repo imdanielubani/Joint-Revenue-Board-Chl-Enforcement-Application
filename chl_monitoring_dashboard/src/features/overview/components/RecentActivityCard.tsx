@@ -4,7 +4,7 @@ import { formatDelay, formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions, type RowAction } from '@/shared/ui/RowActions'
+import { RowActions, type RowCommand } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
   actionStatusLabel,
@@ -17,6 +17,7 @@ import {
 } from '../overview-display'
 import type { ActivityRecord } from '../overview.schemas'
 import { useModuleLink } from '@/features/auth/use-module-link'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import styles from './RecentActivityCard.module.css'
 
 const searchText = (row: ActivityRecord) =>
@@ -59,7 +60,14 @@ function RecordSync({ record }: { record: ActivityRecord }) {
 }
 
 /** "Recent activity": the latest timed records, as a searchable register. */
-export function RecentActivityCard({ records }: { records: readonly ActivityRecord[] }) {
+export function RecentActivityCard({
+  records,
+  onRelated,
+}: {
+  records: readonly ActivityRecord[]
+  /** Opens a record's verification, vehicle or agent in a popup on this page. */
+  onRelated(related: TripRelated): void
+}) {
   const link = useModuleLink()
 
   const columns = useMemo<Column<ActivityRecord>[]>(
@@ -147,27 +155,36 @@ export function RecentActivityCard({ records }: { records: readonly ActivityReco
         header: 'Actions',
         align: 'end',
         render: (row) => {
-          const actions = [
-            {
-              label: 'View verification',
-              to: link('verifications', `${paths.verifications}?ref=${row.reference}`),
-            },
-            {
-              label: 'View vehicle history',
-              to: link('verifications', `${paths.verifications}?plate=${row.plate}`),
-            },
-            {
-              label: 'View agent',
-              to: link('agents', paths.agent(row.agent.id)),
-            },
-          ].filter((action): action is RowAction => action.to !== undefined)
+          // Each opens in its own module's popup, for roles that may see that module.
+          const actions: RowCommand[] = [
+            ...(link('verifications', paths.verifications)
+              ? [
+                  {
+                    label: 'View verification',
+                    onSelect: () => onRelated({ kind: 'verification', reference: row.reference }),
+                  },
+                  {
+                    label: 'View vehicle history',
+                    onSelect: () => onRelated({ kind: 'vehicle', plate: row.plate }),
+                  },
+                ]
+              : []),
+            ...(link('agents', paths.agents)
+              ? [
+                  {
+                    label: 'View agent',
+                    onSelect: () => onRelated({ kind: 'agent', agent: row.agent }),
+                  },
+                ]
+              : []),
+          ]
           return actions.length > 0 ? (
             <RowActions label={`Actions for ${row.plate}, ${row.reference}`} actions={actions} />
           ) : null
         },
       },
     ],
-    [link],
+    [link, onRelated],
   )
 
   return (

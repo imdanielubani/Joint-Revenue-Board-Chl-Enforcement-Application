@@ -6,19 +6,24 @@ import { VerificationDetailsDialog } from '@/features/verifications/components/V
 import { vehiclesOf } from '@/features/verifications/verifications-display'
 import { useVerificationsMonitoring } from '@/features/verifications/verifications.queries'
 import { CaseDialog } from '@/features/violations/components/CaseDialog'
-import { RelatedDialog, type Related } from '@/features/violations/components/RelatedDialog'
+import {
+  AgentPopup,
+  RelatedDialog,
+  type Related,
+} from '@/features/violations/components/RelatedDialog'
 import { useViolationsMonitoring } from '@/features/violations/violations.queries'
 import { Dialog } from '@/shared/ui/Dialog'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import type { TripsFilters } from '../trips.schemas'
 import styles from './TripCards.module.css'
 
-/** A record a trip row links to, opened in its own module's popup on this page. */
+/** A record a row links to, opened in its own module's popup on the page. */
 export type TripRelated =
   | { kind: 'verification'; reference: string }
   | { kind: 'vehicle'; plate: string }
   | { kind: 'case'; violationId: string }
   | { kind: 'payment'; noticeId: string }
+  | { kind: 'agent'; agent: { id: string; name: string } }
 
 /** While the record loads, or when it cannot be found: a popup saying so. */
 function Placeholder({
@@ -149,9 +154,10 @@ function CasePopup({
 }
 
 /**
- * A trip row's verification, vehicle verifications or case, in the same popup
- * its own module shows. One opens in place of another: a verification's
- * vehicle, a vehicle's verification, or a case's evidence, verification or agent.
+ * A row's verification, vehicle verifications, case, demand notice or agent, in
+ * the same popup its own module shows. One opens in place of another: a
+ * verification's vehicle, a vehicle's verification, or a case's evidence,
+ * verification or agent.
  */
 export function TripRelatedDialog({
   related,
@@ -183,6 +189,11 @@ export function TripRelatedDialog({
         onClose={onClose}
         onVehicle={(plate) => setCurrent({ kind: 'vehicle', plate })}
       />
+    )
+  }
+  if (current.kind === 'agent') {
+    return (
+      <AgentPopup agent={current.agent} filters={all} periodText={periodText} onClose={onClose} />
     )
   }
   if (current.kind === 'payment') {

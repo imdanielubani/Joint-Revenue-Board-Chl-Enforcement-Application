@@ -99,7 +99,19 @@ function VerificationPopup({ item, filters, onClose }: RelatedProps) {
   )
 }
 
-function AgentPopup({ item, filters, periodText, onClose }: RelatedProps & { periodText: string }) {
+/** An agent's details, in the popup Agents & organizations shows, looked up in the area and period. */
+export function AgentPopup({
+  agent: wanted,
+  filters,
+  periodText,
+  onClose,
+}: {
+  agent: { id: string; name: string }
+  filters: Pick<OverviewFilters, 'scope' | 'range' | 'from' | 'to'>
+  /** "Last 30 days", for the agent's details. */
+  periodText: string
+  onClose(): void
+}) {
   const navigate = useNavigate()
   const { search } = useLocation()
   const query = useAgentsMonitoring({
@@ -108,7 +120,7 @@ function AgentPopup({ item, filters, periodText, onClose }: RelatedProps & { per
     from: filters.from,
     to: filters.to,
   })
-  const agent = query.data?.agents.find((entry) => entry.id === item.agent.id)
+  const agent = query.data?.agents.find((entry) => entry.id === wanted.id)
   if (agent) {
     return (
       <AgentDetailsDialog
@@ -123,7 +135,7 @@ function AgentPopup({ item, filters, periodText, onClose }: RelatedProps & { per
     <Placeholder
       title="Agent details"
       loading={query.isPending}
-      message={`${item.agent.name} (${item.agent.id}) was not found among the agents in this area and period.`}
+      message={`${wanted.name} (${wanted.id}) was not found among the agents in this area and period.`}
       onClose={onClose}
     />
   )
@@ -160,5 +172,12 @@ export function RelatedDialog({
       />
     )
   }
-  return <AgentPopup {...props} periodText={periodText} />
+  return (
+    <AgentPopup
+      agent={related.item.agent}
+      filters={filters}
+      periodText={periodText}
+      onClose={onClose}
+    />
+  )
 }

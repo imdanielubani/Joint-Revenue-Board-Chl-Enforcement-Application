@@ -4,11 +4,12 @@ import { formatNumber } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions, type RowAction } from '@/shared/ui/RowActions'
+import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
 import { SegmentedTabs, type SegmentedTab } from '@/shared/ui/SegmentedTabs'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import type { AgentRow, LocationRow, Overview } from '../overview.schemas'
 import { useModuleLink } from '@/features/auth/use-module-link'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import styles from './PerformanceCard.module.css'
 
 type View = 'agents' | 'locations' | 'corporate'
@@ -37,10 +38,12 @@ interface Props {
   locations: Overview['locations']
   /** False for users who cover single enforcement points: they see agents only. */
   showLocations: boolean
+  /** Opens an agent's details in a popup on this page. */
+  onRelated(related: TripRelated): void
 }
 
 /** "Enforcement performance & corporate monitoring": the same metrics by agent, location or organization. */
-export function PerformanceCard({ agents, locations, showLocations }: Props) {
+export function PerformanceCard({ agents, locations, showLocations, onRelated }: Props) {
   const idBase = useId()
   const [view, setView] = useState<View>('agents')
   const current = showLocations ? view : 'agents'
@@ -75,7 +78,7 @@ export function PerformanceCard({ agents, locations, showLocations }: Props) {
         aria-labelledby={tabId(idBase, current)}
         className={styles.panel}
       >
-        {current === 'agents' && <AgentRegister rows={agents} />}
+        {current === 'agents' && <AgentRegister rows={agents} onRelated={onRelated} />}
         {current === 'locations' && <LocationRegister rows={locations} />}
         {current === 'corporate' && <CorporateRegister agents={agents} />}
       </div>
@@ -138,7 +141,13 @@ function metricColumns<
 const agentSearch = (row: AgentRow) =>
   `${row.name} ${row.agentId} ${row.organization} ${row.locations}`
 
-function AgentRegister({ rows }: { rows: readonly AgentRow[] }) {
+function AgentRegister({
+  rows,
+  onRelated,
+}: {
+  rows: readonly AgentRow[]
+  onRelated: Props['onRelated']
+}) {
   const link = useModuleLink()
   const columns = useMemo<Column<AgentRow>[]>(
     () => [
@@ -172,20 +181,26 @@ function AgentRegister({ rows }: { rows: readonly AgentRow[] }) {
         header: 'Actions',
         align: 'end',
         render: (row) => {
-          const actions = [
-            { label: 'View agent', to: link('agents', paths.agent(row.agentId)) },
-            {
-              label: 'View violations issued',
-              to: link('violations', `${paths.violations}?agent=${row.agentId}`),
-            },
-          ].filter((action): action is RowAction => action.to !== undefined)
+          const violations = link('violations', `${paths.violations}?agent=${row.agentId}`)
+          const actions: (RowAction | RowCommand)[] = [
+            ...(link('agents', paths.agents)
+              ? [
+                  {
+                    label: 'View agent',
+                    onSelect: () =>
+                      onRelated({ kind: 'agent', agent: { id: row.agentId, name: row.name } }),
+                  },
+                ]
+              : []),
+            ...(violations ? [{ label: 'View violations issued', to: violations }] : []),
+          ]
           return actions.length > 0 ? (
             <RowActions label={`Actions for ${row.name}`} actions={actions} />
           ) : null
         },
       },
     ],
-    [link],
+    [link, onRelated],
   )
   return (
     <RegisterTable

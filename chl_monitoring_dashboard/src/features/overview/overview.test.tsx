@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { summarize } from '@/mocks/mock-overview-api'
@@ -306,6 +306,55 @@ describe('overview page', () => {
     const first = [...records].sort((a, b) => collator.compare(a.plate, b.plate))[0]!.plate
     const firstRow = within(recent).getAllByRole('row')[1]!
     expect(within(firstRow).getByText(first)).toBeInTheDocument()
+  })
+
+  it('opens a recent record’s verification, vehicle and agent in popups on the page', async () => {
+    const record = expected().recentActivity[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+    const recent = await card('Recent activity')
+    const actions = await within(recent).findByRole('button', {
+      name: `Actions for ${record.plate}, ${record.reference}`,
+    })
+
+    await userEvent.click(actions)
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View verification' }))
+    const verification = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(verification).toHaveTextContent(record.reference)
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    await userEvent.click(actions)
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View vehicle history' }))
+    const vehicle = await screen.findByRole('dialog', { name: 'Vehicle verifications' })
+    expect(vehicle).toHaveTextContent(record.plate)
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    await userEvent.click(actions)
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View agent' }))
+    const agent = await screen.findByRole('dialog', { name: 'Agent details' })
+    expect(agent).toHaveTextContent(record.agent.id)
+    expect(router.state.location.pathname).toBe('/overview')
+  })
+
+  it('opens an agent’s details from the metrics by agent, without leaving the page', async () => {
+    const row = expected().agents[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+    const performance = await card('Enforcement performance & corporate monitoring')
+    await userEvent.click(
+      await within(performance).findByRole('button', { name: `Actions for ${row.name}` }),
+    )
+    const menu = await screen.findByRole('menu')
+    expect(within(menu).getByRole('menuitem', { name: 'View violations issued' })).toHaveAttribute(
+      'href',
+      `/violations?agent=${row.agentId}`,
+    )
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'View agent' }))
+    const agent = await screen.findByRole('dialog', { name: 'Agent details' })
+    expect(agent).toHaveTextContent(row.agentId)
+    expect(router.state.location.pathname).toBe('/overview')
   })
 
   it('marks records checked offline and their sync status', async () => {

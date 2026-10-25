@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { paths } from '@/config/paths'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { downloadCsv } from '@/shared/lib/csv'
 import { formatDateTime } from '@/shared/lib/format'
 import { StatePanel } from '@/shared/ui/StatePanel'
@@ -71,6 +72,8 @@ function OverviewContent({
 
   const query = useOverview(filters, { enabled: !filter.waiting })
   const overview = query.data
+  // A row's verification, vehicle or agent, open in its own module's popup on this page.
+  const [related, setRelated] = useState<TripRelated | null>(null)
 
   const exportRecords = (data: Overview) => {
     downloadCsv(`overview-records-${data.period.from}-to-${data.period.to}.csv`, [
@@ -186,10 +189,20 @@ function OverviewContent({
             agents={overview.agents}
             locations={overview.locations}
             showLocations={coversSeveralLocations(scope.level)}
+            onRelated={setRelated}
           />
           <InsightCardsRow overview={overview} />
           <AttentionCardsRow overview={overview} />
-          <RecentActivityCard records={overview.recentActivity} />
+          <RecentActivityCard records={overview.recentActivity} onRelated={setRelated} />
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(range, filters)}
+              onClose={() => setRelated(null)}
+            />
+          )}
         </>
       )}
     </div>

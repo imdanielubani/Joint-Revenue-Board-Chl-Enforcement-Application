@@ -302,6 +302,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The Overview's row actions open their records as popups on the page instead
+  of leaving it: in Recent activity, View verification, View vehicle history (the
+  vehicle's verifications) and View agent; in Enforcement performance by agent,
+  View agent. They are offered only to roles that can see the module, and
+  View violations issued still opens the violation register for that agent.
 - Open the payment opens the demand notice as a popup, the one Payments &
   compliance shows: on Violations & cases from a row's actions and from the case
   record, where a notice was issued, and on Trip monitoring from a confirmed
