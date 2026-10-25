@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { summarizeGeography } from '@/mocks/mock-geography-api'
+import { summarizeViolations } from '@/mocks/mock-violations-api'
 import { summarize } from '@/mocks/mock-overview-api'
 import { mockRecords } from '@/mocks/mock-records'
 import { lagosDay } from '@/shared/lib/dates'
@@ -271,6 +272,41 @@ describe('geographical monitoring page', () => {
       await userEvent.keyboard('{Escape}')
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     }
+    expect(router.state.location.pathname).toBe('/geography')
+  })
+
+  it('lists a repeat vehicle’s reports in a popup on the page, each opening its case in place', async () => {
+    const { overview } = expected('la')
+    const vehicle = overview.repeatVehicles.items[0]!
+    const cases = summarizeViolations({
+      scope: 'la',
+      range: '14d',
+      ...presetPeriod('14d', lagosDay()),
+      agentId: null,
+      organization: null,
+    }).cases.filter((item) => item.plate === vehicle.plate)
+    // Every report the alert counts is one of the plate’s violations.
+    expect(cases.filter((item) => item.status !== 'cancelled')).toHaveLength(vehicle.reports)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    await userEvent.click(within(records).getByRole('tab', { name: /^Repeat alerts/ }))
+    const table = within(records).getByRole('table', { name: 'Repeat alerts' })
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${vehicle.plate}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View vehicle reports' }))
+
+    const dialog = await screen.findByRole('dialog', { name: 'Vehicle reports' })
+    expect(dialog).toHaveTextContent(vehicle.plate)
+    const list = within(dialog).getByRole('table', { name: `Violations of ${vehicle.plate}` })
+    expect(within(list).getAllByRole('row')).toHaveLength(Math.min(5, cases.length) + 1)
+
+    const first = cases[0]!
+    await userEvent.click(within(list).getByRole('button', { name: `Actions for ${first.id}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View case' }))
+    expect(await screen.findByRole('dialog', { name: `Case ${first.id}` })).toBeInTheDocument()
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
     expect(router.state.location.pathname).toBe('/geography')
   })
 

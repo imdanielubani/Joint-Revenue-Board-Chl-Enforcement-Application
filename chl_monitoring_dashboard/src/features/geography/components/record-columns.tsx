@@ -332,6 +332,7 @@ export function violationColumns(
 export function repeatColumns(
   link: ModuleLink,
   onOpen: (row: RepeatVehicle) => void,
+  { onRelated }: Pick<ColumnOptions, 'onRelated'> = {},
 ): Column<RepeatVehicle>[] {
   return [
     {
@@ -370,12 +371,21 @@ export function repeatColumns(
       header: 'Actions',
       align: 'end',
       render: (row) => {
-        const actions = actionsOf([
-          {
-            label: 'View vehicle reports',
-            to: link('violations', `${paths.violations}?plate=${row.plate}`),
-          },
-        ])
+        const actions: (RowAction | RowCommand)[] = onRelated
+          ? link('violations', paths.violations)
+            ? [
+                {
+                  label: 'View vehicle reports',
+                  onSelect: () => onRelated({ kind: 'vehicleReports', vehicle: row }),
+                },
+              ]
+            : []
+          : actionsOf([
+              {
+                label: 'View vehicle reports',
+                to: link('violations', `${paths.violations}?plate=${row.plate}`),
+              },
+            ])
         return actions.length > 0 ? (
           <RowActions label={`Actions for ${row.plate}`} actions={actions} />
         ) : null

@@ -302,6 +302,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On Geographical monitoring, the Repeat alerts tab of Underlying records opens
+  View vehicle reports as a popup on the page instead of leaving it: the vehicle
+  as its alert counts it, then the plate's violations in the register's own
+  columns and row actions, each opening its case in place. The agent's
+  violations popup on the Overview now shares the same list.
 - On Geographical monitoring, the Violations, Unresolved and Escalated tabs of
   Underlying records open Open the case as the case popup on the page instead of
   leaving it; the case's evidence, verification, agent and payment open in its place.

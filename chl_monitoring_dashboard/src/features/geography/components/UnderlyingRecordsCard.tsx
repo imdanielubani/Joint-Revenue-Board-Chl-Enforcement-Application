@@ -102,7 +102,7 @@ export function UnderlyingRecordsCard({
       violations: violationColumns(link, (row) => setDetails(violationDetails(row, ctx)), {
         onRelated,
       }),
-      repeat: repeatColumns(link, (row) => setDetails(repeatDetails(row, ctx))),
+      repeat: repeatColumns(link, (row) => setDetails(repeatDetails(row, ctx)), { onRelated }),
       notices: noticeColumns(link, (row) => setDetails(noticeDetails(row, ctx))),
       evidence: evidenceColumns(link, (row) => setDetails(evidenceDetails(row, ctx))),
       locations: locationColumns((row) => setDetails(locationDetails(row, ctx))),

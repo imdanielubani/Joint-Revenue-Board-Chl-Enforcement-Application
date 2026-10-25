@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react'
 import { LocationMapDialog } from '@/features/geography/components/LocationMapDialog'
 import { useGeography } from '@/features/geography/geography.queries'
-import type { LocationRow, OverviewFilters } from '@/features/overview/overview.schemas'
+import type {
+  LocationRow,
+  OverviewFilters,
+  RepeatVehicle,
+} from '@/features/overview/overview.schemas'
 import { NoticePopup } from '@/features/payments/components/NoticePopup'
 import { VehicleVerificationsDialog } from '@/features/verifications/components/VehicleVerificationsDialog'
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
@@ -9,6 +13,7 @@ import { vehiclesOf } from '@/features/verifications/verifications-display'
 import { useVerificationsMonitoring } from '@/features/verifications/verifications.queries'
 import { AgentViolationsDialog } from '@/features/violations/components/AgentViolationsDialog'
 import { CaseDialog } from '@/features/violations/components/CaseDialog'
+import { VehicleReportsDialog } from '@/features/violations/components/VehicleReportsDialog'
 import {
   AgentPopup,
   RelatedDialog,
@@ -31,6 +36,7 @@ export type TripRelated =
   | { kind: 'agent'; agent: { id: string; name: string } }
   | { kind: 'agentViolations'; agent: { id: string; name: string; organization: string } }
   | { kind: 'location'; location: LocationRow }
+  | { kind: 'vehicleReports'; vehicle: RepeatVehicle }
 
 /** While the record loads, or when it cannot be found: a popup saying so. */
 function Placeholder({
@@ -168,6 +174,46 @@ function AgentViolationsPopup({
   )
 }
 
+function VehicleReportsPopup({
+  vehicle,
+  filters,
+  periodText,
+  onClose,
+  onOpen,
+}: {
+  vehicle: RepeatVehicle
+  filters: OverviewFilters
+  periodText: string
+  onClose(): void
+  /** Opens a case, or one of its related records, in place of the list. */
+  onOpen(item: ViolationCase, related?: RelatedKind): void
+}) {
+  const query = useViolationsMonitoring(filters)
+  const cases = useMemo(
+    () => query.data?.cases.filter((item) => item.plate === vehicle.plate),
+    [query.data, vehicle.plate],
+  )
+  if (cases) {
+    return (
+      <VehicleReportsDialog
+        vehicle={vehicle}
+        cases={cases}
+        periodText={periodText}
+        onClose={onClose}
+        onOpen={onOpen}
+      />
+    )
+  }
+  return (
+    <Placeholder
+      title="Vehicle reports"
+      loading={query.isPending}
+      message={`The reports of ${vehicle.plate} could not be loaded.`}
+      onClose={onClose}
+    />
+  )
+}
+
 function LocationPopup({
   location,
   filters,
@@ -235,7 +281,8 @@ function CasePopup({
 
 /**
  * A row's verification, vehicle verifications, case, demand notice, agent, an
- * agent's violations or an enforcement location on the map, in the same popup
+ * agent's violations, a repeat vehicle's reports or an enforcement location on
+ * the map, in the same popup
  * its own module shows. One opens in place
  * of another: a verification's vehicle, a vehicle's verification, a listed
  * violation's case, or a case's evidence, verification or agent.
@@ -269,6 +316,19 @@ export function TripRelatedDialog({
         filters={all}
         onClose={onClose}
         onVehicle={(plate) => setCurrent({ kind: 'vehicle', plate })}
+      />
+    )
+  }
+  if (current.kind === 'vehicleReports') {
+    return (
+      <VehicleReportsPopup
+        vehicle={current.vehicle}
+        filters={all}
+        periodText={periodText}
+        onClose={onClose}
+        onOpen={(item, kind) =>
+          kind ? setFromCase({ kind, item }) : setCurrent({ kind: 'case', violationId: item.id })
+        }
       />
     )
   }
