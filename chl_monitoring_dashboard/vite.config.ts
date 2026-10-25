@@ -9,6 +9,8 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   server: { port: 5173, strictPort: true },
+  // Production serves dist/ only; no source maps, so the browser never gets the original src/ files.
+  build: { sourcemap: false },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

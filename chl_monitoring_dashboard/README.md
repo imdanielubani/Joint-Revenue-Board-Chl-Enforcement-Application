@@ -77,6 +77,19 @@ OpenStreetMap's own tiles suit development and light use only; for production,
 set a tile provider JRB has an agreement with, and its credit. An empty
 `VITE_MAP_TILE_URL` turns the map off; the list of locations remains.
 
+## Deploying
+
+Build with `npm run build` and serve only the `dist/` folder as the site's
+document root, with any unknown path answered by `dist/index.html` (the
+dashboard routes in the browser). Never put the project folder online, and
+never run `npm run dev` or `npm run preview` as the public server: the dev
+server hands out `src/`, `node_modules/`, `package.json` and its own `/@vite/`
+files to anyone who asks. The build makes no source maps (`build.sourcemap:
+false` in `vite.config.ts`), so `dist/` holds no original source.
+
+Every `VITE_` setting is built into the JavaScript and readable by anyone; keep
+secrets on the backend.
+
 ## Project structure
 
 The code is organised by feature: each module of the dashboard has its own
@@ -302,6 +315,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The build states `sourcemap: false`, so production holds no source maps, and
+  a new "Deploying" section says to serve `dist/` only, never the dev or preview
+  server, which hands out `src/`, `node_modules/` and `package.json`.
 - On Geographical monitoring, the Evidence tab of Underlying records opens View
   photographs in the evidence viewer on the page instead of leaving it. Every
   underlying record's actions now open on the page; the Locations tab has none.
