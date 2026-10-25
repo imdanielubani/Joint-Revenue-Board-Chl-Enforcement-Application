@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
-import type { OverviewFilters } from '@/features/overview/overview.schemas'
+import { LocationMapDialog } from '@/features/geography/components/LocationMapDialog'
+import { useGeography } from '@/features/geography/geography.queries'
+import type { LocationRow, OverviewFilters } from '@/features/overview/overview.schemas'
 import { NoticePopup } from '@/features/payments/components/NoticePopup'
 import { VehicleVerificationsDialog } from '@/features/verifications/components/VehicleVerificationsDialog'
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
@@ -28,6 +30,7 @@ export type TripRelated =
   | { kind: 'payment'; noticeId: string }
   | { kind: 'agent'; agent: { id: string; name: string } }
   | { kind: 'agentViolations'; agent: { id: string; name: string; organization: string } }
+  | { kind: 'location'; location: LocationRow }
 
 /** While the record loads, or when it cannot be found: a popup saying so. */
 function Placeholder({
@@ -165,6 +168,43 @@ function AgentViolationsPopup({
   )
 }
 
+function LocationPopup({
+  location,
+  filters,
+  periodText,
+  onClose,
+}: {
+  location: LocationRow
+  filters: OverviewFilters
+  periodText: string
+  onClose(): void
+}) {
+  const query = useGeography({
+    scope: location.id,
+    range: filters.range,
+    from: filters.from,
+    to: filters.to,
+  })
+  if (query.data) {
+    return (
+      <LocationMapDialog
+        location={location}
+        geography={query.data}
+        periodText={periodText}
+        onClose={onClose}
+      />
+    )
+  }
+  return (
+    <Placeholder
+      title="Enforcement location"
+      loading={query.isPending}
+      message={`${location.name} could not be loaded.`}
+      onClose={onClose}
+    />
+  )
+}
+
 function CasePopup({
   violationId,
   filters,
@@ -194,8 +234,9 @@ function CasePopup({
 }
 
 /**
- * A row's verification, vehicle verifications, case, demand notice, agent or an
- * agent's violations, in the same popup its own module shows. One opens in place
+ * A row's verification, vehicle verifications, case, demand notice, agent, an
+ * agent's violations or an enforcement location on the map, in the same popup
+ * its own module shows. One opens in place
  * of another: a verification's vehicle, a vehicle's verification, a listed
  * violation's case, or a case's evidence, verification or agent.
  */
@@ -228,6 +269,16 @@ export function TripRelatedDialog({
         filters={all}
         onClose={onClose}
         onVehicle={(plate) => setCurrent({ kind: 'vehicle', plate })}
+      />
+    )
+  }
+  if (current.kind === 'location') {
+    return (
+      <LocationPopup
+        location={current.location}
+        filters={all}
+        periodText={periodText}
+        onClose={onClose}
       />
     )
   }

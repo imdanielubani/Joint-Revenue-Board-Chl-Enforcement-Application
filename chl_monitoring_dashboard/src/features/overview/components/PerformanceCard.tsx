@@ -79,7 +79,7 @@ export function PerformanceCard({ agents, locations, showLocations, onRelated }:
         className={styles.panel}
       >
         {current === 'agents' && <AgentRegister rows={agents} onRelated={onRelated} />}
-        {current === 'locations' && <LocationRegister rows={locations} />}
+        {current === 'locations' && <LocationRegister rows={locations} onRelated={onRelated} />}
         {current === 'corporate' && <CorporateRegister agents={agents} />}
       </div>
       <p className={styles.note}>{NOTES[current]}</p>
@@ -225,7 +225,13 @@ function AgentRegister({
 
 const locationSearch = (row: LocationRow) => `${row.name} ${row.code} ${row.area}`
 
-function LocationRegister({ rows }: { rows: readonly LocationRow[] }) {
+function LocationRegister({
+  rows,
+  onRelated,
+}: {
+  rows: readonly LocationRow[]
+  onRelated: Props['onRelated']
+}) {
   const link = useModuleLink()
   const columns = useMemo<Column<LocationRow>[]>(
     () => [
@@ -253,18 +259,22 @@ function LocationRegister({ rows }: { rows: readonly LocationRow[] }) {
         key: 'actions',
         header: 'Actions',
         align: 'end',
-        render: (row) => {
-          const to = link('geography', `${paths.geography}?scope=${row.id}`)
-          return to ? (
+        // The location on the map opens in a popup on this page.
+        render: (row) =>
+          link('geography', paths.geography) ? (
             <RowActions
               label={`Actions for ${row.name}`}
-              actions={[{ label: 'Open on map', to }]}
+              actions={[
+                {
+                  label: 'Open on map',
+                  onSelect: () => onRelated({ kind: 'location', location: row }),
+                },
+              ]}
             />
-          ) : null
-        },
+          ) : null,
       },
     ],
-    [link],
+    [link, onRelated],
   )
   return (
     <RegisterTable

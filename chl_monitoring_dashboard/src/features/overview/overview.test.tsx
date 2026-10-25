@@ -385,6 +385,26 @@ describe('overview page', () => {
     expect(router.state.location.pathname).toBe('/overview')
   })
 
+  it('opens a location on the map in a popup, without leaving the page', async () => {
+    const row = expected().locations[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+    const performance = await card('Enforcement performance & corporate monitoring')
+    await userEvent.click(await within(performance).findByRole('tab', { name: /By location/ }))
+    await userEvent.click(
+      within(performance).getByRole('button', { name: `Actions for ${row.name}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Open on map' }))
+
+    const dialog = await screen.findByRole('dialog', { name: 'Enforcement location' })
+    for (const text of [row.name, row.code, row.area]) expect(dialog).toHaveTextContent(text)
+    // The footprint map Geographical monitoring shows, for this location.
+    expect(
+      await within(dialog).findByRole('region', { name: 'Enforcement footprint' }),
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/overview')
+  })
+
   it('marks records checked offline and their sync status', async () => {
     const records = expected().recentActivity
     const offline = records.filter((record) => record.source === 'offline')

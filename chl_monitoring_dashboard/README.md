@@ -302,6 +302,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On the Overview, Open on map (Enforcement performance by location) opens a
+  popup instead of leaving the page: the location's figures as the row counts
+  them, then the enforcement footprint map Geographical monitoring shows, at the
+  location's recorded position, with its verifications' recorded GPS.
 - On the Overview, View violations issued (Enforcement performance by agent)
   opens a popup instead of leaving the page: the agent, then the violations they
   issued in the area and period, in the violation register's own columns and row
