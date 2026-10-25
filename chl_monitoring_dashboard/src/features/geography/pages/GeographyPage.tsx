@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useModuleLink } from '@/features/auth/use-module-link'
@@ -21,6 +21,7 @@ import {
 import { EnforcementFootprintCard, LocationsInViewCard } from '../components/GeographyCards'
 import { MonitoringScopeCard } from '../components/ScopeCards'
 import { UnderlyingRecordsCard } from '../components/UnderlyingRecordsCard'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { useGeography } from '../geography.queries'
 import { scopeOptions, type ScopeOption } from '../scope-options'
 import styles from './GeographyPage.module.css'
@@ -91,6 +92,8 @@ function GeographyContent({
     for (const query of queries) void query.refetch()
   }
   const recordWindow = `${periodLabel(filters.range, filters)} record window · through ${formatDay(filters.to)}`
+  // A record's related record, open in its own module's popup on this page.
+  const [related, setRelated] = useState<TripRelated | null>(null)
 
   return (
     <div className={styles.page}>
@@ -206,7 +209,17 @@ function GeographyContent({
             overview={overview}
             records={geography.records}
             locations={geography.locations}
+            onRelated={setRelated}
           />
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
+            />
+          )}
 
           <p className={styles.note}>
             Scope memberships are configuration assignments from CHL; no parent-child hierarchy is

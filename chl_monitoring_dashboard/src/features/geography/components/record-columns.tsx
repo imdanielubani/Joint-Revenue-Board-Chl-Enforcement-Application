@@ -11,9 +11,10 @@ import {
   syncStatusLabel,
 } from '@/features/overview/overview-display'
 import type { AgentRow, RepeatVehicle } from '@/features/overview/overview.schemas'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
 import type { Column } from '@/shared/ui/DataTable'
-import { RowActions, type RowAction } from '@/shared/ui/RowActions'
+import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import type {
   EnforcementPoint,
@@ -41,6 +42,11 @@ const actionsOf = (actions: { label: string; to: string | undefined }[]) =>
 interface ColumnOptions {
   /** False where every record is the same agent's, on the agent's own page. */
   withAgent?: boolean
+  /**
+   * Opens a row's related record in its own module's popup on the page; where
+   * it is absent, the row's actions lead to the module instead.
+   */
+  onRelated?: ((related: TripRelated) => void) | undefined
 }
 
 /** The recording agent: their name, with their ID under it. */
@@ -56,7 +62,7 @@ function agentColumn<T extends { agent: { id: string; name: string } }>(): Colum
 export function verificationColumns(
   link: ModuleLink,
   onOpen: (row: VerificationRecord) => void,
-  { withAgent = true }: ColumnOptions = {},
+  { withAgent = true, onRelated }: ColumnOptions = {},
 ): Column<VerificationRecord>[] {
   return [
     {
@@ -125,20 +131,44 @@ export function verificationColumns(
       header: 'Actions',
       align: 'end',
       render: (row) => {
-        const actions = actionsOf([
-          {
-            label: 'View verification',
-            to: link('verifications', `${paths.verifications}?ref=${row.reference}`),
-          },
-          {
-            label: 'View vehicle history',
-            to: link('verifications', `${paths.verifications}?plate=${row.plate}`),
-          },
-          {
-            label: 'View agent',
-            to: withAgent ? link('agents', paths.agent(row.agent.id)) : undefined,
-          },
-        ])
+        // In a popup on the page where it can show them, for roles that may see the module.
+        const actions: (RowAction | RowCommand)[] = onRelated
+          ? [
+              ...(link('verifications', paths.verifications)
+                ? [
+                    {
+                      label: 'View verification',
+                      onSelect: () => onRelated({ kind: 'verification', reference: row.reference }),
+                    },
+                    {
+                      label: 'View vehicle history',
+                      onSelect: () => onRelated({ kind: 'vehicle', plate: row.plate }),
+                    },
+                  ]
+                : []),
+              ...(withAgent && link('agents', paths.agents)
+                ? [
+                    {
+                      label: 'View agent',
+                      onSelect: () => onRelated({ kind: 'agent', agent: row.agent }),
+                    },
+                  ]
+                : []),
+            ]
+          : actionsOf([
+              {
+                label: 'View verification',
+                to: link('verifications', `${paths.verifications}?ref=${row.reference}`),
+              },
+              {
+                label: 'View vehicle history',
+                to: link('verifications', `${paths.verifications}?plate=${row.plate}`),
+              },
+              {
+                label: 'View agent',
+                to: withAgent ? link('agents', paths.agent(row.agent.id)) : undefined,
+              },
+            ])
         return actions.length > 0 ? (
           <RowActions label={`Actions for ${row.reference}`} actions={actions} />
         ) : null

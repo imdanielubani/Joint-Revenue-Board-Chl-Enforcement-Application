@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from 'react'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { outcomeLabel } from '@/features/overview/overview-display'
 import type { Overview } from '@/features/overview/overview.schemas'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
@@ -58,8 +59,11 @@ export function UnderlyingRecordsCard({
   overview,
   records,
   locations,
+  onRelated,
 }: {
   scopeName: string
+  /** Opens a row's related record in its own module's popup on the page. */
+  onRelated(related: TripRelated): void
   overview: Overview
   records: {
     verifications: readonly VerificationRecord[]
@@ -91,7 +95,9 @@ export function UnderlyingRecordsCard({
   const columns = useMemo(() => {
     const ctx: RecordsContext = { link, ...records }
     return {
-      verifications: verificationColumns(link, (row) => setDetails(verificationDetails(row, ctx))),
+      verifications: verificationColumns(link, (row) => setDetails(verificationDetails(row, ctx)), {
+        onRelated,
+      }),
       agents: agentColumns(link, (row) => setDetails(agentDetails(row, ctx))),
       violations: violationColumns(link, (row) => setDetails(violationDetails(row, ctx))),
       repeat: repeatColumns(link, (row) => setDetails(repeatDetails(row, ctx))),
@@ -99,7 +105,7 @@ export function UnderlyingRecordsCard({
       evidence: evidenceColumns(link, (row) => setDetails(evidenceDetails(row, ctx))),
       locations: locationColumns((row) => setDetails(locationDetails(row, ctx))),
     }
-  }, [link, records])
+  }, [link, records, onRelated])
 
   const tabs: { id: RecordView; label: string; count: number }[] = [
     { id: 'verifications', label: 'Verifications', count: records.verifications.length },

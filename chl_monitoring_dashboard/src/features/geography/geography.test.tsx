@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
@@ -194,6 +194,39 @@ describe('geographical monitoring page', () => {
     expect(within(table).getAllByRole('row')).toHaveLength(
       Math.min(geography.records.evidence.length, 10) + 1,
     )
+  })
+
+  it('opens a verification record’s verification, vehicle and agent in popups on the page', async () => {
+    const { geography } = expected('la')
+    const record = geography.records.verifications[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    const table = within(records).getByRole('table', { name: 'Verifications' })
+    const actions = within(table).getByRole('button', { name: `Actions for ${record.reference}` })
+
+    await userEvent.click(actions)
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View verification' }))
+    expect(await screen.findByRole('dialog', { name: 'Verification details' })).toHaveTextContent(
+      record.reference,
+    )
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    await userEvent.click(actions)
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View vehicle history' }))
+    expect(await screen.findByRole('dialog', { name: 'Vehicle verifications' })).toHaveTextContent(
+      record.plate,
+    )
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    await userEvent.click(actions)
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View agent' }))
+    expect(await screen.findByRole('dialog', { name: 'Agent details' })).toHaveTextContent(
+      record.agent.id,
+    )
+    expect(router.state.location.pathname).toBe('/geography')
   })
 
   it('lists agent activity in the underlying records, and calls a verification’s outcome its result', async () => {

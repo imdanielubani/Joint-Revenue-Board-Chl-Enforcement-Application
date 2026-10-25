@@ -302,6 +302,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On Geographical monitoring, the Verifications tab of Underlying records opens
+  its row actions as popups on the page instead of leaving it: View verification,
+  View vehicle history (the vehicle's verifications) and View agent, for roles
+  that can see the module. The Agents page and Verifications & E-Tags keep their
+  own links for the same shared columns.
 - Tests wait up to 10 seconds, not 3, for a page to appear: on a busy machine
   the first page a test worker loads can take several seconds. This stays under
   the 15-second test timeout, so a real failure still fails.
