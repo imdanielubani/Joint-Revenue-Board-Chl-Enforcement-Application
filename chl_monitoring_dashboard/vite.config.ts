@@ -16,5 +16,7 @@ export default defineConfig({
     restoreMocks: true,
     // Whole-app tests load pages on first use; on a busy machine that can pass the 5s default.
     testTimeout: 15_000,
+    // expect.poll waits as long as findBy* does (src/test/setup.ts), not its own 1s default.
+    expect: { poll: { timeout: 10_000 } },
   },
 })

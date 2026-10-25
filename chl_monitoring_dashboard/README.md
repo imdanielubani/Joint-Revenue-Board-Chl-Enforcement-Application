@@ -302,6 +302,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- expect.poll waits up to 10 seconds, as findBy does, instead of its own 1-second
+  default, so a test polling on a busy machine does not fail early.
 - On Geographical monitoring, the Payments tab of Underlying records opens Open
   the payment as the demand notice popup on the page instead of leaving it.
 - On Geographical monitoring, the Repeat alerts tab of Underlying records opens
