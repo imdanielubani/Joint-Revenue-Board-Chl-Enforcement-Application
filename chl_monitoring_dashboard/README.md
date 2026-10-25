@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On Geographical monitoring, the Violations, Unresolved and Escalated tabs of
+  Underlying records open Open the case as the case popup on the page instead of
+  leaving it; the case's evidence, verification, agent and payment open in its place.
 - On Geographical monitoring, the Agents tab of Underlying records opens View
   agent as the agent's details popup on the page instead of leaving it.
 - On Geographical monitoring, the Verifications tab of Underlying records opens

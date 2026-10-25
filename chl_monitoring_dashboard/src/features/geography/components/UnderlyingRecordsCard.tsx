@@ -99,7 +99,9 @@ export function UnderlyingRecordsCard({
         onRelated,
       }),
       agents: agentColumns(link, (row) => setDetails(agentDetails(row, ctx)), { onRelated }),
-      violations: violationColumns(link, (row) => setDetails(violationDetails(row, ctx))),
+      violations: violationColumns(link, (row) => setDetails(violationDetails(row, ctx)), {
+        onRelated,
+      }),
       repeat: repeatColumns(link, (row) => setDetails(repeatDetails(row, ctx))),
       notices: noticeColumns(link, (row) => setDetails(noticeDetails(row, ctx))),
       evidence: evidenceColumns(link, (row) => setDetails(evidenceDetails(row, ctx))),

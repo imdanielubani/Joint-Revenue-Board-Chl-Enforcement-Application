@@ -245,6 +245,35 @@ describe('geographical monitoring page', () => {
     expect(router.state.location.pathname).toBe('/geography')
   })
 
+  it('opens a violation’s case in a popup on the page, from every violations tab', async () => {
+    const { overview, geography } = expected('la')
+    const open = new Set(overview.cases.items.map((item) => item.id))
+    const escalated = geography.records.violations.find(
+      (entry) => open.has(entry.id) && entry.status === 'escalated',
+    )
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    for (const [tab, violation] of [
+      ['Violations', geography.records.violations[0]!],
+      ['Unresolved', geography.records.violations.find((entry) => open.has(entry.id))!],
+      ...(escalated ? ([['Escalated', escalated]] as const) : []),
+    ] as const) {
+      await userEvent.click(within(records).getByRole('tab', { name: new RegExp(`^${tab}`) }))
+      const table = within(records).getByRole('table', { name: tab })
+      await userEvent.click(
+        within(table).getByRole('button', { name: `Actions for ${violation.id}` }),
+      )
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Open the case' }))
+      expect(await screen.findByRole('dialog', { name: `Case ${violation.id}` })).toHaveTextContent(
+        violation.category,
+      )
+      await userEvent.keyboard('{Escape}')
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    }
+    expect(router.state.location.pathname).toBe('/geography')
+  })
+
   it('lists agent activity in the underlying records, and calls a verification’s outcome its result', async () => {
     const { overview } = expected('ng')
     signInAs('admin@jrb.gov.ng')

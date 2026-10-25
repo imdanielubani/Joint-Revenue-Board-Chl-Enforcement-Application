@@ -245,7 +245,7 @@ export function agentColumns(
 export function violationColumns(
   link: ModuleLink,
   onOpen: (row: ViolationRecord) => void,
-  { withAgent = true }: ColumnOptions = {},
+  { withAgent = true, onRelated }: ColumnOptions = {},
 ): Column<ViolationRecord>[] {
   return [
     {
@@ -306,9 +306,21 @@ export function violationColumns(
       header: 'Actions',
       align: 'end',
       render: (row) => {
-        const actions = actionsOf([
-          { label: 'Open the case', to: link('violations', `${paths.violations}?case=${row.id}`) },
-        ])
+        const actions: (RowAction | RowCommand)[] = onRelated
+          ? link('violations', paths.violations)
+            ? [
+                {
+                  label: 'Open the case',
+                  onSelect: () => onRelated({ kind: 'case', violationId: row.id }),
+                },
+              ]
+            : []
+          : actionsOf([
+              {
+                label: 'Open the case',
+                to: link('violations', `${paths.violations}?case=${row.id}`),
+              },
+            ])
         return actions.length > 0 ? (
           <RowActions label={`Actions for ${row.id}`} actions={actions} />
         ) : null
