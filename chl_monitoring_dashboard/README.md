@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On Geographical monitoring, the Evidence tab of Underlying records opens View
+  photographs in the evidence viewer on the page instead of leaving it. Every
+  underlying record's actions now open on the page; the Locations tab has none.
 - expect.poll waits up to 10 seconds, as findBy does, instead of its own 1-second
   default, so a test polling on a busy machine does not fail early.
 - On Geographical monitoring, the Payments tab of Underlying records opens Open

@@ -60,13 +60,22 @@ function Placeholder({
   )
 }
 
-function EvidencePopup({ item, filters, onClose }: RelatedProps) {
+/** A violation's evidence, in the viewer Evidence records shows, looked up in the area and period. */
+export function EvidencePopup({
+  violationId,
+  filters,
+  onClose,
+}: {
+  violationId: string
+  filters: OverviewFilters
+  onClose(): void
+}) {
   const query = useEvidenceMonitoring(filters)
-  const entry = query.data?.records.find((record) => record.violation.id === item.id)
+  const entry = query.data?.records.find((record) => record.violation.id === violationId)
   if (entry) return <EvidenceViewer entry={entry} startGroup={null} onClose={onClose} />
   return (
     <Placeholder
-      title={`Evidence for ${item.id}`}
+      title={`Evidence for ${violationId}`}
       loading={query.isPending}
       message="No evidence for this violation was found in this area and period."
       onClose={onClose}
@@ -158,7 +167,9 @@ export function RelatedDialog({
   onClose(): void
 }) {
   const props = { item: related.item, filters, onClose }
-  if (related.kind === 'evidence') return <EvidencePopup {...props} />
+  if (related.kind === 'evidence') {
+    return <EvidencePopup violationId={related.item.id} filters={filters} onClose={onClose} />
+  }
   if (related.kind === 'verification') return <VerificationPopup {...props} />
   if (related.kind === 'payment') {
     return related.item.notice ? (

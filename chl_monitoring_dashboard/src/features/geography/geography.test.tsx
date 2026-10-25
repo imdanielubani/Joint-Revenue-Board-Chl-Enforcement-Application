@@ -325,6 +325,21 @@ describe('geographical monitoring page', () => {
     expect(router.state.location.pathname).toBe('/geography')
   })
 
+  it('opens an evidence record’s photographs in the evidence viewer on the page', async () => {
+    const { geography } = expected('la')
+    const evidence = geography.records.evidence[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    await userEvent.click(within(records).getByRole('tab', { name: /^Evidence/ }))
+    const table = within(records).getByRole('table', { name: 'Evidence' })
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${evidence.id}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View photographs' }))
+    const viewer = await screen.findByRole('dialog', { name: `Evidence ${evidence.id}` })
+    expect(viewer).toHaveTextContent(evidence.violationId)
+    expect(router.state.location.pathname).toBe('/geography')
+  })
+
   it('lists agent activity in the underlying records, and calls a verification’s outcome its result', async () => {
     const { overview } = expected('ng')
     signInAs('admin@jrb.gov.ng')

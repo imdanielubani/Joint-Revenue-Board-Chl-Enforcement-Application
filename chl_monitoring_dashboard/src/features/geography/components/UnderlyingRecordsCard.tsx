@@ -104,7 +104,9 @@ export function UnderlyingRecordsCard({
       }),
       repeat: repeatColumns(link, (row) => setDetails(repeatDetails(row, ctx)), { onRelated }),
       notices: noticeColumns(link, (row) => setDetails(noticeDetails(row, ctx)), { onRelated }),
-      evidence: evidenceColumns(link, (row) => setDetails(evidenceDetails(row, ctx))),
+      evidence: evidenceColumns(link, (row) => setDetails(evidenceDetails(row, ctx)), {
+        onRelated,
+      }),
       locations: locationColumns((row) => setDetails(locationDetails(row, ctx))),
     }
   }, [link, records, onRelated])

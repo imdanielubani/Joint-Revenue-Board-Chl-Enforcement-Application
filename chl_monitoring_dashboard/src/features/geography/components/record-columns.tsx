@@ -480,6 +480,7 @@ export function noticeColumns(
 export function evidenceColumns(
   link: ModuleLink,
   onOpen: (row: EvidenceRecord) => void,
+  { onRelated }: Pick<ColumnOptions, 'onRelated'> = {},
 ): Column<EvidenceRecord>[] {
   return [
     {
@@ -541,12 +542,21 @@ export function evidenceColumns(
       header: 'Actions',
       align: 'end',
       render: (row) => {
-        const actions = actionsOf([
-          {
-            label: 'View photographs',
-            to: link('evidence', `${paths.evidence}?record=${row.violationId}`),
-          },
-        ])
+        const actions: (RowAction | RowCommand)[] = onRelated
+          ? link('evidence', paths.evidence)
+            ? [
+                {
+                  label: 'View photographs',
+                  onSelect: () => onRelated({ kind: 'evidence', violationId: row.violationId }),
+                },
+              ]
+            : []
+          : actionsOf([
+              {
+                label: 'View photographs',
+                to: link('evidence', `${paths.evidence}?record=${row.violationId}`),
+              },
+            ])
         return actions.length > 0 ? (
           <RowActions label={`Actions for ${row.id}`} actions={actions} />
         ) : null

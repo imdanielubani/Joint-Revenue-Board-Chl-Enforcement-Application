@@ -16,6 +16,7 @@ import { CaseDialog } from '@/features/violations/components/CaseDialog'
 import { VehicleReportsDialog } from '@/features/violations/components/VehicleReportsDialog'
 import {
   AgentPopup,
+  EvidencePopup,
   RelatedDialog,
   type Related,
 } from '@/features/violations/components/RelatedDialog'
@@ -37,6 +38,7 @@ export type TripRelated =
   | { kind: 'agentViolations'; agent: { id: string; name: string; organization: string } }
   | { kind: 'location'; location: LocationRow }
   | { kind: 'vehicleReports'; vehicle: RepeatVehicle }
+  | { kind: 'evidence'; violationId: string }
 
 /** While the record loads, or when it cannot be found: a popup saying so. */
 function Placeholder({
@@ -281,8 +283,8 @@ function CasePopup({
 
 /**
  * A row's verification, vehicle verifications, case, demand notice, agent, an
- * agent's violations, a repeat vehicle's reports or an enforcement location on
- * the map, in the same popup
+ * agent's violations, a repeat vehicle's reports, a violation's evidence or an
+ * enforcement location on the map, in the same popup
  * its own module shows. One opens in place
  * of another: a verification's vehicle, a vehicle's verification, a listed
  * violation's case, or a case's evidence, verification or agent.
@@ -318,6 +320,9 @@ export function TripRelatedDialog({
         onVehicle={(plate) => setCurrent({ kind: 'vehicle', plate })}
       />
     )
+  }
+  if (current.kind === 'evidence') {
+    return <EvidencePopup violationId={current.violationId} filters={all} onClose={onClose} />
   }
   if (current.kind === 'vehicleReports') {
     return (
