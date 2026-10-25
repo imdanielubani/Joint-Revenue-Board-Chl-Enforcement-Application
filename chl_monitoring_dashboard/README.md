@@ -87,6 +87,10 @@ server hands out `src/`, `node_modules/`, `package.json` and its own `/@vite/`
 files to anyone who asks. The build makes no source maps (`build.sourcemap:
 false` in `vite.config.ts`), so `dist/` holds no original source.
 
+On Vercel, set the project's Root Directory to `chl_monitoring_dashboard`;
+`vercel.json` then builds with `npm run build` and publishes `dist/` only,
+sending every other path to `index.html`.
+
 Every `VITE_` setting is built into the JavaScript and readable by anyone; keep
 secrets on the backend.
 
@@ -315,6 +319,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- `vercel.json` makes Vercel build with `npm run build` and publish `dist/` only,
+  with every other path answered by `index.html`; the README says to set the
+  project's Root Directory to `chl_monitoring_dashboard`.
 - The build states `sourcemap: false`, so production holds no source maps, and
   a new "Deploying" section says to serve `dist/` only, never the dev or preview
   server, which hands out `src/`, `node_modules/` and `package.json`.
