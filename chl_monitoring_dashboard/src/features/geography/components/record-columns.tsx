@@ -397,6 +397,7 @@ export function repeatColumns(
 export function noticeColumns(
   link: ModuleLink,
   onOpen: (row: NoticeRecord) => void,
+  { onRelated }: Pick<ColumnOptions, 'onRelated'> = {},
 ): Column<NoticeRecord>[] {
   return [
     {
@@ -453,9 +454,21 @@ export function noticeColumns(
       header: 'Actions',
       align: 'end',
       render: (row) => {
-        const actions = actionsOf([
-          { label: 'Open the payment', to: link('payments', `${paths.payments}?notice=${row.id}`) },
-        ])
+        const actions: (RowAction | RowCommand)[] = onRelated
+          ? link('payments', paths.payments)
+            ? [
+                {
+                  label: 'Open the payment',
+                  onSelect: () => onRelated({ kind: 'payment', noticeId: row.id }),
+                },
+              ]
+            : []
+          : actionsOf([
+              {
+                label: 'Open the payment',
+                to: link('payments', `${paths.payments}?notice=${row.id}`),
+              },
+            ])
         return actions.length > 0 ? (
           <RowActions label={`Actions for ${row.id}`} actions={actions} />
         ) : null

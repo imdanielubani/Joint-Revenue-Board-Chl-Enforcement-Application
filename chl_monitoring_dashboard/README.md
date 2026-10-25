@@ -302,6 +302,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On Geographical monitoring, the Payments tab of Underlying records opens Open
+  the payment as the demand notice popup on the page instead of leaving it.
 - On Geographical monitoring, the Repeat alerts tab of Underlying records opens
   View vehicle reports as a popup on the page instead of leaving it: the vehicle
   as its alert counts it, then the plate's violations in the register's own

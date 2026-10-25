@@ -310,6 +310,21 @@ describe('geographical monitoring page', () => {
     expect(router.state.location.pathname).toBe('/geography')
   })
 
+  it('opens a payment record’s demand notice in a popup on the page', async () => {
+    const { geography } = expected('la')
+    const notice = geography.records.notices[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    await userEvent.click(within(records).getByRole('tab', { name: /^Payments/ }))
+    const table = within(records).getByRole('table', { name: 'Payments' })
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${notice.id}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Open the payment' }))
+    const dialog = await screen.findByRole('dialog', { name: `Demand notice ${notice.id}` })
+    expect(dialog).toHaveTextContent(notice.plate)
+    expect(router.state.location.pathname).toBe('/geography')
+  })
+
   it('lists agent activity in the underlying records, and calls a verification’s outcome its result', async () => {
     const { overview } = expected('ng')
     signInAs('admin@jrb.gov.ng')
