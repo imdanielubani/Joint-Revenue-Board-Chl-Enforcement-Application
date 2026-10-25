@@ -302,6 +302,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On Geographical monitoring, the Agents tab of Underlying records opens View
+  agent as the agent's details popup on the page instead of leaving it.
 - On Geographical monitoring, the Verifications tab of Underlying records opens
   its row actions as popups on the page instead of leaving it: View verification,
   View vehicle history (the vehicle's verifications) and View agent, for roles

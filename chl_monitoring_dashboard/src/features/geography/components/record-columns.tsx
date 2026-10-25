@@ -180,6 +180,7 @@ export function verificationColumns(
 export function agentColumns(
   link: ModuleLink,
   onOpen: (row: AgentRow) => void,
+  { onRelated }: Pick<ColumnOptions, 'onRelated'> = {},
 ): Column<AgentRow>[] {
   const figure = (key: keyof AgentRow & string, header: string): Column<AgentRow> => ({
     key,
@@ -222,9 +223,17 @@ export function agentColumns(
       header: 'Actions',
       align: 'end',
       render: (row) => {
-        const actions = actionsOf([
-          { label: 'View agent', to: link('agents', paths.agent(row.agentId)) },
-        ])
+        const actions: (RowAction | RowCommand)[] = onRelated
+          ? link('agents', paths.agents)
+            ? [
+                {
+                  label: 'View agent',
+                  onSelect: () =>
+                    onRelated({ kind: 'agent', agent: { id: row.agentId, name: row.name } }),
+                },
+              ]
+            : []
+          : actionsOf([{ label: 'View agent', to: link('agents', paths.agent(row.agentId)) }])
         return actions.length > 0 ? (
           <RowActions label={`Actions for ${row.name}`} actions={actions} />
         ) : null

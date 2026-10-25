@@ -229,6 +229,22 @@ describe('geographical monitoring page', () => {
     expect(router.state.location.pathname).toBe('/geography')
   })
 
+  it('opens an agent from the underlying records in a popup on the page', async () => {
+    const { overview } = expected('la')
+    const agent = overview.agents[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/geography?scope=la')
+    const records = await card('Underlying records')
+    await userEvent.click(within(records).getByRole('tab', { name: /^Agents/ }))
+    const table = within(records).getByRole('table', { name: 'Agents' })
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${agent.name}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View agent' }))
+    expect(await screen.findByRole('dialog', { name: 'Agent details' })).toHaveTextContent(
+      agent.agentId,
+    )
+    expect(router.state.location.pathname).toBe('/geography')
+  })
+
   it('lists agent activity in the underlying records, and calls a verification’s outcome its result', async () => {
     const { overview } = expected('ng')
     signInAs('admin@jrb.gov.ng')
