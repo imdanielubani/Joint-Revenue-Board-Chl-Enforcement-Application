@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { summarize } from '@/mocks/mock-overview-api'
 import { mockRecords } from '@/mocks/mock-records'
+import { summarizeViolations } from '@/mocks/mock-violations-api'
 import { addDays, formatPeriod, lagosDay } from '@/shared/lib/dates'
 import { formatDelay, formatShortDateTime } from '@/shared/lib/format'
 import { renderApp, signInAs } from '@/test/render-app'
@@ -346,14 +347,41 @@ describe('overview page', () => {
     await userEvent.click(
       await within(performance).findByRole('button', { name: `Actions for ${row.name}` }),
     )
-    const menu = await screen.findByRole('menu')
-    expect(within(menu).getByRole('menuitem', { name: 'View violations issued' })).toHaveAttribute(
-      'href',
-      `/violations?agent=${row.agentId}`,
-    )
-    await userEvent.click(within(menu).getByRole('menuitem', { name: 'View agent' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View agent' }))
     const agent = await screen.findByRole('dialog', { name: 'Agent details' })
     expect(agent).toHaveTextContent(row.agentId)
+    expect(router.state.location.pathname).toBe('/overview')
+  })
+
+  it('lists the violations an agent issued in a popup, each opening its case in place', async () => {
+    const row = expected().agents.find((agent) => agent.violationsIssued > 0)!
+    const cases = summarizeViolations({
+      scope: 'ng',
+      range: '14d',
+      ...presetPeriod('14d', lagosDay()),
+      agentId: row.agentId,
+      organization: null,
+    }).cases
+    // The popup lists the same violations the agent's row counts.
+    expect(cases).toHaveLength(row.violationsIssued)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+    const performance = await card('Enforcement performance & corporate monitoring')
+    await userEvent.click(
+      await within(performance).findByRole('button', { name: `Actions for ${row.name}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View violations issued' }))
+
+    const dialog = await screen.findByRole('dialog', { name: 'Violations issued' })
+    expect(dialog).toHaveTextContent(row.agentId)
+    const table = within(dialog).getByRole('table', { name: `Violations issued by ${row.name}` })
+    expect(within(table).getAllByRole('row')).toHaveLength(Math.min(5, cases.length) + 1)
+
+    const first = cases[0]!
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${first.id}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View case' }))
+    expect(await screen.findByRole('dialog', { name: `Case ${first.id}` })).toBeInTheDocument()
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
     expect(router.state.location.pathname).toBe('/overview')
   })
 

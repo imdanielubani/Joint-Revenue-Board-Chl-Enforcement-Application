@@ -5,13 +5,16 @@ import { VehicleVerificationsDialog } from '@/features/verifications/components/
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
 import { vehiclesOf } from '@/features/verifications/verifications-display'
 import { useVerificationsMonitoring } from '@/features/verifications/verifications.queries'
+import { AgentViolationsDialog } from '@/features/violations/components/AgentViolationsDialog'
 import { CaseDialog } from '@/features/violations/components/CaseDialog'
 import {
   AgentPopup,
   RelatedDialog,
   type Related,
 } from '@/features/violations/components/RelatedDialog'
+import type { RelatedKind } from '@/features/violations/related-records'
 import { useViolationsMonitoring } from '@/features/violations/violations.queries'
+import type { ViolationCase } from '@/features/violations/violations.schemas'
 import { Dialog } from '@/shared/ui/Dialog'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import type { TripsFilters } from '../trips.schemas'
@@ -24,6 +27,7 @@ export type TripRelated =
   | { kind: 'case'; violationId: string }
   | { kind: 'payment'; noticeId: string }
   | { kind: 'agent'; agent: { id: string; name: string } }
+  | { kind: 'agentViolations'; agent: { id: string; name: string; organization: string } }
 
 /** While the record loads, or when it cannot be found: a popup saying so. */
 function Placeholder({
@@ -125,6 +129,42 @@ function VehiclePopup({
   )
 }
 
+function AgentViolationsPopup({
+  agent,
+  filters,
+  periodText,
+  onClose,
+  onOpen,
+}: {
+  agent: { id: string; name: string; organization: string }
+  filters: OverviewFilters
+  periodText: string
+  onClose(): void
+  /** Opens a case, or one of its related records, in place of the list. */
+  onOpen(item: ViolationCase, related?: RelatedKind): void
+}) {
+  const query = useViolationsMonitoring({ ...filters, agentId: agent.id })
+  if (query.data) {
+    return (
+      <AgentViolationsDialog
+        agent={agent}
+        cases={query.data.cases}
+        periodText={periodText}
+        onClose={onClose}
+        onOpen={onOpen}
+      />
+    )
+  }
+  return (
+    <Placeholder
+      title="Violations issued"
+      loading={query.isPending}
+      message={`The violations issued by ${agent.name} could not be loaded.`}
+      onClose={onClose}
+    />
+  )
+}
+
 function CasePopup({
   violationId,
   filters,
@@ -154,10 +194,10 @@ function CasePopup({
 }
 
 /**
- * A row's verification, vehicle verifications, case, demand notice or agent, in
- * the same popup its own module shows. One opens in place of another: a
- * verification's vehicle, a vehicle's verification, or a case's evidence,
- * verification or agent.
+ * A row's verification, vehicle verifications, case, demand notice, agent or an
+ * agent's violations, in the same popup its own module shows. One opens in place
+ * of another: a verification's vehicle, a vehicle's verification, a listed
+ * violation's case, or a case's evidence, verification or agent.
  */
 export function TripRelatedDialog({
   related,
@@ -188,6 +228,19 @@ export function TripRelatedDialog({
         filters={all}
         onClose={onClose}
         onVehicle={(plate) => setCurrent({ kind: 'vehicle', plate })}
+      />
+    )
+  }
+  if (current.kind === 'agentViolations') {
+    return (
+      <AgentViolationsPopup
+        agent={current.agent}
+        filters={all}
+        periodText={periodText}
+        onClose={onClose}
+        onOpen={(item, kind) =>
+          kind ? setFromCase({ kind, item }) : setCurrent({ kind: 'case', violationId: item.id })
+        }
       />
     )
   }

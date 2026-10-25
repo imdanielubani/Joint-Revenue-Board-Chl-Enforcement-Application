@@ -302,6 +302,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On the Overview, View violations issued (Enforcement performance by agent)
+  opens a popup instead of leaving the page: the agent, then the violations they
+  issued in the area and period, in the violation register's own columns and row
+  actions; a case and its evidence, verification, agent or payment open in its
+  place. The register's columns now live in their own file, shared by the
+  Violations & cases views and this popup.
 - The Overview's row actions open their records as popups on the page instead
   of leaving it: in Recent activity, View verification, View vehicle history (the
   vehicle's verifications) and View agent; in Enforcement performance by agent,

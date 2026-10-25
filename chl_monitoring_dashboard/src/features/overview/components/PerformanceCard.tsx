@@ -4,7 +4,7 @@ import { formatNumber } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
+import { RowActions, type RowCommand } from '@/shared/ui/RowActions'
 import { SegmentedTabs, type SegmentedTab } from '@/shared/ui/SegmentedTabs'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import type { AgentRow, LocationRow, Overview } from '../overview.schemas'
@@ -181,8 +181,7 @@ function AgentRegister({
         header: 'Actions',
         align: 'end',
         render: (row) => {
-          const violations = link('violations', `${paths.violations}?agent=${row.agentId}`)
-          const actions: (RowAction | RowCommand)[] = [
+          const actions: RowCommand[] = [
             ...(link('agents', paths.agents)
               ? [
                   {
@@ -192,7 +191,18 @@ function AgentRegister({
                   },
                 ]
               : []),
-            ...(violations ? [{ label: 'View violations issued', to: violations }] : []),
+            ...(link('violations', paths.violations)
+              ? [
+                  {
+                    label: 'View violations issued',
+                    onSelect: () =>
+                      onRelated({
+                        kind: 'agentViolations',
+                        agent: { id: row.agentId, name: row.name, organization: row.organization },
+                      }),
+                  },
+                ]
+              : []),
           ]
           return actions.length > 0 ? (
             <RowActions label={`Actions for ${row.name}`} actions={actions} />

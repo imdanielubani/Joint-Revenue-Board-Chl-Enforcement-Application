@@ -45,6 +45,8 @@ const relatedKey = (related: TripRelated) => {
       return `payment:${related.noticeId}`
     case 'agent':
       return `agent:${related.agent.id}`
+    case 'agentViolations':
+      return `agentViolations:${related.agent.id}`
     case 'vehicle':
       return `vehicle:${related.plate}`
     case 'verification':
