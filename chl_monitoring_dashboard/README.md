@@ -302,6 +302,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Tests wait up to 10 seconds, not 3, for a page to appear: on a busy machine
+  the first page a test worker loads can take several seconds. This stays under
+  the 15-second test timeout, so a real failure still fails.
 - On the Overview, Open on map (Enforcement performance by location) opens a
   popup instead of leaving the page: the location's figures as the row counts
   them, then the enforcement footprint map Geographical monitoring shows, at the
