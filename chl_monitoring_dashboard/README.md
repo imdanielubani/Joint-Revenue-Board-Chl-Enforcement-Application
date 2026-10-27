@@ -321,6 +321,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The 404 page's illustration, an unplugged plug and socket in the dashboard's
+  green on black, in `public/assets/not-found/unplugged.png`.
 - Field reports headline figures link to what they count, keeping the area,
   period and people (Recorded offline now counts the reports only, as its link
   lists them), the two breakdowns sit one above the other so each keeps its
