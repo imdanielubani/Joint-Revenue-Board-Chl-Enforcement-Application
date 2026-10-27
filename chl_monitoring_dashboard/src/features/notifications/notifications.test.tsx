@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
-import { summarizeNotifications } from '@/mocks/mock-notifications-api'
+import { summarizeNotifications, unreadCount } from '@/mocks/mock-notifications-api'
 import { lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -131,5 +131,44 @@ describe('notifications page', () => {
     const panel = await card('Operational notifications')
     expect(panel).toHaveTextContent('CHL does not provide agents’ operational notifications yet.')
     expect(within(panel).queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('opens a notification in a popup on the page, and marks it read', async () => {
+    const sos = expected().find((item) => item.type === 'sos' && !item.read)!
+    const unread = unreadCount(['ng'])
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/notifications?view=field&type=sos')
+    const register = await card('Field notifications')
+    const table = within(register).getByRole('table', { name: 'Field notifications' })
+    await userEvent.click(
+      within(table).getAllByRole('button', { name: `Actions for ${sos.title}` })[0]!,
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View notification' }))
+
+    const dialog = await screen.findByRole('dialog', { name: sos.title })
+    expect(dialog).toHaveTextContent(sos.entry!.sos!.message ?? 'No message was sent with the SOS.')
+    expect(dialog).toHaveTextContent(`${sos.agent!.id} · ${sos.agent!.name}`)
+    expect(dialog).toHaveTextContent('where it was sent, not a live position')
+    expect(router.state.location.pathname).toBe('/notifications')
+    expect(router.state.location.search).toContain(`notification=${sos.id}`)
+
+    // Opened, it counts as read: in the popup, and on the bell and in the sidebar.
+    expect(await within(dialog).findByText('Read')).toBeInTheDocument()
+    expect(
+      await screen.findAllByRole('link', { name: `Notifications, ${unread - 1} unread` }),
+    ).toHaveLength(2)
+    await userEvent.click(within(dialog).getAllByRole('button', { name: 'Close' }).at(-1)!)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('shows a repeat-vehicle notification with the vehicle as its alert counts it', async () => {
+    const repeat = expected().find((item) => item.type === 'repeat_vehicle')!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/notifications?notification=${repeat.id}`)
+    const dialog = await screen.findByRole('dialog', { name: repeat.title })
+    const vehicle = within(dialog).getByRole('region', { name: 'Vehicle' })
+    expect(vehicle).toHaveTextContent(`Plate${repeat.plate}`)
+    expect(vehicle).toHaveTextContent(`Reports${repeat.repeatVehicle!.reports}`)
+    expect(vehicle).toHaveTextContent(`Agents${repeat.repeatVehicle!.agents}`)
   })
 })

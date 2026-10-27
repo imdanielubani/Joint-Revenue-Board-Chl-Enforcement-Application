@@ -12,6 +12,8 @@ export const NOTIFICATION_PARAMS = {
   status: 'status',
   /** A notification type, such as "sos". */
   type: 'type',
+  /** A notification, opened in its popup. */
+  notification: 'notification',
 } as const
 
 /** The tab and the register's filters, kept in the address so a refresh or a shared link keeps them. */
@@ -48,8 +50,15 @@ export function useNotificationsView() {
     [change],
   )
 
+  const openNotification = useCallback(
+    (id: string | null) => change({ [NOTIFICATION_PARAMS.notification]: id }),
+    [change],
+  )
+
   return {
     view,
+    notificationId: params.get(NOTIFICATION_PARAMS.notification),
+    openNotification,
     status: params.get(NOTIFICATION_PARAMS.status),
     type: params.get(NOTIFICATION_PARAMS.type),
     setView,

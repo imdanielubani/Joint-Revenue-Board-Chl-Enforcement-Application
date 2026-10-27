@@ -1,4 +1,4 @@
-import { useId, useMemo } from 'react'
+import { useCallback, useId, useMemo } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -12,8 +12,9 @@ import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
+import { NotificationDialog } from '../components/NotificationDialog'
 import { NotificationRegister } from '../components/NotificationRegister'
-import { useNotifications } from '../notifications.queries'
+import { useMarkNotificationsRead, useNotifications } from '../notifications.queries'
 import { useNotificationsView, type NotificationsView } from '../use-notifications-view'
 import styles from './NotificationsPage.module.css'
 
@@ -82,6 +83,13 @@ function NotificationsContent({
   const { scope, filters } = filter
   const page = useNotificationsView()
   const query = useNotifications(filters, { enabled: !filter.waiting })
+  const { mutate: markRead } = useMarkNotificationsRead()
+  const onRead = useCallback((id: string) => markRead([id]), [markRead])
+  const { openNotification } = page
+  const onOpen = useCallback(
+    (notification: { id: string }) => openNotification(notification.id),
+    [openNotification],
+  )
   const data = query.data
   const notifications = useMemo(() => data?.notifications ?? [], [data])
 
@@ -95,6 +103,7 @@ function NotificationsContent({
     }),
     [notifications],
   )
+  const open = notifications.find((item) => item.id === page.notificationId) ?? null
   const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
   const panel = PANELS[page.view]
   const rows =
@@ -223,10 +232,20 @@ function NotificationsContent({
                   type={page.type}
                   onStatusChange={page.setStatus}
                   onTypeChange={page.setType}
+                  onOpen={onOpen}
                 />
               )}
             </div>
           </section>
+
+          {open && (
+            <NotificationDialog
+              key={open.id}
+              notification={open}
+              onRead={onRead}
+              onClose={() => openNotification(null)}
+            />
+          )}
         </>
       )}
     </div>

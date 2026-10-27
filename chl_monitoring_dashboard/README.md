@@ -320,6 +320,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications open in a popup on the page ("View notification", kept in the
+  address as `notification`): its type, group, when CHL received it and its
+  status, then the record it is about (the SOS message and how long it has been
+  open, the report, the loaded / empty confirmation or the demand notice, with
+  plate, agent, location and recorded time) or, for a repeat vehicle, the
+  vehicle as its alert counts it. Opening a notification marks it read, and the
+  bell and sidebar counts drop.
 - Notifications Operational tab: while CHL does not pass on agents'
   operational notifications, it says so (as the SOS card does) instead of an
   empty register, and its tab shows no count, since none provided is not none

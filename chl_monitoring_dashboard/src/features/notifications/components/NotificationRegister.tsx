@@ -6,6 +6,7 @@ import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
+import { RowActions } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
   agentText,
@@ -38,6 +39,7 @@ export function NotificationRegister({
   type,
   onStatusChange,
   onTypeChange,
+  onOpen,
 }: {
   title: string
   subtitle: string
@@ -51,6 +53,8 @@ export function NotificationRegister({
   type: string | null
   onStatusChange(value: string | null): void
   onTypeChange(value: string | null): void
+  /** Opens the notification in its popup. */
+  onOpen(notification: Notification): void
 }) {
   const columns = useMemo<Column<Notification>[]>(
     () => [
@@ -123,8 +127,19 @@ export function NotificationRegister({
         },
         sortValue: (row) => Number(row.read),
       },
+      {
+        key: 'actions',
+        header: 'Actions',
+        align: 'end',
+        render: (row) => (
+          <RowActions
+            label={`Actions for ${row.title}`}
+            actions={[{ label: 'View notification', onSelect: () => onOpen(row) }]}
+          />
+        ),
+      },
     ],
-    [showCategory],
+    [showCategory, onOpen],
   )
   const types = [...new Set(notifications.map((item) => item.type))]
     .map((value) => ({ value, label: typeLabel(value) }))
