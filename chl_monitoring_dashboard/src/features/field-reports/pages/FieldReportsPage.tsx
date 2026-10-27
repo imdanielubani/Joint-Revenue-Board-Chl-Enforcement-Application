@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { fieldReportLabel } from '@/features/command-centre/command-centre-display'
 import { FIELD_REPORT_TYPES } from '@/features/command-centre/command-centre.schemas'
@@ -8,6 +8,7 @@ import { scopeOptions, type ScopeOption } from '@/features/geography/scope-optio
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
@@ -80,7 +81,22 @@ function FieldReportsContent({
   ]
 
   const { showInRegister, openRecord } = page
-  const onOpen = useCallback((item: { id: string }) => openRecord(item.id), [openRecord])
+  // A record a report leads to, open in its own popup in place of the report.
+  const [related, setRelated] = useState<TripRelated | null>(null)
+  const onOpen = useCallback(
+    (item: { id: string }) => {
+      setRelated(null)
+      openRecord(item.id)
+    },
+    [openRecord],
+  )
+  const onRelated = useCallback(
+    (next: TripRelated) => {
+      openRecord(null)
+      setRelated(next)
+    },
+    [openRecord],
+  )
   const open = [...reports, ...loads].find((item) => item.id === page.recordId) ?? null
   /** Lists these records in the register below, and brings it into view. */
   const showBelow = (view: FieldReportsView, value: string) => {
@@ -215,6 +231,7 @@ function FieldReportsContent({
                   source={page.source}
                   onSourceChange={page.setSource}
                   onOpen={onOpen}
+                  onRelated={onRelated}
                   subtitle={`Vehicle, driver and situation reports and general notifications, latest received first · ${subtitle}`}
                 />
               ) : (
@@ -225,13 +242,30 @@ function FieldReportsContent({
                   source={page.source}
                   onSourceChange={page.setSource}
                   onOpen={onOpen}
+                  onRelated={onRelated}
                   subtitle={`Haulage-loaded or empty status agents reported, latest received first · ${subtitle}`}
                 />
               )}
             </div>
           </section>
 
-          {open && <FieldRecordDialog key={open.id} item={open} onClose={() => openRecord(null)} />}
+          {open && (
+            <FieldRecordDialog
+              key={open.id}
+              item={open}
+              onRelated={onRelated}
+              onClose={() => openRecord(null)}
+            />
+          )}
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
+            />
+          )}
           {page.recordId && !open && (
             <p className={styles.stale} role="status">
               That report is not in this area and period. Choose another area or period to find it.

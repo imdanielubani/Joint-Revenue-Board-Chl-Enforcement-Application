@@ -11,6 +11,8 @@ import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { RowActions } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import { useFieldRecordRelated } from '../use-field-record-related'
 import styles from './FieldRegisters.module.css'
 
 const NOT_SUPPLIED = 'Not supplied'
@@ -99,21 +101,37 @@ interface RegisterProps {
   onSourceChange(value: string | null): void
   /** Opens the record in its popup. */
   onOpen(item: FeedItem): void
+  /** Opens a record it leads to in a popup on the page. */
+  onRelated(related: TripRelated): void
 }
 
-/** The row's actions: the record's popup. */
-function actionsColumn(label: string, onOpen: (item: FeedItem) => void): Column<FeedItem> {
-  return {
-    key: 'actions',
-    header: 'Actions',
-    align: 'end',
-    render: (row) => (
-      <RowActions
-        label={`Actions for ${row.id}`}
-        actions={[{ label, onSelect: () => onOpen(row) }]}
-      />
-    ),
-  }
+/** The row's actions: the record's popup, then the records it leads to. */
+function useActionsColumn(
+  label: string,
+  onOpen: (item: FeedItem) => void,
+  onRelated: (related: TripRelated) => void,
+): Column<FeedItem> {
+  const relatedOf = useFieldRecordRelated()
+  return useMemo(
+    () => ({
+      key: 'actions',
+      header: 'Actions',
+      align: 'end',
+      render: (row) => (
+        <RowActions
+          label={`Actions for ${row.id}`}
+          actions={[
+            { label, onSelect: () => onOpen(row) },
+            ...relatedOf(row).map((entry) => ({
+              label: entry.label,
+              onSelect: () => onRelated(entry.related),
+            })),
+          ]}
+        />
+      ),
+    }),
+    [label, onOpen, onRelated, relatedOf],
+  )
 }
 
 /** How it reached CHL, for the "Received" filter: live, offline, or as CHL says. */
@@ -132,7 +150,9 @@ export function ReportsRegister({
   type,
   onTypeChange,
   onOpen,
+  onRelated,
 }: RegisterProps & { type: string | null; onTypeChange(value: string | null): void }) {
+  const actions = useActionsColumn('View report', onOpen, onRelated)
   const columns = useMemo<Column<FeedItem>[]>(
     () => [
       {
@@ -148,9 +168,9 @@ export function ReportsRegister({
       },
       plateColumn,
       ...sharedColumns,
-      actionsColumn('View report', onOpen),
+      actions,
     ],
-    [onOpen],
+    [actions],
   )
   return (
     <DashboardCard
@@ -201,7 +221,9 @@ export function LoadsRegister({
   load,
   onLoadChange,
   onOpen,
+  onRelated,
 }: RegisterProps & { load: string | null; onLoadChange(value: string | null): void }) {
+  const actions = useActionsColumn('View confirmation', onOpen, onRelated)
   const columns = useMemo<Column<FeedItem>[]>(
     () => [
       plateColumn,
@@ -212,9 +234,9 @@ export function LoadsRegister({
         sortValue: (row) => loadLabel(row.load),
       },
       ...sharedColumns,
-      actionsColumn('View confirmation', onOpen),
+      actions,
     ],
-    [onOpen],
+    [actions],
   )
   return (
     <DashboardCard

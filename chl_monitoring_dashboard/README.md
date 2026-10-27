@@ -321,6 +321,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A field report or confirmation leads to its records, each opened in a popup
+  on the page from its row actions or the popup's "Related records": the
+  vehicle's verifications (View vehicle history) and the agent who sent it
+  (View agent), only where the role may open that module.
 - Field reports and loaded / empty confirmations open in a popup on the page
   ("View report", "View confirmation", kept in the address as `record`): what
   was reported or confirmed, plate, photographs and note where supplied, agent,

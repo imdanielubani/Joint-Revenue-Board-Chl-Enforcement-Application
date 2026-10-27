@@ -1,10 +1,13 @@
 import { fieldReportLabel } from '@/features/command-centre/command-centre-display'
 import type { FeedItem } from '@/features/command-centre/command-centre.schemas'
 import { sourceLabel, syncStatusLabel } from '@/features/overview/overview-display'
+import links from '@/features/payments/components/PaymentCards.module.css'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { Fact, Facts } from '@/features/verifications/components/VerificationDetailsDialog'
 import buttons from '@/features/violations/components/ViolationCards.module.css'
 import { formatDateTime, formatDelay, formatShortDateTime } from '@/shared/lib/format'
 import { Dialog } from '@/shared/ui/Dialog'
+import { useFieldRecordRelated } from '../use-field-record-related'
 import { LoadLabel } from './FieldRegisters'
 
 /** The popup's title: the report's type, or what a loaded / empty confirmation is. */
@@ -18,8 +21,18 @@ function recordTitle(item: FeedItem): string {
  * recorded it: what was reported, the vehicle, agent and location, and when it
  * was recorded and reached CHL.
  */
-export function FieldRecordDialog({ item, onClose }: { item: FeedItem; onClose(): void }) {
+export function FieldRecordDialog({
+  item,
+  onRelated,
+  onClose,
+}: {
+  item: FeedItem
+  /** Opens a record it leads to in its own popup, in place of this one. */
+  onRelated(related: TripRelated): void
+  onClose(): void
+}) {
   const offline = item.source === 'offline'
+  const related = useFieldRecordRelated()(item)
   return (
     <Dialog
       title={recordTitle(item)}
@@ -73,6 +86,20 @@ export function FieldRecordDialog({ item, onClose }: { item: FeedItem; onClose()
           </Fact>
         )}
       </Facts>
+      {related.length > 0 && (
+        <nav className={links.dialogLinks} aria-label="Related records">
+          {related.map((entry) => (
+            <button
+              key={entry.label}
+              type="button"
+              className={links.dialogLink}
+              onClick={() => onRelated(entry.related)}
+            >
+              {entry.label}
+            </button>
+          ))}
+        </nav>
+      )}
     </Dialog>
   )
 }

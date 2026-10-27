@@ -186,4 +186,28 @@ describe('field reports page', () => {
       ),
     ).toBeInTheDocument()
   })
+
+  it('opens the agent and the vehicle history from a report, on the page', async () => {
+    const report = expected().reports.find((item) => item.plate)!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/field-reports?record=${report.id}`)
+    const dialog = await screen.findByRole('dialog', {
+      name: fieldReportLabel(report.report!.type),
+    })
+    const links = within(dialog).getByRole('navigation', { name: 'Related records' })
+    await userEvent.click(within(links).getByRole('button', { name: 'View agent' }))
+    expect(await screen.findByRole('dialog', { name: /Agent/ })).toHaveTextContent(
+      report.agent.name,
+    )
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+    expect(router.state.location.pathname).toBe('/field-reports')
+
+    await userEvent.keyboard('{Escape}')
+    const register = await card('Field report register')
+    const table = within(register).getByRole('table', { name: 'Field reports' })
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${report.id}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View vehicle history' }))
+    expect(await screen.findByRole('dialog', { name: /Vehicle/ })).toHaveTextContent(report.plate!)
+    expect(router.state.location.pathname).toBe('/field-reports')
+  })
 })
