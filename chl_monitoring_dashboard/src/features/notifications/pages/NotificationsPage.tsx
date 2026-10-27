@@ -5,6 +5,7 @@ import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { useNotifications } from '../notifications.queries'
@@ -49,6 +50,17 @@ function NotificationsContent({
   const { scope, filters } = filter
   const query = useNotifications(filters, { enabled: !filter.waiting })
   const data = query.data
+  const notifications = useMemo(() => data?.notifications ?? [], [data])
+
+  const counts = useMemo(
+    () => ({
+      unread: notifications.filter((item) => !item.read).length,
+      openSos: notifications.filter((item) => item.entry?.sos?.status === 'open').length,
+      field: notifications.filter((item) => item.category === 'field').length,
+      enforcement: notifications.filter((item) => item.category === 'enforcement').length,
+    }),
+    [notifications],
+  )
 
   return (
     <div className={styles.page}>
@@ -92,11 +104,42 @@ function NotificationsContent({
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
-        query.isError && (
-          <p className={styles.stale} role="status">
-            The latest notifications could not be loaded; these are from the last successful check.
-          </p>
-        )
+        <>
+          {query.isError && (
+            <p className={styles.stale} role="status">
+              The latest notifications could not be loaded; these are from the last successful
+              check.
+            </p>
+          )}
+          <HeadlineFigures
+            items={[
+              {
+                label: 'Unread',
+                value: counts.unread,
+                icon: 'overview/kpi-bell.svg',
+                note: `Not opened yet, of ${notifications.length} in this period`,
+              },
+              {
+                label: 'Open SOS',
+                value: counts.openSos,
+                icon: 'overview/kpi-unresolved.svg',
+                note: 'Still open, as CHL reports them',
+              },
+              {
+                label: 'Field notifications',
+                value: counts.field,
+                icon: 'overview/kpi-pin.svg',
+                note: 'SOS, reports and loaded / empty confirmations',
+              },
+              {
+                label: 'Enforcement notifications',
+                value: counts.enforcement,
+                icon: 'overview/kpi-violation.svg',
+                note: 'Repeat vehicles and payments received',
+              },
+            ]}
+          />
+        </>
       )}
     </div>
   )

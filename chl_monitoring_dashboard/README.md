@@ -320,6 +320,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications headline figures: Unread (of all in the period), Open SOS,
+  Field notifications and Enforcement notifications, counted from what CHL
+  delivered for the area and period.
 - Notifications page replaces its placeholder: the green banner (Monitoring),
   Refresh, the area, period, organization and agent filters with the freshness
   line, and loading, error and stale states, as on Payments & compliance.
