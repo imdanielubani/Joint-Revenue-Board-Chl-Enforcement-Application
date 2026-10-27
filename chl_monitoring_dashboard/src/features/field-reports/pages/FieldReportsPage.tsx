@@ -1,14 +1,19 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
+import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
+import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { panelId, tabId } from '@/shared/ui/tab-ids'
+import { LoadsRegister, ReportsRegister } from '../components/FieldRegisters'
 import { useFieldReports } from '../field-reports.queries'
+import { useFieldReportsView, type FieldReportsView } from '../use-field-reports-view'
 import styles from './FieldReportsPage.module.css'
 
 /**
@@ -45,9 +50,11 @@ function FieldReportsContent({
   /** True until CHL's area tree has loaded; until then only the user's own areas are known. */
   areasPending: boolean
 }) {
+  const tabsId = useId()
   const agentList = useAgents()
   const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: agentList.data })
   const { scope, filters } = filter
+  const page = useFieldReportsView()
   const query = useFieldReports(filters, { enabled: !filter.waiting })
   const data = query.data
   const reports = useMemo(() => data?.reports ?? [], [data])
@@ -62,6 +69,7 @@ function FieldReportsContent({
     }),
     [reports, loads],
   )
+  const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
 
   return (
     <div className={styles.page}>
@@ -140,6 +148,32 @@ function FieldReportsContent({
               },
             ]}
           />
+
+          <section className={styles.views} aria-label="Field report views">
+            <SegmentedTabs<FieldReportsView>
+              idBase={tabsId}
+              label="Field report views"
+              tabs={[
+                { id: 'reports', label: 'Reports', count: reports.length },
+                { id: 'loads', label: 'Loaded / empty', count: loads.length },
+              ]}
+              value={page.view}
+              onChange={page.setView}
+            />
+            <div id={panelId(tabsId)} role="tabpanel" aria-labelledby={tabId(tabsId, page.view)}>
+              {page.view === 'reports' ? (
+                <ReportsRegister
+                  items={reports}
+                  subtitle={`Vehicle, driver and situation reports and general notifications, latest received first · ${subtitle}`}
+                />
+              ) : (
+                <LoadsRegister
+                  items={loads}
+                  subtitle={`Haulage-loaded or empty status agents reported, latest received first · ${subtitle}`}
+                />
+              )}
+            </div>
+          </section>
         </>
       )}
     </div>

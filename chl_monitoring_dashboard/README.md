@@ -321,6 +321,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports tabs: Reports and Loaded / empty, with counts, the tab kept in
+  the address (`view`). Each lists a searchable, sortable register, latest
+  received first: the report and its type (or the plate and Loaded / Empty),
+  plate, agent, location, when it was recorded, and when CHL received it, live
+  or offline.
 - Field reports headline figures: Field reports, Loaded and Empty (each of the
   loaded / empty confirmations), and Recorded offline (synchronized to CHL after
   they were made), for the area and period.
