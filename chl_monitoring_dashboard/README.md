@@ -321,6 +321,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Page not found fills the screen below the top bar on larger screens; below
+  1100px the picture sits above the words, so the plug never covers them, with
+  smaller type on phones.
 - Page not found follows the 404 design: a black card with a large "404.",
   "Page not found." with "not found." picked out in the dashboard's green, a
   line on what happened and "Go back home", beside the unplugged plug and
