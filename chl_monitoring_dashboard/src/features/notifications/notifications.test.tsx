@@ -99,4 +99,28 @@ describe('notifications page', () => {
     // The register has no group column on a group's own tab.
     expect(within(table).queryByRole('columnheader', { name: /Group/ })).not.toBeInTheDocument()
   })
+
+  it('narrows the register to unread notifications of one type', async () => {
+    const unreadSos = expected().filter((item) => !item.read && item.type === 'sos')
+    expect(unreadSos.length).toBeGreaterThan(0)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/notifications?view=field')
+    const register = await card('Field notifications')
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Status' }),
+      'unread',
+    )
+    await userEvent.selectOptions(within(register).getByRole('combobox', { name: 'Type' }), 'sos')
+    const table = within(register).getByRole('table', { name: 'Field notifications' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, unreadSos.length))
+    for (const row of bodyRows(table)) {
+      expect(row).toHaveTextContent('SOS')
+      expect(row).toHaveTextContent('Unread')
+    }
+    expect(router.state.location.search).toBe('?view=field&status=unread&type=sos')
+
+    // Another tab keeps the status but not the type, which belongs to one group.
+    await userEvent.click(screen.getByRole('tab', { name: /^Enforcement/ }))
+    expect(router.state.location.search).toBe('?view=enforcement&status=unread')
+  })
 })

@@ -320,6 +320,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications register filters: Status (Unread or Read) and Type, kept in
+  the address (`status`, `type`); another tab keeps the status and clears the
+  type, which belongs to one group.
 - Notifications tabs: All, Enforcement, Field and Operational, with counts, the
   tab kept in the address (`view`). Each lists a searchable, sortable register,
   latest first: the notification and its type, its group (on All), plate, agent

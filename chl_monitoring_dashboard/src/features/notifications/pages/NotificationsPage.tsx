@@ -200,6 +200,10 @@ function NotificationsContent({
                 label={panel.label}
                 notifications={rows}
                 showCategory={page.view === 'all'}
+                status={page.status}
+                type={page.type}
+                onStatusChange={page.setStatus}
+                onTypeChange={page.setType}
               />
             </div>
           </section>

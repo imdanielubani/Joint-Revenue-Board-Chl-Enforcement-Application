@@ -8,9 +8,13 @@ export type NotificationsView = (typeof NOTIFICATION_VIEWS)[number]
 /** The address parameters the page keeps its state in. */
 export const NOTIFICATION_PARAMS = {
   view: 'view',
+  /** "unread" or "read". */
+  status: 'status',
+  /** A notification type, such as "sos". */
+  type: 'type',
 } as const
 
-/** The tab, kept in the address so a refresh or a shared link keeps it. */
+/** The tab and the register's filters, kept in the address so a refresh or a shared link keeps them. */
 export function useNotificationsView() {
   const [params, setParams] = useSearchParams()
   const requested = params.get(NOTIFICATION_PARAMS.view)
@@ -29,10 +33,27 @@ export function useNotificationsView() {
     [setParams],
   )
 
+  // A type belongs to one group, so another tab starts with the type filter cleared.
   const setView = useCallback(
-    (next: NotificationsView) => change({ [NOTIFICATION_PARAMS.view]: next }),
+    (next: NotificationsView) =>
+      change({ [NOTIFICATION_PARAMS.view]: next, [NOTIFICATION_PARAMS.type]: null }),
+    [change],
+  )
+  const setStatus = useCallback(
+    (status: string | null) => change({ [NOTIFICATION_PARAMS.status]: status }),
+    [change],
+  )
+  const setType = useCallback(
+    (type: string | null) => change({ [NOTIFICATION_PARAMS.type]: type }),
     [change],
   )
 
-  return { view, setView }
+  return {
+    view,
+    status: params.get(NOTIFICATION_PARAMS.status),
+    type: params.get(NOTIFICATION_PARAMS.type),
+    setView,
+    setStatus,
+    setType,
+  }
 }

@@ -4,6 +4,7 @@ import cells from '@/features/geography/components/RecordColumns.module.css'
 import { formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
+import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
@@ -18,6 +19,11 @@ import styles from './NotificationRegister.module.css'
 
 const NOT_SUPPLIED = 'Not supplied'
 
+const STATUSES = [
+  { value: 'unread', label: 'Unread' },
+  { value: 'read', label: 'Read' },
+]
+
 /**
  * A register of notifications, latest first: what each says, its vehicle,
  * agent and location, when CHL received it, and whether the user has read it.
@@ -28,6 +34,10 @@ export function NotificationRegister({
   label,
   notifications,
   showCategory,
+  status,
+  type,
+  onStatusChange,
+  onTypeChange,
 }: {
   title: string
   subtitle: string
@@ -36,6 +46,11 @@ export function NotificationRegister({
   notifications: readonly Notification[]
   /** Shows each notification's group, where the register mixes them. */
   showCategory: boolean
+  /** "unread" or "read"; null for both. */
+  status: string | null
+  type: string | null
+  onStatusChange(value: string | null): void
+  onTypeChange(value: string | null): void
 }) {
   const columns = useMemo<Column<Notification>[]>(
     () => [
@@ -111,6 +126,12 @@ export function NotificationRegister({
     ],
     [showCategory],
   )
+  const types = [...new Set(notifications.map((item) => item.type))]
+    .map((value) => ({ value, label: typeLabel(value) }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+  const rows = notifications.filter(
+    (item) => (!status || (status === 'unread') === !item.read) && (!type || item.type === type),
+  )
   return (
     <DashboardCard
       title={title}
@@ -118,9 +139,14 @@ export function NotificationRegister({
       icon="overview/card-recent.svg"
       bodyClassName={styles.body}
     >
+      <div className={styles.selects}>
+        <LabeledSelect label="Status" value={status} options={STATUSES} onChange={onStatusChange} />
+        <LabeledSelect label="Type" value={type} options={types} onChange={onTypeChange} />
+      </div>
       <RegisterTable
+        key={`${status ?? ''}|${type ?? ''}`}
         label={label}
-        rows={notifications}
+        rows={rows}
         columns={columns}
         rowKey={(row) => row.id}
         searchText={searchTextOf}
