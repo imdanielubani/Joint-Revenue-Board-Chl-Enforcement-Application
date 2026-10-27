@@ -320,6 +320,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications sample data adds the enforcement notifications (SRD 11.2): a
+  "Payment received" notification for each payment CHL confirmed, and a
+  repeat-vehicle notification for each vehicle the period's alerts list, sent
+  when its third qualifying report reached CHL.
 - Notifications (SRD 11): the notification record and its API
   (`/api/v1/notifications`, provisional), grouped Enforcement, Field and
   Operational. The sample data lists the SOS, field reports and loaded / empty

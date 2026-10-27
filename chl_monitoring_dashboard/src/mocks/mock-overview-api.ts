@@ -20,7 +20,7 @@ import { MOCK_AREAS } from './mock-areas-api'
 import { mockRecords, pointById, type MockRecord } from './mock-records'
 
 /** A vehicle needs this many qualifying reports to raise a repeat-vehicle alert (SRD 11.1). */
-const REPEAT_THRESHOLD = 3
+export const REPEAT_THRESHOLD = 3
 
 /**
  * The E-Tag check a sample record stands for: a missing, fake or mismatched tag
@@ -57,7 +57,7 @@ const isOpen = (record: MockRecord) =>
   ['payment_pending', 'awaiting_action', 'escalated'].includes(record.violation.status)
 const isEscalated = (record: MockRecord) => record.violation?.status === 'escalated'
 /** A report that counts towards a repeat-vehicle alert: a violation not cancelled. */
-const qualifies = (record: MockRecord) =>
+export const qualifies = (record: MockRecord) =>
   record.violation !== null && record.violation.status !== 'cancelled'
 
 function countBy<T>(items: readonly T[], key: (item: T) => string): Map<string, number> {
@@ -113,10 +113,11 @@ function activity(record: MockRecord): ActivityRecord {
 }
 
 /** Counts every Overview figure from the sample records that match the filters. */
-export function summarize(all: readonly MockRecord[], filters: OverviewFilters): Overview {
+/** The records in an area and period, for an agent and organization where asked. */
+export function recordsIn(all: readonly MockRecord[], filters: OverviewFilters): MockRecord[] {
   const { from, to, agentId, organization } = filters
   const points = pointsWithin(filters.scope)
-  const records = all.filter(
+  return all.filter(
     (record) =>
       record.day >= from &&
       record.day <= to &&
@@ -124,6 +125,12 @@ export function summarize(all: readonly MockRecord[], filters: OverviewFilters):
       (!agentId || record.agentId === agentId) &&
       (!organization || agentById.get(record.agentId)?.organization === organization),
   )
+}
+
+export function summarize(all: readonly MockRecord[], filters: OverviewFilters): Overview {
+  const { from, to } = filters
+  const points = pointsWithin(filters.scope)
+  const records = recordsIn(all, filters)
   const violations = records.filter((record) => record.violation !== null)
   const repeats = repeatVehicles(records)
   const repeatPlates = new Set(repeats.map((repeat) => repeat.plate))

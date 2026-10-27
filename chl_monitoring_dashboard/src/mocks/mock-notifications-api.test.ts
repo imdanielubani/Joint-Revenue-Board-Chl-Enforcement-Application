@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { notificationsSchema } from '@/features/notifications/notifications.schemas'
 import { presetPeriod } from '@/features/overview/overview-period'
+import { lagosDay } from '@/shared/lib/dates'
 import { summarizeCommandCentre } from './mock-command-centre-api'
 import { summarizeNotifications } from './mock-notifications-api'
+import { summarize } from './mock-overview-api'
+import { mockRecords } from './mock-records'
 
 const NOW = Date.parse('2026-10-18T12:00:00+01:00')
 const TODAY = '2026-10-18'
@@ -42,6 +45,37 @@ describe('summarizeNotifications', () => {
     }
   })
 
+  it('sends a notification for each payment CHL confirmed, as the Command centre reports it', () => {
+    const result = summarizeNotifications(filters('la', 'today'), NOW).notifications
+    const payments = result.filter((item) => item.type === 'payment_received')
+    const cc = summarizeCommandCentre({ scope: 'la', window: 'today' }, NOW).feed.filter(
+      (item) => item.kind === 'payment' && item.payment?.status === 'received',
+    )
+    expect(payments.map((item) => item.entry!.id).sort()).toEqual(cc.map((item) => item.id).sort())
+    for (const item of payments) {
+      expect(item.category).toBe('enforcement')
+      expect(item.title).toBe(`Payment received for ${item.entry!.payment!.noticeId}`)
+    }
+  })
+
+  it('sends one repeat-vehicle notification for each vehicle the alerts list', () => {
+    const range = filters('la')
+    const repeat = summarizeNotifications(range, NOW).notifications.filter(
+      (item) => item.type === 'repeat_vehicle',
+    )
+    const today = lagosDay(new Date(NOW))
+    const alerts = summarize(mockRecords(today, NOW), range).repeatVehicles.items
+    expect(alerts.length).toBeGreaterThan(0)
+    expect(repeat.map((item) => item.repeatVehicle!.plate).sort()).toEqual(
+      alerts.map((vehicle) => vehicle.plate).sort(),
+    )
+    for (const item of repeat) {
+      expect(item.category).toBe('enforcement')
+      expect(item.plate).toBe(item.repeatVehicle!.plate)
+      expect(item.repeatVehicle!.reports).toBeGreaterThanOrEqual(3)
+    }
+  })
+
   it('keeps to the area, period, agent and organization asked for', () => {
     const all = summarizeNotifications(filters('ng'), NOW).notifications
     const lagos = summarizeNotifications(filters('la'), NOW).notifications
@@ -52,11 +86,12 @@ describe('summarizeNotifications', () => {
     const agentId = lagos[0]!.agent!.id
     const mine = summarizeNotifications({ ...filters('la'), agentId }, NOW).notifications
     expect(mine.length).toBeGreaterThan(0)
-    for (const item of mine) expect(item.agent?.id).toBe(agentId)
+    // A repeat-vehicle notification names no single agent; it counts only this agent's reports.
+    for (const item of mine.filter((entry) => entry.agent)) expect(item.agent!.id).toBe(agentId)
 
     const zone = summarizeNotifications({ ...filters('ng'), organization: 'Zone 1' }, NOW)
-    for (const item of zone.notifications) {
-      expect(['JRB-AG-0142', 'JRB-AG-0143']).toContain(item.agent?.id)
+    for (const item of zone.notifications.filter((entry) => entry.agent)) {
+      expect(['JRB-AG-0142', 'JRB-AG-0143']).toContain(item.agent!.id)
     }
 
     const from = Date.parse('2026-09-19T00:00:00+01:00')
