@@ -15,7 +15,7 @@ export function NotFoundPage() {
     <section className={styles.card} aria-labelledby={headingId}>
       <img
         className={styles.art}
-        src={assetUrl('not-found/unplugged.png')}
+        src={assetUrl('not-found/unplugged.webp')}
         alt=""
         width={1536}
         height={1024}

@@ -321,6 +321,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The Page not found illustration is now WebP (`public/assets/not-found/unplugged.webp`,
+  67 KB instead of the 875 KB PNG), at the same 1536 x 1024 size and keeping
+  its transparency; the PNG is removed.
 - Tests for Page not found: it shows "404." and "Page not found." inside the
   dashboard with the sidebar and top bar, the illustration is decoration only,
   "Go back home" leads to the user's first module, and a signed-out visitor is

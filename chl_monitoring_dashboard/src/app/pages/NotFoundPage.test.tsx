@@ -19,7 +19,7 @@ describe('page not found', () => {
     // The illustration is decoration only.
     const art = card.querySelector('img')!
     expect(art).toHaveAttribute('alt', '')
-    expect(art.getAttribute('src')).toContain('not-found/unplugged.png')
+    expect(art.getAttribute('src')).toContain('not-found/unplugged.webp')
   })
 
   it('goes back home', async () => {
