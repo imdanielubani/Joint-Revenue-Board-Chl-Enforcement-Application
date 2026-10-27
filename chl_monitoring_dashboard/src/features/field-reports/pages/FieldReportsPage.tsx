@@ -5,6 +5,7 @@ import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { useFieldReports } from '../field-reports.queries'
@@ -49,6 +50,18 @@ function FieldReportsContent({
   const { scope, filters } = filter
   const query = useFieldReports(filters, { enabled: !filter.waiting })
   const data = query.data
+  const reports = useMemo(() => data?.reports ?? [], [data])
+  const loads = useMemo(() => data?.loadReports ?? [], [data])
+
+  const counts = useMemo(
+    () => ({
+      loaded: loads.filter((item) => item.load === 'loaded').length,
+      empty: loads.filter((item) => item.load === 'empty').length,
+      // Recorded offline on the device and synchronized later (SRD 13).
+      offline: [...reports, ...loads].filter((item) => item.source === 'offline').length,
+    }),
+    [reports, loads],
+  )
 
   return (
     <div className={styles.page}>
@@ -92,11 +105,42 @@ function FieldReportsContent({
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
-        query.isError && (
-          <p className={styles.stale} role="status">
-            The latest field reports could not be loaded; these are from the last successful check.
-          </p>
-        )
+        <>
+          {query.isError && (
+            <p className={styles.stale} role="status">
+              The latest field reports could not be loaded; these are from the last successful
+              check.
+            </p>
+          )}
+          <HeadlineFigures
+            items={[
+              {
+                label: 'Field reports',
+                value: reports.length,
+                icon: 'overview/kpi-doc.svg',
+                note: 'Vehicle, driver, situation and general',
+              },
+              {
+                label: 'Loaded',
+                value: counts.loaded,
+                icon: 'overview/kpi-check.svg',
+                note: `Of ${loads.length} loaded / empty confirmations`,
+              },
+              {
+                label: 'Empty',
+                value: counts.empty,
+                icon: 'overview/kpi-scan.svg',
+                note: `Of ${loads.length} loaded / empty confirmations`,
+              },
+              {
+                label: 'Recorded offline',
+                value: counts.offline,
+                icon: 'overview/kpi-pin.svg',
+                note: 'Synchronized to CHL after they were made',
+              },
+            ]}
+          />
+        </>
       )}
     </div>
   )

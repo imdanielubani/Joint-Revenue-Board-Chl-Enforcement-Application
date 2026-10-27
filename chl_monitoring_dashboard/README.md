@@ -321,6 +321,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports headline figures: Field reports, Loaded and Empty (each of the
+  loaded / empty confirmations), and Recorded offline (synchronized to CHL after
+  they were made), for the area and period.
 - Field reports page replaces its placeholder: the green banner (Enforcement),
   Refresh, the area, period, organization and agent filters with the freshness
   line, and loading, error and stale states, as on the other modules.
