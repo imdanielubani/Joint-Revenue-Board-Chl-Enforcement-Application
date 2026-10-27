@@ -320,6 +320,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications page replaces its placeholder: the green banner (Monitoring),
+  Refresh, the area, period, organization and agent filters with the freshness
+  line, and loading, error and stale states, as on Payments & compliance.
 - Notifications are read or unread for each user: the API gains "mark as read"
   (`POST /api/v1/notifications/read`, provisional; a suggested capability in
   the SRD, changing no CHL record). The bell and the sidebar now count the
