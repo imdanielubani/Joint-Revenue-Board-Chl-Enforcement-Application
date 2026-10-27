@@ -321,6 +321,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Page not found follows the 404 design: a black card with a large "404.",
+  "Page not found." with "not found." picked out in the dashboard's green, a
+  line on what happened and "Go back home", beside the unplugged plug and
+  socket. The design's site navigation and footer belong to another site and
+  are left out; the dashboard's own sidebar and top bar stay.
 - The 404 page's illustration, an unplugged plug and socket in the dashboard's
   green on black, in `public/assets/not-found/unplugged.png`.
 - Field reports headline figures link to what they count, keeping the area,

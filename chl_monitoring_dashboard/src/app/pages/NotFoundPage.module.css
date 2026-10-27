@@ -1,0 +1,97 @@
+/*
+ * A black card, as the illustration's own background, so the picture runs to
+ * its edges: the words on the left, the plug and socket on the right.
+ */
+.card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 560px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #000;
+}
+
+.art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 70%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 70% center;
+  pointer-events: none;
+}
+
+/* Fades the picture's left edge into the card, behind the words. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 30%;
+  width: 20%;
+  background: linear-gradient(90deg, #000, rgb(0 0 0 / 0));
+  pointer-events: none;
+}
+
+.text {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+  padding: 64px 56px;
+}
+
+.code {
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 128px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.heading {
+  margin-top: 28px;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 44px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.mark {
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.message {
+  max-width: 400px;
+  margin-top: 20px;
+  color: rgb(255 255 255 / 0.7);
+  font-size: var(--font-size-sm);
+  line-height: 1.7;
+}
+
+.home {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 32px;
+  padding: 12px 22px;
+  border-radius: 8px;
+  background: #fff;
+  color: #000;
+  font-size: var(--font-size-button);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.home:hover {
+  background: #e7f2ea;
+}
+
+.home:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
