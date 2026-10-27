@@ -321,6 +321,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports record and API (`/api/v1/field-reports`, provisional): the
+  field reports and loaded / empty confirmations CHL received in an area and
+  period, each as the Command centre shows it. The sample data lists the same
+  reports the Command centre and Notifications receive.
 - Field reports is its own module in the sidebar (Enforcement, after Evidence
   records) at `/field-reports`, for the vehicle, driver and situation reports,
   general notifications and loaded / empty confirmations agents send (SRD 3,
