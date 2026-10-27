@@ -320,6 +320,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications (SRD 11): the notification record and its API
+  (`/api/v1/notifications`, provisional), grouped Enforcement, Field and
+  Operational. The sample data lists the SOS, field reports and loaded / empty
+  confirmations the Command centre receives; CHL is taken not to pass on agents'
+  operational notifications, as the SRD does not guarantee them.
 - Repeat vehicle alerts is its own module in the sidebar (Monitoring, after
   Notifications) at `/repeat-alerts`, with a placeholder page until it is built;
   Notifications now covers field and enforcement notices. The Principal Officer

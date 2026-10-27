@@ -60,7 +60,7 @@ export type LoadStatus = 'loaded' | 'empty'
 const open = <T extends string>() => z.custom<Open<T>>((value) => typeof value === 'string')
 const count = z.number().int().nonnegative()
 
-const feedItemSchema = z.object({
+export const feedItemSchema = z.object({
   id: z.string(),
   kind: open<FeedKind>(),
   /** When the event happened in the field. */

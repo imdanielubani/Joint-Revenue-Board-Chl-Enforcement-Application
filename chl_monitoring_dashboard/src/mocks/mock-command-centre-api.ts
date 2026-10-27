@@ -46,7 +46,7 @@ function place(pointId: string) {
 const numberOf = (id: string) => Number(id.replace(/\D/g, '')) || 0
 
 /** Every feed entry the sample records stand for, up to now. */
-function feedFrom(
+export function feedFrom(
   records: readonly MockRecord[],
   today: string,
   now: number,
@@ -217,7 +217,7 @@ function feedFrom(
 }
 
 /** When CHL received an entry; its recorded time when the receipt time is not supplied. */
-const receivedTime = (item: FeedItem & { at: number }) =>
+export const receivedTime = (item: FeedItem & { at: number }) =>
   item.receivedAt ? Date.parse(item.receivedAt) : item.at
 
 /** The Command centre for an area and window, counted from the sample records. */
