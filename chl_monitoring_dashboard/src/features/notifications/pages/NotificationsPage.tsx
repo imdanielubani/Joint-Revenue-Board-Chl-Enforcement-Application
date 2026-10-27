@@ -7,6 +7,8 @@ import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import cards from '@/features/payments/components/PaymentCards.module.css'
+import { assetUrl } from '@/shared/lib/asset-url'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
@@ -187,14 +189,14 @@ function NotificationsContent({
                 label: 'Open SOS',
                 value: counts.openSos,
                 icon: 'overview/kpi-unresolved.svg',
-                note: `Still open, as CHL reports them · ${counts.sos} SOS received`,
+                note: `Still open, of ${counts.sos} SOS received`,
                 to: page.linkTo('field', { type: 'sos' }),
               },
               {
                 label: 'Field notifications',
                 value: counts.field,
                 icon: 'overview/kpi-pin.svg',
-                note: 'SOS, reports and loaded / empty confirmations',
+                note: 'SOS, reports and confirmations',
                 to: page.linkTo('field'),
               },
               {
@@ -281,6 +283,19 @@ function NotificationsContent({
               onClose={() => setRelated(null)}
             />
           )}
+
+          <aside className={cards.pageNote}>
+            <img src={assetUrl('verifications/note-info.svg')} alt="" width={16} height={16} />
+            <div>
+              <p className={cards.pageNoteTitle}>A monitoring module, not a messaging tool.</p>
+              <p className={cards.pageNoteText}>
+                Notifications are shown as CHL delivers them. Nothing is sent to agents, and no SOS
+                is acknowledged or answered here: the response happens outside the dashboard.
+                Opening a notification marks it read for you alone and changes no CHL record.
+                Repeat-vehicle alerts have their own module.
+              </p>
+            </div>
+          </aside>
         </>
       )}
     </div>

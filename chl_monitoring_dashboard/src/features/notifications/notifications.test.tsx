@@ -60,7 +60,7 @@ describe('notifications page', () => {
       `${unread}Not opened yet, of ${all.length} in this period`,
     )
     expect(await figure('Open SOS')).toHaveTextContent(
-      `${openSos}Still open, as CHL reports them · ${field.filter((item) => item.type === 'sos').length} SOS received`,
+      `${openSos}Still open, of ${field.filter((item) => item.type === 'sos').length} SOS received`,
     )
     expect(await figure('Field notifications')).toHaveTextContent(String(field.length))
     expect(await figure('Enforcement notifications')).toHaveTextContent(String(enforcement.length))
@@ -241,5 +241,15 @@ describe('notifications page', () => {
       ),
     ).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('says it is a monitoring module that answers nothing and changes no CHL record', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/notifications')
+    const note = (await screen.findByText('A monitoring module, not a messaging tool.')).closest(
+      'aside',
+    )!
+    expect(note).toHaveTextContent('no SOS is acknowledged or answered here')
+    expect(note).toHaveTextContent('changes no CHL record')
   })
 })

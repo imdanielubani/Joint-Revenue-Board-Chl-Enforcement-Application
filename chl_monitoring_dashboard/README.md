@@ -125,7 +125,7 @@ src/
     violations/            Violation register, categories, statuses, history
     evidence/              Photograph viewer and enforcement notes
     payments/              Demand notices, payment status, compliance
-    notifications/         Field and enforcement notices
+    notifications/         Enforcement and field notifications, read or unread
     repeat-alerts/         Repeat vehicle alerts
     audit/                 Verification history and the audit trail
     sync/                  Synchronisation and field status
@@ -320,6 +320,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications page note: a monitoring module, not a messaging tool. Nothing
+  is sent to agents and no SOS is acknowledged or answered here; opening a
+  notification marks it read for that user alone and changes no CHL record.
+  Shorter Open SOS and Field figure notes so they fit, and the popup's SOS row
+  reads "SOS status". The project structure lists the module's contents.
 - Notifications headline figures link to what they count, keeping the area,
   period and people: Unread to the unread register, Open SOS to the SOS on the
   Field tab (its note also gives the SOS received), Field and Enforcement to

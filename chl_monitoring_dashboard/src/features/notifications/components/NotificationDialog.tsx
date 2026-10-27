@@ -101,7 +101,7 @@ function RecordFacts({ entry }: { entry: NonNullable<Notification['entry']> }) {
       {entry.sos && (
         <Fact term="Message">{entry.sos.message ?? 'No message was sent with the SOS.'}</Fact>
       )}
-      {duration && <Fact term={duration.open ? 'Open for' : 'Closed'}>{duration.text}</Fact>}
+      {duration && <Fact term="SOS status">{duration.text}</Fact>}
       {entry.load && <Fact term="Confirmed">{loadLabel(entry.load)}</Fact>}
       {entry.payment && (
         <Fact term="Demand notice">
