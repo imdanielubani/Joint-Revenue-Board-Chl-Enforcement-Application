@@ -320,6 +320,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications Operational tab: while CHL does not pass on agents'
+  operational notifications, it says so (as the SOS card does) instead of an
+  empty register, and its tab shows no count, since none provided is not none
+  received.
 - Notifications register filters: Status (Unread or Read) and Type, kept in
   the address (`status`, `type`); another tab keeps the status and clears the
   type, which belongs to one group.

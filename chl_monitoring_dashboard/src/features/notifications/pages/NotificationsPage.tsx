@@ -6,6 +6,7 @@ import { scopeOptions, type ScopeOption } from '@/features/geography/scope-optio
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
@@ -187,24 +188,43 @@ function NotificationsContent({
                 { id: 'all', label: 'All', count: notifications.length },
                 { id: 'enforcement', label: 'Enforcement', count: counts.enforcement },
                 { id: 'field', label: 'Field', count: counts.field },
-                { id: 'operational', label: 'Operational', count: counts.operational },
+                {
+                  id: 'operational',
+                  label: 'Operational',
+                  // No count while CHL does not pass them on: nothing is not zero.
+                  ...(data.operationalProvided ? { count: counts.operational } : {}),
+                },
               ]}
               value={page.view}
               onChange={page.setView}
             />
             <div id={panelId(tabsId)} role="tabpanel" aria-labelledby={tabId(tabsId, page.view)}>
-              <NotificationRegister
-                key={page.view}
-                title={panel.title}
-                subtitle={`${panel.subtitle} · ${subtitle}`}
-                label={panel.label}
-                notifications={rows}
-                showCategory={page.view === 'all'}
-                status={page.status}
-                type={page.type}
-                onStatusChange={page.setStatus}
-                onTypeChange={page.setType}
-              />
+              {page.view === 'operational' && !data.operationalProvided ? (
+                <DashboardCard
+                  title={panel.title}
+                  subtitle={panel.subtitle}
+                  icon="overview/card-recent.svg"
+                >
+                  <p className={styles.empty}>
+                    CHL does not provide agents’ operational notifications yet. They are the mobile
+                    application’s own notices, and the SRD does not guarantee the backend receives
+                    them. They will appear here once it does.
+                  </p>
+                </DashboardCard>
+              ) : (
+                <NotificationRegister
+                  key={page.view}
+                  title={panel.title}
+                  subtitle={`${panel.subtitle} · ${subtitle}`}
+                  label={panel.label}
+                  notifications={rows}
+                  showCategory={page.view === 'all'}
+                  status={page.status}
+                  type={page.type}
+                  onStatusChange={page.setStatus}
+                  onTypeChange={page.setType}
+                />
+              )}
             </div>
           </section>
         </>

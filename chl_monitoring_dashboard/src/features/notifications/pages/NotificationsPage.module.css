@@ -21,3 +21,11 @@
   flex-direction: column;
   gap: 16px;
 }
+
+/* As the SOS card says when CHL does not provide SOS notifications. */
+.empty {
+  padding: var(--space-6) 0;
+  color: var(--card-muted);
+  font-size: 12px;
+  text-align: center;
+}

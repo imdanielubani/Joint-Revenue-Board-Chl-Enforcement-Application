@@ -77,7 +77,8 @@ describe('notifications page', () => {
       `All${all.length}`,
       `Enforcement${all.filter((item) => item.category === 'enforcement').length}`,
       `Field${all.filter((item) => item.category === 'field').length}`,
-      'Operational0',
+      // No count: CHL does not pass these on, which is not the same as none.
+      'Operational',
     ])
     const register = await card('All notifications')
     const table = within(register).getByRole('table', { name: 'Notifications' })
@@ -122,5 +123,13 @@ describe('notifications page', () => {
     // Another tab keeps the status but not the type, which belongs to one group.
     await userEvent.click(screen.getByRole('tab', { name: /^Enforcement/ }))
     expect(router.state.location.search).toBe('?view=enforcement&status=unread')
+  })
+
+  it('says CHL does not provide agents’ operational notifications, rather than none arrived', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/notifications?view=operational')
+    const panel = await card('Operational notifications')
+    expect(panel).toHaveTextContent('CHL does not provide agents’ operational notifications yet.')
+    expect(within(panel).queryByRole('table')).not.toBeInTheDocument()
   })
 })
