@@ -22,15 +22,9 @@
   gap: 16px;
 }
 
-/* The two breakdowns side by side, one above the other on narrow screens. */
+/* The two breakdowns, one above the other, so each keeps its tiles on one row. */
 .breakdowns {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 24px;
-}
-
-@media (max-width: 1100px) {
-  .breakdowns {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

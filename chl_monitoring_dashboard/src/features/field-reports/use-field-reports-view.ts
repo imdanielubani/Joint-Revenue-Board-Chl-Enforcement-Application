@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
-import { useSearchParams } from 'react-router'
+import { useLocation, useSearchParams } from 'react-router'
+import { FILTER_PARAMS } from '@/features/overview/use-overview-filters'
 
 /** The page's tabs: the field reports, then the loaded / empty confirmations. */
 export const FIELD_REPORT_VIEWS = ['reports', 'loads'] as const
@@ -21,6 +22,7 @@ export const FIELD_REPORT_PARAMS = {
 /** The tab and the registers' filters, kept in the address so a refresh or a shared link keeps them. */
 export function useFieldReportsView() {
   const [params, setParams] = useSearchParams()
+  const { pathname } = useLocation()
   const requested = params.get(FIELD_REPORT_PARAMS.view)
   const view: FieldReportsView =
     FIELD_REPORT_VIEWS.find((entry) => entry === requested) ?? 'reports'
@@ -42,6 +44,22 @@ export function useFieldReportsView() {
     (next: FieldReportsView) => change({ [FIELD_REPORT_PARAMS.view]: next }),
     [change],
   )
+  /** The address for a tab and its filters, keeping the area, period and people. */
+  const linkTo = useCallback(
+    (next: FieldReportsView, filters: { load?: string; source?: string } = {}) => {
+      const query = new URLSearchParams()
+      for (const key of Object.values(FILTER_PARAMS)) {
+        const value = params.get(key)
+        if (value) query.set(key, value)
+      }
+      query.set(FIELD_REPORT_PARAMS.view, next)
+      if (filters.load) query.set(FIELD_REPORT_PARAMS.load, filters.load)
+      if (filters.source) query.set(FIELD_REPORT_PARAMS.source, filters.source)
+      return `${pathname}?${query}`
+    },
+    [params, pathname],
+  )
+
   /** Lists one type of report, or loaded or empty, in its register; the other filters cleared. */
   const showInRegister = useCallback(
     (next: FieldReportsView, value: string) =>
@@ -74,6 +92,7 @@ export function useFieldReportsView() {
   return {
     view,
     recordId: params.get(FIELD_REPORT_PARAMS.record),
+    linkTo,
     openRecord,
     type: params.get(FIELD_REPORT_PARAMS.type),
     load: params.get(FIELD_REPORT_PARAMS.load),

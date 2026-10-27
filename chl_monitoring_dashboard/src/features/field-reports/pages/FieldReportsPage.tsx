@@ -9,6 +9,8 @@ import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import cards from '@/features/payments/components/PaymentCards.module.css'
+import { assetUrl } from '@/shared/lib/asset-url'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
@@ -71,7 +73,7 @@ function FieldReportsContent({
       loaded: loads.filter((item) => item.load === 'loaded').length,
       empty: loads.filter((item) => item.load === 'empty').length,
       // Recorded offline on the device and synchronized later (SRD 13).
-      offline: [...reports, ...loads].filter((item) => item.source === 'offline').length,
+      offline: reports.filter((item) => item.source === 'offline').length,
     }),
     [reports, loads],
   )
@@ -162,24 +164,28 @@ function FieldReportsContent({
                 value: reports.length,
                 icon: 'overview/kpi-doc.svg',
                 note: 'Vehicle, driver, situation and general',
+                to: page.linkTo('reports'),
               },
               {
                 label: 'Loaded',
                 value: counts.loaded,
                 icon: 'overview/kpi-check.svg',
                 note: `Of ${loads.length} loaded / empty confirmations`,
+                to: page.linkTo('loads', { load: 'loaded' }),
               },
               {
                 label: 'Empty',
                 value: counts.empty,
                 icon: 'overview/kpi-scan.svg',
                 note: `Of ${loads.length} loaded / empty confirmations`,
+                to: page.linkTo('loads', { load: 'empty' }),
               },
               {
                 label: 'Recorded offline',
                 value: counts.offline,
                 icon: 'overview/kpi-pin.svg',
-                note: 'Synchronized to CHL after they were made',
+                note: `Of ${reports.length} reports, synced later`,
+                to: page.linkTo('reports', { source: 'offline' }),
               },
             ]}
           />
@@ -271,6 +277,19 @@ function FieldReportsContent({
               That report is not in this area and period. Choose another area or period to find it.
             </p>
           )}
+
+          <aside className={cards.pageNote}>
+            <img src={assetUrl('verifications/note-info.svg')} alt="" width={16} height={16} />
+            <div>
+              <p className={cards.pageNoteTitle}>A monitoring module, not a reporting tool.</p>
+              <p className={cards.pageNoteText}>
+                Reports and loaded / empty confirmations are shown as agents sent them from the
+                mobile application, through CHL. Nothing is answered, edited or sent back to agents
+                here. A report recorded offline appears once it reaches CHL, with the time it was
+                recorded.
+              </p>
+            </div>
+          </aside>
         </>
       )}
     </div>

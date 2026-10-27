@@ -57,7 +57,7 @@ describe('field reports page', () => {
     const { reports, loadReports } = expected()
     const loaded = loadReports.filter((item) => item.load === 'loaded').length
     const empty = loadReports.filter((item) => item.load === 'empty').length
-    const offline = [...reports, ...loadReports].filter((item) => item.source === 'offline').length
+    const offline = reports.filter((item) => item.source === 'offline').length
     expect(loaded).toBeGreaterThan(0)
     expect(empty).toBeGreaterThan(0)
     signInAs('admin@jrb.gov.ng')
@@ -69,7 +69,9 @@ describe('field reports page', () => {
     expect(await figure('Empty')).toHaveTextContent(
       `${empty}Of ${loadReports.length} loaded / empty confirmations`,
     )
-    expect(await figure('Recorded offline')).toHaveTextContent(String(offline))
+    expect(await figure('Recorded offline')).toHaveTextContent(
+      `${offline}Of ${reports.length} reports, synced later`,
+    )
   })
 
   it('lists the field reports, latest first, then the loaded / empty confirmations on their tab', async () => {
@@ -209,5 +211,27 @@ describe('field reports page', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: 'View vehicle history' }))
     expect(await screen.findByRole('dialog', { name: /Vehicle/ })).toHaveTextContent(report.plate!)
     expect(router.state.location.pathname).toBe('/field-reports')
+  })
+
+  it('lists what a headline figure counts, keeping the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/field-reports?scope=la&range=30d')
+    const empty = (await figure('Empty')).querySelector('a')!
+    await userEvent.click(empty)
+    expect(router.state.location.search).toBe('?scope=la&range=30d&view=loads&load=empty')
+    const register = await card('Loaded / empty register')
+    expect(within(register).getByRole('combobox', { name: 'Confirmed' })).toHaveValue('empty')
+
+    await userEvent.click((await figure('Recorded offline')).querySelector('a')!)
+    expect(router.state.location.search).toBe('?scope=la&range=30d&view=reports&source=offline')
+  })
+
+  it('says it is a monitoring module that answers and changes nothing', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/field-reports')
+    const note = (await screen.findByText('A monitoring module, not a reporting tool.')).closest(
+      'aside',
+    )!
+    expect(note).toHaveTextContent('Nothing is answered, edited or sent back to agents here.')
   })
 })

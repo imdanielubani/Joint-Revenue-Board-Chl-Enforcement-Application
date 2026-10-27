@@ -321,6 +321,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports headline figures link to what they count, keeping the area,
+  period and people (Recorded offline now counts the reports only, as its link
+  lists them), the two breakdowns sit one above the other so each keeps its
+  tiles on one row, and the page ends with its note: a monitoring module, not a
+  reporting tool; nothing is answered, edited or sent back to agents here.
 - A field report or confirmation leads to its records, each opened in a popup
   on the page from its row actions or the popup's "Related records": the
   vehicle's verifications (View vehicle history) and the agent who sent it
