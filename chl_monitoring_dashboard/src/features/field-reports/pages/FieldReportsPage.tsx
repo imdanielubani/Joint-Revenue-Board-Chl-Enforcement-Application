@@ -1,4 +1,4 @@
-import { useId, useMemo } from 'react'
+import { useCallback, useId, useMemo } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { fieldReportLabel } from '@/features/command-centre/command-centre-display'
 import { FIELD_REPORT_TYPES } from '@/features/command-centre/command-centre.schemas'
@@ -14,6 +14,7 @@ import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { BreakdownCard } from '../components/BreakdownCard'
+import { FieldRecordDialog } from '../components/FieldRecordDialog'
 import { LoadsRegister, ReportsRegister } from '../components/FieldRegisters'
 import { useFieldReports } from '../field-reports.queries'
 import { useFieldReportsView, type FieldReportsView } from '../use-field-reports-view'
@@ -78,7 +79,9 @@ function FieldReportsContent({
     ...new Set([...FIELD_REPORT_TYPES, ...reports.flatMap((r) => r.report?.type ?? [])]),
   ]
 
-  const { showInRegister } = page
+  const { showInRegister, openRecord } = page
+  const onOpen = useCallback((item: { id: string }) => openRecord(item.id), [openRecord])
+  const open = [...reports, ...loads].find((item) => item.id === page.recordId) ?? null
   /** Lists these records in the register below, and brings it into view. */
   const showBelow = (view: FieldReportsView, value: string) => {
     showInRegister(view, value)
@@ -211,6 +214,7 @@ function FieldReportsContent({
                   onTypeChange={page.setType}
                   source={page.source}
                   onSourceChange={page.setSource}
+                  onOpen={onOpen}
                   subtitle={`Vehicle, driver and situation reports and general notifications, latest received first · ${subtitle}`}
                 />
               ) : (
@@ -220,11 +224,19 @@ function FieldReportsContent({
                   onLoadChange={page.setLoad}
                   source={page.source}
                   onSourceChange={page.setSource}
+                  onOpen={onOpen}
                   subtitle={`Haulage-loaded or empty status agents reported, latest received first · ${subtitle}`}
                 />
               )}
             </div>
           </section>
+
+          {open && <FieldRecordDialog key={open.id} item={open} onClose={() => openRecord(null)} />}
+          {page.recordId && !open && (
+            <p className={styles.stale} role="status">
+              That report is not in this area and period. Choose another area or period to find it.
+            </p>
+          )}
         </>
       )}
     </div>

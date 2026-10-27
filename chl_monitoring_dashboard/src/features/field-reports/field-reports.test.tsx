@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import { fieldReportLabel } from '@/features/command-centre/command-centre-display'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { summarizeFieldReports } from '@/mocks/mock-field-reports-api'
 import { lagosDay } from '@/shared/lib/dates'
@@ -148,5 +149,41 @@ describe('field reports page', () => {
     expect(router.state.location.search).toBe('?view=loads&load=empty')
     const register = await card('Loaded / empty register')
     expect(within(register).getByRole('combobox', { name: 'Confirmed' })).toHaveValue('empty')
+  })
+
+  it('opens a field report in a popup on the page', async () => {
+    const report = expected().reports[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/field-reports')
+    const register = await card('Field report register')
+    const table = within(register).getByRole('table', { name: 'Field reports' })
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${report.id}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View report' }))
+    const dialog = await screen.findByRole('dialog', {
+      name: fieldReportLabel(report.report!.type),
+    })
+    expect(dialog).toHaveTextContent(report.report!.summary)
+    expect(dialog).toHaveTextContent(`${report.agent.id} · ${report.agent.name}`)
+    expect(router.state.location.pathname).toBe('/field-reports')
+    expect(router.state.location.search).toBe(`?record=${report.id}`)
+  })
+
+  it('opens a loaded / empty confirmation named in the address', async () => {
+    const load = expected().loadReports[0]!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/field-reports?view=loads&record=${load.id}`)
+    const dialog = await screen.findByRole('dialog', { name: 'Loaded / empty confirmation' })
+    expect(dialog).toHaveTextContent(`Plate${load.plate}`)
+    expect(dialog).toHaveTextContent(load.load === 'loaded' ? 'Loaded' : 'Empty')
+  })
+
+  it('says when the record named in the address is not in the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/field-reports?record=fr-unknown')
+    expect(
+      await screen.findByText(
+        'That report is not in this area and period. Choose another area or period to find it.',
+      ),
+    ).toBeInTheDocument()
   })
 })

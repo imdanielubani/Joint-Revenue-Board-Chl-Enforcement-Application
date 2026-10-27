@@ -14,6 +14,8 @@ export const FIELD_REPORT_PARAMS = {
   load: 'load',
   /** "live" or "offline": how it reached CHL. */
   source: 'source',
+  /** A report or confirmation, opened in its popup. */
+  record: 'record',
 } as const
 
 /** The tab and the registers' filters, kept in the address so a refresh or a shared link keeps them. */
@@ -64,8 +66,15 @@ export function useFieldReportsView() {
     [change],
   )
 
+  const openRecord = useCallback(
+    (id: string | null) => change({ [FIELD_REPORT_PARAMS.record]: id }),
+    [change],
+  )
+
   return {
     view,
+    recordId: params.get(FIELD_REPORT_PARAMS.record),
+    openRecord,
     type: params.get(FIELD_REPORT_PARAMS.type),
     load: params.get(FIELD_REPORT_PARAMS.load),
     source: params.get(FIELD_REPORT_PARAMS.source),

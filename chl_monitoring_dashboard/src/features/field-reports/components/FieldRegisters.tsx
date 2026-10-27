@@ -9,6 +9,7 @@ import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
+import { RowActions } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import styles from './FieldRegisters.module.css'
 
@@ -96,6 +97,23 @@ interface RegisterProps {
   /** "live" or "offline"; null for both. */
   source: string | null
   onSourceChange(value: string | null): void
+  /** Opens the record in its popup. */
+  onOpen(item: FeedItem): void
+}
+
+/** The row's actions: the record's popup. */
+function actionsColumn(label: string, onOpen: (item: FeedItem) => void): Column<FeedItem> {
+  return {
+    key: 'actions',
+    header: 'Actions',
+    align: 'end',
+    render: (row) => (
+      <RowActions
+        label={`Actions for ${row.id}`}
+        actions={[{ label, onSelect: () => onOpen(row) }]}
+      />
+    ),
+  }
 }
 
 /** How it reached CHL, for the "Received" filter: live, offline, or as CHL says. */
@@ -113,6 +131,7 @@ export function ReportsRegister({
   onSourceChange,
   type,
   onTypeChange,
+  onOpen,
 }: RegisterProps & { type: string | null; onTypeChange(value: string | null): void }) {
   const columns = useMemo<Column<FeedItem>[]>(
     () => [
@@ -129,8 +148,9 @@ export function ReportsRegister({
       },
       plateColumn,
       ...sharedColumns,
+      actionsColumn('View report', onOpen),
     ],
-    [],
+    [onOpen],
   )
   return (
     <DashboardCard
@@ -180,6 +200,7 @@ export function LoadsRegister({
   onSourceChange,
   load,
   onLoadChange,
+  onOpen,
 }: RegisterProps & { load: string | null; onLoadChange(value: string | null): void }) {
   const columns = useMemo<Column<FeedItem>[]>(
     () => [
@@ -191,8 +212,9 @@ export function LoadsRegister({
         sortValue: (row) => loadLabel(row.load),
       },
       ...sharedColumns,
+      actionsColumn('View confirmation', onOpen),
     ],
-    [],
+    [onOpen],
   )
   return (
     <DashboardCard

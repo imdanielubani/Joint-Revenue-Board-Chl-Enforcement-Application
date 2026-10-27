@@ -321,6 +321,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports and loaded / empty confirmations open in a popup on the page
+  ("View report", "View confirmation", kept in the address as `record`): what
+  was reported or confirmed, plate, photographs and note where supplied, agent,
+  location, when it was recorded and reached CHL (and how long after, when
+  recorded offline) and how it was checked. A record named in the address that
+  is not in the area and period says so.
 - Field reports breakdowns, in the Payment Status card's tiles: Reports by
   type (vehicle, driver, situation, general) and Loaded / empty, each with its
   count and share; a tile lists its records in the register below, with that
