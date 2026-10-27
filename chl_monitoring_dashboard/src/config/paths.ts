@@ -17,6 +17,7 @@ export const paths = {
   trips: '/trips',
   violations: '/violations',
   evidence: '/evidence',
+  fieldReports: '/field-reports',
   payments: '/payments',
   notifications: '/notifications',
   repeatAlerts: '/repeat-alerts',

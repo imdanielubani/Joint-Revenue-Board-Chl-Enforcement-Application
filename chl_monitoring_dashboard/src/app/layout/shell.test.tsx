@@ -27,6 +27,7 @@ describe('sidebar', () => {
       'Violations & cases',
       'Agents & organizations',
       'Evidence records',
+      'Field reports',
       'Payments & compliance',
       'Notifications',
       'Repeat vehicle alerts',

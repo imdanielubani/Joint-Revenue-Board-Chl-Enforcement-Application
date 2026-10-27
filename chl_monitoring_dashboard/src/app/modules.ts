@@ -86,6 +86,13 @@ export const MODULES: readonly ModuleDefinition[] = [
     icon: 'nav/evidence.svg',
   },
   {
+    key: 'field-reports',
+    label: 'Field reports',
+    path: paths.fieldReports,
+    section: 'Enforcement',
+    icon: 'nav/field-reports.svg',
+  },
+  {
     key: 'payments',
     label: 'Payments & compliance',
     path: paths.payments,

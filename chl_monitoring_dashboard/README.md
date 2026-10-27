@@ -124,6 +124,7 @@ src/
     trips/                 CHL trip details (read-only)
     violations/            Violation register, categories, statuses, history
     evidence/              Photograph viewer and enforcement notes
+    field-reports/         Field reports and loaded / empty confirmations from agents
     payments/              Demand notices, payment status, compliance
     notifications/         Enforcement and field notifications, read or unread
     repeat-alerts/         Repeat vehicle alerts
@@ -320,6 +321,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports is its own module in the sidebar (Enforcement, after Evidence
+  records) at `/field-reports`, for the vehicle, driver and situation reports,
+  general notifications and loaded / empty confirmations agents send (SRD 3,
+  11.3), with a placeholder page until it is built. Administrators and
+  supervisors get it; the Principal Officer sample account, which has no
+  Command centre, does not.
 - Notifications page note: a monitoring module, not a messaging tool. Nothing
   is sent to agents and no SOS is acknowledged or answered here; opening a
   notification marks it read for that user alone and changes no CHL record.

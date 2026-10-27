@@ -36,6 +36,10 @@ const MODULE_PAGES: Record<ModuleKey, LazyPage> = {
     })),
   evidence: () =>
     import('@/features/evidence/pages/EvidencePage').then((m) => ({ Component: m.EvidencePage })),
+  'field-reports': () =>
+    import('@/features/field-reports/pages/FieldReportsPage').then((m) => ({
+      Component: m.FieldReportsPage,
+    })),
   payments: () =>
     import('@/features/payments/pages/PaymentsPage').then((m) => ({ Component: m.PaymentsPage })),
   notifications: () =>

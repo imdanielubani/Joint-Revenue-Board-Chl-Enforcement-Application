@@ -27,6 +27,7 @@ export const MODULE_KEYS = [
   'trips',
   'violations',
   'evidence',
+  'field-reports',
   'payments',
   'notifications',
   'repeat-alerts',
