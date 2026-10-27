@@ -97,4 +97,35 @@ describe('field reports page', () => {
       loadReports[0]!.load === 'loaded' ? 'Loaded' : 'Empty',
     )
   })
+
+  it('narrows the registers by report type, loaded or empty, and how they reached CHL', async () => {
+    const { reports } = expected()
+    const driver = reports.filter((item) => item.report?.type === 'driver')
+    expect(driver.length).toBeGreaterThan(0)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/field-reports')
+    const register = await card('Field report register')
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Report type' }),
+      'driver',
+    )
+    const table = within(register).getByRole('table', { name: 'Field reports' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, driver.length))
+    for (const row of bodyRows(table)) expect(row).toHaveTextContent('Driver report')
+    expect(router.state.location.search).toBe('?type=driver')
+  })
+
+  it('opens the loaded / empty register filtered as the address says', async () => {
+    const { loadReports } = expected()
+    const live = loadReports.filter((item) => item.load === 'empty' && item.source === 'live')
+    expect(live.length).toBeGreaterThan(0)
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/field-reports?view=loads&load=empty&source=live')
+    const register = await card('Loaded / empty register')
+    expect(within(register).getByRole('combobox', { name: 'Confirmed' })).toHaveValue('empty')
+    expect(within(register).getByRole('combobox', { name: 'Received' })).toHaveValue('live')
+    const table = within(register).getByRole('table', { name: 'Loaded / empty confirmations' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, live.length))
+    for (const row of bodyRows(table)) expect(row).toHaveTextContent('Empty')
+  })
 })

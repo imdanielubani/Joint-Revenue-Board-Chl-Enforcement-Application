@@ -164,11 +164,19 @@ function FieldReportsContent({
               {page.view === 'reports' ? (
                 <ReportsRegister
                   items={reports}
+                  type={page.type}
+                  onTypeChange={page.setType}
+                  source={page.source}
+                  onSourceChange={page.setSource}
                   subtitle={`Vehicle, driver and situation reports and general notifications, latest received first · ${subtitle}`}
                 />
               ) : (
                 <LoadsRegister
                   items={loads}
+                  load={page.load}
+                  onLoadChange={page.setLoad}
+                  source={page.source}
+                  onSourceChange={page.setSource}
                   subtitle={`Haulage-loaded or empty status agents reported, latest received first · ${subtitle}`}
                 />
               )}

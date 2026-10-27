@@ -321,6 +321,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports register filters, kept in the address: Report type and
+  Received (live or offline) on Reports; Confirmed (loaded or empty) and
+  Received on Loaded / empty.
 - Field reports tabs: Reports and Loaded / empty, with counts, the tab kept in
   the address (`view`). Each lists a searchable, sortable register, latest
   received first: the report and its type (or the plate and Loaded / Empty),

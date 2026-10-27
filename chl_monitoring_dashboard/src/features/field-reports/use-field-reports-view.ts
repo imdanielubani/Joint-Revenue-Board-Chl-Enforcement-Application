@@ -8,9 +8,15 @@ export type FieldReportsView = (typeof FIELD_REPORT_VIEWS)[number]
 /** The address parameters the page keeps its state in. */
 export const FIELD_REPORT_PARAMS = {
   view: 'view',
+  /** A report type: "vehicle", "driver", "situation" or "general". */
+  type: 'type',
+  /** "loaded" or "empty". */
+  load: 'load',
+  /** "live" or "offline": how it reached CHL. */
+  source: 'source',
 } as const
 
-/** The tab, kept in the address so a refresh or a shared link keeps it. */
+/** The tab and the registers' filters, kept in the address so a refresh or a shared link keeps them. */
 export function useFieldReportsView() {
   const [params, setParams] = useSearchParams()
   const requested = params.get(FIELD_REPORT_PARAMS.view)
@@ -34,6 +40,27 @@ export function useFieldReportsView() {
     (next: FieldReportsView) => change({ [FIELD_REPORT_PARAMS.view]: next }),
     [change],
   )
+  const setType = useCallback(
+    (type: string | null) => change({ [FIELD_REPORT_PARAMS.type]: type }),
+    [change],
+  )
+  const setLoad = useCallback(
+    (load: string | null) => change({ [FIELD_REPORT_PARAMS.load]: load }),
+    [change],
+  )
+  const setSource = useCallback(
+    (source: string | null) => change({ [FIELD_REPORT_PARAMS.source]: source }),
+    [change],
+  )
 
-  return { view, setView }
+  return {
+    view,
+    type: params.get(FIELD_REPORT_PARAMS.type),
+    load: params.get(FIELD_REPORT_PARAMS.load),
+    source: params.get(FIELD_REPORT_PARAMS.source),
+    setView,
+    setType,
+    setLoad,
+    setSource,
+  }
 }
