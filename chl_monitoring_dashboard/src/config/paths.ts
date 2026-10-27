@@ -19,6 +19,7 @@ export const paths = {
   evidence: '/evidence',
   payments: '/payments',
   notifications: '/notifications',
+  repeatAlerts: '/repeat-alerts',
   audit: '/history',
   sync: '/sync',
 } as const

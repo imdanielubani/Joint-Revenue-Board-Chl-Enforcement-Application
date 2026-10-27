@@ -32,6 +32,14 @@ export const MOCK_USERS: User[] = [
     role: 'principal_officer',
     organization: 'Joint Revenue Board',
     scopes: [{ level: 'lga', id: 'la-ikeja', name: 'Ikeja' }],
-    modules: ['overview', 'verifications', 'trips', 'violations', 'payments', 'notifications'],
+    modules: [
+      'overview',
+      'verifications',
+      'trips',
+      'violations',
+      'payments',
+      'notifications',
+      'repeat-alerts',
+    ],
   },
 ]

@@ -28,6 +28,7 @@ describe('sidebar', () => {
       'Evidence records',
       'Payments & compliance',
       'Notifications',
+      'Repeat vehicle alerts',
       'History & audit',
       'Synchronization',
     ])

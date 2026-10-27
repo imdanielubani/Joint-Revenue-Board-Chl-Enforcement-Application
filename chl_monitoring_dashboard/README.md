@@ -38,7 +38,7 @@ on sample data. Sign in with any sample account; the password is
 | ------------------------ | ----------------- | ----------------------------------------------------- |
 | `admin@jrb.gov.ng`       | Administrator     | Every module, nationally                              |
 | `supervisor@jrb.gov.ng`  | Supervisor        | Every module except the audit trail; Lagos            |
-| `po@jrb.gov.ng`          | Principal Officer | Six modules; Ikeja LGA                                |
+| `po@jrb.gov.ng`          | Principal Officer | Seven modules; Ikeja LGA                              |
 | `deactivated@jrb.gov.ng` | —                 | Refused: shows the "Account deactivated" notification |
 
 ## Commands
@@ -125,7 +125,8 @@ src/
     violations/            Violation register, categories, statuses, history
     evidence/              Photograph viewer and enforcement notes
     payments/              Demand notices, payment status, compliance
-    notifications/         Repeat-vehicle alerts, field and enforcement notices
+    notifications/         Field and enforcement notices
+    repeat-alerts/         Repeat vehicle alerts
     audit/                 Verification history and the audit trail
     sync/                  Synchronisation and field status
   shared/                  Used by every feature; imports no feature
@@ -319,6 +320,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Repeat vehicle alerts is its own module in the sidebar (Monitoring, after
+  Notifications) at `/repeat-alerts`, with a placeholder page until it is built;
+  Notifications now covers field and enforcement notices. The Principal Officer
+  sample account keeps access to both.
 - `vercel.json` makes Vercel build with `npm run build` and publish `dist/` only,
   with every other path answered by `index.html`; the README says to set the
   project's Root Directory to `chl_monitoring_dashboard`.

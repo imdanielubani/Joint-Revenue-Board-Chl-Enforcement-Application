@@ -29,6 +29,7 @@ export const MODULE_KEYS = [
   'evidence',
   'payments',
   'notifications',
+  'repeat-alerts',
   'audit',
   'sync',
 ] as const
