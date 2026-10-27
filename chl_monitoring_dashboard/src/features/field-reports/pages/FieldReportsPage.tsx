@@ -1,5 +1,7 @@
 import { useId, useMemo } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
+import { fieldReportLabel } from '@/features/command-centre/command-centre-display'
+import { FIELD_REPORT_TYPES } from '@/features/command-centre/command-centre.schemas'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
@@ -11,6 +13,7 @@ import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
+import { BreakdownCard } from '../components/BreakdownCard'
 import { LoadsRegister, ReportsRegister } from '../components/FieldRegisters'
 import { useFieldReports } from '../field-reports.queries'
 import { useFieldReportsView, type FieldReportsView } from '../use-field-reports-view'
@@ -51,6 +54,7 @@ function FieldReportsContent({
   areasPending: boolean
 }) {
   const tabsId = useId()
+  const viewsId = useId()
   const agentList = useAgents()
   const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: agentList.data })
   const { scope, filters } = filter
@@ -70,6 +74,18 @@ function FieldReportsContent({
     [reports, loads],
   )
   const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
+  const types = [
+    ...new Set([...FIELD_REPORT_TYPES, ...reports.flatMap((r) => r.report?.type ?? [])]),
+  ]
+
+  const { showInRegister } = page
+  /** Lists these records in the register below, and brings it into view. */
+  const showBelow = (view: FieldReportsView, value: string) => {
+    showInRegister(view, value)
+    requestAnimationFrame(() =>
+      document.getElementById(viewsId)?.scrollIntoView?.({ behavior: 'smooth' }),
+    )
+  }
 
   return (
     <div className={styles.page}>
@@ -149,7 +165,34 @@ function FieldReportsContent({
             ]}
           />
 
-          <section className={styles.views} aria-label="Field report views">
+          <div className={styles.breakdowns}>
+            <BreakdownCard
+              title="Reports by type"
+              subtitle={`Vehicle, driver and situation reports and general notifications · ${subtitle}`}
+              icon="overview/card-recent.svg"
+              of="field reports"
+              items={types.map((type) => ({
+                value: type,
+                label: fieldReportLabel(type),
+                tone: 'info',
+                count: reports.filter((item) => item.report?.type === type).length,
+              }))}
+              onShow={(value) => showBelow('reports', value)}
+            />
+            <BreakdownCard
+              title="Loaded / empty"
+              subtitle={`Haulage-loaded or empty status agents reported · ${subtitle}`}
+              icon="overview/card-payment.svg"
+              of="loaded / empty confirmations"
+              items={[
+                { value: 'loaded', label: 'Loaded', tone: 'success', count: counts.loaded },
+                { value: 'empty', label: 'Empty', tone: 'neutral', count: counts.empty },
+              ]}
+              onShow={(value) => showBelow('loads', value)}
+            />
+          </div>
+
+          <section id={viewsId} className={styles.views} aria-label="Field report views">
             <SegmentedTabs<FieldReportsView>
               idBase={tabsId}
               label="Field report views"

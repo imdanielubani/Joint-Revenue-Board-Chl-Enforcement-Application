@@ -40,6 +40,17 @@ export function useFieldReportsView() {
     (next: FieldReportsView) => change({ [FIELD_REPORT_PARAMS.view]: next }),
     [change],
   )
+  /** Lists one type of report, or loaded or empty, in its register; the other filters cleared. */
+  const showInRegister = useCallback(
+    (next: FieldReportsView, value: string) =>
+      change({
+        [FIELD_REPORT_PARAMS.view]: next,
+        [FIELD_REPORT_PARAMS.type]: next === 'reports' ? value : null,
+        [FIELD_REPORT_PARAMS.load]: next === 'loads' ? value : null,
+        [FIELD_REPORT_PARAMS.source]: null,
+      }),
+    [change],
+  )
   const setType = useCallback(
     (type: string | null) => change({ [FIELD_REPORT_PARAMS.type]: type }),
     [change],
@@ -59,6 +70,7 @@ export function useFieldReportsView() {
     load: params.get(FIELD_REPORT_PARAMS.load),
     source: params.get(FIELD_REPORT_PARAMS.source),
     setView,
+    showInRegister,
     setType,
     setLoad,
     setSource,

@@ -128,4 +128,25 @@ describe('field reports page', () => {
     expect(bodyRows(table)).toHaveLength(Math.min(10, live.length))
     for (const row of bodyRows(table)) expect(row).toHaveTextContent('Empty')
   })
+
+  it('breaks the reports down by type and loaded / empty, each listing its records below', async () => {
+    const { reports, loadReports } = expected()
+    const situation = reports.filter((item) => item.report?.type === 'situation').length
+    const empty = loadReports.filter((item) => item.load === 'empty').length
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/field-reports?source=live')
+    const byType = await card('Reports by type')
+    const tile = within(byType).getByRole('button', { name: 'View Situation report records' })
+    expect(tile).toHaveTextContent(String(situation))
+    await userEvent.click(tile)
+    expect(router.state.location.search).toBe('?view=reports&type=situation')
+
+    const loads = await card('Loaded / empty')
+    const emptyTile = within(loads).getByRole('button', { name: 'View Empty records' })
+    expect(emptyTile).toHaveTextContent(String(empty))
+    await userEvent.click(emptyTile)
+    expect(router.state.location.search).toBe('?view=loads&load=empty')
+    const register = await card('Loaded / empty register')
+    expect(within(register).getByRole('combobox', { name: 'Confirmed' })).toHaveValue('empty')
+  })
 })

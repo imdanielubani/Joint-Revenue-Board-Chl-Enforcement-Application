@@ -321,6 +321,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports breakdowns, in the Payment Status card's tiles: Reports by
+  type (vehicle, driver, situation, general) and Loaded / empty, each with its
+  count and share; a tile lists its records in the register below, with that
+  filter only.
 - Field reports register filters, kept in the address: Report type and
   Received (live or offline) on Reports; Confirmed (loaded or empty) and
   Received on Loaded / empty.
