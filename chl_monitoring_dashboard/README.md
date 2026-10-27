@@ -321,6 +321,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field reports page replaces its placeholder: the green banner (Enforcement),
+  Refresh, the area, period, organization and agent filters with the freshness
+  line, and loading, error and stale states, as on the other modules.
 - Field reports record and API (`/api/v1/field-reports`, provisional): the
   field reports and loaded / empty confirmations CHL received in an area and
   period, each as the Command centre shows it. The sample data lists the same
