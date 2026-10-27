@@ -321,6 +321,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Tests for Page not found: it shows "404." and "Page not found." inside the
+  dashboard with the sidebar and top bar, the illustration is decoration only,
+  "Go back home" leads to the user's first module, and a signed-out visitor is
+  asked to sign in first.
 - Page not found fills the screen below the top bar on larger screens; below
   1100px the picture sits above the words, so the plug never covers them, with
   smaller type on phones.
