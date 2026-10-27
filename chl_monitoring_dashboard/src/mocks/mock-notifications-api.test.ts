@@ -1,15 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { notificationsSchema } from '@/features/notifications/notifications.schemas'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { lagosDay } from '@/shared/lib/dates'
 import { summarizeCommandCentre } from './mock-command-centre-api'
-import { summarizeNotifications } from './mock-notifications-api'
+import { mockNotificationsApi, summarizeNotifications, unreadCount } from './mock-notifications-api'
 import { summarize } from './mock-overview-api'
 import { mockRecords } from './mock-records'
 
 const NOW = Date.parse('2026-10-18T12:00:00+01:00')
 const TODAY = '2026-10-18'
-const filters = (scope: string, range: 'today' | '30d' = '30d') => ({
+const filters = (scope: string, range: 'today' | '30d' | '90d' = '30d') => ({
   scope,
   range,
   ...presetPeriod(range, TODAY),
@@ -58,17 +58,24 @@ describe('summarizeNotifications', () => {
     }
   })
 
-  it('sends one repeat-vehicle notification for each vehicle the alerts list', () => {
-    const range = filters('la')
-    const repeat = summarizeNotifications(range, NOW).notifications.filter(
+  it('sends one repeat-vehicle notification for each alert, when its third report arrived', () => {
+    const today = lagosDay(new Date(NOW))
+    const records = mockRecords(today, NOW)
+    const history = summarize(records, filters('la', '90d')).repeatVehicles.items
+    const all = summarizeNotifications(filters('la', '90d'), NOW).notifications.filter(
       (item) => item.type === 'repeat_vehicle',
     )
-    const today = lagosDay(new Date(NOW))
-    const alerts = summarize(mockRecords(today, NOW), range).repeatVehicles.items
-    expect(alerts.length).toBeGreaterThan(0)
-    expect(repeat.map((item) => item.repeatVehicle!.plate).sort()).toEqual(
-      alerts.map((vehicle) => vehicle.plate).sort(),
+    expect(all.length).toBeGreaterThan(0)
+    expect(all.map((item) => item.repeatVehicle!.plate).sort()).toEqual(
+      history.map((vehicle) => vehicle.plate).sort(),
     )
+    // The same alert, at the same time, whatever period lists it.
+    const repeat = summarizeNotifications(filters('la'), NOW).notifications.filter(
+      (item) => item.type === 'repeat_vehicle',
+    )
+    for (const item of repeat) {
+      expect(all.find((entry) => entry.id === item.id)).toEqual(item)
+    }
     for (const item of repeat) {
       expect(item.category).toBe('enforcement')
       expect(item.plate).toBe(item.repeatVehicle!.plate)
@@ -83,7 +90,7 @@ describe('summarizeNotifications', () => {
     expect(lagos.length).toBeLessThan(all.length)
     for (const item of lagos) expect(item.location?.area).toBe('Lagos')
 
-    const agentId = lagos[0]!.agent!.id
+    const agentId = lagos.find((item) => item.agent)!.agent!.id
     const mine = summarizeNotifications({ ...filters('la'), agentId }, NOW).notifications
     expect(mine.length).toBeGreaterThan(0)
     // A repeat-vehicle notification names no single agent; it counts only this agent's reports.
@@ -96,6 +103,28 @@ describe('summarizeNotifications', () => {
 
     const from = Date.parse('2026-09-19T00:00:00+01:00')
     for (const item of all) expect(Date.parse(item.receivedAt)).toBeGreaterThanOrEqual(from)
+  })
+
+  it('counts a notification unread for a day, until the user reads it', async () => {
+    const all = summarizeNotifications(filters('la'), NOW).notifications
+    const unread = all.filter((item) => !item.read)
+    expect(unread.length).toBeGreaterThan(0)
+    for (const item of all) {
+      expect(item.read).toBe(Date.parse(item.receivedAt) < NOW - 24 * 3_600_000)
+    }
+    expect(unreadCount(['la'], NOW)).toBe(unread.length)
+
+    vi.useFakeTimers({ now: NOW, toFake: ['Date'] })
+    try {
+      await mockNotificationsApi.markRead([unread[0]!.id])
+    } finally {
+      vi.useRealTimers()
+    }
+    const after = summarizeNotifications(filters('la'), NOW).notifications
+    expect(after.find((item) => item.id === unread[0]!.id)!.read).toBe(true)
+    expect(unreadCount(['la'], NOW)).toBe(unread.length - 1)
+    // A user with two areas counts a notification in both once.
+    expect(unreadCount(['la', 'la'], NOW)).toBe(unread.length - 1)
   })
 
   it('says CHL does not pass on agents’ operational notifications', () => {

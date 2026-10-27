@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { unreadCount } from '@/mocks/mock-notifications-api'
 import { renderApp, signInAs } from '@/test/render-app'
 import { SIDEBAR_COLLAPSED_KEY } from './AppShell'
 
@@ -46,8 +47,12 @@ describe('sidebar', () => {
     renderApp('/overview')
 
     // The unread count also shows on the bell: look in the sidebar.
+    const unread = unreadCount(['ng'])
+    expect(unread).toBeGreaterThan(0)
     expect(
-      await within(await sidebar()).findByRole('link', { name: 'Notifications, 6 unread' }),
+      await within(await sidebar()).findByRole('link', {
+        name: `Notifications, ${unread} unread`,
+      }),
     ).toBeInTheDocument()
     expect(
       await screen.findByRole('link', { name: 'Violations & cases, 3 need attention' }),
@@ -149,11 +154,12 @@ describe('top bar', () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')
 
+    const unread = unreadCount(['ng'])
     const bell = await within(await topbar()).findByRole('link', {
-      name: 'Notifications, 6 unread',
+      name: `Notifications, ${unread} unread`,
     })
     expect(bell).toHaveAttribute('href', '/notifications')
-    expect(within(bell).getByText('6')).toBeInTheDocument()
+    expect(within(bell).getByText(unread > 99 ? '99+' : String(unread))).toBeInTheDocument()
   })
 
   it('searches all records', async () => {

@@ -320,6 +320,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications are read or unread for each user: the API gains "mark as read"
+  (`POST /api/v1/notifications/read`, provisional; a suggested capability in
+  the SRD, changing no CHL record). The bell and the sidebar now count the
+  unread notifications in the user's own areas instead of a fixed 6; the sample
+  data counts a notification unread for its first day, until it is opened. A
+  repeat-vehicle notification is sent once, when the third qualifying report
+  reaches CHL, whatever period is looked at.
 - Notifications sample data adds the enforcement notifications (SRD 11.2): a
   "Payment received" notification for each payment CHL confirmed, and a
   repeat-vehicle notification for each vehicle the period's alerts list, sent

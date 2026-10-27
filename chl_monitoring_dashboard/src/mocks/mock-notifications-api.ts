@@ -5,7 +5,10 @@ import type {
   Notifications,
   NotificationsFilters,
 } from '@/features/notifications/notifications.schemas'
+import { loadSession } from '@/features/auth/session'
+import { presetPeriod } from '@/features/overview/overview-period'
 import { addDays, lagosDay } from '@/shared/lib/dates'
+import { storage } from '@/shared/lib/storage'
 import { delay } from './delay'
 import { MOCK_AGENTS } from './mock-agent-list'
 import { feedFrom, receivedTime } from './mock-command-centre-api'
@@ -19,6 +22,20 @@ import {
 import { mockRecords, pointById, startOfDay, type MockRecord } from './mock-records'
 
 const iso = (ms: number) => new Date(ms).toISOString()
+
+/** Where the sample backend keeps the notifications this browser's user has read. */
+export const READ_STORAGE_KEY = 'chl-dashboard.mock-notifications-read'
+/** Sample notifications received this long ago count as already read. */
+const UNREAD_FOR_MS = 24 * 3_600_000
+
+function readIds(): Set<string> {
+  try {
+    const ids: unknown = JSON.parse(storage.get(READ_STORAGE_KEY) ?? '[]')
+    return new Set(Array.isArray(ids) ? ids.filter((id) => typeof id === 'string') : [])
+  } catch {
+    return new Set()
+  }
+}
 const organizationOf = (agentId: string) =>
   MOCK_AGENTS.find((agent) => agent.id === agentId)?.organization ?? null
 
@@ -76,16 +93,19 @@ function paymentNotification(entry: Entry): Notification | null {
 }
 
 /**
- * The repeat-vehicle notifications (SRD 11.1, 11.2): one for each vehicle the
- * period's alerts list, sent when its third qualifying report reached CHL.
+ * The repeat-vehicle notifications (SRD 11.1, 11.2): one for each vehicle with
+ * an alert over the history CHL keeps, sent when its third qualifying report
+ * reached CHL, whatever period is being looked at.
  */
 function repeatNotifications(
   records: readonly MockRecord[],
   filters: NotificationsFilters,
+  today: string,
 ): Notification[] {
-  const inPeriod = recordsIn(records, filters).filter(qualifies)
-  return summarize(records, filters).repeatVehicles.items.flatMap((vehicle) => {
-    const reports = inPeriod
+  const history = { ...filters, range: '90d', ...presetPeriod('90d', today) } as const
+  const qualifying = recordsIn(records, history).filter(qualifies)
+  return summarize(records, history).repeatVehicles.items.flatMap((vehicle) => {
+    const reports = qualifying
       .filter((record) => record.plate === vehicle.plate)
       .sort((a, b) => a.recordedAt - b.recordedAt)
     const raised = reports[REPEAT_THRESHOLD - 1]
@@ -127,6 +147,7 @@ export function summarizeNotifications(
   const from = startOfDay(filters.from)
   const to = startOfDay(addDays(filters.to, 1))
   const records = mockRecords(today, now)
+  const read = readIds()
   const entries = feedFrom(records, today, now).filter((entry) => {
     const at = receivedTime(entry)
     return (
@@ -140,9 +161,13 @@ export function summarizeNotifications(
 
   const notifications = [
     ...entries.flatMap((entry) => paymentNotification(entry) ?? fieldNotification(entry) ?? []),
-    // An alert raised by reports CHL had not yet received by the period's end is not sent yet.
-    ...repeatNotifications(records, filters).filter((item) => Date.parse(item.receivedAt) < to),
-  ].sort((a, b) => Date.parse(b.receivedAt) - Date.parse(a.receivedAt))
+    ...repeatNotifications(records, filters, today).filter((item) => {
+      const at = Date.parse(item.receivedAt)
+      return at >= from && at < to
+    }),
+  ]
+    .sort((a, b) => Date.parse(b.receivedAt) - Date.parse(a.receivedAt))
+    .map((item) => ({ ...item, read: isRead(item, read, now) }))
   return {
     latestReceivedAt: notifications[0]?.receivedAt ?? null,
     notifications,
@@ -151,14 +176,37 @@ export function summarizeNotifications(
   }
 }
 
-/** Sample data: six unread notifications, as in the design. */
+/** Read once the user opened it; older sample notifications count as read already. */
+function isRead(item: Notification, read: ReadonlySet<string>, now: number): boolean {
+  return read.has(item.id) || Date.parse(item.receivedAt) < now - UNREAD_FOR_MS
+}
+
+/** The unread notifications in a user's areas over the history the sample keeps. */
+export function unreadCount(scopes: readonly string[], now: number = Date.now()): number {
+  const today = lagosDay(new Date(now))
+  const unread = new Set<string>()
+  for (const scope of scopes) {
+    const period = { scope, range: '90d', ...presetPeriod('90d', today) } as const
+    const result = summarizeNotifications({ ...period, agentId: null, organization: null }, now)
+    for (const item of result.notifications) if (!item.read) unread.add(item.id)
+  }
+  return unread.size
+}
+
+/** Sample data: counted from the sample notifications in the signed-in user's areas. */
 export const mockNotificationsApi: NotificationsApi = {
   async getSummary() {
     await delay()
-    return { unread: 6 }
+    // As the backend would from the access token: the signed-in user's areas.
+    const scopes = loadSession()?.session.user.scopes.map((scope) => scope.id) ?? []
+    return { unread: unreadCount(scopes) }
   },
   async getNotifications(filters) {
     await delay()
     return summarizeNotifications(filters)
+  },
+  async markRead(ids) {
+    await delay()
+    storage.set(READ_STORAGE_KEY, JSON.stringify([...new Set([...readIds(), ...ids])]))
   },
 }
