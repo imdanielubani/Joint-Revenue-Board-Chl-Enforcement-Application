@@ -109,6 +109,7 @@ function NotificationsContent({
   const counts = useMemo(
     () => ({
       unread: notifications.filter((item) => !item.read).length,
+      sos: notifications.filter((item) => item.type === 'sos').length,
       openSos: notifications.filter((item) => item.entry?.sos?.status === 'open').length,
       field: notifications.filter((item) => item.category === 'field').length,
       enforcement: notifications.filter((item) => item.category === 'enforcement').length,
@@ -180,24 +181,28 @@ function NotificationsContent({
                 value: counts.unread,
                 icon: 'overview/kpi-bell.svg',
                 note: `Not opened yet, of ${notifications.length} in this period`,
+                to: page.linkTo('all', { status: 'unread' }),
               },
               {
                 label: 'Open SOS',
                 value: counts.openSos,
                 icon: 'overview/kpi-unresolved.svg',
-                note: 'Still open, as CHL reports them',
+                note: `Still open, as CHL reports them · ${counts.sos} SOS received`,
+                to: page.linkTo('field', { type: 'sos' }),
               },
               {
                 label: 'Field notifications',
                 value: counts.field,
                 icon: 'overview/kpi-pin.svg',
                 note: 'SOS, reports and loaded / empty confirmations',
+                to: page.linkTo('field'),
               },
               {
                 label: 'Enforcement notifications',
                 value: counts.enforcement,
                 icon: 'overview/kpi-violation.svg',
                 note: 'Repeat vehicles and payments received',
+                to: page.linkTo('enforcement'),
               },
             ]}
           />
@@ -260,6 +265,12 @@ function NotificationsContent({
               onRelated={onRelated}
               onClose={() => openNotification(null)}
             />
+          )}
+          {page.notificationId && !open && (
+            <p className={styles.stale} role="status">
+              That notification is not in this area and period. Choose another area or period to
+              find it.
+            </p>
           )}
           {related && (
             <TripRelatedDialog

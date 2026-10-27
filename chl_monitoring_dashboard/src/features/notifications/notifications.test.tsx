@@ -59,7 +59,9 @@ describe('notifications page', () => {
     expect(await figure('Unread')).toHaveTextContent(
       `${unread}Not opened yet, of ${all.length} in this period`,
     )
-    expect(await figure('Open SOS')).toHaveTextContent(String(openSos))
+    expect(await figure('Open SOS')).toHaveTextContent(
+      `${openSos}Still open, as CHL reports them · ${field.filter((item) => item.type === 'sos').length} SOS received`,
+    )
     expect(await figure('Field notifications')).toHaveTextContent(String(field.length))
     expect(await figure('Enforcement notifications')).toHaveTextContent(String(enforcement.length))
   })
@@ -216,5 +218,28 @@ describe('notifications page', () => {
     renderApp(`/notifications?notification=${withAgent.id}`)
     const dialog = await screen.findByRole('dialog', { name: withAgent.title })
     expect(within(dialog).queryByRole('button', { name: 'View agent' })).not.toBeInTheDocument()
+  })
+
+  it('lists what a headline figure counts, keeping the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/notifications?scope=la&range=30d')
+    await userEvent.click(await screen.findByRole('link', { name: /Not opened yet/ }))
+    expect(router.state.location.search).toBe('?scope=la&range=30d&view=all&status=unread')
+    const register = await card('All notifications')
+    expect(within(register).getByRole('combobox', { name: 'Status' })).toHaveValue('unread')
+
+    await userEvent.click(screen.getByRole('link', { name: /SOS received/ }))
+    expect(router.state.location.search).toBe('?scope=la&range=30d&view=field&type=sos')
+  })
+
+  it('says when the notification named in the address is not in the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/notifications?notification=ntf-unknown')
+    expect(
+      await screen.findByText(
+        'That notification is not in this area and period. Choose another area or period to find it.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

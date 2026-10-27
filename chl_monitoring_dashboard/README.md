@@ -320,6 +320,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications headline figures link to what they count, keeping the area,
+  period and people: Unread to the unread register, Open SOS to the SOS on the
+  Field tab (its note also gives the SOS received), Field and Enforcement to
+  their tabs. A notification named in the address that is not in the area and
+  period says so.
 - A notification leads to its records, each opened in a popup on the page from
   its row actions or the popup's "Related records": a repeat vehicle's reports
   (View vehicle reports), a payment's demand notice (Open the payment) and the
