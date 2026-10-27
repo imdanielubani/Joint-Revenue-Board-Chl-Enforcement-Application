@@ -320,6 +320,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications tabs: All, Enforcement, Field and Operational, with counts, the
+  tab kept in the address (`view`). Each lists a searchable, sortable register,
+  latest first: the notification and its type, its group (on All), plate, agent
+  (a repeat-vehicle notification counts the agents who reported the vehicle),
+  location, when CHL received it and whether it is read.
 - Notifications headline figures: Unread (of all in the period), Open SOS,
   Field notifications and Enforcement notifications, counted from what CHL
   delivered for the area and period.

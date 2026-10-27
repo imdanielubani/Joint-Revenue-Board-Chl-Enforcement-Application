@@ -1,10 +1,14 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { summarizeNotifications } from '@/mocks/mock-notifications-api'
 import { lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
 
+const card = (title: string) => screen.findByRole('region', { name: title })
+/** The rows on a register's first page, header row left out. */
+const bodyRows = (table: HTMLElement) => within(table).getAllByRole('row').slice(1)
 const figure = async (label: string) => {
   const figures = await screen.findByRole('list', { name: 'Headline figures' })
   return within(figures).getByText(label).closest('li')!
@@ -58,5 +62,41 @@ describe('notifications page', () => {
     expect(await figure('Open SOS')).toHaveTextContent(String(openSos))
     expect(await figure('Field notifications')).toHaveTextContent(String(field.length))
     expect(await figure('Enforcement notifications')).toHaveTextContent(String(enforcement.length))
+  })
+
+  it('has a tab for all notifications, then Enforcement, Field and Operational', async () => {
+    const all = expected()
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/notifications')
+    const tabs = await screen.findByRole('tablist', { name: 'Notification views' })
+    expect(
+      within(tabs)
+        .getAllByRole('tab')
+        .map((tab) => tab.textContent),
+    ).toEqual([
+      `All${all.length}`,
+      `Enforcement${all.filter((item) => item.category === 'enforcement').length}`,
+      `Field${all.filter((item) => item.category === 'field').length}`,
+      'Operational0',
+    ])
+    const register = await card('All notifications')
+    const table = within(register).getByRole('table', { name: 'Notifications' })
+    // Latest first, ten to a page.
+    expect(bodyRows(table)).toHaveLength(Math.min(10, all.length))
+    expect(bodyRows(table)[0]).toHaveTextContent(all[0]!.title)
+  })
+
+  it('lists one group on its tab, and keeps the tab in the address', async () => {
+    const field = expected().filter((item) => item.category === 'field')
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/notifications')
+    await userEvent.click(await screen.findByRole('tab', { name: /^Field/ }))
+    const register = await card('Field notifications')
+    const table = within(register).getByRole('table', { name: 'Field notifications' })
+    expect(bodyRows(table)[0]).toHaveTextContent(field[0]!.title)
+    for (const row of bodyRows(table)) expect(row).not.toHaveTextContent('Payment received for')
+    expect(router.state.location.search).toBe('?view=field')
+    // The register has no group column on a group's own tab.
+    expect(within(table).queryByRole('columnheader', { name: /Group/ })).not.toBeInTheDocument()
   })
 })

@@ -1,14 +1,19 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
+import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
+import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { panelId, tabId } from '@/shared/ui/tab-ids'
+import { NotificationRegister } from '../components/NotificationRegister'
 import { useNotifications } from '../notifications.queries'
+import { useNotificationsView, type NotificationsView } from '../use-notifications-view'
 import styles from './NotificationsPage.module.css'
 
 /**
@@ -34,6 +39,31 @@ export function NotificationsPage() {
   )
 }
 
+/** Each tab's register: its title, what it lists, and its table's name. */
+const PANELS: Record<NotificationsView, { title: string; subtitle: string; label: string }> = {
+  all: {
+    title: 'All notifications',
+    subtitle: 'Everything CHL delivered, latest first',
+    label: 'Notifications',
+  },
+  enforcement: {
+    title: 'Enforcement notifications',
+    subtitle: 'Repeat-vehicle notifications and payments CHL confirmed',
+    label: 'Enforcement notifications',
+  },
+  field: {
+    title: 'Field notifications',
+    subtitle:
+      'SOS, vehicle, driver and situation reports, general notifications and loaded / empty confirmations from agents',
+    label: 'Field notifications',
+  },
+  operational: {
+    title: 'Operational notifications',
+    subtitle: 'RFID reader, internet, GPS and synchronization notices from agents’ devices',
+    label: 'Operational notifications',
+  },
+}
+
 function NotificationsContent({
   scopes,
   fallbackScope,
@@ -45,9 +75,11 @@ function NotificationsContent({
   /** True until CHL's area tree has loaded; until then only the user's own areas are known. */
   areasPending: boolean
 }) {
+  const tabsId = useId()
   const agentList = useAgents()
   const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: agentList.data })
   const { scope, filters } = filter
+  const page = useNotificationsView()
   const query = useNotifications(filters, { enabled: !filter.waiting })
   const data = query.data
   const notifications = useMemo(() => data?.notifications ?? [], [data])
@@ -58,9 +90,16 @@ function NotificationsContent({
       openSos: notifications.filter((item) => item.entry?.sos?.status === 'open').length,
       field: notifications.filter((item) => item.category === 'field').length,
       enforcement: notifications.filter((item) => item.category === 'enforcement').length,
+      operational: notifications.filter((item) => item.category === 'operational').length,
     }),
     [notifications],
   )
+  const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
+  const panel = PANELS[page.view]
+  const rows =
+    page.view === 'all'
+      ? notifications
+      : notifications.filter((item) => item.category === page.view)
 
   return (
     <div className={styles.page}>
@@ -139,6 +178,31 @@ function NotificationsContent({
               },
             ]}
           />
+
+          <section className={styles.views} aria-label="Notification views">
+            <SegmentedTabs<NotificationsView>
+              idBase={tabsId}
+              label="Notification views"
+              tabs={[
+                { id: 'all', label: 'All', count: notifications.length },
+                { id: 'enforcement', label: 'Enforcement', count: counts.enforcement },
+                { id: 'field', label: 'Field', count: counts.field },
+                { id: 'operational', label: 'Operational', count: counts.operational },
+              ]}
+              value={page.view}
+              onChange={page.setView}
+            />
+            <div id={panelId(tabsId)} role="tabpanel" aria-labelledby={tabId(tabsId, page.view)}>
+              <NotificationRegister
+                key={page.view}
+                title={panel.title}
+                subtitle={`${panel.subtitle} · ${subtitle}`}
+                label={panel.label}
+                notifications={rows}
+                showCategory={page.view === 'all'}
+              />
+            </div>
+          </section>
         </>
       )}
     </div>
