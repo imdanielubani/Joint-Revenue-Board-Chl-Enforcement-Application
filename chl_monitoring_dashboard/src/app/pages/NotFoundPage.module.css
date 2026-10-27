@@ -1,6 +1,6 @@
 /*
- * A black card, as the illustration's own background, so the picture runs to
- * its edges: the words on the left, the plug and socket on the right.
+ * A white card: the illustration's background is transparent, so the picture
+ * runs to its edges. The words on the left, the plug and socket on the right.
  */
 .card {
   position: relative;
@@ -8,15 +8,16 @@
   align-items: center;
   min-height: 560px;
   overflow: hidden;
+  border: 1px solid var(--card-line);
   border-radius: 14px;
-  background: #000;
+  background: #fff;
 }
 
 .art {
   position: absolute;
   top: 0;
   right: 0;
-  width: 70%;
+  width: 58%;
   height: 100%;
   object-fit: cover;
   object-position: 70% center;
@@ -27,9 +28,9 @@
 .card::after {
   content: '';
   position: absolute;
-  inset: 0 auto 0 30%;
-  width: 20%;
-  background: linear-gradient(90deg, #000, rgb(0 0 0 / 0));
+  inset: 0 auto 0 42%;
+  width: 14%;
+  background: linear-gradient(90deg, #fff, rgb(255 255 255 / 0));
   pointer-events: none;
 }
 
@@ -41,7 +42,7 @@
 }
 
 .code {
-  color: #fff;
+  color: #000;
   font-family: var(--font-sans);
   font-size: 128px;
   font-weight: var(--font-weight-bold);
@@ -51,7 +52,7 @@
 
 .heading {
   margin-top: 28px;
-  color: #fff;
+  color: #000;
   font-family: var(--font-sans);
   font-size: 44px;
   font-weight: var(--font-weight-semibold);
@@ -69,7 +70,7 @@
 .message {
   max-width: 400px;
   margin-top: 20px;
-  color: rgb(255 255 255 / 0.7);
+  color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   line-height: 1.7;
 }
@@ -80,15 +81,15 @@
   margin-top: 32px;
   padding: 12px 22px;
   border-radius: 8px;
-  background: #fff;
-  color: #000;
+  background: #000;
+  color: #fff;
   font-size: var(--font-size-button);
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
 }
 
 .home:hover {
-  background: #e7f2ea;
+  background: var(--color-primary);
 }
 
 .home:focus-visible {
@@ -122,7 +123,7 @@
     inset: 200px 0 auto;
     width: auto;
     height: 100px;
-    background: linear-gradient(180deg, rgb(0 0 0 / 0), #000);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0), #fff);
   }
 
   .text {

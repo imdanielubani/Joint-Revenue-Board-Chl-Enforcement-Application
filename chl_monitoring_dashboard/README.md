@@ -321,6 +321,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Page not found is white instead of black: a white card with the dashboard's
+  card border, black "404." and heading, muted message and a black "Go back
+  home" button that turns green on hover. The illustration's transparent
+  background sits on the white, moved further right so its cable stays clear
+  of the words.
 - The Page not found illustration is now WebP (`public/assets/not-found/unplugged.webp`,
   67 KB instead of the 875 KB PNG), at the same 1536 x 1024 size and keeping
   its transparency; the PNG is removed.
