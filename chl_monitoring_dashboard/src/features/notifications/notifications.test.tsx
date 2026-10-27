@@ -171,4 +171,50 @@ describe('notifications page', () => {
     expect(vehicle).toHaveTextContent(`Reports${repeat.repeatVehicle!.reports}`)
     expect(vehicle).toHaveTextContent(`Agents${repeat.repeatVehicle!.agents}`)
   })
+
+  it('opens a repeat vehicle’s reports from its notification, on the page', async () => {
+    const repeat = expected().find((item) => item.type === 'repeat_vehicle')!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/notifications?notification=${repeat.id}`)
+    const dialog = await screen.findByRole('dialog', { name: repeat.title })
+    const links = within(dialog).getByRole('navigation', { name: 'Related records' })
+    await userEvent.click(within(links).getByRole('button', { name: 'View vehicle reports' }))
+    const reports = await screen.findByRole('dialog', { name: 'Vehicle reports' })
+    expect(reports).toHaveTextContent(repeat.plate!)
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+    expect(router.state.location.pathname).toBe('/notifications')
+  })
+
+  it('opens a payment’s demand notice from the register, on the page', async () => {
+    const payment = expected().find((item) => item.type === 'payment_received')!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/notifications?view=enforcement&type=payment_received')
+    const register = await card('Enforcement notifications')
+    const table = within(register).getByRole('table', { name: 'Enforcement notifications' })
+    await userEvent.click(
+      within(table).getAllByRole('button', { name: `Actions for ${payment.title}` })[0]!,
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Open the payment' }))
+    expect(
+      await screen.findByRole('dialog', {
+        name: `Demand notice ${payment.entry!.payment!.noticeId}`,
+      }),
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/notifications')
+  })
+
+  it('offers only the records the role may open', async () => {
+    const withAgent = summarizeNotifications({
+      scope: 'la-ikeja',
+      range: '14d',
+      ...presetPeriod('14d', lagosDay()),
+      agentId: null,
+      organization: null,
+    }).notifications.find((item) => item.agent)!
+    // A Principal Officer may not open the Agents module.
+    signInAs('po@jrb.gov.ng')
+    renderApp(`/notifications?notification=${withAgent.id}`)
+    const dialog = await screen.findByRole('dialog', { name: withAgent.title })
+    expect(within(dialog).queryByRole('button', { name: 'View agent' })).not.toBeInTheDocument()
+  })
 })

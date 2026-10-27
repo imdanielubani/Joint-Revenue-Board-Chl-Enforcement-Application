@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { loadLabel, sosDuration } from '@/features/command-centre/command-centre-display'
 import { followUpLabel } from '@/features/overview/overview-display'
 import { Fact, Facts } from '@/features/verifications/components/VerificationDetailsDialog'
+import links from '@/features/payments/components/PaymentCards.module.css'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import buttons from '@/features/violations/components/ViolationCards.module.css'
 import { formatDateTime, formatNumber } from '@/shared/lib/format'
 import { useNow } from '@/shared/lib/use-now'
@@ -9,6 +11,7 @@ import { Dialog } from '@/shared/ui/Dialog'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { categoryLabel, readPill, typeLabel } from '../notifications-display'
 import type { Notification } from '../notifications.schemas'
+import { useNotificationRelated } from '../use-notification-related'
 
 /**
  * A notification in a popup on the page: what it is and when CHL received it,
@@ -17,14 +20,18 @@ import type { Notification } from '../notifications.schemas'
 export function NotificationDialog({
   notification,
   onRead,
+  onRelated,
   onClose,
 }: {
   notification: Notification
   /** Marks it read for this user; called once when it opens unread. */
   onRead(id: string): void
+  /** Opens a record it leads to in its own popup, in place of this one. */
+  onRelated(related: TripRelated): void
   onClose(): void
 }) {
   const { id, read } = notification
+  const related = useNotificationRelated()(notification)
   useEffect(() => {
     if (!read) onRead(id)
     // Once, when it opens: reading it changes `read`, which must not call again.
@@ -53,6 +60,20 @@ export function NotificationDialog({
       </Facts>
       {notification.repeatVehicle && <VehicleFacts vehicle={notification.repeatVehicle} />}
       {notification.entry && <RecordFacts entry={notification.entry} />}
+      {related.length > 0 && (
+        <nav className={links.dialogLinks} aria-label="Related records">
+          {related.map((entry) => (
+            <button
+              key={entry.label}
+              type="button"
+              className={links.dialogLink}
+              onClick={() => onRelated(entry.related)}
+            >
+              {entry.label}
+            </button>
+          ))}
+        </nav>
+      )}
     </Dialog>
   )
 }

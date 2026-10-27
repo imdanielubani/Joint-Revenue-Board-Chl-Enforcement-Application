@@ -15,7 +15,9 @@ import {
   searchTextOf,
   typeLabel,
 } from '../notifications-display'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import type { Notification } from '../notifications.schemas'
+import { useNotificationRelated } from '../use-notification-related'
 import styles from './NotificationRegister.module.css'
 
 const NOT_SUPPLIED = 'Not supplied'
@@ -40,6 +42,7 @@ export function NotificationRegister({
   onStatusChange,
   onTypeChange,
   onOpen,
+  onRelated,
 }: {
   title: string
   subtitle: string
@@ -55,7 +58,10 @@ export function NotificationRegister({
   onTypeChange(value: string | null): void
   /** Opens the notification in its popup. */
   onOpen(notification: Notification): void
+  /** Opens a record it leads to in a popup on the page. */
+  onRelated(related: TripRelated): void
 }) {
+  const relatedOf = useNotificationRelated()
   const columns = useMemo<Column<Notification>[]>(
     () => [
       {
@@ -134,12 +140,18 @@ export function NotificationRegister({
         render: (row) => (
           <RowActions
             label={`Actions for ${row.title}`}
-            actions={[{ label: 'View notification', onSelect: () => onOpen(row) }]}
+            actions={[
+              { label: 'View notification', onSelect: () => onOpen(row) },
+              ...relatedOf(row).map((entry) => ({
+                label: entry.label,
+                onSelect: () => onRelated(entry.related),
+              })),
+            ]}
           />
         ),
       },
     ],
-    [showCategory, onOpen],
+    [showCategory, onOpen, onRelated, relatedOf],
   )
   const types = [...new Set(notifications.map((item) => item.type))]
     .map((value) => ({ value, label: typeLabel(value) }))

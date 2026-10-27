@@ -320,6 +320,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A notification leads to its records, each opened in a popup on the page from
+  its row actions or the popup's "Related records": a repeat vehicle's reports
+  (View vehicle reports), a payment's demand notice (Open the payment) and the
+  agent who sent it (View agent), only where the role may open that module.
 - Notifications open in a popup on the page ("View notification", kept in the
   address as `notification`): its type, group, when CHL received it and its
   status, then the record it is about (the SOS message and how long it has been

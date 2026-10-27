@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -6,6 +6,7 @@ import { scopeOptions, type ScopeOption } from '@/features/geography/scope-optio
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
@@ -86,8 +87,20 @@ function NotificationsContent({
   const { mutate: markRead } = useMarkNotificationsRead()
   const onRead = useCallback((id: string) => markRead([id]), [markRead])
   const { openNotification } = page
+  // A record a notification leads to, open in its own popup in place of the notification.
+  const [related, setRelated] = useState<TripRelated | null>(null)
   const onOpen = useCallback(
-    (notification: { id: string }) => openNotification(notification.id),
+    (notification: { id: string }) => {
+      setRelated(null)
+      openNotification(notification.id)
+    },
+    [openNotification],
+  )
+  const onRelated = useCallback(
+    (next: TripRelated) => {
+      openNotification(null)
+      setRelated(next)
+    },
     [openNotification],
   )
   const data = query.data
@@ -233,6 +246,7 @@ function NotificationsContent({
                   onStatusChange={page.setStatus}
                   onTypeChange={page.setType}
                   onOpen={onOpen}
+                  onRelated={onRelated}
                 />
               )}
             </div>
@@ -243,7 +257,17 @@ function NotificationsContent({
               key={open.id}
               notification={open}
               onRead={onRead}
+              onRelated={onRelated}
               onClose={() => openNotification(null)}
+            />
+          )}
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
             />
           )}
         </>
