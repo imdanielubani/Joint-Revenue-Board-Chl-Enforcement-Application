@@ -9,7 +9,7 @@ import { formatDateTime, formatNumber } from '@/shared/lib/format'
 import { useNow } from '@/shared/lib/use-now'
 import { Dialog } from '@/shared/ui/Dialog'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { categoryLabel, readPill, typeLabel } from '../notifications-display'
+import { categoryLabel, isSos, readPill, typeLabel } from '../notifications-display'
 import type { Notification } from '../notifications.schemas'
 import { useNotificationRelated } from '../use-notification-related'
 
@@ -51,7 +51,13 @@ export function NotificationDialog({
       }
     >
       <Facts title="Notification">
-        <Fact term="Type">{typeLabel(notification.type)}</Fact>
+        <Fact term="Type">
+          {isSos(notification) ? (
+            <StatusLabel tone="danger">{typeLabel(notification.type)}</StatusLabel>
+          ) : (
+            typeLabel(notification.type)
+          )}
+        </Fact>
         <Fact term="Group">{categoryLabel(notification.category)}</Fact>
         <Fact term="Received by CHL">{formatDateTime(notification.receivedAt)}</Fact>
         <Fact term="Status">

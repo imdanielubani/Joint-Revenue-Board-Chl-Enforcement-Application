@@ -22,6 +22,11 @@ export function typeLabel(type: string): string {
     : humanize(type)
 }
 
+/** An SOS from an agent: shown in red wherever notifications are listed. */
+export function isSos(item: Pick<Notification, 'type'>): boolean {
+  return item.type === 'sos'
+}
+
 /** Unread in blue, read in grey. */
 export function readPill(read: boolean): { tone: StatusTone; label: string } {
   return read ? { tone: 'neutral', label: 'Read' } : { tone: 'info', label: 'Unread' }

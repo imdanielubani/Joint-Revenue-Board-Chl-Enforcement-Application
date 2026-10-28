@@ -255,4 +255,27 @@ describe('notifications page', () => {
     expect(note).toHaveTextContent('no SOS is acknowledged or answered here')
     expect(note).toHaveTextContent('changes no CHL record')
   })
+
+  it('shows an SOS in red, in the register and its popup', async () => {
+    const sos = expected().find((item) => item.type === 'sos')!
+    const other = expected().find((item) => item.type !== 'sos')!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/notifications')
+    const register = await card('All notifications')
+    const table = within(register).getByRole('table', { name: 'Notifications' })
+    const sosRow = within(table).getAllByText(sos.title)[0]!.closest('tr')!
+    expect(within(sosRow).getByText(sos.title)).toHaveClass('sosTitle')
+    expect(within(sosRow).getByText('SOS')).toHaveClass('danger')
+    const otherRow = within(table).getAllByText(other.title)[0]!.closest('tr')!
+    expect(within(otherRow).queryByText(/./, { selector: '.danger' })).not.toBeInTheDocument()
+
+    await userEvent.click(within(sosRow).getByRole('button', { name: `Actions for ${sos.title}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View notification' }))
+    const dialog = await screen.findByRole('dialog', { name: sos.title })
+    expect(
+      within(dialog)
+        .getAllByText('SOS')
+        .some((el) => el.classList.contains('danger')),
+    ).toBe(true)
+  })
 })

@@ -15,3 +15,16 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* An SOS stands out in red: its words, and its type as a red label under them. */
+.sos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.sosTitle {
+  color: var(--status-danger-text);
+  font-weight: var(--font-weight-semibold);
+}

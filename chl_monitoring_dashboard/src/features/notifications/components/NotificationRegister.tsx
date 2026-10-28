@@ -11,6 +11,7 @@ import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
   agentText,
   categoryLabel,
+  isSos,
   readPill,
   searchTextOf,
   typeLabel,
@@ -67,7 +68,15 @@ export function NotificationRegister({
       {
         key: 'notification',
         header: 'Notification',
-        render: (row) => <Stack main={row.title} sub={typeLabel(row.type)} />,
+        render: (row) =>
+          isSos(row) ? (
+            <span className={styles.sos}>
+              <span className={styles.sosTitle}>{row.title}</span>
+              <StatusLabel tone="danger">{typeLabel(row.type)}</StatusLabel>
+            </span>
+          ) : (
+            <Stack main={row.title} sub={typeLabel(row.type)} />
+          ),
         sortValue: (row) => row.title,
       },
       ...(showCategory
