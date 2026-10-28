@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { unreadCount } from '@/mocks/mock-notifications-api'
+import { latestNotifications, unreadCount } from '@/mocks/mock-notifications-api'
 import { renderApp, signInAs } from '@/test/render-app'
 import { SIDEBAR_COLLAPSED_KEY } from './AppShell'
 
@@ -156,11 +156,82 @@ describe('top bar', () => {
     renderApp('/overview')
 
     const unread = unreadCount(['ng'])
-    const bell = await within(await topbar()).findByRole('link', {
+    const bell = await within(await topbar()).findByRole('button', {
       name: `Notifications, ${unread} unread`,
     })
-    expect(bell).toHaveAttribute('href', '/notifications')
+    expect(bell).toHaveAttribute('aria-haspopup', 'menu')
+    expect(bell).toHaveAttribute('aria-expanded', 'false')
     expect(within(bell).getByText(unread > 99 ? '99+' : String(unread))).toBeInTheDocument()
+  })
+
+  it('opens the latest notifications from the bell, as the profile opens its menu', async () => {
+    const latest = latestNotifications(['ng'])
+    const unread = unreadCount(['ng'])
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+    const user = userEvent.setup()
+    const bell = await within(await topbar()).findByRole('button', {
+      name: `Notifications, ${unread} unread`,
+    })
+    await user.click(bell)
+    const menu = await screen.findByRole('menu', { name: 'Notifications' })
+    expect(bell).toHaveAttribute('aria-expanded', 'true')
+    expect(menu).toHaveTextContent(`${unread} unread`)
+    const items = within(menu).getAllByRole('menuitem')
+    // The latest six, latest first, then the way to all of them.
+    expect(items.map((item) => item.textContent)).toEqual([
+      ...latest.map((item) => expect.stringContaining(item.title)),
+      'View all notifications',
+    ])
+    expect(items[0]).toHaveFocus()
+
+    // A notification opens on the Notifications page, which marks it read.
+    await user.click(items[0]!)
+    expect(screen.queryByRole('menu', { name: 'Notifications' })).not.toBeInTheDocument()
+    expect(await screen.findByRole('dialog', { name: latest[0]!.title })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/notifications')
+    expect(new URLSearchParams(router.state.location.search).get('notification')).toBe(
+      latest[0]!.id,
+    )
+  })
+
+  it('closes the notifications menu with Escape, a click outside, or the profile menu', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+    const user = userEvent.setup()
+    const bell = await within(await topbar()).findByRole('button', { name: /^Notifications/ })
+    await user.click(bell)
+    await screen.findByRole('menu', { name: 'Notifications' })
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('menu', { name: 'Notifications' })).not.toBeInTheDocument()
+    expect(bell).toHaveFocus()
+
+    await user.click(bell)
+    await screen.findByRole('menu', { name: 'Notifications' })
+    await user.click(screen.getByRole('heading', { level: 1 }))
+    expect(screen.queryByRole('menu', { name: 'Notifications' })).not.toBeInTheDocument()
+
+    // Only one of the top bar's menus is open at a time.
+    await user.click(bell)
+    await screen.findByRole('menu', { name: 'Notifications' })
+    // The bar itself: once the page loads, its cards add headers of their own.
+    await user.click(within(bell.closest('header')!).getByRole('button', { name: /Account menu/ }))
+    expect(screen.queryByRole('menu', { name: 'Notifications' })).not.toBeInTheDocument()
+    expect(screen.getByRole('menu', { name: 'Account' })).toBeInTheDocument()
+  })
+
+  it('lists all notifications from the menu', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/overview')
+    const user = userEvent.setup()
+    await user.click(await within(await topbar()).findByRole('button', { name: /^Notifications/ }))
+    const menu = await screen.findByRole('menu', { name: 'Notifications' })
+    await user.click(within(menu).getByRole('menuitem', { name: 'View all notifications' }))
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Notifications' }),
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/notifications')
+    expect(router.state.location.search).toBe('')
   })
 
   it('searches all records', async () => {

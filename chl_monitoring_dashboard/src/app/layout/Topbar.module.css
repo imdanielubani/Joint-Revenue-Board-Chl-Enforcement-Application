@@ -142,6 +142,11 @@
   gap: 10px;
 }
 
+/* The bell and the notifications menu that opens under it. */
+.bellWrap {
+  position: relative;
+}
+
 .iconButton {
   position: relative;
   display: flex;
@@ -152,6 +157,8 @@
   border: var(--border-width) solid var(--topbar-button-border);
   border-radius: 10px;
   background: var(--color-surface);
+  padding: 0;
+  cursor: pointer;
 }
 
 .iconButton:hover {

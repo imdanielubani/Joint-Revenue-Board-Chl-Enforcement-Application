@@ -1,0 +1,63 @@
+/* Under the bell, its right edge in line with the bell's; wider than the account menu. */
+.menu {
+  top: calc(100% + 13px);
+  right: 0;
+  width: 360px;
+}
+
+.entry {
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* A green dot marks an unread notification; read ones keep the space. */
+.dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 50%;
+}
+
+.unread {
+  background: var(--color-primary);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* At most two lines of the notification's words. */
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  color: var(--color-heading);
+  line-height: 1.4;
+}
+
+.bold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.meta {
+  color: var(--color-text-slate);
+  font-size: var(--font-size-overline);
+}
+
+.note {
+  padding: 14px 12px;
+  color: var(--color-text-slate);
+  font-size: var(--font-size-xs);
+}
+
+.all {
+  justify-content: center;
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}

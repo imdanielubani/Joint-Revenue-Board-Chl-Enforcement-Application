@@ -8,6 +8,7 @@ import { assetUrl } from '@/shared/lib/asset-url'
 import { initials } from '@/shared/lib/initials'
 import { MaskIcon } from '@/shared/ui/MaskIcon'
 import { AccountMenu } from './AccountMenu'
+import { NotificationsMenu } from './NotificationsMenu'
 import { pageMeta } from './page-meta'
 import styles from './Topbar.module.css'
 
@@ -28,6 +29,10 @@ export function Topbar({ sidebarOpen, toggleLabel, onToggleSidebar }: TopbarProp
   const [menuOpen, setMenuOpen] = useState(false)
   // Stable, so the open menu sets itself up once rather than on every render.
   const closeMenu = useCallback(() => setMenuOpen(false), [setMenuOpen])
+  const bellMenuId = useId()
+  const bellRef = useRef<HTMLButtonElement>(null)
+  const [bellOpen, setBellOpen] = useState(false)
+  const closeBell = useCallback(() => setBellOpen(false), [setBellOpen])
 
   const canSeeNotifications = user.modules.includes('notifications')
   const notifications = useNotificationsSummary({ enabled: canSeeNotifications })
@@ -98,18 +103,37 @@ export function Topbar({ sidebarOpen, toggleLabel, onToggleSidebar }: TopbarProp
           </Link>
 
           {canSeeNotifications && (
-            <Link
-              className={styles.iconButton}
-              to={paths.notifications}
-              aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
-            >
-              <img src={assetUrl('shell/bell.svg')} width={21} height={21} alt="" />
-              {unread > 0 && (
-                <span className={styles.badge} aria-hidden="true">
-                  {unread > 99 ? '99+' : unread}
-                </span>
+            <div className={styles.bellWrap}>
+              <button
+                ref={bellRef}
+                type="button"
+                className={styles.iconButton}
+                aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+                aria-haspopup="menu"
+                aria-expanded={bellOpen}
+                aria-controls={bellOpen ? bellMenuId : undefined}
+                onClick={() => {
+                  setMenuOpen(false)
+                  setBellOpen((open) => !open)
+                }}
+              >
+                <img src={assetUrl('shell/bell.svg')} width={21} height={21} alt="" />
+                {unread > 0 && (
+                  <span className={styles.badge} aria-hidden="true">
+                    {unread > 99 ? '99+' : unread}
+                  </span>
+                )}
+              </button>
+              {bellOpen && (
+                <NotificationsMenu
+                  id={bellMenuId}
+                  triggerRef={bellRef}
+                  unread={notifications.data?.unread}
+                  latest={notifications.data?.latest}
+                  onClose={closeBell}
+                />
               )}
-            </Link>
+            </div>
           )}
 
           <span className={styles.divider} aria-hidden="true" />
@@ -121,7 +145,10 @@ export function Topbar({ sidebarOpen, toggleLabel, onToggleSidebar }: TopbarProp
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             aria-controls={menuOpen ? menuId : undefined}
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => {
+              setBellOpen(false)
+              setMenuOpen((open) => !open)
+            }}
           >
             <span className={styles.avatar} aria-hidden="true">
               {initials(user.name)}

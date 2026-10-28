@@ -157,8 +157,11 @@ describe('notifications page', () => {
     // Opened, it counts as read: in the popup, and on the bell and in the sidebar.
     expect(await within(dialog).findByText('Read')).toBeInTheDocument()
     expect(
-      await screen.findAllByRole('link', { name: `Notifications, ${unread - 1} unread` }),
-    ).toHaveLength(2)
+      await screen.findByRole('link', { name: `Notifications, ${unread - 1} unread` }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: `Notifications, ${unread - 1} unread` }),
+    ).toBeInTheDocument()
     await userEvent.click(within(dialog).getAllByRole('button', { name: 'Close' }).at(-1)!)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })

@@ -321,6 +321,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The top bar's bell opens a notifications menu, as the profile opens the
+  account menu: the unread count, the latest six notifications (a green dot on
+  unread ones, their type and when CHL received them) and "View all
+  notifications". A notification opens in its popup on the Notifications page,
+  which marks it read. Only one of the top bar's menus is open at a time.
 - The account menu's keyboard and click-outside behaviour moves into a shared
   `useMenu` hook (`app/layout/use-menu.ts`), so the top bar's menus behave
   alike: the first item takes focus, arrows, Home and End move, Escape closes
