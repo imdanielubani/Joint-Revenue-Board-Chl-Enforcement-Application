@@ -321,6 +321,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The unread summary also carries the latest six notifications in the user's
+  areas, latest first, for the top bar's notifications menu; the sample data
+  lists them from the same notifications the page shows.
 - Page not found is white instead of black: a white card with the dashboard's
   card border, black "404." and heading, muted message and a black "Go back
   home" button that turns green on hover. The illustration's transparent

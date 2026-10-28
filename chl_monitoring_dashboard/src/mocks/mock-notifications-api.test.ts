@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
+import { notificationsSummarySchema } from '@/features/notifications/notifications.api'
 import { notificationsSchema } from '@/features/notifications/notifications.schemas'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { lagosDay } from '@/shared/lib/dates'
 import { summarizeCommandCentre } from './mock-command-centre-api'
-import { mockNotificationsApi, summarizeNotifications, unreadCount } from './mock-notifications-api'
+import {
+  latestNotifications,
+  mockNotificationsApi,
+  summarizeNotifications,
+  unreadCount,
+} from './mock-notifications-api'
 import { summarize } from './mock-overview-api'
 import { mockRecords } from './mock-records'
 
@@ -129,5 +135,14 @@ describe('summarizeNotifications', () => {
 
   it('says CHL does not pass on agents’ operational notifications', () => {
     expect(summarizeNotifications(filters('ng'), NOW).operationalProvided).toBe(false)
+  })
+
+  it('lists the latest notifications in the user’s areas for the top bar, once each', () => {
+    const history = summarizeNotifications(filters('la', '90d'), NOW).notifications
+    const latest = latestNotifications(['la', 'la'], NOW)
+    expect(latest.map((item) => item.id)).toEqual(history.slice(0, 6).map((item) => item.id))
+    expect(
+      notificationsSummarySchema.safeParse({ unread: unreadCount(['la'], NOW), latest }).success,
+    ).toBe(true)
   })
 })

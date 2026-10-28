@@ -81,6 +81,9 @@ export const notificationsSchema = z.object({
   operationalProvided: z.boolean(),
 })
 
+/** How many of the latest notifications the unread summary carries, for the top bar's list. */
+export const LATEST_LIMIT = 6
+
 export type Notification = z.infer<typeof notificationSchema>
 export type Notifications = z.infer<typeof notificationsSchema>
 export type NotificationsFilters = OverviewFilters

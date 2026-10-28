@@ -3,6 +3,7 @@ import { env } from '@/config/env'
 import { request } from '@/shared/api/http-client'
 import { mockNotificationsApi } from '@/mocks/mock-notifications-api'
 import {
+  notificationSchema,
   notificationsSchema,
   type Notifications,
   type NotificationsFilters,
@@ -11,11 +12,13 @@ import {
 export const notificationsSummarySchema = z.object({
   /** Notifications the user has not opened yet. */
   unread: z.number().int().nonnegative(),
+  /** The latest notifications in the user's areas, latest first; at most LATEST_LIMIT of them. */
+  latest: z.array(notificationSchema),
 })
 export type NotificationsSummary = z.infer<typeof notificationsSummarySchema>
 
 export interface NotificationsApi {
-  /** The signed-in user's unread notifications, in their own areas. */
+  /** The signed-in user's unread count and latest notifications, in their own areas. */
   getSummary(): Promise<NotificationsSummary>
   /** The notifications received in the area and period, latest first. Read-only. */
   getNotifications(filters: NotificationsFilters): Promise<Notifications>

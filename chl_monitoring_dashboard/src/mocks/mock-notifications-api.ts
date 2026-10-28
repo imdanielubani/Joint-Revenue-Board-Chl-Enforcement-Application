@@ -1,9 +1,10 @@
 import type { FeedItem } from '@/features/command-centre/command-centre.schemas'
 import type { NotificationsApi } from '@/features/notifications/notifications.api'
-import type {
-  Notification,
-  Notifications,
-  NotificationsFilters,
+import {
+  LATEST_LIMIT,
+  type Notification,
+  type Notifications,
+  type NotificationsFilters,
 } from '@/features/notifications/notifications.schemas'
 import { loadSession } from '@/features/auth/session'
 import { presetPeriod } from '@/features/overview/overview-period'
@@ -181,25 +182,42 @@ function isRead(item: Notification, read: ReadonlySet<string>, now: number): boo
   return read.has(item.id) || Date.parse(item.receivedAt) < now - UNREAD_FOR_MS
 }
 
-/** The unread notifications in a user's areas over the history the sample keeps. */
-export function unreadCount(scopes: readonly string[], now: number = Date.now()): number {
+/** Every notification in a user's areas over the history the sample keeps, once each, latest first. */
+function inAreas(scopes: readonly string[], now: number): Notification[] {
   const today = lagosDay(new Date(now))
-  const unread = new Set<string>()
+  const byId = new Map<string, Notification>()
   for (const scope of scopes) {
     const period = { scope, range: '90d', ...presetPeriod('90d', today) } as const
     const result = summarizeNotifications({ ...period, agentId: null, organization: null }, now)
-    for (const item of result.notifications) if (!item.read) unread.add(item.id)
+    for (const item of result.notifications) byId.set(item.id, item)
   }
-  return unread.size
+  return [...byId.values()].sort((a, b) => Date.parse(b.receivedAt) - Date.parse(a.receivedAt))
 }
 
-/** Sample data: counted from the sample notifications in the signed-in user's areas. */
+/** The unread notifications in a user's areas over the history the sample keeps. */
+export function unreadCount(scopes: readonly string[], now: number = Date.now()): number {
+  return inAreas(scopes, now).filter((item) => !item.read).length
+}
+
+/** The latest notifications in a user's areas, for the top bar's list. */
+export function latestNotifications(
+  scopes: readonly string[],
+  now: number = Date.now(),
+): Notification[] {
+  return inAreas(scopes, now).slice(0, LATEST_LIMIT)
+}
+
+/** Sample data: counted and listed from the sample notifications in the signed-in user's areas. */
 export const mockNotificationsApi: NotificationsApi = {
   async getSummary() {
     await delay()
     // As the backend would from the access token: the signed-in user's areas.
     const scopes = loadSession()?.session.user.scopes.map((scope) => scope.id) ?? []
-    return { unread: unreadCount(scopes) }
+    const all = inAreas(scopes, Date.now())
+    return {
+      unread: all.filter((item) => !item.read).length,
+      latest: all.slice(0, LATEST_LIMIT),
+    }
   },
   async getNotifications(filters) {
     await delay()
