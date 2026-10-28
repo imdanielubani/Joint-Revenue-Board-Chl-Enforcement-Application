@@ -56,16 +56,7 @@
   font-size: var(--font-size-xs);
 }
 
-/* An SOS stands out in red: a red tint, a red dot whether read or not, and red words. */
-.sos {
-  background: var(--status-danger-bg);
-}
-
-.sos:hover,
-.sos:focus-visible {
-  background: #ffe4e1;
-}
-
+/* An SOS stands out in red: a red dot whether read or not, and red words. */
 .sos .dot {
   background: var(--status-danger-text);
 }
@@ -73,10 +64,6 @@
 .sos .title,
 .sos .meta {
   color: var(--status-danger-text);
-}
-
-.sos + .sos {
-  margin-top: 2px;
 }
 
 .all {

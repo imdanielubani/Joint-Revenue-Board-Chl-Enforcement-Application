@@ -324,6 +324,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- An SOS in the top bar's notifications menu no longer has a light red row;
+  its red dot and red words are enough.
 - An SOS stands out in red in the top bar's notifications menu too: a light red
   row, a red dot whether read or not, and its words and type in red.
 - An SOS stands out in red on the Notifications page: its words in red and its
