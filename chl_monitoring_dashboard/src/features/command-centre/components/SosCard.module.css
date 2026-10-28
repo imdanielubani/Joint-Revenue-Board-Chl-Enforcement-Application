@@ -50,6 +50,13 @@
   font-weight: var(--font-weight-semibold);
 }
 
+/* What the SOS is about, in red. */
+.type {
+  color: var(--status-danger-text);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+}
+
 .message {
   color: var(--card-title);
   font-size: 11px;

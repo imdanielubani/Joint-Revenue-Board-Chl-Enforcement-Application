@@ -324,6 +324,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The Command centre shows an SOS's type too: in red under the agent's name in
+  SOS monitoring ("Type not supplied" when CHL sends none), and as "SOS type"
+  in Incident context.
 - Notifications show an SOS's type: beside the red SOS label in the register
   ("Type not supplied" when CHL sends none), in the popup (SOS type), and in
   the bell menu ("SOS · Road accident · time"). With Type set to SOS, an "SOS

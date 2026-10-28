@@ -8,7 +8,13 @@ import { formatDateTime, formatDelay, formatDuration } from '@/shared/lib/format
 import { useNow } from '@/shared/lib/use-now'
 import { DashboardCard, type CardLink } from '@/shared/ui/DashboardCard'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { feedKindLabel, feedStatus, feedTitle, sosDuration } from '../command-centre-display'
+import {
+  feedKindLabel,
+  feedStatus,
+  feedTitle,
+  sosDuration,
+  sosTypeLabel,
+} from '../command-centre-display'
 import type { FeedItem } from '../command-centre.schemas'
 import styles from './IncidentContextCard.module.css'
 
@@ -108,6 +114,11 @@ function IncidentDetails({ item }: { item: FeedItem }) {
 
       <dl className={styles.facts}>
         {item.report && <Fact term="Report">{item.report.summary}</Fact>}
+        {item.sos && (
+          <Fact term="SOS type">
+            {item.sos.type ? sosTypeLabel(item.sos.type) : 'Not supplied'}
+          </Fact>
+        )}
         {item.sos && (
           <Fact term="Message">{item.sos.message ?? 'No message was sent with the SOS.'}</Fact>
         )}

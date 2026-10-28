@@ -2,7 +2,7 @@ import { formatDuration, formatShortDateTime } from '@/shared/lib/format'
 import { useNow } from '@/shared/lib/use-now'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { sosDuration, sosStatus } from '../command-centre-display'
+import { sosDuration, sosStatus, sosTypeLabel } from '../command-centre-display'
 import type { CommandCentre, FeedItem } from '../command-centre.schemas'
 import styles from './SosCard.module.css'
 
@@ -82,6 +82,9 @@ function SosEntry({
       <span className={styles.head}>
         <span className={styles.agent}>{item.agent.name}</span>
         {status && <StatusLabel tone={status.tone}>{status.label}</StatusLabel>}
+      </span>
+      <span className={styles.type}>
+        {item.sos?.type ? sosTypeLabel(item.sos.type) : 'Type not supplied'}
       </span>
       <span
         className={item.sos?.message ? styles.message : `${styles.message} ${styles.noMessage}`}
