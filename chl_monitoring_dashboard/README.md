@@ -321,6 +321,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The account menu's keyboard and click-outside behaviour moves into a shared
+  `useMenu` hook (`app/layout/use-menu.ts`), so the top bar's menus behave
+  alike: the first item takes focus, arrows, Home and End move, Escape closes
+  and returns to the button, Tab or a click outside closes. No change to the
+  account menu itself.
 - The unread summary also carries the latest six notifications in the user's
   areas, latest first, for the top bar's notifications menu; the sample data
   lists them from the same notifications the page shows.

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type KeyboardEvent, type RefObject } from 'react'
+import type { RefObject } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { ROLE_LABELS } from '@/features/auth/auth.schemas'
@@ -6,6 +6,7 @@ import { useCurrentUser } from '@/features/auth/session-context'
 import { useSignOut } from '@/features/auth/use-sign-out'
 import { MaskIcon } from '@/shared/ui/MaskIcon'
 import styles from './AccountMenu.module.css'
+import { useMenu } from './use-menu'
 
 interface AccountMenuProps {
   id: string
@@ -20,59 +21,7 @@ interface AccountMenuProps {
 export function AccountMenu({ id, placement, triggerRef, onClose }: AccountMenuProps) {
   const user = useCurrentUser()
   const signOut = useSignOut()
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  const items = () => [
-    ...(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []),
-  ]
-
-  const close = (returnFocus: boolean) => {
-    onClose()
-    if (returnFocus) triggerRef.current?.focus()
-  }
-
-  // Focus the first item on opening; close on a click outside.
-  useEffect(() => {
-    items()[0]?.focus()
-    const onPointerDown = (event: PointerEvent) => {
-      const target = event.target as Node
-      if (menuRef.current?.contains(target) || triggerRef.current?.contains(target)) return
-      onClose()
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [onClose, triggerRef])
-
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const list = items()
-    const index = list.indexOf(document.activeElement as HTMLElement)
-    const focusAt = (next: number) => list[(next + list.length) % list.length]?.focus()
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault()
-        focusAt(index + 1)
-        break
-      case 'ArrowUp':
-        event.preventDefault()
-        focusAt(index - 1)
-        break
-      case 'Home':
-        event.preventDefault()
-        focusAt(0)
-        break
-      case 'End':
-        event.preventDefault()
-        focusAt(list.length - 1)
-        break
-      case 'Escape':
-        event.preventDefault()
-        close(true)
-        break
-      case 'Tab':
-        close(false)
-        break
-    }
-  }
+  const { menuRef, onKeyDown } = useMenu(triggerRef, onClose)
 
   return (
     <div
