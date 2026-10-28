@@ -147,6 +147,13 @@
   position: relative;
 }
 
+/* Phones: the menu takes the top bar's width, so it anchors to the bar instead. */
+@media (max-width: 600px) {
+  .bellWrap {
+    position: static;
+  }
+}
+
 .iconButton {
   position: relative;
   display: flex;

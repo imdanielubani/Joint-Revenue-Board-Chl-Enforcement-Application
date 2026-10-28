@@ -61,3 +61,13 @@
   color: var(--color-primary);
   font-weight: var(--font-weight-semibold);
 }
+
+/* Phones: across the top bar's width, under it, so none of it runs off the screen. */
+@media (max-width: 600px) {
+  .menu {
+    top: calc(100% + 7px);
+    right: 0;
+    left: 0;
+    width: auto;
+  }
+}

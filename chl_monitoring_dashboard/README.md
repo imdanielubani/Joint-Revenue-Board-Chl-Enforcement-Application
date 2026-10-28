@@ -213,8 +213,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
     or narrower it slides over the page instead.
   - **Top bar:** the page's icon, breadcrumb and title (the page's `h1`), a
     search of all records (to `/search`), Help (CHL support), the bell with
-    the unread count, and the profile, which opens the account menu (Profile,
-    Settings, Log out; keyboard: arrows, Home, End, Escape).
+    the unread count, which opens the notifications menu (the latest six,
+    each opening on the Notifications page, and View all notifications), and
+    the profile, which opens the account menu (Profile, Settings, Log out).
+    Both menus share `use-menu.ts` (keyboard: arrows, Home, End, Escape; a
+    click outside closes), and only one is open at a time.
   - Menu icons use the design's SVGs as masks (`MaskIcon`), so one file
     serves the active, inactive and top-bar colours.
   - The counts come from `features/notifications` and `features/violations`
@@ -321,6 +324,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On phones the notifications menu spans the top bar's width under it, instead
+  of running off the left of the screen; the README's top bar notes describe
+  the menu.
 - The top bar's bell opens a notifications menu, as the profile opens the
   account menu: the unread count, the latest six notifications (a green dot on
   unread ones, their type and when CHL received them) and "View all
