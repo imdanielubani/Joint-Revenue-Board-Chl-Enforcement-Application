@@ -10,9 +10,11 @@ import type { StatusTone } from '@/shared/ui/StatusLabel'
 import {
   FEED_KIND_LABELS,
   FIELD_REPORT_LABELS,
+  SOS_TYPE_LABELS,
   type FeedItem,
   type FeedKind,
   type FieldReportType,
+  type SosType,
 } from './command-centre.schemas'
 
 const isKind = (value: string): value is FeedKind => Object.hasOwn(FEED_KIND_LABELS, value)
@@ -25,6 +27,11 @@ export function fieldReportLabel(type: string): string {
   return Object.hasOwn(FIELD_REPORT_LABELS, type)
     ? FIELD_REPORT_LABELS[type as FieldReportType]
     : humanize(type)
+}
+
+/** "Threat or assault" and the other SOS types; one CHL adds later, made readable. */
+export function sosTypeLabel(type: string): string {
+  return Object.hasOwn(SOS_TYPE_LABELS, type) ? SOS_TYPE_LABELS[type as SosType] : humanize(type)
 }
 
 /** "Loaded", "Empty", or a status CHL adds later, made readable. */

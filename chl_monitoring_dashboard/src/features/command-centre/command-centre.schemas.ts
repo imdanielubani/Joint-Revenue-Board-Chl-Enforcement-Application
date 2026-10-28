@@ -54,6 +54,28 @@ export const FIELD_REPORT_LABELS: Record<FieldReportType, string> = {
 /** Whether an SOS notification is still open, as CHL reports it. */
 export type SosStatus = 'open' | 'closed'
 
+/**
+ * What an SOS is about, as the agent chose it when sending it. The documents
+ * name no SOS types; these five were agreed for the dashboard and the mobile
+ * application. CHL may send others; they are shown as they come.
+ */
+export const SOS_TYPES = [
+  'threat_or_assault',
+  'medical_emergency',
+  'road_accident',
+  'vehicle_forced_through',
+  'crowd_or_unrest',
+] as const
+export type SosType = (typeof SOS_TYPES)[number]
+
+export const SOS_TYPE_LABELS: Record<SosType, string> = {
+  threat_or_assault: 'Threat or assault',
+  medical_emergency: 'Medical emergency',
+  road_accident: 'Road accident',
+  vehicle_forced_through: 'Vehicle forced through checkpoint',
+  crowd_or_unrest: 'Crowd or unrest',
+}
+
 /** A haulage-loaded or empty confirmation, where recorded. */
 export type LoadStatus = 'loaded' | 'empty'
 
@@ -92,12 +114,14 @@ export const feedItemSchema = z.object({
   /** For a loaded / empty confirmation. */
   load: open<LoadStatus>().nullable(),
   /**
-   * For an SOS notification: whether it is still open, the agent's message if
-   * any, and when it was closed (null while open, or when CHL does not say).
+   * For an SOS notification: whether it is still open, its type (null when CHL
+   * does not say), the agent's message if any, and when it was closed (null
+   * while open, or when CHL does not say).
    */
   sos: z
     .object({
       status: open<SosStatus>(),
+      type: open<SosType>().nullable(),
       message: z.string().nullable(),
       closedAt: z.string().nullable(),
     })

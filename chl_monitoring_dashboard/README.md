@@ -324,6 +324,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- SOS types: an SOS carries the type the agent chose (Threat or assault,
+  Medical emergency, Road accident, Vehicle forced through checkpoint, Crowd or
+  unrest), or none when CHL does not supply one. The documents name no SOS
+  types; these five were agreed for the dashboard. The sample SOS use all five,
+  and one sends none.
 - An SOS in the top bar's notifications menu no longer has a light red row;
   its red dot and red words are enough.
 - An SOS stands out in red in the top bar's notifications menu too: a light red

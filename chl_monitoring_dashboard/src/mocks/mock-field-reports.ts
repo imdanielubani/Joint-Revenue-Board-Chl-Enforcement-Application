@@ -1,4 +1,8 @@
-import type { FieldReportType, LoadStatus } from '@/features/command-centre/command-centre.schemas'
+import type {
+  FieldReportType,
+  LoadStatus,
+  SosType,
+} from '@/features/command-centre/command-centre.schemas'
 import { addDays, type CalendarDay } from '@/shared/lib/dates'
 import { FIELD_AGENTS } from './mock-agent-list'
 import { AGENT_POINTS, HISTORY_DAYS, PLATES, pick, seeded, startOfDay } from './mock-records'
@@ -22,6 +26,8 @@ export interface MockFieldReport {
 
 export interface MockSos {
   id: string
+  /** The type the agent chose; null when none was supplied. */
+  type: SosType | null
   message: string | null
   agentId: string
   pointId: string
@@ -145,11 +151,12 @@ function generate(today: CalendarDay, now: number) {
   }
 }
 
-const SOS_MESSAGES = [
-  'Driver threatening agents at the checkpoint.',
-  'Collision near the checkpoint; one person hurt.',
-  'Agent feeling unwell; needs help.',
-  null,
+/** Earlier SOS: each message with the type the agent chose for it. */
+const SOS_MESSAGES: { type: SosType; message: string | null }[] = [
+  { type: 'threat_or_assault', message: 'Driver threatening agents at the checkpoint.' },
+  { type: 'road_accident', message: 'Collision near the checkpoint; one person hurt.' },
+  { type: 'medical_emergency', message: 'Agent feeling unwell; needs help.' },
+  { type: 'crowd_or_unrest', message: null },
 ]
 
 /**
@@ -160,6 +167,7 @@ const RECENT_SOS: {
   minutesAgo: number
   agentId: string
   pointId: string
+  type: SosType | null
   message: string | null
   openFor: number | null
 }[] = [
@@ -167,6 +175,7 @@ const RECENT_SOS: {
     minutesAgo: 40,
     agentId: 'JRB-AG-0142',
     pointId: 'loc_ikeja_gate',
+    type: 'threat_or_assault',
     message: 'Driver threatening agents at the checkpoint.',
     openFor: null,
   },
@@ -174,6 +183,7 @@ const RECENT_SOS: {
     minutesAgo: 130,
     agentId: 'JRB-AG-0145',
     pointId: 'loc_apapa',
+    type: 'crowd_or_unrest',
     message: 'Crowd gathering around the enforcement team.',
     openFor: null,
   },
@@ -181,6 +191,7 @@ const RECENT_SOS: {
     minutesAgo: 330,
     agentId: 'JRB-AG-0144',
     pointId: 'loc_kano_zaria',
+    type: null,
     message: null,
     openFor: null,
   },
@@ -188,6 +199,7 @@ const RECENT_SOS: {
     minutesAgo: 420,
     agentId: 'JRB-AG-0143',
     pointId: 'loc_zuba',
+    type: 'road_accident',
     message: 'Collision near the checkpoint; one person hurt.',
     openFor: 48,
   },
@@ -195,6 +207,7 @@ const RECENT_SOS: {
     minutesAgo: 540,
     agentId: 'JRB-AG-0142',
     pointId: 'loc_ojota',
+    type: 'medical_emergency',
     message: 'Agent feeling unwell; needs help.',
     openFor: 25,
   },
@@ -202,6 +215,7 @@ const RECENT_SOS: {
     minutesAgo: 660,
     agentId: 'JRB-AG-0145',
     pointId: 'loc_eleme',
+    type: 'vehicle_forced_through',
     message: 'Driver drove at an agent and left the checkpoint.',
     openFor: 72,
   },
@@ -209,21 +223,31 @@ const RECENT_SOS: {
     minutesAgo: 810,
     agentId: 'JRB-AG-0144',
     pointId: 'loc_kano_zaria',
+    type: 'crowd_or_unrest',
     message: 'Vehicle blocking the road; drivers arguing with agents.',
     openFor: 34,
   },
-  { minutesAgo: 960, agentId: 'JRB-AG-0143', pointId: 'loc_zuba', message: null, openFor: 12 },
+  {
+    minutesAgo: 960,
+    agentId: 'JRB-AG-0143',
+    pointId: 'loc_zuba',
+    type: 'medical_emergency',
+    message: null,
+    openFor: 12,
+  },
   {
     minutesAgo: 1140,
     agentId: 'JRB-AG-0142',
     pointId: 'loc_ikeja_gate',
-    message: 'Fire at a roadside stall beside the checkpoint.',
+    type: 'vehicle_forced_through',
+    message: 'Truck drove through the checkpoint without stopping.',
     openFor: 95,
   },
   {
     minutesAgo: 1320,
     agentId: 'JRB-AG-0145',
     pointId: 'loc_apapa',
+    type: 'threat_or_assault',
     message: 'Agent threatened while checking a tag.',
     openFor: 41,
   },
@@ -242,7 +266,10 @@ function generateSos(today: CalendarDay, now: number): MockSos[] {
     )
     alerts.push({
       id: '',
-      message: SOS_MESSAGES[Math.floor(random() * SOS_MESSAGES.length)] ?? null,
+      ...(SOS_MESSAGES[Math.floor(random() * SOS_MESSAGES.length)] ?? {
+        type: null,
+        message: null,
+      }),
       agentId: agent.id,
       pointId: points[Math.floor(random() * points.length)] ?? 'loc_ojota',
       recordedAt,
@@ -255,6 +282,7 @@ function generateSos(today: CalendarDay, now: number): MockSos[] {
     const recordedAt = now - recent.minutesAgo * 60_000
     alerts.push({
       id: '',
+      type: recent.type,
       message: recent.message,
       agentId: recent.agentId,
       pointId: recent.pointId,

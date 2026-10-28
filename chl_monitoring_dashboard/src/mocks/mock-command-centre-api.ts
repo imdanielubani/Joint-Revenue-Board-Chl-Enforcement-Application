@@ -200,6 +200,7 @@ export function feedFrom(
       sos: {
         // Closed only once its closing time has passed.
         status: alert.closedAt !== null && alert.closedAt <= now ? 'closed' : 'open',
+        type: alert.type,
         message: alert.message,
         closedAt:
           alert.closedAt !== null && alert.closedAt <= now

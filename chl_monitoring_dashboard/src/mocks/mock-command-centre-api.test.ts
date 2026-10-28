@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { commandCentreSchema } from '@/features/command-centre/command-centre.schemas'
+import { commandCentreSchema, SOS_TYPES } from '@/features/command-centre/command-centre.schemas'
 import { summarizeCommandCentre, windowStart } from './mock-command-centre-api'
 
 const NOW = Date.parse('2026-10-18T12:00:00+01:00')
@@ -110,6 +110,16 @@ describe('summarizeCommandCentre', () => {
         expect(closed).toBeLessThanOrEqual(NOW)
       }
     }
+  })
+
+  it('gives each SOS one of the five types, or none when the agent sent none', () => {
+    const sos = summarizeCommandCentre({ scope: 'ng', window: '7d' }, NOW).sos!
+    const types = sos.items.map((item) => item.sos!.type)
+    const known: readonly (string | null)[] = [...SOS_TYPES, null]
+    for (const type of types) expect(known).toContain(type)
+    // The last day's sample SOS use every type, and one has none.
+    for (const type of SOS_TYPES) expect(types).toContain(type)
+    expect(types).toContain(null)
   })
 
   it('gives a verification and its violation the same photographs', () => {
