@@ -195,6 +195,21 @@ describe('top bar', () => {
     )
   })
 
+  it('shows an SOS in red in the notifications menu', async () => {
+    const latest = latestNotifications(['ng'])
+    const sos = latest.find((item) => item.type === 'sos')
+    expect(sos).toBeDefined()
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+    const user = userEvent.setup()
+    await user.click(await within(await topbar()).findByRole('button', { name: /^Notifications/ }))
+    const menu = await screen.findByRole('menu', { name: 'Notifications' })
+    for (const [index, item] of within(menu).getAllByRole('menuitem').slice(0, -1).entries()) {
+      // Red for an SOS only.
+      expect(item.classList.contains('sos')).toBe(latest[index]!.type === 'sos')
+    }
+  })
+
   it('closes the notifications menu with Escape, a click outside, or the profile menu', async () => {
     signInAs('admin@jrb.gov.ng')
     renderApp('/overview')

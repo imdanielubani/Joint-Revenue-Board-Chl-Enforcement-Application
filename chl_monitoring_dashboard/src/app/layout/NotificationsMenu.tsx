@@ -1,7 +1,7 @@
 import type { RefObject } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
-import { typeLabel } from '@/features/notifications/notifications-display'
+import { isSos, typeLabel } from '@/features/notifications/notifications-display'
 import type { Notification } from '@/features/notifications/notifications.schemas'
 import { formatShortDateTime } from '@/shared/lib/format'
 import menu from './AccountMenu.module.css'
@@ -66,7 +66,7 @@ export function NotificationsMenu({
           latest.map((item) => (
             <Link
               key={item.id}
-              className={`${menu.item} ${styles.entry}`}
+              className={`${menu.item} ${styles.entry}${isSos(item) ? ` ${styles.sos}` : ''}`}
               to={notificationHref(item.id)}
               role="menuitem"
               onClick={onClose}
