@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { sosTypeLabel } from '@/features/command-centre/command-centre-display'
 import { latestNotifications, unreadCount } from '@/mocks/mock-notifications-api'
 import { renderApp, signInAs } from '@/test/render-app'
 import { SIDEBAR_COLLAPSED_KEY } from './AppShell'
@@ -205,8 +206,15 @@ describe('top bar', () => {
     await user.click(await within(await topbar()).findByRole('button', { name: /^Notifications/ }))
     const menu = await screen.findByRole('menu', { name: 'Notifications' })
     for (const [index, item] of within(menu).getAllByRole('menuitem').slice(0, -1).entries()) {
-      // Red for an SOS only.
-      expect(item.classList.contains('sos')).toBe(latest[index]!.type === 'sos')
+      // Red for an SOS only, with its type.
+      const entry = latest[index]!
+      expect(item.classList.contains('sos')).toBe(entry.type === 'sos')
+      if (entry.type === 'sos') {
+        const type = entry.entry!.sos!.type
+        expect(item).toHaveTextContent(
+          `SOS · ${type ? sosTypeLabel(type) : 'Type not supplied'} · `,
+        )
+      }
     }
   })
 

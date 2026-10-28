@@ -1,5 +1,9 @@
 import { useEffect } from 'react'
-import { loadLabel, sosDuration } from '@/features/command-centre/command-centre-display'
+import {
+  loadLabel,
+  sosDuration,
+  sosTypeLabel,
+} from '@/features/command-centre/command-centre-display'
 import { followUpLabel } from '@/features/overview/overview-display'
 import { Fact, Facts } from '@/features/verifications/components/VerificationDetailsDialog'
 import links from '@/features/payments/components/PaymentCards.module.css'
@@ -11,6 +15,7 @@ import { Dialog } from '@/shared/ui/Dialog'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { categoryLabel, isSos, readPill, typeLabel } from '../notifications-display'
 import type { Notification } from '../notifications.schemas'
+import styles from './NotificationRegister.module.css'
 import { useNotificationRelated } from '../use-notification-related'
 
 /**
@@ -104,6 +109,13 @@ function RecordFacts({ entry }: { entry: NonNullable<Notification['entry']> }) {
   return (
     <Facts title="Record">
       {entry.report && <Fact term="Report">{entry.report.summary}</Fact>}
+      {entry.sos && (
+        <Fact term="SOS type">
+          <span className={styles.sosType}>
+            {entry.sos.type ? sosTypeLabel(entry.sos.type) : 'Not supplied'}
+          </span>
+        </Fact>
+      )}
       {entry.sos && (
         <Fact term="Message">{entry.sos.message ?? 'No message was sent with the SOS.'}</Fact>
       )}

@@ -6,7 +6,7 @@
 
 .selects {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10.4px;
 }
 
@@ -22,6 +22,16 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
+}
+
+/* The red SOS label, then its type in red beside it. */
+.sosType {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--status-danger-text);
+  font-size: 10px;
 }
 
 .sosTitle {

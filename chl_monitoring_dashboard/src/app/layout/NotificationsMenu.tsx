@@ -1,7 +1,7 @@
 import type { RefObject } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/config/paths'
-import { isSos, typeLabel } from '@/features/notifications/notifications-display'
+import { isSos, sosTypeText, typeLabel } from '@/features/notifications/notifications-display'
 import type { Notification } from '@/features/notifications/notifications.schemas'
 import { formatShortDateTime } from '@/shared/lib/format'
 import menu from './AccountMenu.module.css'
@@ -80,7 +80,9 @@ export function NotificationsMenu({
                   {item.title}
                 </span>
                 <span className={styles.meta}>
-                  {typeLabel(item.type)} · {formatShortDateTime(item.receivedAt)}
+                  {typeLabel(item.type)}
+                  {isSos(item) && ` · ${sosTypeText(item)}`} ·{' '}
+                  {formatShortDateTime(item.receivedAt)}
                   {!item.read && <span className="visually-hidden"> · Unread</span>}
                 </span>
               </span>

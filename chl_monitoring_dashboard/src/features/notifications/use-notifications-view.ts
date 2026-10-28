@@ -13,6 +13,8 @@ export const NOTIFICATION_PARAMS = {
   status: 'status',
   /** A notification type, such as "sos". */
   type: 'type',
+  /** An SOS type, such as "road_accident", when the register lists SOS. */
+  sosType: 'sos_type',
   /** A notification, opened in its popup. */
   notification: 'notification',
 } as const
@@ -53,18 +55,28 @@ export function useNotificationsView() {
     [params, pathname],
   )
 
-  // A type belongs to one group, so another tab starts with the type filter cleared.
+  // A type belongs to one group, so another tab starts with the type filters cleared.
   const setView = useCallback(
     (next: NotificationsView) =>
-      change({ [NOTIFICATION_PARAMS.view]: next, [NOTIFICATION_PARAMS.type]: null }),
+      change({
+        [NOTIFICATION_PARAMS.view]: next,
+        [NOTIFICATION_PARAMS.type]: null,
+        [NOTIFICATION_PARAMS.sosType]: null,
+      }),
     [change],
   )
   const setStatus = useCallback(
     (status: string | null) => change({ [NOTIFICATION_PARAMS.status]: status }),
     [change],
   )
+  // The SOS type filter applies to SOS only: another type clears it.
   const setType = useCallback(
-    (type: string | null) => change({ [NOTIFICATION_PARAMS.type]: type }),
+    (type: string | null) =>
+      change({ [NOTIFICATION_PARAMS.type]: type, [NOTIFICATION_PARAMS.sosType]: null }),
+    [change],
+  )
+  const setSosType = useCallback(
+    (sosType: string | null) => change({ [NOTIFICATION_PARAMS.sosType]: sosType }),
     [change],
   )
 
@@ -80,8 +92,13 @@ export function useNotificationsView() {
     openNotification,
     status: params.get(NOTIFICATION_PARAMS.status),
     type: params.get(NOTIFICATION_PARAMS.type),
+    sosType:
+      params.get(NOTIFICATION_PARAMS.type) === 'sos'
+        ? params.get(NOTIFICATION_PARAMS.sosType)
+        : null,
     setView,
     setStatus,
     setType,
+    setSosType,
   }
 }

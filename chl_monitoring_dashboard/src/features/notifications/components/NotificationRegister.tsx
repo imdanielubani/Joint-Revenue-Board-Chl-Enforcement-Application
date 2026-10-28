@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { sosTypeLabel } from '@/features/command-centre/command-centre-display'
+import { SOS_TYPES } from '@/features/command-centre/command-centre.schemas'
 import { Stack } from '@/features/geography/components/RecordCells'
 import cells from '@/features/geography/components/RecordColumns.module.css'
 import { formatShortDateTime } from '@/shared/lib/format'
@@ -13,6 +15,7 @@ import {
   categoryLabel,
   isSos,
   readPill,
+  sosTypeText,
   searchTextOf,
   typeLabel,
 } from '../notifications-display'
@@ -42,6 +45,8 @@ export function NotificationRegister({
   type,
   onStatusChange,
   onTypeChange,
+  sosType,
+  onSosTypeChange,
   onOpen,
   onRelated,
 }: {
@@ -57,6 +62,9 @@ export function NotificationRegister({
   type: string | null
   onStatusChange(value: string | null): void
   onTypeChange(value: string | null): void
+  /** An SOS type, filtering the SOS listed; null for all. */
+  sosType: string | null
+  onSosTypeChange(value: string | null): void
   /** Opens the notification in its popup. */
   onOpen(notification: Notification): void
   /** Opens a record it leads to in a popup on the page. */
@@ -72,7 +80,10 @@ export function NotificationRegister({
           isSos(row) ? (
             <span className={styles.sos}>
               <span className={styles.sosTitle}>{row.title}</span>
-              <StatusLabel tone="danger">{typeLabel(row.type)}</StatusLabel>
+              <span className={styles.sosType}>
+                <StatusLabel tone="danger">{typeLabel(row.type)}</StatusLabel>
+                {sosTypeText(row)}
+              </span>
             </span>
           ) : (
             <Stack main={row.title} sub={typeLabel(row.type)} />
@@ -166,8 +177,14 @@ export function NotificationRegister({
     .map((value) => ({ value, label: typeLabel(value) }))
     .sort((a, b) => a.label.localeCompare(b.label))
   const rows = notifications.filter(
-    (item) => (!status || (status === 'unread') === !item.read) && (!type || item.type === type),
+    (item) =>
+      (!status || (status === 'unread') === !item.read) &&
+      (!type || item.type === type) &&
+      (!sosType || item.entry?.sos?.type === sosType),
   )
+  const sosTypes = [
+    ...new Set([...SOS_TYPES, ...notifications.flatMap((item) => item.entry?.sos?.type ?? [])]),
+  ].map((value) => ({ value, label: sosTypeLabel(value) }))
   return (
     <DashboardCard
       title={title}
@@ -178,9 +195,17 @@ export function NotificationRegister({
       <div className={styles.selects}>
         <LabeledSelect label="Status" value={status} options={STATUSES} onChange={onStatusChange} />
         <LabeledSelect label="Type" value={type} options={types} onChange={onTypeChange} />
+        {type === 'sos' && (
+          <LabeledSelect
+            label="SOS type"
+            value={sosType}
+            options={sosTypes}
+            onChange={onSosTypeChange}
+          />
+        )}
       </div>
       <RegisterTable
-        key={`${status ?? ''}|${type ?? ''}`}
+        key={`${status ?? ''}|${type ?? ''}|${sosType ?? ''}`}
         label={label}
         rows={rows}
         columns={columns}

@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import { sosTypeLabel } from '@/features/command-centre/command-centre-display'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { summarizeNotifications, unreadCount } from '@/mocks/mock-notifications-api'
 import { lagosDay } from '@/shared/lib/dates'
@@ -277,5 +278,45 @@ describe('notifications page', () => {
         .getAllByText('SOS')
         .some((el) => el.classList.contains('danger')),
     ).toBe(true)
+  })
+
+  it('shows each SOS with its type, and lists one type of SOS', async () => {
+    const sos = expected().filter((item) => item.type === 'sos')
+    const roads = sos.filter((item) => item.entry!.sos!.type === 'road_accident')
+    expect(roads.length).toBeGreaterThan(0)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/notifications?view=field&type=sos')
+    const register = await card('Field notifications')
+    const table = within(register).getByRole('table', { name: 'Field notifications' })
+    // Latest first, as listed; several SOS can share a title, so match by place.
+    for (const [index, row] of bodyRows(table).entries()) {
+      const item = sos[index]!
+      expect(row).toHaveTextContent(item.title)
+      const type = item.entry!.sos!.type
+      expect(row).toHaveTextContent(type ? sosTypeLabel(type) : 'Type not supplied')
+    }
+
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'SOS type' }),
+      'road_accident',
+    )
+    expect(router.state.location.search).toBe('?view=field&type=sos&sos_type=road_accident')
+    const filtered = within(register).getByRole('table', { name: 'Field notifications' })
+    expect(bodyRows(filtered)).toHaveLength(Math.min(10, roads.length))
+    for (const row of bodyRows(filtered)) expect(row).toHaveTextContent('Road accident')
+
+    // The SOS type filter belongs to SOS: choosing another type removes it.
+    await userEvent.selectOptions(within(register).getByRole('combobox', { name: 'Type' }), '')
+    expect(router.state.location.search).toBe('?view=field')
+    expect(within(register).queryByRole('combobox', { name: 'SOS type' })).not.toBeInTheDocument()
+  })
+
+  it('gives an SOS popup its type, or says none was supplied', async () => {
+    const sos = expected().filter((item) => item.type === 'sos')
+    const typed = sos.find((item) => item.entry!.sos!.type)!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/notifications?notification=${typed.id}`)
+    const dialog = await screen.findByRole('dialog', { name: typed.title })
+    expect(dialog).toHaveTextContent(`SOS type${sosTypeLabel(typed.entry!.sos!.type!)}`)
   })
 })

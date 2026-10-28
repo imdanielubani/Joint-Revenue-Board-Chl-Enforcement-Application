@@ -252,6 +252,8 @@ function NotificationsContent({
                   type={page.type}
                   onStatusChange={page.setStatus}
                   onTypeChange={page.setType}
+                  sosType={page.sosType}
+                  onSosTypeChange={page.setSosType}
                   onOpen={onOpen}
                   onRelated={onRelated}
                 />

@@ -324,6 +324,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Notifications show an SOS's type: beside the red SOS label in the register
+  ("Type not supplied" when CHL sends none), in the popup (SOS type), and in
+  the bell menu ("SOS · Road accident · time"). With Type set to SOS, an "SOS
+  type" filter lists one type (`sos_type` in the address); choosing another
+  type clears it.
 - SOS types: an SOS carries the type the agent chose (Threat or assault,
   Medical emergency, Road accident, Vehicle forced through checkpoint, Crowd or
   unrest), or none when CHL does not supply one. The documents name no SOS

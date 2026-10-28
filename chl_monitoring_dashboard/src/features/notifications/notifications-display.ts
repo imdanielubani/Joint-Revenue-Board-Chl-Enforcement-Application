@@ -1,3 +1,4 @@
+import { sosTypeLabel } from '@/features/command-centre/command-centre-display'
 import { humanize } from '@/features/overview/overview-display'
 import type { StatusTone } from '@/shared/ui/StatusLabel'
 import {
@@ -25,6 +26,12 @@ export function typeLabel(type: string): string {
 /** An SOS from an agent: shown in red wherever notifications are listed. */
 export function isSos(item: Pick<Notification, 'type'>): boolean {
   return item.type === 'sos'
+}
+
+/** An SOS's type, as the agent chose it, or that CHL supplied none. */
+export function sosTypeText(item: Pick<Notification, 'entry'>): string {
+  const type = item.entry?.sos?.type
+  return type ? sosTypeLabel(type) : 'Type not supplied'
 }
 
 /** Unread in blue, read in grey. */
