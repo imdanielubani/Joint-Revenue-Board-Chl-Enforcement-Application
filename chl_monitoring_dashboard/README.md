@@ -324,6 +324,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Repeat vehicle alerts page replaces its placeholder: the green banner
+  (Monitoring), Refresh, the area, period, organization and agent filters with
+  the freshness line, and loading, error and stale states, as on the other
+  modules.
 - A repeat-vehicle alert links to the notification the central supervisory
   process sent for it (SRD 11.1), with when CHL received it and whether the
   user has read it; the alert counts as raised at the third qualifying report
