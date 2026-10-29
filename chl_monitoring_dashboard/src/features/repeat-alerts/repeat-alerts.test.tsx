@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { summarizeRepeatAlerts } from '@/mocks/mock-repeat-alerts-api'
@@ -85,5 +86,43 @@ describe('repeat vehicle alerts page', () => {
       )
       expect(cells[6]).toHaveTextContent(alert.notification ? 'Sent' : 'Not sent')
     }
+  })
+
+  it('narrows the register by follow-up and notification, keeping them in the address', async () => {
+    const alerts = expected()
+    const none = alerts.filter((alert) => alert.followUp === 'none')
+    expect(none.length).toBeGreaterThan(0)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/repeat-alerts')
+    const register = await card('Alert register')
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Follow-up' }),
+      'none',
+    )
+    const table = within(register).getByRole('table', { name: 'Repeat vehicle alerts' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, none.length))
+    for (const row of bodyRows(table)) expect(row).toHaveTextContent('No follow-up recorded')
+    expect(router.state.location.search).toBe('?follow_up=none')
+
+    // Every sample alert was notified; the read ones are those older than a day.
+    const read = none.filter((alert) => alert.notification?.read)
+    expect(read.length).toBeGreaterThan(0)
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Notification' }),
+      'read',
+    )
+    expect(router.state.location.search).toBe('?follow_up=none&notified=read')
+    const filtered = within(register).getByRole('table', { name: 'Repeat vehicle alerts' })
+    expect(bodyRows(filtered)).toHaveLength(Math.min(10, read.length))
+    for (const row of bodyRows(filtered)) expect(row).toHaveTextContent('Read')
+  })
+
+  it('lists what a headline figure counts, keeping the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/repeat-alerts?scope=la&range=30d')
+    await userEvent.click((await figure('Partial follow-up')).querySelector('a')!)
+    expect(router.state.location.search).toBe('?scope=la&range=30d&follow_up=partial')
+    const register = await card('Alert register')
+    expect(within(register).getByRole('combobox', { name: 'Follow-up' })).toHaveValue('partial')
   })
 })

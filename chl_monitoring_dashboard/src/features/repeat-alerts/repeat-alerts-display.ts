@@ -60,6 +60,20 @@ export function followUpPill(followUp: string): Pill {
   return { tone: 'neutral', label: followUpLabel(followUp) }
 }
 
+/** The notification filter's states: sent and unread, sent and read, or not sent. */
+export const NOTIFIED_OPTIONS = [
+  { value: 'unread', label: 'Sent, unread' },
+  { value: 'read', label: 'Sent, read' },
+  { value: 'none', label: 'Not sent' },
+] as const
+
+/** Whether the alert's notification matches the notification filter. */
+export function matchesNotified(alert: RepeatAlert, notified: string): boolean {
+  if (notified === 'none') return alert.notification === null
+  if (!alert.notification) return false
+  return notified === 'read' ? alert.notification.read : !alert.notification.read
+}
+
 /** What a register search looks through. */
 export function searchTextOf(alert: RepeatAlert): string {
   return [

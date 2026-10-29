@@ -324,6 +324,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Repeat vehicle alerts register filters, kept in the address: Follow-up (no
+  follow-up recorded or partial, `follow_up`) and Notification (sent and
+  unread, sent and read, or not sent, `notified`); the headline figures link
+  to the register filtered to what they count.
 - Repeat vehicle alerts register, most reports first, searchable and sortable:
   the vehicle and its type, qualifying reports, how many agents and locations
   were involved, when it was last reported and where, its follow-up (no

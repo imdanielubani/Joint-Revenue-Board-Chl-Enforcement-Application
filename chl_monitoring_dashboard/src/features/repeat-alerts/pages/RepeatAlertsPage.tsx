@@ -11,6 +11,7 @@ import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { AlertRegister } from '../components/AlertRegister'
 import { useRepeatAlerts } from '../repeat-alerts.queries'
+import { useRepeatAlertsView } from '../use-repeat-alerts-view'
 import styles from './RepeatAlertsPage.module.css'
 
 /**
@@ -51,6 +52,7 @@ function RepeatAlertsContent({
   const agentList = useAgents()
   const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: agentList.data })
   const { scope, filters } = filter
+  const page = useRepeatAlertsView()
   const query = useRepeatAlerts(filters, { enabled: !filter.waiting })
   const data = query.data
   const alerts = useMemo(() => data?.alerts ?? [], [data])
@@ -127,18 +129,21 @@ function RepeatAlertsContent({
                 value: counts.none,
                 icon: 'overview/kpi-unresolved.svg',
                 note: 'No report escalated or closed yet',
+                to: page.linkTo({ followUp: 'none' }),
               },
               {
                 label: 'Partial follow-up',
                 value: counts.partial,
                 icon: 'overview/kpi-check.svg',
                 note: 'Some reports escalated or closed',
+                to: page.linkTo({ followUp: 'partial' }),
               },
               {
                 label: 'Notifications sent',
                 value: counts.notified,
                 icon: 'overview/kpi-bell.svg',
                 note: `By the supervisory process · ${counts.unread} unread`,
+                to: page.linkTo({ notified: 'unread' }),
               },
             ]}
           />
@@ -146,6 +151,10 @@ function RepeatAlertsContent({
           <AlertRegister
             alerts={alerts}
             subtitle={`Vehicles reported ${data.threshold} or more qualifying times, most reports first · ${subtitle}`}
+            followUp={page.followUp}
+            notified={page.notified}
+            onFollowUpChange={page.setFollowUp}
+            onNotifiedChange={page.setNotified}
           />
         </>
       )}

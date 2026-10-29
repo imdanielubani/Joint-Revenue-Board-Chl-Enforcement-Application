@@ -5,11 +5,14 @@ import { PillLabel } from '@/features/violations/components/PillLabel'
 import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
+import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import {
   followUpPill,
   involvedAgents,
   involvedLocations,
+  matchesNotified,
+  NOTIFIED_OPTIONS,
   searchTextOf,
 } from '../repeat-alerts-display'
 import type { RepeatAlert } from '../repeat-alerts.schemas'
@@ -23,9 +26,19 @@ import styles from './AlertRegister.module.css'
 export function AlertRegister({
   alerts,
   subtitle,
+  followUp,
+  notified,
+  onFollowUpChange,
+  onNotifiedChange,
 }: {
   alerts: readonly RepeatAlert[]
   subtitle: string
+  /** "none" or "partial"; null for both. */
+  followUp: string | null
+  /** "unread", "read" or "none"; null for all. */
+  notified: string | null
+  onFollowUpChange(value: string | null): void
+  onNotifiedChange(value: string | null): void
 }) {
   const columns = useMemo<Column<RepeatAlert>[]>(
     () => [
@@ -90,6 +103,13 @@ export function AlertRegister({
     ],
     [],
   )
+  const followUps = [...new Set(['none', 'partial', ...alerts.map((alert) => alert.followUp)])].map(
+    (value) => ({ value, label: followUpPill(value).label }),
+  )
+  const rows = alerts.filter(
+    (alert) =>
+      (!followUp || alert.followUp === followUp) && (!notified || matchesNotified(alert, notified)),
+  )
   return (
     <DashboardCard
       title="Alert register"
@@ -97,9 +117,24 @@ export function AlertRegister({
       icon="overview/card-repeat.svg"
       bodyClassName={styles.body}
     >
+      <div className={styles.selects}>
+        <LabeledSelect
+          label="Follow-up"
+          value={followUp}
+          options={followUps}
+          onChange={onFollowUpChange}
+        />
+        <LabeledSelect
+          label="Notification"
+          value={notified}
+          options={NOTIFIED_OPTIONS}
+          onChange={onNotifiedChange}
+        />
+      </div>
       <RegisterTable
+        key={`${followUp ?? ''}|${notified ?? ''}`}
         label="Repeat vehicle alerts"
-        rows={alerts}
+        rows={rows}
         columns={columns}
         rowKey={(row) => row.plate}
         searchText={searchTextOf}
