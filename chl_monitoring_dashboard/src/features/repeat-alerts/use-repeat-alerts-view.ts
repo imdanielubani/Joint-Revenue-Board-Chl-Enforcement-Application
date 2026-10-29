@@ -8,6 +8,8 @@ export const REPEAT_ALERT_PARAMS = {
   followUp: 'follow_up',
   /** "unread", "read" or "none": whether the supervisory process sent a notification, and if read. */
   notified: 'notified',
+  /** An alert's plate, opened in its popup. */
+  alert: 'alert',
 } as const
 
 /** The register's filters, kept in the address so a refresh or a shared link keeps them. */
@@ -52,7 +54,14 @@ export function useRepeatAlertsView() {
     [change],
   )
 
+  const openAlert = useCallback(
+    (plate: string | null) => change({ [REPEAT_ALERT_PARAMS.alert]: plate }),
+    [change],
+  )
+
   return {
+    alertPlate: params.get(REPEAT_ALERT_PARAMS.alert),
+    openAlert,
     followUp: params.get(REPEAT_ALERT_PARAMS.followUp),
     notified: params.get(REPEAT_ALERT_PARAMS.notified),
     linkTo,

@@ -7,6 +7,7 @@ import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
+import { RowActions } from '@/shared/ui/RowActions'
 import {
   followUpPill,
   involvedAgents,
@@ -30,6 +31,7 @@ export function AlertRegister({
   notified,
   onFollowUpChange,
   onNotifiedChange,
+  onOpen,
 }: {
   alerts: readonly RepeatAlert[]
   subtitle: string
@@ -39,6 +41,8 @@ export function AlertRegister({
   notified: string | null
   onFollowUpChange(value: string | null): void
   onNotifiedChange(value: string | null): void
+  /** Opens the alert in its popup. */
+  onOpen(alert: RepeatAlert): void
 }) {
   const columns = useMemo<Column<RepeatAlert>[]>(
     () => [
@@ -100,8 +104,19 @@ export function AlertRegister({
           ),
         sortValue: (row) => (row.notification ? Date.parse(row.notification.receivedAt) : 0),
       },
+      {
+        key: 'actions',
+        header: 'Actions',
+        align: 'end',
+        render: (row) => (
+          <RowActions
+            label={`Actions for ${row.plate}`}
+            actions={[{ label: 'View alert', onSelect: () => onOpen(row) }]}
+          />
+        ),
+      },
     ],
-    [],
+    [onOpen],
   )
   const followUps = [...new Set(['none', 'partial', ...alerts.map((alert) => alert.followUp)])].map(
     (value) => ({ value, label: followUpPill(value).label }),

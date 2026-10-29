@@ -125,4 +125,35 @@ describe('repeat vehicle alerts page', () => {
     const register = await card('Alert register')
     expect(within(register).getByRole('combobox', { name: 'Follow-up' })).toHaveValue('partial')
   })
+
+  it('opens an alert in a popup: the vehicle, then its related reports', async () => {
+    const alert = expected()[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/repeat-alerts')
+    const register = await card('Alert register')
+    const table = within(register).getByRole('table', { name: 'Repeat vehicle alerts' })
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${alert.plate}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View alert' }))
+
+    const dialog = await screen.findByRole('dialog', { name: `Repeat vehicle ${alert.plate}` })
+    expect(router.state.location.search).toBe(`?alert=${alert.plate}`)
+    const vehicle = within(dialog).getByRole('region', { name: 'Vehicle' })
+    expect(vehicle).toHaveTextContent(`Qualifying reports${alert.reports}`)
+    const reports = within(dialog).getByRole('table', { name: `Reports of ${alert.plate}` })
+    // Every report of the plate, oldest first; cancelled ones do not count.
+    expect(bodyRows(reports)).toHaveLength(Math.min(5, alert.cases.length))
+    for (const [index, row] of bodyRows(reports).entries()) {
+      const item = alert.cases[index]!
+      expect(row).toHaveTextContent(item.id)
+      expect(row).toHaveTextContent(item.status === 'cancelled' ? 'No · cancelled' : 'Yes')
+    }
+  })
+
+  it('says when the alert named in the address is not in the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/repeat-alerts?alert=NO-SUCH-PLATE')
+    expect(
+      await screen.findByText(/NO-SUCH-PLATE has no repeat-vehicle alert in this area and period/),
+    ).toBeInTheDocument()
+  })
 })

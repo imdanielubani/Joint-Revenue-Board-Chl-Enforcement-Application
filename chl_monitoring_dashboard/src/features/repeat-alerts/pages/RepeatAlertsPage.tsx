@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -9,6 +9,7 @@ import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { AlertDialog } from '../components/AlertDialog'
 import { AlertRegister } from '../components/AlertRegister'
 import { useRepeatAlerts } from '../repeat-alerts.queries'
 import { useRepeatAlertsView } from '../use-repeat-alerts-view'
@@ -67,6 +68,9 @@ function RepeatAlertsContent({
     [alerts],
   )
   const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
+  const { openAlert } = page
+  const onOpen = useCallback((alert: { plate: string }) => openAlert(alert.plate), [openAlert])
+  const open = alerts.find((alert) => alert.plate === page.alertPlate) ?? null
 
   return (
     <div className={styles.page}>
@@ -155,7 +159,23 @@ function RepeatAlertsContent({
             notified={page.notified}
             onFollowUpChange={page.setFollowUp}
             onNotifiedChange={page.setNotified}
+            onOpen={onOpen}
           />
+
+          {open && (
+            <AlertDialog
+              key={open.plate}
+              alert={open}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => openAlert(null)}
+            />
+          )}
+          {page.alertPlate && !open && (
+            <p className={styles.stale} role="status">
+              {page.alertPlate} has no repeat-vehicle alert in this area and period. Choose another
+              area or period to find it.
+            </p>
+          )}
         </>
       )}
     </div>

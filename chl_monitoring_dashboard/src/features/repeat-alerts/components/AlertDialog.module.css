@@ -1,0 +1,6 @@
+/* The popup's parts, one under another. */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

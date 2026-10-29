@@ -324,6 +324,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A repeat-vehicle alert opens in a popup on the page ("View alert", kept in
+  the address as `alert`): the vehicle (plate, vehicle ID and type, area,
+  qualifying reports, follow-up, first and last reported, when the alert was
+  raised), then its related reports, oldest first, with each case's agent,
+  location, status and whether it counts towards the alert (a cancelled one
+  does not). A plate named in the address with no alert in the area and period
+  says so.
 - Repeat vehicle alerts register filters, kept in the address: Follow-up (no
   follow-up recorded or partial, `follow_up`) and Notification (sent and
   unread, sent and read, or not sent, `notified`); the headline figures link
