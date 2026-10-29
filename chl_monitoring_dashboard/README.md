@@ -324,6 +324,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Repeat vehicle alerts headline figures: Repeat vehicles, No follow-up
+  recorded, Partial follow-up, and Notifications sent by the supervisory
+  process (with how many are unread), for the area and period.
 - Repeat vehicle alerts page replaces its placeholder: the green banner
   (Monitoring), Refresh, the area, period, organization and agent filters with
   the freshness line, and loading, error and stale states, as on the other

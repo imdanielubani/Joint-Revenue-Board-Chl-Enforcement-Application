@@ -5,6 +5,7 @@ import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { useRepeatAlerts } from '../repeat-alerts.queries'
@@ -50,6 +51,17 @@ function RepeatAlertsContent({
   const { scope, filters } = filter
   const query = useRepeatAlerts(filters, { enabled: !filter.waiting })
   const data = query.data
+  const alerts = useMemo(() => data?.alerts ?? [], [data])
+
+  const counts = useMemo(
+    () => ({
+      none: alerts.filter((alert) => alert.followUp === 'none').length,
+      partial: alerts.filter((alert) => alert.followUp === 'partial').length,
+      notified: alerts.filter((alert) => alert.notification).length,
+      unread: alerts.filter((alert) => alert.notification && !alert.notification.read).length,
+    }),
+    [alerts],
+  )
 
   return (
     <div className={styles.page}>
@@ -93,11 +105,41 @@ function RepeatAlertsContent({
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
-        query.isError && (
-          <p className={styles.stale} role="status">
-            The latest alerts could not be loaded; these are from the last successful check.
-          </p>
-        )
+        <>
+          {query.isError && (
+            <p className={styles.stale} role="status">
+              The latest alerts could not be loaded; these are from the last successful check.
+            </p>
+          )}
+          <HeadlineFigures
+            items={[
+              {
+                label: 'Repeat vehicles',
+                value: alerts.length,
+                icon: 'overview/kpi-violation.svg',
+                note: `${data.threshold} or more qualifying reports, one still open`,
+              },
+              {
+                label: 'No follow-up recorded',
+                value: counts.none,
+                icon: 'overview/kpi-unresolved.svg',
+                note: 'No report escalated or closed yet',
+              },
+              {
+                label: 'Partial follow-up',
+                value: counts.partial,
+                icon: 'overview/kpi-check.svg',
+                note: 'Some reports escalated or closed',
+              },
+              {
+                label: 'Notifications sent',
+                value: counts.notified,
+                icon: 'overview/kpi-bell.svg',
+                note: `By the supervisory process · ${counts.unread} unread`,
+              },
+            ]}
+          />
+        </>
       )}
     </div>
   )
