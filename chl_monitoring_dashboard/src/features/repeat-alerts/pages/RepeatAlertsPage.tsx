@@ -7,6 +7,8 @@ import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import cards from '@/features/payments/components/PaymentCards.module.css'
+import { assetUrl } from '@/shared/lib/asset-url'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
@@ -229,6 +231,21 @@ function RepeatAlertsContent({
               area or period to find it.
             </p>
           )}
+
+          <aside className={cards.pageNote}>
+            <img src={assetUrl('verifications/note-info.svg')} alt="" width={16} height={16} />
+            <div>
+              <p className={cards.pageNoteTitle}>
+                An alert is three qualifying reports, not any three scans.
+              </p>
+              <p className={cards.pageNoteText}>
+                A qualifying report is a violation that was not cancelled; a vehicle is listed while
+                one of its reports is still open. Follow-up is partial once a report was escalated
+                or closed. Alerts and their notifications come from the central supervisory process;
+                no case is closed, escalated or changed here.
+              </p>
+            </div>
+          </aside>
         </>
       )}
     </div>

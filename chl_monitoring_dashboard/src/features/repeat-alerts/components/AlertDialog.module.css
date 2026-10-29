@@ -5,17 +5,11 @@
   gap: 20px;
 }
 
-/* Agents and locations side by side, one under the other on narrow screens. */
+/* Agents, then locations, each the popup's full width so every column shows. */
 .pair {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-}
-
-@media (max-width: 900px) {
-  .pair {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 .link {
@@ -26,4 +20,8 @@
 .note {
   color: var(--card-muted);
   font-size: 12px;
+}
+
+.muted {
+  color: var(--card-muted);
 }

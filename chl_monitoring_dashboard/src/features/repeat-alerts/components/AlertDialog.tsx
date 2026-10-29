@@ -250,9 +250,15 @@ export function AlertDialog({
           <Fact term="Follow-up">
             <StatusLabel tone={followUp.tone}>{followUp.label}</StatusLabel>
           </Fact>
-          <Fact term="First reported">{formatDateTime(alert.firstReportedAt)}</Fact>
-          <Fact term="Last reported">{formatDateTime(alert.lastReportedAt)}</Fact>
-          <Fact term="Alert raised">{formatDateTime(alert.raisedAt)}</Fact>
+          <Fact term="First reported in period">{formatDateTime(alert.firstReportedAt)}</Fact>
+          <Fact term="Last reported in period">{formatDateTime(alert.lastReportedAt)}</Fact>
+          <Fact term="Alert raised">
+            {formatDateTime(alert.raisedAt)}
+            <span className={styles.muted}>
+              {' '}
+              · the third qualifying report, over the history CHL keeps
+            </span>
+          </Fact>
         </Facts>
 
         <Section title="Related reports">

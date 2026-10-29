@@ -127,7 +127,7 @@ src/
     field-reports/         Field reports and loaded / empty confirmations from agents
     payments/              Demand notices, payment status, compliance
     notifications/         Enforcement and field notifications, read or unread
-    repeat-alerts/         Repeat vehicle alerts
+    repeat-alerts/         Repeat vehicle alerts: reports, agents, locations, cases, notifications
     audit/                 Verification history and the audit trail
     sync/                  Synchronisation and field status
   shared/                  Used by every feature; imports no feature
@@ -324,6 +324,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Repeat vehicle alerts page note: an alert is three qualifying reports, not
+  any three scans; what qualifies and what partial follow-up means; nothing is
+  closed, escalated or changed here. The alert popup labels its dates: first and
+  last reported in the period, and the alert raised at the third qualifying
+  report over the history CHL keeps, and lists involved agents, then locations,
+  at full width so every column shows. The project structure lists the module.
 - The repeat-vehicle figures and cards lead to Repeat vehicle alerts instead
   of the Violations page: the Overview's "Repeat vehicles without follow-up"
   and its repeat-vehicle card, the Command centre's figure (over the history

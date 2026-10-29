@@ -342,4 +342,14 @@ describe('repeat vehicle alerts page', () => {
     const register = await card('Alert register')
     expect(within(register).getByRole('combobox', { name: 'Follow-up' })).toHaveValue('none')
   })
+
+  it('says what an alert is, and that nothing is changed here', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/repeat-alerts')
+    const note = (
+      await screen.findByText('An alert is three qualifying reports, not any three scans.')
+    ).closest('aside')!
+    expect(note).toHaveTextContent('A qualifying report is a violation that was not cancelled')
+    expect(note).toHaveTextContent('no case is closed, escalated or changed here')
+  })
 })
