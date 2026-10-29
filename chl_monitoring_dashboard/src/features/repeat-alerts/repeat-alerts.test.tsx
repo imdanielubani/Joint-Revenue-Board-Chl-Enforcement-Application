@@ -5,6 +5,9 @@ import { summarizeRepeatAlerts } from '@/mocks/mock-repeat-alerts-api'
 import { lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
 
+const card = (title: string) => screen.findByRole('region', { name: title })
+/** The rows on a register's first page, header row left out. */
+const bodyRows = (table: HTMLElement) => within(table).getAllByRole('row').slice(1)
 const figure = async (label: string) => {
   const figures = await screen.findByRole('list', { name: 'Headline figures' })
   return within(figures).getByText(label).closest('li')!
@@ -60,5 +63,27 @@ describe('repeat vehicle alerts page', () => {
         notified.filter((alert) => !alert.notification!.read).length
       } unread`,
     )
+  })
+
+  it('lists each alert: its vehicle, reports, agents, locations, follow-up and notification', async () => {
+    const alerts = expected()
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/repeat-alerts')
+    const register = await card('Alert register')
+    const table = within(register).getByRole('table', { name: 'Repeat vehicle alerts' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, alerts.length))
+    for (const [index, row] of bodyRows(table).entries()) {
+      const alert = alerts[index]!
+      const qualifying = alert.cases.filter((item) => item.status !== 'cancelled')
+      const cells = within(row).getAllByRole('cell')
+      expect(cells[0]).toHaveTextContent(alert.plate)
+      expect(cells[1]).toHaveTextContent(String(alert.reports))
+      expect(cells[2]).toHaveTextContent(String(new Set(qualifying.map((c) => c.agent.id)).size))
+      expect(cells[3]).toHaveTextContent(String(new Set(qualifying.map((c) => c.location.id)).size))
+      expect(cells[5]).toHaveTextContent(
+        alert.followUp === 'none' ? 'No follow-up recorded' : 'Partial follow-up',
+      )
+      expect(cells[6]).toHaveTextContent(alert.notification ? 'Sent' : 'Not sent')
+    }
   })
 })

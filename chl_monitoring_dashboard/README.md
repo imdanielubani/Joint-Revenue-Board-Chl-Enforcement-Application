@@ -324,6 +324,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Repeat vehicle alerts register, most reports first, searchable and sortable:
+  the vehicle and its type, qualifying reports, how many agents and locations
+  were involved, when it was last reported and where, its follow-up (no
+  follow-up in red, partial in amber) and whether the supervisory process sent
+  a notification, read or unread.
 - Repeat vehicle alerts headline figures: Repeat vehicles, No follow-up
   recorded, Partial follow-up, and Notifications sent by the supervisory
   process (with how many are unread), for the area and period.

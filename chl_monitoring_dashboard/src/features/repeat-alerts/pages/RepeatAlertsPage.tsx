@@ -4,10 +4,12 @@ import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
+import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { AlertRegister } from '../components/AlertRegister'
 import { useRepeatAlerts } from '../repeat-alerts.queries'
 import styles from './RepeatAlertsPage.module.css'
 
@@ -62,6 +64,7 @@ function RepeatAlertsContent({
     }),
     [alerts],
   )
+  const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
 
   return (
     <div className={styles.page}>
@@ -138,6 +141,11 @@ function RepeatAlertsContent({
                 note: `By the supervisory process · ${counts.unread} unread`,
               },
             ]}
+          />
+
+          <AlertRegister
+            alerts={alerts}
+            subtitle={`Vehicles reported ${data.threshold} or more qualifying times, most reports first · ${subtitle}`}
           />
         </>
       )}

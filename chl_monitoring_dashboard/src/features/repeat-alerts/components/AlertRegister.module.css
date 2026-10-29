@@ -1,0 +1,12 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* The plate over the vehicle's type. */
+.vehicle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
