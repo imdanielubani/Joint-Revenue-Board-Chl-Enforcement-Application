@@ -1,6 +1,9 @@
 import { useId, useMemo, type ReactNode } from 'react'
 import { Stack } from '@/features/geography/components/RecordCells'
 import cells from '@/features/geography/components/RecordColumns.module.css'
+import { Link } from 'react-router'
+import { useModuleLink } from '@/features/auth/use-module-link'
+import { readPill } from '@/features/notifications/notifications-display'
 import { Fact, Facts } from '@/features/verifications/components/VerificationDetailsDialog'
 import sections from '@/features/verifications/components/VerificationCards.module.css'
 import { PillLabel } from '@/features/violations/components/PillLabel'
@@ -20,6 +23,7 @@ import {
   followUpPill,
   involvedAgents,
   involvedLocations,
+  notificationHref,
   recordedActions,
   type InvolvedAgent,
   type InvolvedLocation,
@@ -83,6 +87,11 @@ export function AlertDialog({
 }) {
   const followUp = followUpPill(alert.followUp)
   const { caseOf, agentOf, reportsOf } = useAlertRelated()
+  const link = useModuleLink()
+  const notification = alert.notification
+  const notificationTo = notification
+    ? link('notifications', notificationHref(notification.id))
+    : undefined
   const vehicleReports = reportsOf(alert)
   const reportColumns = useMemo<Column<ViolationCase>[]>(
     () => [
@@ -290,6 +299,31 @@ export function AlertDialog({
             pageSize={8}
           />
         </Section>
+
+        {notification ? (
+          <Facts title="Supervisory notification">
+            <Fact term="Notification">Repeat vehicle {alert.plate}</Fact>
+            <Fact term="Received by CHL">{formatDateTime(notification.receivedAt)}</Fact>
+            <Fact term="Status">
+              <StatusLabel tone={readPill(notification.read).tone}>
+                {readPill(notification.read).label}
+              </StatusLabel>
+            </Fact>
+            {notificationTo && (
+              <Fact term="Open">
+                <Link className={styles.link} to={notificationTo}>
+                  Open notification
+                </Link>
+              </Fact>
+            )}
+          </Facts>
+        ) : (
+          <Section title="Supervisory notification">
+            <p className={styles.note}>
+              The supervisory process has not sent a notification for this alert.
+            </p>
+          </Section>
+        )}
 
         {vehicleReports && (
           <nav className={links.dialogLinks} aria-label="Related records">

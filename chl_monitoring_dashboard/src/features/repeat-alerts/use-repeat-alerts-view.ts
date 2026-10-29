@@ -2,8 +2,13 @@ import { useCallback } from 'react'
 import { useLocation, useSearchParams } from 'react-router'
 import { FILTER_PARAMS } from '@/features/overview/use-overview-filters'
 
+/** The page's tabs: the alert register, then the notifications the supervisory process sent. */
+export const REPEAT_ALERT_VIEWS = ['alerts', 'notifications'] as const
+export type RepeatAlertsView = (typeof REPEAT_ALERT_VIEWS)[number]
+
 /** The address parameters the page keeps its state in. */
 export const REPEAT_ALERT_PARAMS = {
+  view: 'view',
   /** "none" or "partial". */
   followUp: 'follow_up',
   /** "unread", "read" or "none": whether the supervisory process sent a notification, and if read. */
@@ -16,6 +21,8 @@ export const REPEAT_ALERT_PARAMS = {
 export function useRepeatAlertsView() {
   const [params, setParams] = useSearchParams()
   const { pathname } = useLocation()
+  const requested = params.get(REPEAT_ALERT_PARAMS.view)
+  const view: RepeatAlertsView = REPEAT_ALERT_VIEWS.find((entry) => entry === requested) ?? 'alerts'
 
   const change = useCallback(
     (changes: Record<string, string | null>) =>
@@ -38,6 +45,7 @@ export function useRepeatAlertsView() {
         const value = params.get(key)
         if (value) query.set(key, value)
       }
+      // The filters are the register's, on the alerts tab.
       if (filters.followUp) query.set(REPEAT_ALERT_PARAMS.followUp, filters.followUp)
       if (filters.notified) query.set(REPEAT_ALERT_PARAMS.notified, filters.notified)
       return `${pathname}?${query}`
@@ -54,12 +62,19 @@ export function useRepeatAlertsView() {
     [change],
   )
 
+  const setView = useCallback(
+    (next: RepeatAlertsView) => change({ [REPEAT_ALERT_PARAMS.view]: next }),
+    [change],
+  )
+
   const openAlert = useCallback(
     (plate: string | null) => change({ [REPEAT_ALERT_PARAMS.alert]: plate }),
     [change],
   )
 
   return {
+    view,
+    setView,
     alertPlate: params.get(REPEAT_ALERT_PARAMS.alert),
     openAlert,
     followUp: params.get(REPEAT_ALERT_PARAMS.followUp),

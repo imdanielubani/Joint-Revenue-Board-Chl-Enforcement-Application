@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -9,11 +9,14 @@ import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
+import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { AlertDialog } from '../components/AlertDialog'
 import { AlertRegister } from '../components/AlertRegister'
+import { SupervisoryNotifications } from '../components/SupervisoryNotifications'
 import { useRepeatAlerts } from '../repeat-alerts.queries'
-import { useRepeatAlertsView } from '../use-repeat-alerts-view'
+import { useRepeatAlertsView, type RepeatAlertsView } from '../use-repeat-alerts-view'
 import styles from './RepeatAlertsPage.module.css'
 
 /**
@@ -51,6 +54,7 @@ function RepeatAlertsContent({
   /** True until CHL's area tree has loaded; until then only the user's own areas are known. */
   areasPending: boolean
 }) {
+  const tabsId = useId()
   const agentList = useAgents()
   const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: agentList.data })
   const { scope, filters } = filter
@@ -168,16 +172,38 @@ function RepeatAlertsContent({
             ]}
           />
 
-          <AlertRegister
-            alerts={alerts}
-            subtitle={`Vehicles reported ${data.threshold} or more qualifying times, most reports first · ${subtitle}`}
-            followUp={page.followUp}
-            notified={page.notified}
-            onFollowUpChange={page.setFollowUp}
-            onNotifiedChange={page.setNotified}
-            onOpen={onOpen}
-            onRelated={onRelated}
-          />
+          <section className={styles.views} aria-label="Repeat vehicle alert views">
+            <SegmentedTabs<RepeatAlertsView>
+              idBase={tabsId}
+              label="Repeat vehicle alert views"
+              tabs={[
+                { id: 'alerts', label: 'Alert register', count: alerts.length },
+                { id: 'notifications', label: 'Supervisory notifications', count: counts.notified },
+              ]}
+              value={page.view}
+              onChange={page.setView}
+            />
+            <div id={panelId(tabsId)} role="tabpanel" aria-labelledby={tabId(tabsId, page.view)}>
+              {page.view === 'notifications' ? (
+                <SupervisoryNotifications
+                  alerts={alerts}
+                  subtitle={`Repeat-vehicle notifications the central supervisory process sent, latest first · ${subtitle}`}
+                  onOpen={onOpen}
+                />
+              ) : (
+                <AlertRegister
+                  alerts={alerts}
+                  subtitle={`Vehicles reported ${data.threshold} or more qualifying times, most reports first · ${subtitle}`}
+                  followUp={page.followUp}
+                  notified={page.notified}
+                  onFollowUpChange={page.setFollowUp}
+                  onNotifiedChange={page.setNotified}
+                  onOpen={onOpen}
+                  onRelated={onRelated}
+                />
+              )}
+            </div>
+          </section>
 
           {open && (
             <AlertDialog

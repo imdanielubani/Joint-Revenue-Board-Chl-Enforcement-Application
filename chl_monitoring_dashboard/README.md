@@ -324,6 +324,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Repeat vehicle alerts displays the notifications the central supervisory
+  process supplied (SRD 11.1): a Supervisory notifications tab (`view`) lists
+  them latest first, read or unread, each leading to its alert and to the
+  notification on the Notifications page; an alert's popup shows its own
+  notification, or that none was sent.
 - A repeat-vehicle alert leads to its records, each opened in a popup on the
   page: a report's case with its recorded actions (View case), an involved
   agent (View agent), and the vehicle's reports (View vehicle reports, also

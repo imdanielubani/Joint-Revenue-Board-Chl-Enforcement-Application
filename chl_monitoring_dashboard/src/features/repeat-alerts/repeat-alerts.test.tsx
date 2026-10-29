@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
@@ -263,5 +263,59 @@ describe('repeat vehicle alerts page', () => {
     const agents = within(dialog).getByRole('table', { name: `Agents who reported ${alert.plate}` })
     expect(within(agents).queryByRole('button', { name: /^Actions for/ })).not.toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'View vehicle reports' })).toBeInTheDocument()
+  })
+
+  it('lists the notifications the supervisory process sent, each leading to its alert', async () => {
+    const sent = expected()
+      .filter((alert) => alert.notification)
+      .sort(
+        (a, b) => Date.parse(b.notification!.receivedAt) - Date.parse(a.notification!.receivedAt),
+      )
+    expect(sent.length).toBeGreaterThan(0)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/repeat-alerts')
+    const tabs = await screen.findByRole('tablist', { name: 'Repeat vehicle alert views' })
+    expect(
+      within(tabs)
+        .getAllByRole('tab')
+        .map((tab) => tab.textContent),
+    ).toEqual([`Alert register${expected().length}`, `Supervisory notifications${sent.length}`])
+    await userEvent.click(within(tabs).getByRole('tab', { name: /^Supervisory notifications/ }))
+    expect(router.state.location.search).toBe('?view=notifications')
+    const register = await card('Supervisory notifications')
+    const table = within(register).getByRole('table', { name: 'Supervisory notifications' })
+    for (const [index, row] of bodyRows(table).entries()) {
+      const alert = sent[index]!
+      expect(row).toHaveTextContent(`Repeat vehicle ${alert.plate}`)
+      expect(row).toHaveTextContent(alert.notification!.read ? 'Read' : 'Unread')
+    }
+    const first = sent[0]!
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${first.notification!.id}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View alert' }))
+    expect(
+      await screen.findByRole('dialog', { name: `Repeat vehicle ${first.plate}` }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the alert’s supervisory notification, and opens it on the Notifications page', async () => {
+    const alert = expected().find((item) => item.notification)!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/repeat-alerts?alert=${alert.plate}`)
+    const dialog = await screen.findByRole('dialog', { name: `Repeat vehicle ${alert.plate}` })
+    const notice = within(dialog).getByRole('region', { name: 'Supervisory notification' })
+    expect(notice).toHaveTextContent(alert.notification!.read ? 'Read' : 'Unread')
+    await userEvent.click(within(notice).getByRole('link', { name: 'Open notification' }))
+    // The Notifications page opens the notification in its own popup, of the same name.
+    await waitFor(() => expect(router.state.location.pathname).toBe('/notifications'))
+    await waitFor(() =>
+      expect(
+        screen.getByRole('dialog', { name: `Repeat vehicle ${alert.plate}` }),
+      ).toHaveTextContent('Repeat-vehicle alert · Enforcement'),
+    )
+    expect(new URLSearchParams(router.state.location.search).get('notification')).toBe(
+      alert.notification!.id,
+    )
   })
 })

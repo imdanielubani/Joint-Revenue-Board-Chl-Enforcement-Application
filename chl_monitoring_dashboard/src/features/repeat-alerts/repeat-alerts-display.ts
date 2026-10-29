@@ -1,3 +1,4 @@
+import { paths } from '@/config/paths'
 import { followUpLabel } from '@/features/overview/overview-display'
 import type { Pill } from '@/features/violations/violations-display'
 import type { ViolationCase } from '@/features/violations/violations.schemas'
@@ -88,6 +89,11 @@ export function matchesNotified(alert: RepeatAlert, notified: string): boolean {
   if (notified === 'none') return alert.notification === null
   if (!alert.notification) return false
   return notified === 'read' ? alert.notification.read : !alert.notification.read
+}
+
+/** Where a notification opens: in its popup on the Notifications page, over the history kept. */
+export function notificationHref(id: string): string {
+  return `${paths.notifications}?${new URLSearchParams({ range: '90d', notification: id })}`
 }
 
 /** What a register search looks through. */

@@ -17,3 +17,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.link {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.note {
+  color: var(--card-muted);
+  font-size: 12px;
+}
