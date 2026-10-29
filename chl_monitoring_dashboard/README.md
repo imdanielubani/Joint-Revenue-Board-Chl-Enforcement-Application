@@ -324,6 +324,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Repeat vehicle alerts record and API (`/api/v1/repeat-alerts`, provisional;
+  SRD 11.1): a vehicle reported three qualifying times in the area and period
+  (a violation not cancelled), one still open, with its follow-up (none or
+  partial), first and last report, when the third raised the alert, and every
+  case of the plate with the actions recorded on it. The sample alerts are the
+  ones the Overview counts.
 - The Command centre shows an SOS's type too: in red under the agent's name in
   SOS monitoring ("Type not supplied" when CHL sends none), and as "SOS type"
   in Incident context.
