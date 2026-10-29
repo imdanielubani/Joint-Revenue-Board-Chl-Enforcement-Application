@@ -318,4 +318,28 @@ describe('repeat vehicle alerts page', () => {
       alert.notification!.id,
     )
   })
+
+  it('is where the Overview and Command centre repeat-vehicle figures lead', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview')
+    const figures = await screen.findByRole('list', { name: 'Headline figures' })
+    expect(within(figures).getByRole('link', { name: /no follow-up recorded/ })).toHaveAttribute(
+      'href',
+      '/repeat-alerts?follow_up=none',
+    )
+  })
+
+  it('is where the Command centre’s open repeat vehicles lead, over the history kept', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/command-centre')
+    await userEvent.click(
+      await screen.findByRole('link', { name: /Three or more reports, none followed up/ }),
+    )
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Repeat vehicle alerts' }),
+    ).toBeInTheDocument()
+    expect(router.state.location.search).toBe('?range=90d&follow_up=none')
+    const register = await card('Alert register')
+    expect(within(register).getByRole('combobox', { name: 'Follow-up' })).toHaveValue('none')
+  })
 })

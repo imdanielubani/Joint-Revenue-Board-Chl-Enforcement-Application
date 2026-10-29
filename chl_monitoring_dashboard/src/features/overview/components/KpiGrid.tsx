@@ -48,7 +48,7 @@ export function KpiGrid({ kpis }: { kpis: Overview['kpis'] }) {
       value: kpis.repeatVehiclesWithoutFollowUp,
       icon: 'overview/kpi-bell.svg',
       note: `${plural(kpis.openRepeatAlerts, 'open alert')} · no follow-up recorded`,
-      to: link('violations', `${paths.violations}?view=repeat-vehicles`),
+      to: link('repeat-alerts', `${paths.repeatAlerts}?follow_up=none`),
     },
     {
       label: 'Agents with recorded activity',

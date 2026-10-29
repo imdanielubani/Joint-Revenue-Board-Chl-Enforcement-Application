@@ -206,7 +206,8 @@ function CommandCentreBody({ data }: { data: CommandCentre }) {
             value: data.repeatVehicles.withoutFollowUp,
             icon: 'overview/kpi-bell.svg',
             note: 'Three or more reports, none followed up',
-            to: link('violations', `${paths.violations}?view=repeat-vehicles`),
+            // Open now, whenever raised: over the history CHL keeps.
+            to: link('repeat-alerts', `${paths.repeatAlerts}?range=90d&follow_up=none`),
           },
         ]}
       />

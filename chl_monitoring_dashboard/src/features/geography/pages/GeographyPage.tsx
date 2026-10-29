@@ -165,7 +165,7 @@ function GeographyContent({
                 value: overview.repeatVehicles.open,
                 icon: 'overview/kpi-bell.svg',
                 note: `${overview.repeatVehicles.withoutFollowUp} with no follow-up recorded`,
-                to: link('violations', scoped(`${paths.violations}?view=repeat-vehicles`)),
+                to: link('repeat-alerts', scoped(paths.repeatAlerts)),
               },
             ]}
           />

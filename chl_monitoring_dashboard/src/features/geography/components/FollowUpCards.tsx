@@ -199,7 +199,7 @@ export function EnforcementFollowUpCard({
             No follow-up recorded · {plural(repeatVehicles.open, 'open alert')} in all
           </span>
         </span>
-        <ArrowLink to={scoped('violations', `${paths.violations}?view=repeat-vehicles`)}>
+        <ArrowLink to={scoped('repeat-alerts', `${paths.repeatAlerts}?follow_up=none`)}>
           Open
         </ArrowLink>
       </div>

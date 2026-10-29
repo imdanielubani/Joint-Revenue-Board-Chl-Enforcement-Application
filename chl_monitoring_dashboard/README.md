@@ -324,6 +324,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The repeat-vehicle figures and cards lead to Repeat vehicle alerts instead
+  of the Violations page: the Overview's "Repeat vehicles without follow-up"
+  and its repeat-vehicle card, the Command centre's figure (over the history
+  kept, as it counts), and Geographical monitoring's figure and follow-up card,
+  each with the area and, where it counts them, no follow-up recorded.
 - Repeat vehicle alerts displays the notifications the central supervisory
   process supplied (SRD 11.1): a Supervisory notifications tab (`view`) lists
   them latest first, read or unread, each leading to its alert and to the

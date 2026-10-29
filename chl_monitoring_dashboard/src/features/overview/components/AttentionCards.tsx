@@ -272,10 +272,7 @@ export function RepeatVehiclesCard({
       icon="overview/card-repeat.svg"
       footer={{
         label: 'View repeat-vehicle alerts',
-        to: link(
-          'violations',
-          narrowed(`${paths.violations}?view=repeat-vehicles`, { scope, agentId }),
-        ),
+        to: link('repeat-alerts', narrowed(paths.repeatAlerts, { scope, agentId })),
       }}
     >
       <SegmentedTabs<RepeatView>
