@@ -190,4 +190,26 @@ describe('repeat vehicle alerts page', () => {
     expect([...perAgent.values()].reduce((a, b) => a + b, 0)).toBe(alert.reports)
     expect([...perLocation.values()].reduce((a, b) => a + b, 0)).toBe(alert.reports)
   })
+
+  it('shows the actions recorded on the alert’s cases, oldest first, with who took them', async () => {
+    const alert = expected()[0]!
+    const actions = alert.cases
+      .flatMap((item) => item.actions.map((action) => ({ id: item.id, action })))
+      .sort((a, b) => Date.parse(a.action.at) - Date.parse(b.action.at))
+    expect(actions.length).toBeGreaterThanOrEqual(alert.cases.length)
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/repeat-alerts?alert=${alert.plate}`)
+    const dialog = await screen.findByRole('dialog', { name: `Repeat vehicle ${alert.plate}` })
+    const table = within(dialog).getByRole('table', {
+      name: `Actions recorded on the cases of ${alert.plate}`,
+    })
+    expect(bodyRows(table)).toHaveLength(Math.min(8, actions.length))
+    for (const [index, row] of bodyRows(table).entries()) {
+      const { id, action } = actions[index]!
+      expect(row).toHaveTextContent(id)
+      expect(row).toHaveTextContent(action.actor ? action.actor.name : 'Automatic step')
+    }
+    // Every case starts with its violation being issued.
+    expect(bodyRows(table)[0]).toHaveTextContent('Violation issued')
+  })
 })

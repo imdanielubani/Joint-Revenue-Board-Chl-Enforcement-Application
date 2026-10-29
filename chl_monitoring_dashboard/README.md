@@ -324,6 +324,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A repeat-vehicle alert's popup shows its cases and recorded actions (SRD
+  11.1): every action recorded on the plate's cases, oldest first (violation
+  issued, demand notice issued, escalated, payment received, closed,
+  cancelled), with the case it belongs to and who took it, or "Automatic step"
+  where CHL records no one.
 - A repeat-vehicle alert's popup lists the agents involved and the locations
   where the vehicle was reported (SRD 11.1), each with its qualifying reports
   and when it last reported, most reports first.

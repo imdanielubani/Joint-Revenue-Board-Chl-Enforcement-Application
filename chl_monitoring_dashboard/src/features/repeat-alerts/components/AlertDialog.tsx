@@ -5,7 +5,7 @@ import { Fact, Facts } from '@/features/verifications/components/VerificationDet
 import sections from '@/features/verifications/components/VerificationCards.module.css'
 import { PillLabel } from '@/features/violations/components/PillLabel'
 import buttons from '@/features/violations/components/ViolationCards.module.css'
-import { statusPill } from '@/features/violations/violations-display'
+import { actionLabel, statusPill } from '@/features/violations/violations-display'
 import type { ViolationCase } from '@/features/violations/violations.schemas'
 import { formatDateTime, formatNumber, formatShortDateTime } from '@/shared/lib/format'
 import type { Column } from '@/shared/ui/DataTable'
@@ -16,8 +16,10 @@ import {
   followUpPill,
   involvedAgents,
   involvedLocations,
+  recordedActions,
   type InvolvedAgent,
   type InvolvedLocation,
+  type RecordedAction,
 } from '../repeat-alerts-display'
 import type { RepeatAlert } from '../repeat-alerts.schemas'
 import styles from './AlertDialog.module.css'
@@ -38,6 +40,8 @@ export function Section({ title, children }: { title: string; children: ReactNod
 const reportSearch = (item: ViolationCase) =>
   [item.id, item.category, item.agent.name, item.agent.id, item.location.name].join(' ')
 const agentSearch = (item: InvolvedAgent) => `${item.id} ${item.name}`
+const actionSearch = (item: RecordedAction) =>
+  [actionLabel(item.action.action), item.case.id, item.action.actor?.name ?? ''].join(' ')
 const locationSearch = (item: InvolvedLocation) => `${item.name} ${item.area} ${item.code}`
 
 /** How many qualifying reports, and when the last was recorded: shared by agents and locations. */
@@ -141,6 +145,40 @@ export function AlertDialog({
     ],
     [],
   )
+  const actionColumns = useMemo<Column<RecordedAction>[]>(
+    () => [
+      {
+        key: 'at',
+        header: 'When (WAT)',
+        render: (row) => formatShortDateTime(row.action.at),
+        sortValue: (row) => Date.parse(row.action.at),
+      },
+      {
+        key: 'action',
+        header: 'Action',
+        render: (row) => actionLabel(row.action.action),
+        sortValue: (row) => actionLabel(row.action.action),
+      },
+      {
+        key: 'case',
+        header: 'Case',
+        render: (row) => <Stack main={row.case.id} sub={row.case.category} />,
+        sortValue: (row) => row.case.id,
+      },
+      {
+        key: 'by',
+        header: 'By',
+        render: (row) =>
+          row.action.actor ? (
+            <Stack main={row.action.actor.name} sub={row.action.actor.role} />
+          ) : (
+            <span className={cells.sub}>Automatic step</span>
+          ),
+        sortValue: (row) => row.action.actor?.name ?? '',
+      },
+    ],
+    [],
+  )
   const agents = involvedAgents(alert)
   const locations = involvedLocations(alert)
 
@@ -204,6 +242,17 @@ export function AlertDialog({
             />
           </Section>
         </div>
+
+        <Section title="Cases and recorded actions">
+          <RegisterTable
+            label={`Actions recorded on the cases of ${alert.plate}`}
+            rows={recordedActions(alert)}
+            columns={actionColumns}
+            rowKey={(row) => row.key}
+            searchText={actionSearch}
+            pageSize={8}
+          />
+        </Section>
       </div>
     </Dialog>
   )

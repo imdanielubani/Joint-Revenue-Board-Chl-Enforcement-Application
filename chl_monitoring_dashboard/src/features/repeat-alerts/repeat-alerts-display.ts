@@ -53,6 +53,22 @@ export function involvedLocations(alert: RepeatAlert): InvolvedLocation[] {
   return [...byId.values()].sort((a, b) => b.reports - a.reports || a.name.localeCompare(b.name))
 }
 
+export interface RecordedAction {
+  /** Unique within the alert: the case and the action's place on it. */
+  key: string
+  case: ViolationCase
+  action: ViolationCase['actions'][number]
+}
+
+/** Every action recorded on the plate's cases, oldest first (SRD 11.1, "recorded actions"). */
+export function recordedActions(alert: RepeatAlert): RecordedAction[] {
+  return alert.cases
+    .flatMap((item) =>
+      item.actions.map((action, index) => ({ key: `${item.id}-${index}`, case: item, action })),
+    )
+    .sort((a, b) => Date.parse(a.action.at) - Date.parse(b.action.at))
+}
+
 /** No follow-up in red, partial in amber; another state CHL adds is shown as it comes. */
 export function followUpPill(followUp: string): Pill {
   if (followUp === 'none') return { tone: 'danger', label: followUpLabel(followUp) }
