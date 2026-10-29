@@ -212,4 +212,56 @@ describe('repeat vehicle alerts page', () => {
     // Every case starts with its violation being issued.
     expect(bodyRows(table)[0]).toHaveTextContent('Violation issued')
   })
+
+  it('opens a report’s case, with its recorded actions, from the alert', async () => {
+    const alert = expected()[0]!
+    const first = alert.cases[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/repeat-alerts?alert=${alert.plate}`)
+    const dialog = await screen.findByRole('dialog', { name: `Repeat vehicle ${alert.plate}` })
+    const reports = within(dialog).getByRole('table', { name: `Reports of ${alert.plate}` })
+    await userEvent.click(within(reports).getByRole('button', { name: `Actions for ${first.id}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View case' }))
+    expect(await screen.findByRole('dialog', { name: `Case ${first.id}` })).toBeInTheDocument()
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+    expect(router.state.location.pathname).toBe('/repeat-alerts')
+  })
+
+  it('opens an involved agent and the vehicle’s reports, on the page', async () => {
+    const alert = expected()[0]!
+    const agent = alert.cases.find((item) => item.status !== 'cancelled')!.agent
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/repeat-alerts?alert=${alert.plate}`)
+    const dialog = await screen.findByRole('dialog', { name: `Repeat vehicle ${alert.plate}` })
+    const agents = within(dialog).getByRole('table', { name: `Agents who reported ${alert.plate}` })
+    await userEvent.click(within(agents).getByRole('button', { name: `Actions for ${agent.id}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View agent' }))
+    expect(await screen.findByRole('dialog', { name: /Agent/ })).toHaveTextContent(agent.name)
+    await userEvent.keyboard('{Escape}')
+
+    const register = await card('Alert register')
+    const table = within(register).getByRole('table', { name: 'Repeat vehicle alerts' })
+    await userEvent.click(within(table).getByRole('button', { name: `Actions for ${alert.plate}` }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View vehicle reports' }))
+    expect(await screen.findByRole('dialog', { name: 'Vehicle reports' })).toHaveTextContent(
+      alert.plate,
+    )
+  })
+
+  it('offers only the records the role may open', async () => {
+    const alert = summarizeRepeatAlerts({
+      scope: 'la-ikeja',
+      range: '90d',
+      ...presetPeriod('90d', lagosDay()),
+      agentId: null,
+      organization: null,
+    }).alerts[0]!
+    // A Principal Officer may open cases, but not the Agents module.
+    signInAs('po@jrb.gov.ng')
+    renderApp(`/repeat-alerts?range=90d&alert=${alert.plate}`)
+    const dialog = await screen.findByRole('dialog', { name: `Repeat vehicle ${alert.plate}` })
+    const agents = within(dialog).getByRole('table', { name: `Agents who reported ${alert.plate}` })
+    expect(within(agents).queryByRole('button', { name: /^Actions for/ })).not.toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'View vehicle reports' })).toBeInTheDocument()
+  })
 })

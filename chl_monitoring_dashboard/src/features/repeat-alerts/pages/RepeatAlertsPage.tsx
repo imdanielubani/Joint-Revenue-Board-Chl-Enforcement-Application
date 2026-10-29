@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -6,6 +6,7 @@ import { scopeOptions, type ScopeOption } from '@/features/geography/scope-optio
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
@@ -69,7 +70,22 @@ function RepeatAlertsContent({
   )
   const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
   const { openAlert } = page
-  const onOpen = useCallback((alert: { plate: string }) => openAlert(alert.plate), [openAlert])
+  // A record an alert leads to, open in its own popup in place of the alert.
+  const [related, setRelated] = useState<TripRelated | null>(null)
+  const onOpen = useCallback(
+    (alert: { plate: string }) => {
+      setRelated(null)
+      openAlert(alert.plate)
+    },
+    [openAlert],
+  )
+  const onRelated = useCallback(
+    (next: TripRelated) => {
+      openAlert(null)
+      setRelated(next)
+    },
+    [openAlert],
+  )
   const open = alerts.find((alert) => alert.plate === page.alertPlate) ?? null
 
   return (
@@ -160,6 +176,7 @@ function RepeatAlertsContent({
             onFollowUpChange={page.setFollowUp}
             onNotifiedChange={page.setNotified}
             onOpen={onOpen}
+            onRelated={onRelated}
           />
 
           {open && (
@@ -167,7 +184,17 @@ function RepeatAlertsContent({
               key={open.plate}
               alert={open}
               periodText={periodLabel(filters.range, filters)}
+              onRelated={onRelated}
               onClose={() => openAlert(null)}
+            />
+          )}
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
             />
           )}
           {page.alertPlate && !open && (

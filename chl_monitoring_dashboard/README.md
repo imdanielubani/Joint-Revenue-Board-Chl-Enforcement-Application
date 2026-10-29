@@ -324,6 +324,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A repeat-vehicle alert leads to its records, each opened in a popup on the
+  page: a report's case with its recorded actions (View case), an involved
+  agent (View agent), and the vehicle's reports (View vehicle reports, also
+  from the register's row), only where the role may open that module.
 - A repeat-vehicle alert's popup shows its cases and recorded actions (SRD
   11.1): every action recorded on the plate's cases, oldest first (violation
   issued, demand notice issued, escalated, payment received, closed,

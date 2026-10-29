@@ -11,6 +11,10 @@ import { formatDateTime, formatNumber, formatShortDateTime } from '@/shared/lib/
 import type { Column } from '@/shared/ui/DataTable'
 import { Dialog } from '@/shared/ui/Dialog'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
+import { RowActions } from '@/shared/ui/RowActions'
+import links from '@/features/payments/components/PaymentCards.module.css'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import { useAlertRelated } from '../use-alert-related'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
   followUpPill,
@@ -67,14 +71,19 @@ const lastColumn: Column<{ lastReportedAt: string }> = {
 export function AlertDialog({
   alert,
   periodText,
+  onRelated,
   onClose,
 }: {
   alert: RepeatAlert
   /** "Last 14 days", or the dates of a custom range. */
   periodText: string
+  /** Opens a record the alert leads to in its own popup, in place of this one. */
+  onRelated(related: TripRelated): void
   onClose(): void
 }) {
   const followUp = followUpPill(alert.followUp)
+  const { caseOf, agentOf, reportsOf } = useAlertRelated()
+  const vehicleReports = reportsOf(alert)
   const reportColumns = useMemo<Column<ViolationCase>[]>(
     () => [
       {
@@ -114,8 +123,22 @@ export function AlertDialog({
           row.status === 'cancelled' ? <span className={cells.sub}>No · cancelled</span> : 'Yes',
         sortValue: (row) => Number(row.status !== 'cancelled'),
       },
+      {
+        key: 'actions',
+        header: 'Actions',
+        align: 'end',
+        render: (row) => {
+          const related = caseOf(row.id)
+          return related ? (
+            <RowActions
+              label={`Actions for ${row.id}`}
+              actions={[{ label: 'View case', onSelect: () => onRelated(related) }]}
+            />
+          ) : null
+        },
+      },
     ],
-    [],
+    [caseOf, onRelated],
   )
   const agentColumns = useMemo<Column<InvolvedAgent>[]>(
     () => [
@@ -127,8 +150,22 @@ export function AlertDialog({
       },
       reportsColumn,
       lastColumn,
+      {
+        key: 'actions',
+        header: 'Actions',
+        align: 'end',
+        render: (row) => {
+          const related = agentOf({ id: row.id, name: row.name })
+          return related ? (
+            <RowActions
+              label={`Actions for ${row.id}`}
+              actions={[{ label: 'View agent', onSelect: () => onRelated(related) }]}
+            />
+          ) : null
+        },
+      },
     ],
-    [],
+    [agentOf, onRelated],
   )
   const locationColumns = useMemo<Column<InvolvedLocation>[]>(
     () => [
@@ -253,6 +290,18 @@ export function AlertDialog({
             pageSize={8}
           />
         </Section>
+
+        {vehicleReports && (
+          <nav className={links.dialogLinks} aria-label="Related records">
+            <button
+              type="button"
+              className={links.dialogLink}
+              onClick={() => onRelated(vehicleReports)}
+            >
+              View vehicle reports
+            </button>
+          </nav>
+        )}
       </div>
     </Dialog>
   )

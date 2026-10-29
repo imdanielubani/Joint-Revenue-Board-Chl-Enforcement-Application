@@ -17,6 +17,8 @@ import {
   searchTextOf,
 } from '../repeat-alerts-display'
 import type { RepeatAlert } from '../repeat-alerts.schemas'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import { useAlertRelated } from '../use-alert-related'
 import styles from './AlertRegister.module.css'
 
 /**
@@ -32,6 +34,7 @@ export function AlertRegister({
   onFollowUpChange,
   onNotifiedChange,
   onOpen,
+  onRelated,
 }: {
   alerts: readonly RepeatAlert[]
   subtitle: string
@@ -43,7 +46,10 @@ export function AlertRegister({
   onNotifiedChange(value: string | null): void
   /** Opens the alert in its popup. */
   onOpen(alert: RepeatAlert): void
+  /** Opens a record the alert leads to in a popup on the page. */
+  onRelated(related: TripRelated): void
 }) {
+  const { reportsOf } = useAlertRelated()
   const columns = useMemo<Column<RepeatAlert>[]>(
     () => [
       {
@@ -108,15 +114,23 @@ export function AlertRegister({
         key: 'actions',
         header: 'Actions',
         align: 'end',
-        render: (row) => (
-          <RowActions
-            label={`Actions for ${row.plate}`}
-            actions={[{ label: 'View alert', onSelect: () => onOpen(row) }]}
-          />
-        ),
+        render: (row) => {
+          const reports = reportsOf(row)
+          return (
+            <RowActions
+              label={`Actions for ${row.plate}`}
+              actions={[
+                { label: 'View alert', onSelect: () => onOpen(row) },
+                ...(reports
+                  ? [{ label: 'View vehicle reports', onSelect: () => onRelated(reports) }]
+                  : []),
+              ]}
+            />
+          )
+        },
       },
     ],
-    [onOpen],
+    [onOpen, onRelated, reportsOf],
   )
   const followUps = [...new Set(['none', 'partial', ...alerts.map((alert) => alert.followUp)])].map(
     (value) => ({ value, label: followUpPill(value).label }),
