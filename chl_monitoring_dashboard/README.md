@@ -324,6 +324,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A repeat-vehicle alert links to the notification the central supervisory
+  process sent for it (SRD 11.1), with when CHL received it and whether the
+  user has read it; the alert counts as raised at the third qualifying report
+  over the history CHL keeps, as that process counts, whatever the period.
 - Repeat vehicle alerts record and API (`/api/v1/repeat-alerts`, provisional;
   SRD 11.1): a vehicle reported three qualifying times in the area and period
   (a violation not cancelled), one still open, with its follow-up (none or

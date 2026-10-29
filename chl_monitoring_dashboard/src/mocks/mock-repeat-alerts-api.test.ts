@@ -4,6 +4,7 @@ import { repeatAlertsSchema } from '@/features/repeat-alerts/repeat-alerts.schem
 import { lagosDay } from '@/shared/lib/dates'
 import { summarize } from './mock-overview-api'
 import { mockRecords } from './mock-records'
+import { summarizeNotifications } from './mock-notifications-api'
 import { summarizeRepeatAlerts } from './mock-repeat-alerts-api'
 import { summarizeViolations } from './mock-violations-api'
 
@@ -63,7 +64,8 @@ describe('summarizeRepeatAlerts', () => {
       expect(times).toEqual([...times].sort((a, b) => a - b))
       expect(alert.firstReportedAt).toBe(qualifying[0]!.recordedAt)
       expect(alert.lastReportedAt).toBe(qualifying[qualifying.length - 1]!.recordedAt)
-      expect(alert.raisedAt).toBe(qualifying[2]!.recordedAt)
+      // Raised over the whole history: no later than the period's third report.
+      expect(Date.parse(alert.raisedAt)).toBeLessThanOrEqual(Date.parse(qualifying[2]!.recordedAt))
       // Partial follow-up: a qualifying report was escalated or closed.
       const followedUp = qualifying.some((item) => ['escalated', 'resolved'].includes(item.status))
       expect(alert.followUp).toBe(followedUp ? 'partial' : 'none')
@@ -74,6 +76,22 @@ describe('summarizeRepeatAlerts', () => {
     const agentId = 'JRB-AG-0142'
     for (const alert of summarizeRepeatAlerts({ ...filters('ng'), agentId }, NOW).alerts) {
       for (const item of alert.cases) expect(item.agent.id).toBe(agentId)
+    }
+  })
+
+  it('links each alert to the notification the supervisory process sent when it was raised', () => {
+    const { alerts } = summarizeRepeatAlerts(filters('la', '30d'), NOW)
+    const history = summarizeNotifications(filters('la'), NOW).notifications
+    expect(alerts.length).toBeGreaterThan(0)
+    for (const alert of alerts) {
+      const sent = history.find((item) => item.id === `ntf-repeat-${alert.plate}`)!
+      expect(alert.notification).toEqual({
+        id: sent.id,
+        receivedAt: sent.receivedAt,
+        read: sent.read,
+      })
+      // Sent once the third qualifying report reached CHL, after it was recorded.
+      expect(Date.parse(sent.receivedAt)).toBeGreaterThanOrEqual(Date.parse(alert.raisedAt))
     }
   })
 })

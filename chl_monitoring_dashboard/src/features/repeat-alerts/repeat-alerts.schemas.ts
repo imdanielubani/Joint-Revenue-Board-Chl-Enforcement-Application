@@ -22,7 +22,10 @@ export const repeatAlertSchema = z.object({
   followUp: open<FollowUp>(),
   firstReportedAt: z.string(),
   lastReportedAt: z.string(),
-  /** When the third qualifying report was recorded, raising the alert. */
+  /**
+   * When the alert was raised: the third qualifying report over the history
+   * CHL keeps, as the supervisory process counts it, whatever the period.
+   */
   raisedAt: z.string(),
   /**
    * Every violation of the plate in the area and period, oldest first, with
