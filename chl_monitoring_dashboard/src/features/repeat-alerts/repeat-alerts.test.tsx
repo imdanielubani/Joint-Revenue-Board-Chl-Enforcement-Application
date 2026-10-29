@@ -156,4 +156,38 @@ describe('repeat vehicle alerts page', () => {
       await screen.findByText(/NO-SUCH-PLATE has no repeat-vehicle alert in this area and period/),
     ).toBeInTheDocument()
   })
+
+  it('shows the agents and locations involved in an alert, with their qualifying reports', async () => {
+    const alert = expected()[0]!
+    const qualifying = alert.cases.filter((item) => item.status !== 'cancelled')
+    const tally = (key: (item: (typeof qualifying)[number]) => string) => {
+      const counts = new Map<string, number>()
+      for (const item of qualifying) counts.set(key(item), (counts.get(key(item)) ?? 0) + 1)
+      return counts
+    }
+    const perAgent = tally((item) => item.agent.id)
+    const perLocation = tally((item) => item.location.code)
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/repeat-alerts?alert=${alert.plate}`)
+    const dialog = await screen.findByRole('dialog', { name: `Repeat vehicle ${alert.plate}` })
+
+    const agents = within(dialog).getByRole('table', { name: `Agents who reported ${alert.plate}` })
+    expect(bodyRows(agents)).toHaveLength(Math.min(5, perAgent.size))
+    for (const row of bodyRows(agents)) {
+      const id = [...perAgent.keys()].find((agentId) => row.textContent?.includes(agentId))!
+      expect(within(row).getAllByRole('cell')[1]).toHaveTextContent(String(perAgent.get(id)))
+    }
+
+    const locations = within(dialog).getByRole('table', {
+      name: `Where ${alert.plate} was reported`,
+    })
+    expect(bodyRows(locations)).toHaveLength(Math.min(5, perLocation.size))
+    for (const row of bodyRows(locations)) {
+      const code = [...perLocation.keys()].find((place) => row.textContent?.includes(place))!
+      expect(within(row).getAllByRole('cell')[1]).toHaveTextContent(String(perLocation.get(code)))
+    }
+    // Between them, the agents' reports and the locations' reports are the alert's.
+    expect([...perAgent.values()].reduce((a, b) => a + b, 0)).toBe(alert.reports)
+    expect([...perLocation.values()].reduce((a, b) => a + b, 0)).toBe(alert.reports)
+  })
 })

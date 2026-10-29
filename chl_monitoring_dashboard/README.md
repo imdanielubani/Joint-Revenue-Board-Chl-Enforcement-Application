@@ -324,6 +324,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A repeat-vehicle alert's popup lists the agents involved and the locations
+  where the vehicle was reported (SRD 11.1), each with its qualifying reports
+  and when it last reported, most reports first.
 - A repeat-vehicle alert opens in a popup on the page ("View alert", kept in
   the address as `alert`): the vehicle (plate, vehicle ID and type, area,
   qualifying reports, follow-up, first and last reported, when the alert was

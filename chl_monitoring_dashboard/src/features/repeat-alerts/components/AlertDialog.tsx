@@ -12,7 +12,13 @@ import type { Column } from '@/shared/ui/DataTable'
 import { Dialog } from '@/shared/ui/Dialog'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { followUpPill } from '../repeat-alerts-display'
+import {
+  followUpPill,
+  involvedAgents,
+  involvedLocations,
+  type InvolvedAgent,
+  type InvolvedLocation,
+} from '../repeat-alerts-display'
 import type { RepeatAlert } from '../repeat-alerts.schemas'
 import styles from './AlertDialog.module.css'
 
@@ -31,6 +37,23 @@ export function Section({ title, children }: { title: string; children: ReactNod
 
 const reportSearch = (item: ViolationCase) =>
   [item.id, item.category, item.agent.name, item.agent.id, item.location.name].join(' ')
+const agentSearch = (item: InvolvedAgent) => `${item.id} ${item.name}`
+const locationSearch = (item: InvolvedLocation) => `${item.name} ${item.area} ${item.code}`
+
+/** How many qualifying reports, and when the last was recorded: shared by agents and locations. */
+const reportsColumn: Column<{ reports: number }> = {
+  key: 'reports',
+  header: 'Qualifying reports',
+  align: 'end',
+  render: (row) => formatNumber(row.reports),
+  sortValue: (row) => row.reports,
+}
+const lastColumn: Column<{ lastReportedAt: string }> = {
+  key: 'last',
+  header: 'Last reported (WAT)',
+  render: (row) => formatShortDateTime(row.lastReportedAt),
+  sortValue: (row) => Date.parse(row.lastReportedAt),
+}
 
 /**
  * A repeat-vehicle alert in a popup on the page (SRD 11.1): the vehicle as the
@@ -90,6 +113,36 @@ export function AlertDialog({
     ],
     [],
   )
+  const agentColumns = useMemo<Column<InvolvedAgent>[]>(
+    () => [
+      {
+        key: 'agent',
+        header: 'Agent',
+        render: (row) => <Stack main={row.name} sub={row.id} />,
+        sortValue: (row) => row.name,
+      },
+      reportsColumn,
+      lastColumn,
+    ],
+    [],
+  )
+  const locationColumns = useMemo<Column<InvolvedLocation>[]>(
+    () => [
+      {
+        key: 'location',
+        header: 'Location',
+        render: (row) => (
+          <Stack main={row.name} sub={[row.area, row.code].filter(Boolean).join(' · ')} />
+        ),
+        sortValue: (row) => row.name,
+      },
+      reportsColumn,
+      lastColumn,
+    ],
+    [],
+  )
+  const agents = involvedAgents(alert)
+  const locations = involvedLocations(alert)
 
   return (
     <Dialog
@@ -128,6 +181,29 @@ export function AlertDialog({
             pageSize={5}
           />
         </Section>
+
+        <div className={styles.pair}>
+          <Section title="Involved agents">
+            <RegisterTable
+              label={`Agents who reported ${alert.plate}`}
+              rows={agents}
+              columns={agentColumns}
+              rowKey={(row) => row.id}
+              searchText={agentSearch}
+              pageSize={5}
+            />
+          </Section>
+          <Section title="Locations">
+            <RegisterTable
+              label={`Where ${alert.plate} was reported`}
+              rows={locations}
+              columns={locationColumns}
+              rowKey={(row) => row.id}
+              searchText={locationSearch}
+              pageSize={5}
+            />
+          </Section>
+        </div>
       </div>
     </Dialog>
   )

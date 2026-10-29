@@ -4,3 +4,16 @@
   flex-direction: column;
   gap: 20px;
 }
+
+/* Agents and locations side by side, one under the other on narrow screens. */
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
