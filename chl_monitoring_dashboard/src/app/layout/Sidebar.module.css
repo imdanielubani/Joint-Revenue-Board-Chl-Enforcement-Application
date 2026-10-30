@@ -156,8 +156,9 @@
   list-style: none;
 }
 
+/* 36px items 2px apart, so all sixteen modules fit a 1024px-high screen without scrolling. */
 .list li {
-  padding-top: 3px;
+  padding-top: 2px;
 }
 
 .list li:first-child {
@@ -169,8 +170,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 40px;
-  padding: 12px 10px;
+  min-height: 36px;
+  padding: 10px;
   border-radius: 7px;
   color: var(--sidebar-text);
   font-size: var(--font-size-xs);
@@ -373,12 +374,12 @@
 }
 
 .collapsed .section + .section .list li:first-child {
-  padding-top: 3px;
+  padding-top: 2px;
 }
 
 .collapsed .link {
   justify-content: center;
-  padding: 12px 0;
+  padding: 10px 0;
 }
 
 .collapsed .linkLabel,

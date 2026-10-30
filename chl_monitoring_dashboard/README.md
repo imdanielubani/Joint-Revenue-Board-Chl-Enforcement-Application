@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Sidebar menu items are 36px high and 2px apart (were 40px and 3px), so all
+  sixteen modules, Log out and the user fit a 1024px-high screen without the
+  menu scrolling.
 - Audit trail page note: every verification attempt is recorded, successful
   or not; the complete trail is for authorized administrators, a supervisor's
   access follows the backend's permissions; nothing is edited or deleted here;
