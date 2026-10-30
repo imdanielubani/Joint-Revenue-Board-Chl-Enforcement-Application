@@ -325,6 +325,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit entry record relationships (document 12.3): from the popup, the
+  verification and the vehicle's verifications, the violation's case, evidence
+  and demand notice, and the agent each open in their own popup on the page;
+  the trip and the enforcement location open on their own pages. Each only
+  where the entry has one and the user may open its module.
 - Audit trail processed identifier, subject to access rules: an RFID tag
   shown only masked to its last four characters unless exposing it was
   explicitly authorized, a QR code and a plate in full; in the register under

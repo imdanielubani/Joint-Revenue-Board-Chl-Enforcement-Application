@@ -210,4 +210,39 @@ describe('audit trail page', () => {
       within(dialog).getByRole('region', { name: 'Device and application' }),
     ).toHaveTextContent('Device IDNot supplied by CHL')
   })
+
+  it('connects an entry to its verification, vehicle, trip, case, evidence, notice, agent and location', async () => {
+    const entry = expected().find((item) => item.violation && item.payment && item.tripId)!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/audit?entry=${entry.reference}`)
+    const dialog = await screen.findByRole('dialog', { name: `Audit entry ${entry.reference}` })
+    const nav = within(dialog).getByRole('navigation', { name: 'Related records' })
+    expect([...nav.children].map((item) => item.textContent)).toEqual([
+      'Verification details',
+      'Vehicle verifications',
+      'Open the trip',
+      'View case',
+      'View evidence',
+      'View demand notice',
+      'View agent',
+      'Open the location',
+    ])
+    expect(within(nav).getByRole('link', { name: 'Open the trip' })).toHaveAttribute(
+      'href',
+      `/trips?trip=${entry.tripId}`,
+    )
+    expect(within(nav).getByRole('link', { name: 'Open the location' })).toHaveAttribute(
+      'href',
+      `/geography?scope=${entry.location.id}`,
+    )
+
+    // The case opens in its own popup, in place of the entry.
+    await userEvent.click(within(nav).getByRole('button', { name: 'View case' }))
+    expect(
+      await screen.findByRole('dialog', { name: new RegExp(entry.violation!.id) }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('dialog', { name: `Audit entry ${entry.reference}` }),
+    ).not.toBeInTheDocument()
+  })
 })

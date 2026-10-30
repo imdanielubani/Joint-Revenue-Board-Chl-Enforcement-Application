@@ -1,4 +1,6 @@
+import { Link } from 'react-router'
 import { gpsText } from '@/features/geography/record-details'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { methodLabel, outcomeLabel, outcomeStyle } from '@/features/overview/overview-display'
 import { Fact, Facts } from '@/features/verifications/components/VerificationDetailsDialog'
 import { PillLabel } from '@/features/verifications/components/RecordsPanel'
@@ -15,13 +17,25 @@ import { Dialog } from '@/shared/ui/Dialog'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { identifierText, organizationText } from '../audit-display'
 import type { AuditEntry } from '../audit.schemas'
+import { useAuditRelated } from '../use-audit-related'
+import local from './AuditEntryDialog.module.css'
 
 /**
  * One audit entry in a popup on the page (SRD 28): every audit field CHL
  * holds for the verification attempt, grouped as the trail records them.
  * Read-only: an audit record is never edited or deleted.
  */
-export function AuditEntryDialog({ entry, onClose }: { entry: AuditEntry; onClose(): void }) {
+export function AuditEntryDialog({
+  entry,
+  onRelated,
+  onClose,
+}: {
+  entry: AuditEntry
+  /** Opens a record the entry leads to in its own popup, in place of this one. */
+  onRelated(related: TripRelated): void
+  onClose(): void
+}) {
+  const related = useAuditRelated()(entry)
   return (
     <Dialog
       title={`Audit entry ${entry.reference}`}
@@ -90,6 +104,27 @@ export function AuditEntryDialog({ entry, onClose }: { entry: AuditEntry; onClos
           <PillLabel pill={syncPill(entry)} />
         </Fact>
       </Facts>
+
+      {related.length > 0 && (
+        <nav className={styles.dialogLinks} aria-label="Related records">
+          {related.map((item) =>
+            'to' in item ? (
+              <Link key={item.label} className={styles.dialogLink} to={item.to}>
+                {item.label}
+              </Link>
+            ) : (
+              <button
+                key={item.label}
+                type="button"
+                className={local.relatedButton}
+                onClick={() => onRelated(item.related)}
+              >
+                {item.label}
+              </button>
+            ),
+          )}
+        </nav>
+      )}
 
       <p className={styles.small}>
         Read-only. Audit records cannot be edited or deleted. A raw RFID value is shown only masked

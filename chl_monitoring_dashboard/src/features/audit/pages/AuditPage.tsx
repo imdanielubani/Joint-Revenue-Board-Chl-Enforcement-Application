@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { syncStateOf } from '@/features/verifications/verifications-display'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
@@ -66,6 +67,8 @@ function AuditContent({
     [entries],
   )
   const open = entries.find((entry) => entry.reference === page.entryReference) ?? null
+  // A record an entry leads to, open in its own popup in place of the entry.
+  const [related, setRelated] = useState<TripRelated | null>(null)
 
   return (
     <div className={styles.page}>
@@ -165,7 +168,20 @@ function AuditContent({
             <AuditEntryDialog
               key={open.reference}
               entry={open}
+              onRelated={(next) => {
+                page.openEntry(null)
+                setRelated(next)
+              }}
               onClose={() => page.openEntry(null)}
+            />
+          )}
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
             />
           )}
           {page.entryReference && !open && (

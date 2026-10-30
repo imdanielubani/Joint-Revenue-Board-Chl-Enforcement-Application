@@ -1,0 +1,16 @@
+/* A related record that opens in a popup: drawn as the popup's other links. */
+.relatedButton {
+  padding: 6px 10px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+  background: none;
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.relatedButton:hover {
+  border-color: var(--color-primary);
+}
