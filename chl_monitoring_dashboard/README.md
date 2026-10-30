@@ -325,6 +325,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit trail record (SRD 28): every recorded verification attempt with its
+  audit fields — the agent and their organization, the processed identifier
+  (an RFID tag masked to its last four characters), the device and app
+  version where CHL holds them — with its read-only API and sample data drawn
+  from the same verifications the Verifications page lists.
 - History & audit is two modules in the sidebar: Verification history
   (/history) and Audit trail (/audit), as the document's 12.1 and 12.2. The
   supervisor sees Verification history; the audit trail stays with
