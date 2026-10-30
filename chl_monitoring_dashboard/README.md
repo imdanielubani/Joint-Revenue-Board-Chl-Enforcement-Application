@@ -325,6 +325,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- An audit entry opens in a popup on the page (View entry, kept in the
+  address as ?entry=): the agent's ID, name and organization; the date and
+  time, method, result and attempt status; the vehicle plate and ID, trip and
+  violation references and action taken; the enforcement point and GPS; and
+  the recorded source, receipt by CHL and synchronization status. Read-only.
 - Audit register filters: method, result, attempt status, action taken and
   synchronization, kept in the address. The unsuccessful-attempts,
   violations-issued and upload-pending figures lead to the register filtered

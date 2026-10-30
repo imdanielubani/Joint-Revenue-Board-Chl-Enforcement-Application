@@ -11,6 +11,7 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { useAuditTrail } from '../audit.queries'
+import { AuditEntryDialog } from '../components/AuditEntryDialog'
 import { AuditRegister } from '../components/AuditRegister'
 import { useAuditView } from '../use-audit-view'
 import styles from './AuditPage.module.css'
@@ -64,6 +65,7 @@ function AuditContent({
     }),
     [entries],
   )
+  const open = entries.find((entry) => entry.reference === page.entryReference) ?? null
 
   return (
     <div className={styles.page}>
@@ -155,7 +157,22 @@ function AuditContent({
               subtitle={`Every recorded verification attempt, newest first · ${subtitle}`}
               filters={page.filters}
               onFilterChange={page.setFilter}
+              onOpen={(entry) => page.openEntry(entry.reference)}
             />
+          )}
+
+          {open && (
+            <AuditEntryDialog
+              key={open.reference}
+              entry={open}
+              onClose={() => page.openEntry(null)}
+            />
+          )}
+          {page.entryReference && !open && (
+            <p className={styles.stale} role="status">
+              {page.entryReference} is not in the audit trail for this area and period. Choose
+              another area or period to find it.
+            </p>
           )}
         </>
       )}

@@ -139,4 +139,45 @@ describe('audit trail page', () => {
       'unsuccessful',
     )
   })
+
+  it('opens an entry in a popup with every audit field', async () => {
+    const entry = expected().find((item) => item.violation && item.tripId)!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/audit')
+    const register = await card('Audit register')
+    await userEvent.type(within(register).getByRole('searchbox'), entry.reference)
+    const table = within(register).getByRole('table', { name: 'Audit trail' })
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${entry.reference}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View entry' }))
+
+    const dialog = await screen.findByRole('dialog', { name: `Audit entry ${entry.reference}` })
+    expect(router.state.location.search).toBe(`?entry=${entry.reference}`)
+    const agent = within(dialog).getByRole('region', { name: 'Agent' })
+    expect(agent).toHaveTextContent(`Agent ID${entry.agent.id}`)
+    expect(agent).toHaveTextContent(`Agent name${entry.agent.name}`)
+    const vehicle = within(dialog).getByRole('region', { name: 'Vehicle, trip and violation' })
+    expect(vehicle).toHaveTextContent(`Vehicle plate${entry.plate}`)
+    expect(vehicle).toHaveTextContent(`Trip reference${entry.tripId}`)
+    expect(vehicle).toHaveTextContent(`Violation reference${entry.violation!.id}`)
+    expect(vehicle).toHaveTextContent('Action takenViolation issued')
+    expect(within(dialog).getByRole('region', { name: 'Location' })).toHaveTextContent(
+      entry.location.name,
+    )
+    expect(within(dialog).getByRole('region', { name: 'Synchronization' })).toBeInTheDocument()
+    expect(dialog).toHaveTextContent('Audit records cannot be edited or deleted')
+
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(router.state.location.search).toBe('')
+  })
+
+  it('says when a linked entry is not in the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/audit?entry=VR-00000')
+    expect(
+      await screen.findByText(/VR-00000 is not in the audit trail for this area and period/),
+    ).toBeInTheDocument()
+  })
 })

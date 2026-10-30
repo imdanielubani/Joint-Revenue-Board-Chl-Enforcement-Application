@@ -9,6 +9,7 @@ import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
+import { RowActions } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { applyAuditFilters, FILTER_OPTIONS, organizationText, searchTextOf } from '../audit-display'
 import type { AuditEntry } from '../audit.schemas'
@@ -28,6 +29,7 @@ export function AuditRegister({
   subtitle,
   filters,
   onFilterChange,
+  onOpen,
 }: {
   entries: readonly AuditEntry[]
   /** The area and period: "Lagos · Last 14 days". */
@@ -35,6 +37,8 @@ export function AuditRegister({
   /** Each filter's value; null for "All". */
   filters: AuditRegisterFilters
   onFilterChange(key: AuditFilterKey, value: string | null): void
+  /** Opens the entry in its popup. */
+  onOpen(entry: AuditEntry): void
 }) {
   const columns = useMemo<Column<AuditEntry>[]>(
     () => [
@@ -114,8 +118,19 @@ export function AuditRegister({
         render: (row) => <PillLabel pill={syncPill(row)} />,
         sortValue: (row) => syncPill(row).label,
       },
+      {
+        key: 'actions',
+        header: 'Actions',
+        align: 'end',
+        render: (row) => (
+          <RowActions
+            label={`Actions for ${row.reference}`}
+            actions={[{ label: 'View entry', onSelect: () => onOpen(row) }]}
+          />
+        ),
+      },
     ],
-    [],
+    [onOpen],
   )
   const rows = useMemo(() => applyAuditFilters(entries, filters), [entries, filters])
   const select = (key: AuditFilterKey, label: string) => (
