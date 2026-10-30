@@ -5,6 +5,8 @@ import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { syncStateOf } from '@/features/verifications/verifications-display'
+import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { useAuditTrail } from '../audit.queries'
@@ -47,6 +49,16 @@ function AuditContent({
   const { scope, filters } = filter
   const query = useAuditTrail(filters, { enabled: !filter.waiting })
   const data = query.data
+  const entries = useMemo(() => data?.entries ?? [], [data])
+  const counts = useMemo(
+    () => ({
+      unsuccessful: entries.filter((entry) => entry.attempt === 'unsuccessful').length,
+      violations: entries.filter((entry) => entry.actionTaken === 'violation_issued').length,
+      pending: entries.filter((entry) => syncStateOf(entry) === 'upload_pending').length,
+      agents: new Set(entries.map((entry) => entry.agent.id)).size,
+    }),
+    [entries],
+  )
 
   return (
     <div className={styles.page}>
@@ -96,7 +108,35 @@ function AuditContent({
               The latest audit trail could not be loaded; this is from the last successful check.
             </p>
           )}
-          {data.entries.length === 0 && (
+          <HeadlineFigures
+            items={[
+              {
+                label: 'Verification attempts',
+                value: entries.length,
+                icon: 'overview/kpi-scan.svg',
+                note: `Successful and unsuccessful · ${counts.agents} agents`,
+              },
+              {
+                label: 'Unsuccessful attempts',
+                value: counts.unsuccessful,
+                icon: 'verifications/kpi-unavailable.svg',
+                note: 'CHL could not complete the request',
+              },
+              {
+                label: 'Violations issued',
+                value: counts.violations,
+                icon: 'overview/kpi-violation.svg',
+                note: 'The action taken after the verification',
+              },
+              {
+                label: 'Upload pending',
+                value: counts.pending,
+                icon: 'verifications/kpi-pending.svg',
+                note: 'Evidence still uploading from the device',
+              },
+            ]}
+          />
+          {entries.length === 0 && (
             <StatePanel
               kind="empty"
               message={`No verification attempts were recorded in ${scope.name} in this period.`}

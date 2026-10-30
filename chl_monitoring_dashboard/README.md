@@ -325,6 +325,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit trail headline figures: verification attempts (successful and
+  unsuccessful, and how many agents made them), unsuccessful attempts,
+  violations issued and evidence uploads still pending.
 - Audit trail page: the green banner (read-only, no audit record edited or
   deleted), the area, period, organization and agent filters, and its loading,
   error, stale and empty states. Supervisors still see "No access".
