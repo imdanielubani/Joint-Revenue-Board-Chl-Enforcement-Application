@@ -327,4 +327,17 @@ describe('audit trail page', () => {
       within(details).queryByRole('link', { name: 'Open in the audit trail' }),
     ).not.toBeInTheDocument()
   })
+
+  it('says every attempt is recorded and that nothing is edited or deleted here', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/audit')
+    const note = (
+      await screen.findByText('Every verification attempt is recorded, successful or not.')
+    ).closest('aside')!
+    expect(note).toHaveTextContent('for authorized administrators')
+    expect(note).toHaveTextContent('No audit record is edited or deleted here.')
+    expect(note).toHaveTextContent(
+      'appears only masked unless exposing it was explicitly authorized',
+    )
+  })
 })

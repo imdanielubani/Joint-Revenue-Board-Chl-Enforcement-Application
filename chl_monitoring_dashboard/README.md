@@ -274,7 +274,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
   shows "Session expired" instead.
 - **Modules:** the backend says which modules each user may open
   (`user.modules`). The menu shows only those, and opening another one shows
-  "No access". **Areas:** the user's areas (`user.scopes`) come from CHL;
+  "No access". The complete audit trail is for authorized administrators; a
+  supervisor's access to it follows the backend's permissions (the sample
+  supervisor has none). No audit record is edited or deleted in the
+  dashboard. **Areas:** the user's areas (`user.scopes`) come from CHL;
   the backend filters the data to them.
 - Pending with the backend: the auth paths in `features/auth/auth.api.ts`
   are provisional. Tokens are kept in browser storage for now; if the
@@ -325,6 +328,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit trail page note: every verification attempt is recorded, successful
+  or not; the complete trail is for authorized administrators, a supervisor's
+  access follows the backend's permissions; nothing is edited or deleted here;
+  raw RFID values only masked. The README's access notes say the same.
 - A verification's details popup links to its audit entry ("Open in the audit
   trail"), for those who may open the audit trail only.
 - Audit trail "Export records": saves the entries the register shows, with

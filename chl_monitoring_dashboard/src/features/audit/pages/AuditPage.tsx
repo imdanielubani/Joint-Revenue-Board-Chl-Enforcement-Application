@@ -9,6 +9,8 @@ import { TripRelatedDialog, type TripRelated } from '@/features/trips/components
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { syncStateOf } from '@/features/verifications/verifications-display'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
+import cards from '@/features/payments/components/PaymentCards.module.css'
+import { assetUrl } from '@/shared/lib/asset-url'
 import { downloadCsv } from '@/shared/lib/csv'
 import { HeroButton, PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { useToast } from '@/shared/ui/toast/toast-context'
@@ -223,6 +225,22 @@ function AuditContent({
               another area or period to find it.
             </p>
           )}
+
+          <aside className={cards.pageNote}>
+            <img src={assetUrl('verifications/note-info.svg')} alt="" width={16} height={16} />
+            <div>
+              <p className={cards.pageNoteTitle}>
+                Every verification attempt is recorded, successful or not.
+              </p>
+              <p className={cards.pageNoteText}>
+                The complete audit trail is for authorized administrators; a supervisor’s access
+                follows the backend’s permissions. No audit record is edited or deleted here. A raw
+                RFID value appears only masked unless exposing it was explicitly authorized; a
+                failed read is not proof of a missing E-Tag, and an unavailable verification is not
+                “No Active Trip”.
+              </p>
+            </div>
+          </aside>
         </>
       )}
     </div>
