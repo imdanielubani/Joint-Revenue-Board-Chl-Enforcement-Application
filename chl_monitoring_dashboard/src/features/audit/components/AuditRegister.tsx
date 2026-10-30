@@ -6,11 +6,13 @@ import { PillLabel } from '@/features/verifications/components/RecordsPanel'
 import { actionPill, syncPill } from '@/features/verifications/verifications-display'
 import { formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
+import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { organizationText, searchTextOf } from '../audit-display'
+import { applyAuditFilters, FILTER_OPTIONS, organizationText, searchTextOf } from '../audit-display'
 import type { AuditEntry } from '../audit.schemas'
+import type { AuditFilterKey, AuditRegisterFilters } from '../use-audit-view'
 import styles from './AuditRegister.module.css'
 
 const notSupplied = (text = 'Not supplied') => <span className={cells.sub}>{text}</span>
@@ -18,15 +20,21 @@ const notSupplied = (text = 'Not supplied') => <span className={cells.sub}>{text
 /**
  * The audit register (SRD 28): every recorded verification attempt in the
  * area and period, newest first, with its agent, method, vehicle, result,
- * trip and violation, enforcement point, action taken and synchronization.
+ * trip and violation, enforcement point, action taken and synchronization;
+ * filtered by method, result, attempt status, action taken and synchronization.
  */
 export function AuditRegister({
   entries,
   subtitle,
+  filters,
+  onFilterChange,
 }: {
   entries: readonly AuditEntry[]
   /** The area and period: "Lagos · Last 14 days". */
   subtitle: string
+  /** Each filter's value; null for "All". */
+  filters: AuditRegisterFilters
+  onFilterChange(key: AuditFilterKey, value: string | null): void
 }) {
   const columns = useMemo<Column<AuditEntry>[]>(
     () => [
@@ -109,6 +117,15 @@ export function AuditRegister({
     ],
     [],
   )
+  const rows = useMemo(() => applyAuditFilters(entries, filters), [entries, filters])
+  const select = (key: AuditFilterKey, label: string) => (
+    <LabeledSelect
+      label={label}
+      value={filters[key]}
+      options={FILTER_OPTIONS[key]}
+      onChange={(value) => onFilterChange(key, value)}
+    />
+  )
   return (
     <DashboardCard
       title="Audit register"
@@ -116,9 +133,17 @@ export function AuditRegister({
       icon="verifications/card-register.svg"
       bodyClassName={styles.body}
     >
+      <div className={styles.selects}>
+        {select('method', 'Method')}
+        {select('result', 'Result')}
+        {select('attempt', 'Attempt status')}
+        {select('action', 'Action taken')}
+        {select('sync', 'Synchronization')}
+      </div>
       <RegisterTable
+        key={Object.values(filters).join('|')}
         label="Audit trail"
-        rows={entries}
+        rows={rows}
         columns={columns}
         rowKey={(row) => row.reference}
         searchText={searchTextOf}

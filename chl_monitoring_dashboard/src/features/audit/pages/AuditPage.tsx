@@ -12,6 +12,7 @@ import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { useAuditTrail } from '../audit.queries'
 import { AuditRegister } from '../components/AuditRegister'
+import { useAuditView } from '../use-audit-view'
 import styles from './AuditPage.module.css'
 
 /**
@@ -49,6 +50,7 @@ function AuditContent({
   const agentList = useAgents()
   const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: agentList.data })
   const { scope, filters } = filter
+  const page = useAuditView()
   const query = useAuditTrail(filters, { enabled: !filter.waiting })
   const data = query.data
   const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
@@ -124,18 +126,21 @@ function AuditContent({
                 value: counts.unsuccessful,
                 icon: 'verifications/kpi-unavailable.svg',
                 note: 'CHL could not complete the request',
+                to: page.linkTo({ attempt: 'unsuccessful' }),
               },
               {
                 label: 'Violations issued',
                 value: counts.violations,
                 icon: 'overview/kpi-violation.svg',
                 note: 'The action taken after the verification',
+                to: page.linkTo({ action: 'violation_issued' }),
               },
               {
                 label: 'Upload pending',
                 value: counts.pending,
                 icon: 'verifications/kpi-pending.svg',
                 note: 'Evidence still uploading from the device',
+                to: page.linkTo({ sync: 'upload_pending' }),
               },
             ]}
           />
@@ -148,6 +153,8 @@ function AuditContent({
             <AuditRegister
               entries={entries}
               subtitle={`Every recorded verification attempt, newest first · ${subtitle}`}
+              filters={page.filters}
+              onFilterChange={page.setFilter}
             />
           )}
         </>

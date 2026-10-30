@@ -101,4 +101,42 @@ describe('audit trail page', () => {
     expect(bodyRows(table)).toHaveLength(1)
     expect(bodyRows(table)[0]).toHaveTextContent(entry.reference)
   })
+
+  it('narrows the register by method and action taken, keeping them in the address', async () => {
+    const entries = expected()
+    const rfid = entries.filter((entry) => entry.method === 'rfid')
+    const issued = rfid.filter((entry) => entry.actionTaken === 'violation_issued')
+    expect(issued.length).toBeGreaterThan(0)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/audit')
+    const register = await card('Audit register')
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Method' }),
+      'rfid',
+    )
+    expect(router.state.location.search).toBe('?method=rfid')
+    let table = within(register).getByRole('table', { name: 'Audit trail' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, rfid.length))
+    for (const row of bodyRows(table)) expect(row).toHaveTextContent('RFID')
+
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Action taken' }),
+      'violation_issued',
+    )
+    expect(router.state.location.search).toBe('?method=rfid&action=violation_issued')
+    table = within(register).getByRole('table', { name: 'Audit trail' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, issued.length))
+    for (const row of bodyRows(table)) expect(row).toHaveTextContent('Violation issued')
+  })
+
+  it('lists what a headline figure counts, keeping the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/audit?scope=la&range=30d')
+    await userEvent.click((await figure('Unsuccessful attempts')).querySelector('a')!)
+    expect(router.state.location.search).toBe('?scope=la&range=30d&attempt=unsuccessful')
+    const register = await card('Audit register')
+    expect(within(register).getByRole('combobox', { name: 'Attempt status' })).toHaveValue(
+      'unsuccessful',
+    )
+  })
 })

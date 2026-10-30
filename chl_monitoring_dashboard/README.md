@@ -325,6 +325,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit register filters: method, result, attempt status, action taken and
+  synchronization, kept in the address. The unsuccessful-attempts,
+  violations-issued and upload-pending figures lead to the register filtered
+  to what they count, keeping the area and period.
 - Audit register: every recorded verification attempt in the area and period,
   newest first — date and time with its reference, the agent with their ID and
   organization, method, plate and CHL vehicle ID, result, trip and violation,
