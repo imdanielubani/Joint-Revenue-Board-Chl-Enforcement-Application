@@ -1,0 +1,12 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* The plate over CHL's vehicle ID. */
+.vehicle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

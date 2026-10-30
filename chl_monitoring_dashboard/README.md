@@ -325,6 +325,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit register: every recorded verification attempt in the area and period,
+  newest first — date and time with its reference, the agent with their ID and
+  organization, method, plate and CHL vehicle ID, result, trip and violation,
+  enforcement point, action taken and synchronization — searchable, sortable
+  and paged.
 - Audit trail headline figures: verification attempts (successful and
   unsuccessful, and how many agents made them), unsuccessful attempts,
   violations issued and evidence uploads still pending.

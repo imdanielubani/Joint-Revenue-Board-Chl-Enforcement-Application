@@ -4,12 +4,14 @@ import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
+import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { syncStateOf } from '@/features/verifications/verifications-display'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { useAuditTrail } from '../audit.queries'
+import { AuditRegister } from '../components/AuditRegister'
 import styles from './AuditPage.module.css'
 
 /**
@@ -49,6 +51,7 @@ function AuditContent({
   const { scope, filters } = filter
   const query = useAuditTrail(filters, { enabled: !filter.waiting })
   const data = query.data
+  const subtitle = `${scope.name} · ${periodLabel(filters.range, filters)}`
   const entries = useMemo(() => data?.entries ?? [], [data])
   const counts = useMemo(
     () => ({
@@ -136,10 +139,15 @@ function AuditContent({
               },
             ]}
           />
-          {entries.length === 0 && (
+          {entries.length === 0 ? (
             <StatePanel
               kind="empty"
               message={`No verification attempts were recorded in ${scope.name} in this period.`}
+            />
+          ) : (
+            <AuditRegister
+              entries={entries}
+              subtitle={`Every recorded verification attempt, newest first · ${subtitle}`}
             />
           )}
         </>

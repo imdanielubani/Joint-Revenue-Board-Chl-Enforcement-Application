@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { syncStateOf } from '@/features/verifications/verifications-display'
@@ -6,6 +7,9 @@ import { summarizeAuditTrail } from '@/mocks/mock-audit-api'
 import { lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
 
+const card = (title: string) => screen.findByRole('region', { name: title })
+/** The rows on a register's first page, header row left out. */
+const bodyRows = (table: HTMLElement) => within(table).getAllByRole('row').slice(1)
 const figure = async (label: string) => {
   const figures = await screen.findByRole('list', { name: 'Headline figures' })
   return within(figures).getByText(label).closest('li')!
@@ -59,5 +63,42 @@ describe('audit trail page', () => {
     expect(await figure('Upload pending')).toHaveTextContent(
       String(entries.filter((entry) => syncStateOf(entry) === 'upload_pending').length),
     )
+  })
+
+  it('lists every attempt, newest first, with its audit fields', async () => {
+    const entries = expected()
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/audit')
+    const register = await card('Audit register')
+    const table = within(register).getByRole('table', { name: 'Audit trail' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, entries.length))
+    for (const [index, row] of bodyRows(table).entries()) {
+      const entry = entries[index]!
+      const cells = within(row).getAllByRole('cell')
+      expect(cells[0]).toHaveTextContent(entry.reference)
+      expect(cells[1]).toHaveTextContent(`${entry.agent.name}${entry.agent.id}`)
+      expect(cells[1]).toHaveTextContent(entry.organization ?? 'No organization recorded')
+      expect(cells[3]).toHaveTextContent(entry.plate)
+      expect(cells[3]).toHaveTextContent(entry.vehicle.id ?? 'Not resolved by CHL')
+      expect(cells[6]).toHaveTextContent(entry.location.name)
+      expect(cells[7]).toHaveTextContent(
+        entry.actionTaken === 'violation_issued'
+          ? 'Violation issued'
+          : entry.actionTaken === 'no_violation'
+            ? 'No violation issued'
+            : 'Not supplied',
+      )
+    }
+  })
+
+  it('finds an attempt by its reference, plate, agent or violation', async () => {
+    const entry = expected().find((item) => item.violation)!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/audit')
+    const register = await card('Audit register')
+    await userEvent.type(within(register).getByRole('searchbox'), entry.violation!.id)
+    const table = within(register).getByRole('table', { name: 'Audit trail' })
+    expect(bodyRows(table)).toHaveLength(1)
+    expect(bodyRows(table)[0]).toHaveTextContent(entry.reference)
   })
 })
