@@ -9,8 +9,12 @@ import { TripRelatedDialog, type TripRelated } from '@/features/trips/components
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { syncStateOf } from '@/features/verifications/verifications-display'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
-import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
+import { downloadCsv } from '@/shared/lib/csv'
+import { HeroButton, PageHero, RefreshButton } from '@/shared/ui/PageHero'
+import { useToast } from '@/shared/ui/toast/toast-context'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { applyAuditFilters } from '../audit-display'
+import { auditCsvRows } from '../audit-export'
 import { useAuditTrail } from '../audit.queries'
 import { AuditEntryDialog } from '../components/AuditEntryDialog'
 import { AuditRegister } from '../components/AuditRegister'
@@ -69,6 +73,18 @@ function AuditContent({
   const open = entries.find((entry) => entry.reference === page.entryReference) ?? null
   // A record an entry leads to, open in its own popup in place of the entry.
   const [related, setRelated] = useState<TripRelated | null>(null)
+  const { showToast } = useToast()
+
+  /** Saves the entries the register shows, every audit field, as a CSV file. */
+  const exportEntries = () => {
+    const rows = applyAuditFilters(entries, page.filters)
+    downloadCsv(`audit-trail-${filters.from}-to-${filters.to}.csv`, auditCsvRows(rows))
+    showToast({
+      title: 'Audit trail exported',
+      lines: [`${rows.length} audit entries saved as a CSV file.`],
+      key: 'audit-export',
+    })
+  }
 
   return (
     <div className={styles.page}>
@@ -79,10 +95,20 @@ function AuditContent({
           section="Monitoring"
           icons="audit"
           actions={
-            <RefreshButton
-              refreshing={query.isFetching && !query.isPending}
-              onRefresh={() => void query.refetch()}
-            />
+            <>
+              <RefreshButton
+                refreshing={query.isFetching && !query.isPending}
+                onRefresh={() => void query.refetch()}
+              />
+              <HeroButton
+                variant="solid"
+                icon="overview/export.svg"
+                onClick={exportEntries}
+                disabled={!data || entries.length === 0}
+              >
+                Export records
+              </HeroButton>
+            </>
           }
         />
         <OverviewFilterBar

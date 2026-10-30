@@ -1,8 +1,9 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { syncStateOf } from '@/features/verifications/verifications-display'
+import { auditCsvRows } from './audit-export'
 import { summarizeAuditTrail } from '@/mocks/mock-audit-api'
 import { lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
@@ -270,5 +271,37 @@ describe('audit trail page', () => {
     signInAs('po@jrb.gov.ng')
     renderApp('/audit')
     expect(await screen.findByRole('heading', { name: 'No access' })).toBeInTheDocument()
+  })
+
+  describe('export', () => {
+    const original = { create: URL.createObjectURL, revoke: URL.revokeObjectURL }
+    afterEach(() => {
+      URL.createObjectURL = original.create
+      URL.revokeObjectURL = original.revoke
+    })
+
+    it('saves the entries the register shows, every audit field, as a CSV file', async () => {
+      const files: Blob[] = []
+      URL.createObjectURL = (blob: Blob) => {
+        files.push(blob)
+        return 'blob:audit'
+      }
+      URL.revokeObjectURL = vi.fn()
+      const unsuccessful = expected().filter((entry) => entry.attempt === 'unsuccessful')
+      signInAs('admin@jrb.gov.ng')
+      renderApp('/audit?attempt=unsuccessful')
+      await card('Audit register')
+      const hero = screen.getByRole('region', { name: 'Audit trail' })
+      await userEvent.click(within(hero).getByRole('button', { name: 'Export records' }))
+
+      expect(files).toHaveLength(1)
+      const text = await files[0]!.text()
+      const header = text.replace(/^\uFEFF/, '').split('\r\n')[0]
+      expect(header).toBe(auditCsvRows([])[0]!.join(','))
+      expect(text.split('\r\n')).toHaveLength(unsuccessful.length + 1)
+      expect(
+        await screen.findByText(`${unsuccessful.length} audit entries saved as a CSV file.`),
+      ).toBeInTheDocument()
+    })
   })
 })

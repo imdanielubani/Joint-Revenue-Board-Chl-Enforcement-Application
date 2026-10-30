@@ -325,6 +325,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit trail "Export records": saves the entries the register shows, with
+  every audit field (agent, organization, date and time, method, processed
+  identifier as masked, vehicle, result, attempt, trip, violation, GPS,
+  enforcement point, device, action taken, synchronization), as a CSV file.
 - Each audit register row's actions open the entry and the same related
   records as its popup — verification, vehicle verifications, trip, case,
   evidence, demand notice, agent and location — where the user may open them.
