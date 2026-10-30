@@ -325,6 +325,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit trail page: the green banner (read-only, no audit record edited or
+  deleted), the area, period, organization and agent filters, and its loading,
+  error, stale and empty states. Supervisors still see "No access".
 - Audit trail record (SRD 28): every recorded verification attempt with its
   audit fields — the agent and their organization, the processed identifier
   (an RFID tag masked to its last four characters), the device and app
