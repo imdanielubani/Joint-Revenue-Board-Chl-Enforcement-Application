@@ -325,6 +325,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Each audit register row's actions open the entry and the same related
+  records as its popup — verification, vehicle verifications, trip, case,
+  evidence, demand notice, agent and location — where the user may open them.
 - Audit entry record relationships (document 12.3): from the popup, the
   verification and the vehicle's verifications, the violation's case, evidence
   and demand notice, and the agent each open in their own popup on the page;

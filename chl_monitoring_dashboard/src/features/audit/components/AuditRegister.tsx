@@ -9,7 +9,8 @@ import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions } from '@/shared/ui/RowActions'
+import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
   applyAuditFilters,
@@ -19,6 +20,7 @@ import {
   searchTextOf,
 } from '../audit-display'
 import type { AuditEntry } from '../audit.schemas'
+import { useAuditRelated } from '../use-audit-related'
 import type { AuditFilterKey, AuditRegisterFilters } from '../use-audit-view'
 import styles from './AuditRegister.module.css'
 
@@ -36,6 +38,7 @@ export function AuditRegister({
   filters,
   onFilterChange,
   onOpen,
+  onRelated,
 }: {
   entries: readonly AuditEntry[]
   /** The area and period: "Lagos · Last 14 days". */
@@ -45,7 +48,10 @@ export function AuditRegister({
   onFilterChange(key: AuditFilterKey, value: string | null): void
   /** Opens the entry in its popup. */
   onOpen(entry: AuditEntry): void
+  /** Opens a record the entry leads to in its own popup on the page. */
+  onRelated(related: TripRelated): void
 }) {
+  const relatedOf = useAuditRelated()
   const columns = useMemo<Column<AuditEntry>[]>(
     () => [
       {
@@ -136,12 +142,19 @@ export function AuditRegister({
         render: (row) => (
           <RowActions
             label={`Actions for ${row.reference}`}
-            actions={[{ label: 'View entry', onSelect: () => onOpen(row) }]}
+            actions={[
+              { label: 'View entry', onSelect: () => onOpen(row) },
+              ...relatedOf(row).map((item): RowCommand | RowAction =>
+                'to' in item
+                  ? { label: item.label, to: item.to }
+                  : { label: item.label, onSelect: () => onRelated(item.related) },
+              ),
+            ]}
           />
         ),
       },
     ],
-    [onOpen],
+    [onOpen, onRelated, relatedOf],
   )
   const rows = useMemo(() => applyAuditFilters(entries, filters), [entries, filters])
   const select = (key: AuditFilterKey, label: string) => (

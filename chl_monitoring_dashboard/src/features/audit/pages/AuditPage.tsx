@@ -160,7 +160,14 @@ function AuditContent({
               subtitle={`Every recorded verification attempt, newest first · ${subtitle}`}
               filters={page.filters}
               onFilterChange={page.setFilter}
-              onOpen={(entry) => page.openEntry(entry.reference)}
+              onOpen={(entry) => {
+                setRelated(null)
+                page.openEntry(entry.reference)
+              }}
+              onRelated={(next) => {
+                page.openEntry(null)
+                setRelated(next)
+              }}
             />
           )}
 

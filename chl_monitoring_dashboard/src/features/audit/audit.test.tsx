@@ -245,4 +245,30 @@ describe('audit trail page', () => {
       screen.queryByRole('dialog', { name: `Audit entry ${entry.reference}` }),
     ).not.toBeInTheDocument()
   })
+
+  it('opens an entry’s related records from its row in the register', async () => {
+    const entry = expected()[0]!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/audit')
+    const register = await card('Audit register')
+    const table = within(register).getByRole('table', { name: 'Audit trail' })
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${entry.reference}` }),
+    )
+    expect(await screen.findByRole('menuitem', { name: 'View entry' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Verification details' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Open the location' })).toHaveAttribute(
+      'href',
+      `/geography?scope=${entry.location.id}`,
+    )
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View agent' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Agent details' })
+    expect(dialog).toHaveTextContent(entry.agent.name)
+  })
+
+  it('keeps the audit trail from a Principal Officer', async () => {
+    signInAs('po@jrb.gov.ng')
+    renderApp('/audit')
+    expect(await screen.findByRole('heading', { name: 'No access' })).toBeInTheDocument()
+  })
 })
