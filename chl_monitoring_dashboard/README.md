@@ -128,7 +128,8 @@ src/
     payments/              Demand notices, payment status, compliance
     notifications/         Enforcement and field notifications, read or unread
     repeat-alerts/         Repeat vehicle alerts: reports, agents, locations, cases, notifications
-    audit/                 Verification history and the audit trail
+    history/               Verification history: attempts, actions, linked records
+    audit/                 The complete audit trail (administrators)
     sync/                  Synchronisation and field status
   shared/                  Used by every feature; imports no feature
     api/                   HTTP client, ApiError, query cache settings, auth bridge
@@ -324,6 +325,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- History & audit is two modules in the sidebar: Verification history
+  (/history) and Audit trail (/audit), as the document's 12.1 and 12.2. The
+  supervisor sees Verification history; the audit trail stays with
+  administrators. Both are still to be built.
 - Repeat vehicle alerts page note: an alert is three qualifying reports, not
   any three scans; what qualifies and what partial follow-up means; nothing is
   closed, escalated or changed here. The alert popup labels its dates: first and

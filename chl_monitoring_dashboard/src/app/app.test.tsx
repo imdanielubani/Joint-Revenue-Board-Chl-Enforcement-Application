@@ -314,12 +314,15 @@ describe('signed in', () => {
 
     const menu = await screen.findByRole('navigation', { name: 'Main' })
     expect(within(menu).getByRole('link', { name: /^Violations & cases/ })).toBeInTheDocument()
-    expect(within(menu).queryByRole('link', { name: 'History & audit' })).not.toBeInTheDocument()
+    expect(
+      within(menu).queryByRole('link', { name: 'Verification history' }),
+    ).not.toBeInTheDocument()
+    expect(within(menu).queryByRole('link', { name: 'Audit trail' })).not.toBeInTheDocument()
   })
 
   it('refuses a module the user may not open', async () => {
     signInAs('supervisor@jrb.gov.ng')
-    renderApp('/history')
+    renderApp('/audit')
 
     expect(await screen.findByRole('heading', { name: 'No access' })).toBeInTheDocument()
   })

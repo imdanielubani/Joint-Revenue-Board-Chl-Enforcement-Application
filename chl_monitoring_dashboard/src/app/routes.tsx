@@ -50,6 +50,8 @@ const MODULE_PAGES: Record<ModuleKey, LazyPage> = {
     import('@/features/repeat-alerts/pages/RepeatAlertsPage').then((m) => ({
       Component: m.RepeatAlertsPage,
     })),
+  history: () =>
+    import('@/features/history/pages/HistoryPage').then((m) => ({ Component: m.HistoryPage })),
   audit: () => import('@/features/audit/pages/AuditPage').then((m) => ({ Component: m.AuditPage })),
   sync: () => import('@/features/sync/pages/SyncPage').then((m) => ({ Component: m.SyncPage })),
 }

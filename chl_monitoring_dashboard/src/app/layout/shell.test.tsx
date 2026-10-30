@@ -32,7 +32,8 @@ describe('sidebar', () => {
       'Payments & compliance',
       'Notifications',
       'Repeat vehicle alerts',
-      'History & audit',
+      'Verification history',
+      'Audit trail',
       'Synchronization',
     ])
     expect(within(menu).getByText('Workspace')).toBeInTheDocument()

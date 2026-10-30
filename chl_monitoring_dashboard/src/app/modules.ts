@@ -114,8 +114,15 @@ export const MODULES: readonly ModuleDefinition[] = [
     icon: 'nav/repeat-alerts.svg',
   },
   {
+    key: 'history',
+    label: 'Verification history',
+    path: paths.history,
+    section: 'Monitoring',
+    icon: 'nav/history.svg',
+  },
+  {
     key: 'audit',
-    label: 'History & audit',
+    label: 'Audit trail',
     path: paths.audit,
     section: 'Monitoring',
     icon: 'nav/audit.svg',

@@ -21,6 +21,7 @@ export const paths = {
   payments: '/payments',
   notifications: '/notifications',
   repeatAlerts: '/repeat-alerts',
-  audit: '/history',
+  history: '/history',
+  audit: '/audit',
   sync: '/sync',
 } as const
