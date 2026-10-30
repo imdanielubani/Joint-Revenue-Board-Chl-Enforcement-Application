@@ -304,4 +304,27 @@ describe('audit trail page', () => {
       ).toBeInTheDocument()
     })
   })
+
+  it('is where a verification leads, for those who may open the audit trail', async () => {
+    const entry = expected()[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/verifications?ref=${entry.reference}`)
+    const details = await screen.findByRole('dialog', { name: 'Verification details' })
+    await userEvent.click(within(details).getByRole('link', { name: 'Open in the audit trail' }))
+    expect(router.state.location.pathname).toBe('/audit')
+    expect(router.state.location.search).toBe(`?entry=${entry.reference}`)
+    expect(
+      await screen.findByRole('dialog', { name: `Audit entry ${entry.reference}` }),
+    ).toBeInTheDocument()
+  })
+
+  it('offers no audit link to a supervisor', async () => {
+    const entry = expected('la')[0]!
+    signInAs('supervisor@jrb.gov.ng')
+    renderApp(`/verifications?ref=${entry.reference}`)
+    const details = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(
+      within(details).queryByRole('link', { name: 'Open in the audit trail' }),
+    ).not.toBeInTheDocument()
+  })
 })

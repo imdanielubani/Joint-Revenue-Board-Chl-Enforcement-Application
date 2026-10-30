@@ -325,6 +325,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A verification's details popup links to its audit entry ("Open in the audit
+  trail"), for those who may open the audit trail only.
 - Audit trail "Export records": saves the entries the register shows, with
   every audit field (agent, organization, date and time, method, processed
   identifier as masked, vehicle, result, attempt, trip, violation, GPS,

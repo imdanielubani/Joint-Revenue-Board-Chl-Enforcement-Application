@@ -81,6 +81,10 @@ export function VerificationDetailsDialog({
       to: entry.tripId ? link('trips', `${paths.trips}?trip=${entry.tripId}`) : undefined,
     },
     { label: 'View agent', to: link('agents', paths.agent(entry.agent.id)) },
+    {
+      label: 'Open in the audit trail',
+      to: link('audit', `${paths.audit}?entry=${entry.reference}`),
+    },
   ].flatMap((item) => (item.to ? [{ label: item.label, to: item.to }] : []))
 
   return (
