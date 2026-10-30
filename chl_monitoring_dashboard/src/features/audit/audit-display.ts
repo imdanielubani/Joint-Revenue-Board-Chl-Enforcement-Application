@@ -1,4 +1,4 @@
-import { methodLabel, outcomeLabel } from '@/features/overview/overview-display'
+import { humanize, methodLabel, outcomeLabel } from '@/features/overview/overview-display'
 import { VERIFICATION_METHODS } from '@/features/overview/overview.schemas'
 import {
   actionPill,
@@ -9,7 +9,7 @@ import {
   syncStateOf,
 } from '@/features/verifications/verifications-display'
 import { ACTIONS_TAKEN, ATTEMPT_STATUSES } from '@/features/verifications/verifications.schemas'
-import type { AuditEntry } from './audit.schemas'
+import type { AuditEntry, IdentifierKind } from './audit.schemas'
 import type { AuditRegisterFilters } from './use-audit-view'
 
 /** The filter value for entries CHL supplied no value for. */
@@ -48,6 +48,30 @@ export function applyAuditFilters(
       is(filters.sync, syncStateOf(entry)),
   )
 }
+
+const IDENTIFIER_LABELS: Record<IdentifierKind, string> = {
+  rfid_tag: 'RFID tag',
+  qr_code: 'QR code',
+  plate: 'Plate',
+}
+
+/**
+ * The processed identifier as the user's access rules allow: "RFID tag
+ * •••• •••• 4F2A (masked)". Raw RFID values are never shown unless exposing
+ * them was explicitly authorized.
+ */
+export function identifierText(entry: AuditEntry): string {
+  const { identifier } = entry
+  if (!identifier) return 'Not supplied'
+  const kind = Object.hasOwn(IDENTIFIER_LABELS, identifier.kind)
+    ? IDENTIFIER_LABELS[identifier.kind as IdentifierKind]
+    : humanize(identifier.kind)
+  return `${kind} ${identifier.value}${identifier.masked ? ' (masked)' : ''}`
+}
+
+/** The device and app the record was made with, or that CHL holds none. */
+export const deviceText = (entry: AuditEntry) =>
+  entry.device ? `${entry.device.id} · app ${entry.device.appVersion}` : 'Not supplied by CHL'
 
 /** "Tunde Okafor · JRB-AG-0142". */
 export const agentText = (entry: AuditEntry) => `${entry.agent.name} · ${entry.agent.id}`

@@ -11,7 +11,13 @@ import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { RowActions } from '@/shared/ui/RowActions'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { applyAuditFilters, FILTER_OPTIONS, organizationText, searchTextOf } from '../audit-display'
+import {
+  applyAuditFilters,
+  FILTER_OPTIONS,
+  identifierText,
+  organizationText,
+  searchTextOf,
+} from '../audit-display'
 import type { AuditEntry } from '../audit.schemas'
 import type { AuditFilterKey, AuditRegisterFilters } from '../use-audit-view'
 import styles from './AuditRegister.module.css'
@@ -59,7 +65,12 @@ export function AuditRegister({
       {
         key: 'method',
         header: 'Method',
-        render: (row) => (row.method ? methodLabel(row.method) : notSupplied()),
+        render: (row) => (
+          <Stack
+            main={row.method ? methodLabel(row.method) : 'Not supplied'}
+            sub={identifierText(row)}
+          />
+        ),
         sortValue: (row) => (row.method ? methodLabel(row.method) : ''),
       },
       {

@@ -180,4 +180,34 @@ describe('audit trail page', () => {
       await screen.findByText(/VR-00000 is not in the audit trail for this area and period/),
     ).toBeInTheDocument()
   })
+
+  it('shows the processed identifier, masking RFID tags, and the device details', async () => {
+    const rfid = expected().find((item) => item.method === 'rfid' && item.device)!
+    const noDevice = expected().find((item) => item.device === null)!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/audit?entry=${rfid.reference}`)
+    let dialog = await screen.findByRole('dialog', { name: `Audit entry ${rfid.reference}` })
+    expect(within(dialog).getByRole('region', { name: 'Verification' })).toHaveTextContent(
+      `Processed identifierRFID tag ${rfid.identifier!.value} (masked)`,
+    )
+    const device = within(dialog).getByRole('region', { name: 'Device and application' })
+    expect(device).toHaveTextContent(`Device ID${rfid.device!.id}`)
+    expect(device).toHaveTextContent(`App version${rfid.device!.appVersion}`)
+    expect(dialog).toHaveTextContent(
+      'shown only masked unless exposing it was explicitly authorized',
+    )
+
+    await userEvent.keyboard('{Escape}')
+    const register = await card('Audit register')
+    await userEvent.type(within(register).getByRole('searchbox'), noDevice.reference)
+    const table = within(register).getByRole('table', { name: 'Audit trail' })
+    await userEvent.click(
+      within(table).getByRole('button', { name: `Actions for ${noDevice.reference}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View entry' }))
+    dialog = await screen.findByRole('dialog', { name: `Audit entry ${noDevice.reference}` })
+    expect(
+      within(dialog).getByRole('region', { name: 'Device and application' }),
+    ).toHaveTextContent('Device IDNot supplied by CHL')
+  })
 })

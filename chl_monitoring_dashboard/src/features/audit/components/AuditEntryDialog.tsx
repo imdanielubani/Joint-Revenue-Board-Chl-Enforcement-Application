@@ -13,7 +13,7 @@ import {
 import { formatDateTime, formatDelay } from '@/shared/lib/format'
 import { Dialog } from '@/shared/ui/Dialog'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { organizationText } from '../audit-display'
+import { identifierText, organizationText } from '../audit-display'
 import type { AuditEntry } from '../audit.schemas'
 
 /**
@@ -51,6 +51,7 @@ export function AuditEntryDialog({ entry, onClose }: { entry: AuditEntry; onClos
             'Not supplied'
           )}
         </Fact>
+        <Fact term="Processed identifier">{identifierText(entry)}</Fact>
         <Fact term="Attempt status">
           <PillLabel pill={attemptPill(entry.attempt)} />
         </Fact>
@@ -71,6 +72,11 @@ export function AuditEntryDialog({ entry, onClose }: { entry: AuditEntry; onClos
         <Fact term="GPS location">{gpsText(entry.position)}</Fact>
       </Facts>
 
+      <Facts title="Device and application">
+        <Fact term="Device ID">{entry.device?.id ?? 'Not supplied by CHL'}</Fact>
+        <Fact term="App version">{entry.device?.appVersion ?? 'Not supplied by CHL'}</Fact>
+      </Facts>
+
       <Facts title="Synchronization">
         <Fact term="Recorded source">
           <PillLabel pill={provenancePill(entry.provenance)} />
@@ -86,8 +92,9 @@ export function AuditEntryDialog({ entry, onClose }: { entry: AuditEntry; onClos
       </Facts>
 
       <p className={styles.small}>
-        Read-only. Audit records cannot be edited or deleted; a failed read is not proof of a
-        missing E-Tag, and an unavailable verification is not “No Active Trip”.
+        Read-only. Audit records cannot be edited or deleted. A raw RFID value is shown only masked
+        unless exposing it was explicitly authorized; a failed read is not proof of a missing E-Tag,
+        and an unavailable verification is not “No Active Trip”.
       </p>
     </Dialog>
   )

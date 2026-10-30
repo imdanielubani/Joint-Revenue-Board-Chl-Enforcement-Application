@@ -325,6 +325,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Audit trail processed identifier, subject to access rules: an RFID tag
+  shown only masked to its last four characters unless exposing it was
+  explicitly authorized, a QR code and a plate in full; in the register under
+  the method and in the entry popup. The popup also shows the device ID and
+  app version where CHL holds them, "Not supplied by CHL" otherwise.
 - An audit entry opens in a popup on the page (View entry, kept in the
   address as ?entry=): the agent's ID, name and organization; the date and
   time, method, result and attempt status; the vehicle plate and ID, trip and
