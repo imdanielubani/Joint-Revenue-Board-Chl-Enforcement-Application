@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
 import { paths } from '@/config/paths'
 import { useCurrentUser } from '@/features/auth/session-context'
+import { useModuleLink } from '@/features/auth/use-module-link'
 import { useAreas } from '@/features/geography/areas.queries'
 import { EnforcementFootprintCard } from '@/features/geography/components/GeographyCards'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
@@ -11,7 +12,7 @@ import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { isApiError } from '@/shared/api/api-error'
 import { MaskIcon } from '@/shared/ui/MaskIcon'
-import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
+import { HeroLink, PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { organizationLabel } from '../agents-display'
 import { agentsListLink } from '../agents-links'
@@ -87,6 +88,16 @@ function AgentContent({
   const notFound = isApiError(activity.error) && activity.error.status === 404
   const backToList = agentsListLink(search)
   const periodText = periodLabel(filters.range, filters)
+  // The agent's recorded verification attempts, over the same area and period.
+  const historyLink = useModuleLink()(
+    'history',
+    `${paths.history}?${new URLSearchParams({
+      scope: scope.value,
+      range: filters.range,
+      ...(filters.range === 'custom' ? { from: filters.from, to: filters.to } : {}),
+      agent: agentId,
+    })}`,
+  )
 
   return (
     <div className={styles.page}>
@@ -107,10 +118,17 @@ function AgentContent({
           section="Enforcement"
           icons="agents"
           actions={
-            <RefreshButton
-              refreshing={activity.isFetching && !activity.isPending}
-              onRefresh={() => void activity.refetch()}
-            />
+            <>
+              <RefreshButton
+                refreshing={activity.isFetching && !activity.isPending}
+                onRefresh={() => void activity.refetch()}
+              />
+              {historyLink && (
+                <HeroLink variant="solid" icon="nav/history.svg" to={historyLink}>
+                  Verification history
+                </HeroLink>
+              )}
+            </>
           }
         />
         <OverviewFilterBar

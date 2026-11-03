@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- An agent's activity page links to their verification history ("Verification
+  history" in the banner), over the same area and period, for users who may
+  open it. A banner link (`HeroLink`) looks like a banner button.
 - Verification details popups elsewhere link to the record in the
   verification history ("Open in verification history"), over the period from
   the verification's day to today; not offered on the history itself.

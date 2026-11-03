@@ -353,4 +353,17 @@ describe('verification history page', () => {
       within(opened).queryByRole('link', { name: 'Open in verification history' }),
     ).not.toBeInTheDocument()
   })
+
+  it('lists an agent’s attempts from their activity page, over the same area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/agents/JRB-AG-0142?scope=la&range=30d')
+    const hero = await screen.findByRole('region', { name: /Tunde Okafor/ })
+    await userEvent.click(within(hero).getByRole('link', { name: 'Verification history' }))
+    expect(router.state.location.pathname).toBe('/history')
+    expect(router.state.location.search).toBe('?scope=la&range=30d&agent=JRB-AG-0142')
+    expect(await screen.findByRole('combobox', { name: 'Agent' })).toHaveValue('JRB-AG-0142')
+    const register = await card('History register')
+    const table = within(register).getByRole('table', { name: 'Verification history' })
+    for (const row of bodyRows(table)) expect(row).toHaveTextContent('JRB-AG-0142')
+  })
 })

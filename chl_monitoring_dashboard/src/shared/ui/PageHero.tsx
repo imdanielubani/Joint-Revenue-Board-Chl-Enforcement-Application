@@ -1,4 +1,5 @@
 import { useId, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { Link } from 'react-router'
 import { assetUrl } from '@/shared/lib/asset-url'
 import styles from './PageHero.module.css'
 
@@ -74,6 +75,30 @@ export function HeroButton({ variant, icon, spinning, children, ...props }: Hero
       />
       {children}
     </button>
+  )
+}
+
+/** A banner link that looks like a banner button: it opens another page. */
+export function HeroLink({
+  variant,
+  icon,
+  to,
+  children,
+}: {
+  variant: 'outline' | 'solid'
+  /** A 17px icon in public/assets/. */
+  icon: string
+  to: string
+  children: ReactNode
+}) {
+  return (
+    <Link
+      to={to}
+      className={`${styles.heroButton} ${styles.heroLink} ${variant === 'solid' ? styles.solid : styles.outline}`}
+    >
+      <img src={assetUrl(icon)} alt="" width={17} height={17} />
+      {children}
+    </Link>
   )
 }
 
