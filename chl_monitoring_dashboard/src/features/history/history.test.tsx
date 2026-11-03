@@ -111,4 +111,54 @@ describe('verification history page', () => {
     expect(bodyRows(table)).toHaveLength(1)
     expect(bodyRows(table)[0]).toHaveTextContent(record.reference)
   })
+
+  it('narrows the register by completion status and payment request, keeping them in the address', async () => {
+    const records = expected()
+    const completed = records.filter((record) => record.attempt === 'successful')
+    const pendingPayment = completed.filter((record) => record.payment?.status === 'pending')
+    expect(pendingPayment.length).toBeGreaterThan(0)
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/history')
+    const register = await card('History register')
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Completion status' }),
+      'successful',
+    )
+    expect(router.state.location.search).toBe('?completion=successful')
+    let table = within(register).getByRole('table', { name: 'Verification history' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, completed.length))
+
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Payment request' }),
+      'pending',
+    )
+    expect(router.state.location.search).toBe('?completion=successful&payment=pending')
+    table = within(register).getByRole('table', { name: 'Verification history' })
+    expect(bodyRows(table)).toHaveLength(Math.min(10, pendingPayment.length))
+    for (const row of bodyRows(table)) expect(row).toHaveTextContent('Payment pending')
+  })
+
+  it('keeps only the attempts with pending actions, or with no violation', async () => {
+    const records = expected()
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/history?pending=yes')
+    const register = await card('History register')
+    let table = within(register).getByRole('table', { name: 'Verification history' })
+    const pending = records.filter((record) => pendingActions(record).length > 0)
+    expect(bodyRows(table)).toHaveLength(Math.min(10, pending.length))
+    for (const row of bodyRows(table))
+      expect(within(row).getAllByRole('cell')[8]).not.toHaveTextContent('None')
+
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Pending actions' }),
+      '',
+    )
+    await userEvent.selectOptions(
+      within(register).getByRole('combobox', { name: 'Linked violation' }),
+      'none',
+    )
+    table = within(register).getByRole('table', { name: 'Verification history' })
+    const unlinked = records.filter((record) => !record.violation)
+    expect(bodyRows(table)).toHaveLength(Math.min(10, unlinked.length))
+  })
 })

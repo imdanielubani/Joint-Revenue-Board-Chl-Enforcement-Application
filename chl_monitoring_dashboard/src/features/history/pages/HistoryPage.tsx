@@ -12,6 +12,7 @@ import { StatePanel } from '@/shared/ui/StatePanel'
 import { HistoryRegister } from '../components/HistoryRegister'
 import { historyCounts } from '../history-display'
 import { useVerificationHistory } from '../history.queries'
+import { useHistoryView } from '../use-history-view'
 import styles from './HistoryPage.module.css'
 
 /**
@@ -49,6 +50,7 @@ function HistoryContent({
   const agentList = useAgents()
   const filter = useOverviewFilters({ scopes, fallbackScope, areasPending, agents: agentList.data })
   const { scope, filters } = filter
+  const page = useHistoryView()
   const query = useVerificationHistory(filters, { enabled: !filter.waiting })
   const data = query.data
   const records = useMemo(() => data?.records ?? [], [data])
@@ -139,6 +141,8 @@ function HistoryContent({
           ) : (
             <HistoryRegister
               records={records}
+              filters={page.filters}
+              onFilterChange={page.setFilter}
               subtitle={`Recorded verification attempts, newest first · ${scope.name} · ${periodLabel(filters.range, filters)}`}
             />
           )}

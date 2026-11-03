@@ -16,10 +16,17 @@ import {
 import type { VerificationEntry } from '@/features/verifications/verifications.schemas'
 import { formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
+import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
-import { paymentStatusText, searchTextOf } from '../history-display'
+import {
+  applyHistoryFilters,
+  FILTER_OPTIONS,
+  paymentStatusText,
+  searchTextOf,
+} from '../history-display'
+import type { HistoryFilterKey, HistoryRegisterFilters } from '../use-history-view'
 import styles from './HistoryRegister.module.css'
 
 const none = (text = 'None') => <span className={cells.sub}>{text}</span>
@@ -28,15 +35,20 @@ const none = (text = 'None') => <span className={cells.sub}>{text}</span>
  * The history register (document 12.1): the recorded verification attempts in
  * the area and period, newest first, with whether each was completed, the
  * action taken, the linked violation, the payment request generated and what
- * is still pending.
+ * is still pending; filtered by each of those.
  */
 export function HistoryRegister({
   records,
   subtitle,
+  filters,
+  onFilterChange,
 }: {
   records: readonly VerificationEntry[]
   /** The area and period: "Lagos · Last 14 days". */
   subtitle: string
+  /** Each filter's value; null for "All". */
+  filters: HistoryRegisterFilters
+  onFilterChange(key: HistoryFilterKey, value: string | null): void
 }) {
   const columns = useMemo<Column<VerificationEntry>[]>(
     () => [
@@ -129,6 +141,15 @@ export function HistoryRegister({
     ],
     [],
   )
+  const rows = useMemo(() => applyHistoryFilters(records, filters), [records, filters])
+  const select = (key: HistoryFilterKey, label: string) => (
+    <LabeledSelect
+      label={label}
+      value={filters[key]}
+      options={FILTER_OPTIONS[key]}
+      onChange={(value) => onFilterChange(key, value)}
+    />
+  )
   return (
     <DashboardCard
       title="History register"
@@ -136,9 +157,17 @@ export function HistoryRegister({
       icon="verifications/card-register.svg"
       bodyClassName={styles.body}
     >
+      <div className={styles.selects}>
+        {select('completion', 'Completion status')}
+        {select('action', 'Action taken')}
+        {select('violation', 'Linked violation')}
+        {select('payment', 'Payment request')}
+        {select('pending', 'Pending actions')}
+      </div>
       <RegisterTable
+        key={Object.values(filters).join('|')}
         label="Verification history"
-        rows={records}
+        rows={rows}
         columns={columns}
         rowKey={(row) => row.reference}
         searchText={searchTextOf}

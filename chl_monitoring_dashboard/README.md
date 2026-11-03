@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- History register filters, kept in the address: completion status, action
+  taken, linked violation, payment request (pending, received, none) and
+  pending actions.
 - History register: every recorded attempt, newest first, with its agent,
   vehicle, result, completion status, action taken, linked violation (and its
   case status), payment request and pending actions; searchable and sortable.
