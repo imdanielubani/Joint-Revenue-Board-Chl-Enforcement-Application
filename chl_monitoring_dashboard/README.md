@@ -328,6 +328,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification history headline figures: attempts (completed and not
+  completed), linked violations, payment requests and pending actions.
 - Verification history page: banner (Monitoring, history icon) with Refresh,
   and the area, period, organization and agent filters, in place of the
   placeholder; loading, error and empty states.

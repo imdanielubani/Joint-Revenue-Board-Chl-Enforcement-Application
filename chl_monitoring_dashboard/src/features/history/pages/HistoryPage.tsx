@@ -5,8 +5,10 @@ import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { historyCounts } from '../history-display'
 import { useVerificationHistory } from '../history.queries'
 import styles from './HistoryPage.module.css'
 
@@ -48,6 +50,7 @@ function HistoryContent({
   const query = useVerificationHistory(filters, { enabled: !filter.waiting })
   const data = query.data
   const records = useMemo(() => data?.records ?? [], [data])
+  const counts = useMemo(() => historyCounts(records), [records])
 
   return (
     <div className={styles.page}>
@@ -98,6 +101,34 @@ function HistoryContent({
               check.
             </p>
           )}
+          <HeadlineFigures
+            items={[
+              {
+                label: 'Verification attempts',
+                value: records.length,
+                icon: 'overview/kpi-scan.svg',
+                note: `${counts.completed} completed · ${counts.notCompleted} not completed`,
+              },
+              {
+                label: 'Linked violations',
+                value: counts.violations,
+                icon: 'overview/kpi-violation.svg',
+                note: 'Violations issued from these verifications',
+              },
+              {
+                label: 'Payment requests',
+                value: counts.payments,
+                icon: 'overview/kpi-doc.svg',
+                note: 'Demand notices generated from the violations',
+              },
+              {
+                label: 'Pending actions',
+                value: counts.pending,
+                icon: 'verifications/kpi-pending.svg',
+                note: 'Open cases or evidence still uploading',
+              },
+            ]}
+          />
           {records.length === 0 && (
             <StatePanel
               kind="empty"
