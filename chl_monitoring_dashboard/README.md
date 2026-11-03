@@ -331,6 +331,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field operational status data: each agent's last-reported RFID reader,
+  internet and GPS status in an area and period, with when it was reported and
+  received, each null when CHL does not supply it, and whether CHL supplies
+  device status at all, from `/api/v1/field-status` (path provisional); sample
+  data from each agent's latest sample record.
 - Synchronization page: banner (Monitoring, sync icon) with Refresh, the
   area, period and people filters with "Field data received" and "Last
   checked", headline figures (records received, offline-origin, received
