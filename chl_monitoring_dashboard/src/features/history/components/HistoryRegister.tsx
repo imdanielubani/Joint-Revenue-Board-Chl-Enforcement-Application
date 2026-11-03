@@ -19,7 +19,9 @@ import { DashboardCard } from '@/shared/ui/DashboardCard'
 import { LabeledSelect } from '@/shared/ui/LabeledSelect'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions } from '@/shared/ui/RowActions'
+import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
+import { useAuditRelated } from '@/features/audit/use-audit-related'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
 import {
   applyHistoryFilters,
@@ -44,6 +46,7 @@ export function HistoryRegister({
   filters,
   onFilterChange,
   onOpen,
+  onRelated,
 }: {
   records: readonly VerificationEntry[]
   /** The area and period: "Lagos · Last 14 days". */
@@ -53,7 +56,10 @@ export function HistoryRegister({
   onFilterChange(key: HistoryFilterKey, value: string | null): void
   /** Opens the attempt's record details. */
   onOpen(record: VerificationEntry): void
+  /** Opens a record the attempt leads to in its own popup on the page. */
+  onRelated(related: TripRelated): void
 }) {
+  const relatedOf = useAuditRelated()
   const columns = useMemo<Column<VerificationEntry>[]>(
     () => [
       {
@@ -149,12 +155,22 @@ export function HistoryRegister({
         render: (row) => (
           <RowActions
             label={`Actions for ${row.reference}`}
-            actions={[{ label: 'Open record details', onSelect: () => onOpen(row) }]}
+            actions={[
+              { label: 'Open record details', onSelect: () => onOpen(row) },
+              // The verification's own details are the record details above.
+              ...relatedOf(row)
+                .filter((item) => item.label !== 'Verification details')
+                .map((item): RowCommand | RowAction =>
+                  'to' in item
+                    ? { label: item.label, to: item.to }
+                    : { label: item.label, onSelect: () => onRelated(item.related) },
+                ),
+            ]}
           />
         ),
       },
     ],
-    [onOpen],
+    [onOpen, onRelated, relatedOf],
   )
   const rows = useMemo(() => applyHistoryFilters(records, filters), [records, filters])
   const select = (key: HistoryFilterKey, label: string) => (

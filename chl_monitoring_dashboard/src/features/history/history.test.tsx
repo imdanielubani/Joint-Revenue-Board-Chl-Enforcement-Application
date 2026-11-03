@@ -216,4 +216,38 @@ describe('verification history page', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: 'Verification details' })).not.toBeInTheDocument()
   })
+
+  it('opens the linked case and payment request from an attempt’s row', async () => {
+    const record = expected().find((item) => item.violation && item.payment)!
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/history')
+    const register = await card('History register')
+    await userEvent.type(within(register).getByRole('searchbox'), record.reference)
+    const actions = () =>
+      within(register).getByRole('button', { name: `Actions for ${record.reference}` })
+
+    await userEvent.click(actions())
+    const items = (await screen.findAllByRole('menuitem')).map((item) => item.textContent)
+    expect(items).toEqual(
+      expect.arrayContaining([
+        'Open record details',
+        'View case',
+        'View demand notice',
+        'View evidence',
+        'View agent',
+      ]),
+    )
+    expect(items).not.toContain('Verification details')
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View case' }))
+    expect(
+      await screen.findByRole('dialog', { name: `Case ${record.violation!.id}` }),
+    ).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+
+    await userEvent.click(actions())
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'View demand notice' }))
+    expect(
+      await screen.findByRole('dialog', { name: new RegExp(record.payment!.id) }),
+    ).toBeInTheDocument()
+  })
 })

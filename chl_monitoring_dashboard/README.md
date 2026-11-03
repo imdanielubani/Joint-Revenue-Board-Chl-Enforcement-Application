@@ -328,6 +328,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- History register row actions open what an attempt led to: its vehicle's
+  verifications, trip, case, evidence, demand notice, agent and location (the
+  same related records as the audit trail, each only where the user may open
+  its module).
 - Verification history: a record link outside the chosen area and period
   says so, and suggests another area or a longer period.
 - History register rows open the attempt's record details ("Open record

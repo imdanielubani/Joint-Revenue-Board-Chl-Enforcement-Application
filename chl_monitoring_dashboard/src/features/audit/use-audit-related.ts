@@ -2,21 +2,22 @@ import { useCallback } from 'react'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
-import type { AuditEntry } from './audit.schemas'
+import type { VerificationEntry } from '@/features/verifications/verifications.schemas'
 
 /** A record an entry leads to: opened in its own popup on the page, or on its module's page. */
 export type AuditLink = { label: string; related: TripRelated } | { label: string; to: string }
 
 /**
- * The records an audit entry connects to (document 12.3): the verification and
- * the vehicle's verifications, the trip, the violation's case, evidence and
- * demand notice, the agent and the enforcement location. Each only where the
- * entry has one and the user may open its module.
+ * The records a recorded verification connects to (documents 12.1 and 12.3):
+ * the verification and the vehicle's verifications, the trip, the violation's
+ * case, evidence and demand notice, the agent and the enforcement location.
+ * Each only where the record has one and the user may open its module. Shared
+ * by the audit trail and the verification history.
  */
 export function useAuditRelated() {
   const link = useModuleLink()
   return useCallback(
-    (entry: AuditEntry): AuditLink[] => {
+    (entry: VerificationEntry): AuditLink[] => {
       const can = (module: Parameters<typeof link>[0], to: string) => link(module, to) !== undefined
       const items: (AuditLink | null)[] = [
         can('verifications', paths.verifications)

@@ -156,6 +156,10 @@ function HistoryContent({
                 setRelated(null)
                 page.openRecord(record.reference)
               }}
+              onRelated={(next) => {
+                page.openRecord(null)
+                setRelated(next)
+              }}
               subtitle={`Recorded verification attempts, newest first · ${scope.name} · ${periodLabel(filters.range, filters)}`}
             />
           )}
