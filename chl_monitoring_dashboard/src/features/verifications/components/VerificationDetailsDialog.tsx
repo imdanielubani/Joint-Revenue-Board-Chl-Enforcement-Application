@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
 import { gpsText } from '@/features/geography/record-details'
@@ -9,6 +9,7 @@ import {
   outcomeLabel,
   outcomeStyle,
 } from '@/features/overview/overview-display'
+import { lagosDay } from '@/shared/lib/dates'
 import { formatDateTime, formatDelay } from '@/shared/lib/format'
 import { Dialog } from '@/shared/ui/Dialog'
 import { StatusLabel } from '@/shared/ui/StatusLabel'
@@ -62,7 +63,10 @@ export function VerificationDetailsDialog({
   onVehicle(plate: string): void
 }) {
   const link = useModuleLink()
+  const { pathname } = useLocation()
   const pending = pendingActions(entry)
+  // The history from the day of the verification to today, so the record is always in it.
+  const historyLink = `${paths.history}?range=custom&from=${lagosDay(new Date(entry.recordedAt))}&to=${lagosDay()}&record=${entry.reference}`
   const links = [
     {
       label: 'Open the case',
@@ -81,6 +85,11 @@ export function VerificationDetailsDialog({
       to: entry.tripId ? link('trips', `${paths.trips}?trip=${entry.tripId}`) : undefined,
     },
     { label: 'View agent', to: link('agents', paths.agent(entry.agent.id)) },
+    {
+      label: 'Open in verification history',
+      // Not offered on the history itself, where these details are open already.
+      to: pathname === paths.history ? undefined : link('history', historyLink),
+    },
     {
       label: 'Open in the audit trail',
       to: link('audit', `${paths.audit}?entry=${entry.reference}`),

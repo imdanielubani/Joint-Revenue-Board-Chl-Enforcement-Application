@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification details popups elsewhere link to the record in the
+  verification history ("Open in verification history"), over the period from
+  the verification's day to today; not offered on the history itself.
 - Verification history tests: attempts older than 30 days are listed and
   open over the last 90 days and over a custom period longer than 30 days.
 - Verification history page note: the SRD's "last 30 days" default and

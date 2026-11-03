@@ -332,4 +332,25 @@ describe('verification history page', () => {
       expect(bodyRows(table)).toHaveLength(Math.min(10, records.length))
     })
   })
+
+  it('is where a verification’s details lead, over a period that holds it', async () => {
+    const record = expected()[1]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/verifications?ref=${record.reference}`)
+    const details = await screen.findByRole('dialog', { name: 'Verification details' })
+    await userEvent.click(
+      within(details).getByRole('link', { name: 'Open in verification history' }),
+    )
+    expect(router.state.location.pathname).toBe('/history')
+    const params = new URLSearchParams(router.state.location.search)
+    expect(params.get('range')).toBe('custom')
+    expect(params.get('to')).toBe(lagosDay())
+    expect(params.get('record')).toBe(record.reference)
+    await screen.findByRole('heading', { level: 1, name: 'Verification history' })
+    const opened = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(opened).toHaveTextContent(record.reference)
+    expect(
+      within(opened).queryByRole('link', { name: 'Open in verification history' }),
+    ).not.toBeInTheDocument()
+  })
 })
