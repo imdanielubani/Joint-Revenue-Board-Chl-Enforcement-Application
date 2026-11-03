@@ -177,4 +177,32 @@ describe('verification history page', () => {
     await userEvent.click((await figure('Verification attempts')).querySelector('a')!)
     expect(router.state.location.search).toBe('?scope=la&range=30d&completion=unsuccessful')
   })
+
+  it('opens a record’s details from its row, keeping it in the address', async () => {
+    const record = expected().find((item) => item.violation && item.payment)!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/history?completion=${record.attempt}`)
+    const register = await card('History register')
+    await userEvent.type(within(register).getByRole('searchbox'), record.reference)
+    await userEvent.click(
+      within(register).getByRole('button', { name: `Actions for ${record.reference}` }),
+    )
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Open record details' }))
+    expect(router.state.location.search).toBe(
+      `?completion=${record.attempt}&record=${record.reference}`,
+    )
+    const details = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(details).toHaveTextContent(record.violation!.id)
+    expect(details).toHaveTextContent(record.payment!.id)
+    await userEvent.keyboard('{Escape}')
+    expect(router.state.location.search).toBe(`?completion=${record.attempt}`)
+  })
+
+  it('opens a record’s details from a shared address', async () => {
+    const record = expected()[2]!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/history?record=${record.reference}`)
+    const details = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(details).toHaveTextContent(record.plate)
+  })
 })

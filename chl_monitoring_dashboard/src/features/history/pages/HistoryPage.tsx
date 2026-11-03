@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -6,6 +6,8 @@ import { scopeOptions, type ScopeOption } from '@/features/geography/scope-optio
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
@@ -55,6 +57,9 @@ function HistoryContent({
   const data = query.data
   const records = useMemo(() => data?.records ?? [], [data])
   const counts = useMemo(() => historyCounts(records), [records])
+  const open = records.find((record) => record.reference === page.recordReference) ?? null
+  // A record an attempt leads to, open in its own popup in place of the record details.
+  const [related, setRelated] = useState<TripRelated | null>(null)
 
   return (
     <div className={styles.page}>
@@ -147,7 +152,31 @@ function HistoryContent({
               records={records}
               filters={page.filters}
               onFilterChange={page.setFilter}
+              onOpen={(record) => {
+                setRelated(null)
+                page.openRecord(record.reference)
+              }}
               subtitle={`Recorded verification attempts, newest first · ${scope.name} · ${periodLabel(filters.range, filters)}`}
+            />
+          )}
+          {open && (
+            <VerificationDetailsDialog
+              key={open.reference}
+              entry={open}
+              onClose={() => page.openRecord(null)}
+              onVehicle={(plate) => {
+                page.openRecord(null)
+                setRelated({ kind: 'vehicle', plate })
+              }}
+            />
+          )}
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
             />
           )}
         </>

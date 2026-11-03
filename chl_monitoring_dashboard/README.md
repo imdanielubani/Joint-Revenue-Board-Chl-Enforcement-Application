@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- History register rows open the attempt's record details ("Open record
+  details": method, outcome, vehicle, trip, action, violation, payment request,
+  pending actions, synchronization), kept in the address as `?record=`.
 - Verification history figures open the register filtered to what they
   count (not completed, linked violations, any payment request, pending
   actions), keeping the area and period.

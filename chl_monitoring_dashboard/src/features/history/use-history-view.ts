@@ -7,7 +7,13 @@ export const HISTORY_FILTERS = ['completion', 'action', 'violation', 'payment', 
 export type HistoryFilterKey = (typeof HISTORY_FILTERS)[number]
 export type HistoryRegisterFilters = Record<HistoryFilterKey, string | null>
 
-/** The register's filters, kept in the address so a refresh or a shared link keeps them. */
+/** The address parameters the page keeps its state in. */
+export const HISTORY_PARAMS = {
+  /** An attempt's reference, opened in its record details. */
+  record: 'record',
+} as const
+
+/** The register's filters and open record, kept in the address so a refresh or a shared link keeps them. */
 export function useHistoryView() {
   const [params, setParams] = useSearchParams()
   const { pathname } = useLocation()
@@ -51,5 +57,16 @@ export function useHistoryView() {
     [params, pathname],
   )
 
-  return { filters, setFilter, linkTo, change }
+  const openRecord = useCallback(
+    (reference: string | null) => change({ [HISTORY_PARAMS.record]: reference }),
+    [change],
+  )
+
+  return {
+    filters,
+    setFilter,
+    linkTo,
+    recordReference: params.get(HISTORY_PARAMS.record),
+    openRecord,
+  }
 }
