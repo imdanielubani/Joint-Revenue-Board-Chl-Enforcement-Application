@@ -331,6 +331,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Synchronization data: the records CHL received in an area and period, with
+  the synchronization status stored with each, where it came from, its
+  evidence upload and when CHL received it, from `/api/v1/synchronization`
+  (path provisional); sample data from the sample verifications.
 - Synchronization and Field operational status are two sidebar modules
   (document 13): Synchronization (/sync) for the status stored with received
   records, and Field operational status (/field-status, its own icon and
