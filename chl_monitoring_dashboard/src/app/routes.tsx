@@ -54,6 +54,10 @@ const MODULE_PAGES: Record<ModuleKey, LazyPage> = {
     import('@/features/history/pages/HistoryPage').then((m) => ({ Component: m.HistoryPage })),
   audit: () => import('@/features/audit/pages/AuditPage').then((m) => ({ Component: m.AuditPage })),
   sync: () => import('@/features/sync/pages/SyncPage').then((m) => ({ Component: m.SyncPage })),
+  'field-status': () =>
+    import('@/features/field-status/pages/FieldStatusPage').then((m) => ({
+      Component: m.FieldStatusPage,
+    })),
 }
 
 // A module's page for one record, at `path/<id>`, where it has one.

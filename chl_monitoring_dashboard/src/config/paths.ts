@@ -24,4 +24,5 @@ export const paths = {
   history: '/history',
   audit: '/audit',
   sync: '/sync',
+  fieldStatus: '/field-status',
 } as const

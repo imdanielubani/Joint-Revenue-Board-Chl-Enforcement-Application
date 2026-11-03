@@ -13,4 +13,15 @@ describe('modules', () => {
     const user = { ...MOCK_USERS[0]!, modules: ['sync' as const, 'overview' as const] }
     expect(modulesFor(user).map((module) => module.key)).toEqual(['overview', 'sync'])
   })
+
+  it('keeps Synchronization and Field operational status apart, in that order', () => {
+    const monitoring = MODULES.filter((module) => module.section === 'Monitoring').map((module) => [
+      module.label,
+      module.path,
+    ])
+    expect(monitoring.slice(-2)).toEqual([
+      ['Synchronization', '/sync'],
+      ['Field operational status', '/field-status'],
+    ])
+  })
 })

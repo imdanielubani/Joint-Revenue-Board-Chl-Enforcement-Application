@@ -35,6 +35,7 @@ describe('sidebar', () => {
       'Verification history',
       'Audit trail',
       'Synchronization',
+      'Field operational status',
     ])
     expect(within(menu).getByText('Workspace')).toBeInTheDocument()
     expect(within(menu).getByText('Enforcement')).toBeInTheDocument()

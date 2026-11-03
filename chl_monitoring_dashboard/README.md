@@ -331,6 +331,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Synchronization and Field operational status are two sidebar modules
+  (document 13): Synchronization (/sync) for the status stored with received
+  records, and Field operational status (/field-status, its own icon and
+  module key `field-status`) for agents' last-reported device status.
 - History register rows narrow the history to the attempt's agent ("Show
   this agent's attempts"), through the agent filter; not offered once it is
   narrowed to an agent.

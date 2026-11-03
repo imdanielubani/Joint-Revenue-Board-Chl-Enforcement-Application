@@ -134,6 +134,13 @@ export const MODULES: readonly ModuleDefinition[] = [
     section: 'Monitoring',
     icon: 'nav/sync.svg',
   },
+  {
+    key: 'field-status',
+    label: 'Field operational status',
+    path: paths.fieldStatus,
+    section: 'Monitoring',
+    icon: 'nav/field-status.svg',
+  },
 ]
 
 /** The modules this user may open, in menu order. */
