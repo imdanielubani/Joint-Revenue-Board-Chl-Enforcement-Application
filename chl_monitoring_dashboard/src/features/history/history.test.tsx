@@ -5,7 +5,7 @@ import { presetPeriod } from '@/features/overview/overview-period'
 import { pendingActions } from '@/features/verifications/verifications-display'
 import { historyCsvRows } from './history-export'
 import { summarizeHistory } from '@/mocks/mock-history-api'
-import { lagosDay } from '@/shared/lib/dates'
+import { addDays, lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
 
 const card = (title: string) => screen.findByRole('region', { name: title })
@@ -291,5 +291,45 @@ describe('verification history page', () => {
     expect(note).toHaveTextContent('apply to an agent’s personal history')
     expect(note).toHaveTextContent('not a 30-day limit on administrator access')
     expect(note).toHaveTextContent('No record is edited here.')
+  })
+
+  describe('beyond 30 days', () => {
+    it('lists attempts older than 30 days over the last 90 days', async () => {
+      const today = lagosDay()
+      const records = summarizeHistory({
+        scope: 'ng',
+        range: '90d',
+        ...presetPeriod('90d', today),
+        agentId: null,
+        organization: null,
+      }).records
+      const cutoff = Date.parse(`${addDays(today, -30)}T00:00:00+01:00`)
+      const older = records.find((record) => Date.parse(record.recordedAt) < cutoff)!
+      expect(older).toBeDefined()
+      signInAs('admin@jrb.gov.ng')
+      renderApp(`/history?range=90d&record=${older.reference}`)
+      const details = await screen.findByRole('dialog', { name: 'Verification details' })
+      expect(details).toHaveTextContent(older.reference)
+      expect(await figure('Verification attempts')).toHaveTextContent(String(records.length))
+    })
+
+    it('lists attempts over a custom period longer than 30 days', async () => {
+      const today = lagosDay()
+      const from = addDays(today, -59)
+      const records = summarizeHistory({
+        scope: 'ng',
+        range: 'custom',
+        from,
+        to: today,
+        agentId: null,
+        organization: null,
+      }).records
+      signInAs('admin@jrb.gov.ng')
+      renderApp(`/history?range=custom&from=${from}&to=${today}`)
+      expect(await figure('Verification attempts')).toHaveTextContent(String(records.length))
+      const register = await card('History register')
+      const table = within(register).getByRole('table', { name: 'Verification history' })
+      expect(bodyRows(table)).toHaveLength(Math.min(10, records.length))
+    })
   })
 })
