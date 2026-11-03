@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification history page: banner (Monitoring, history icon) with Refresh,
+  and the area, period, organization and agent filters, in place of the
+  placeholder; loading, error and empty states.
 - Verification history data: the recorded verification attempts in an area
   and period, newest first, from `/api/v1/verification-history` (path
   provisional), with sample data drawn from the sample verifications.
