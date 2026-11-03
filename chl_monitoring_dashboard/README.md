@@ -130,7 +130,8 @@ src/
     repeat-alerts/         Repeat vehicle alerts: reports, agents, locations, cases, notifications
     history/               Verification history: attempts, actions, linked records
     audit/                 The complete audit trail (administrators)
-    sync/                  Synchronisation and field status
+    sync/                  Synchronization: received records' status, offline origin
+    field-status/          Field operational status: last-reported device status
   shared/                  Used by every feature; imports no feature
     api/                   HTTP client, ApiError, query cache settings, auth bridge
     lib/                   Lagos-time dates and formatting, chart scales, CSV export,
@@ -280,7 +281,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
   dashboard. **Verification history** (administrators and supervisors) is
   not limited to the last 30 days: the SRD's "last 30 days" default and
   "view all" belong to an agent's own history in the mobile app, so any
-  period can be chosen, including a custom range. **Areas:** the user's areas (`user.scopes`) come from CHL;
+  period can be chosen, including a custom range. **Synchronization** and
+  **Field operational status** are separate modules (`sync`, `field-status`):
+  the backend must list `field-status` in `user.modules` for the page to
+  appear. Device status is shown as last reported, never as current.
+  **Areas:** the user's areas (`user.scopes`) come from CHL;
   the backend filters the data to them.
 - Pending with the backend: the auth paths in `features/auth/auth.api.ts`
   are provisional. Tokens are kept in browser storage for now; if the
@@ -331,6 +336,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- README: the sync and field-status folders, and that Field operational
+  status is its own module key (`field-status`) the backend must grant.
 - Field operational status page: banner (Monitoring, its own icon) with
   Refresh, the area, period and people filters, headline figures (agents
   reporting; RFID reader disconnected, internet disconnected and GPS
