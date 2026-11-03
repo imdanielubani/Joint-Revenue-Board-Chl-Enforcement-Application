@@ -1,8 +1,9 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { presetPeriod } from '@/features/overview/overview-period'
 import { pendingActions } from '@/features/verifications/verifications-display'
+import { historyCsvRows } from './history-export'
 import { summarizeHistory } from '@/mocks/mock-history-api'
 import { lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
@@ -249,5 +250,37 @@ describe('verification history page', () => {
     expect(
       await screen.findByRole('dialog', { name: new RegExp(record.payment!.id) }),
     ).toBeInTheDocument()
+  })
+
+  describe('export', () => {
+    const original = { create: URL.createObjectURL, revoke: URL.revokeObjectURL }
+    afterEach(() => {
+      URL.createObjectURL = original.create
+      URL.revokeObjectURL = original.revoke
+    })
+
+    it('saves the attempts the register shows as a CSV file', async () => {
+      const files: Blob[] = []
+      URL.createObjectURL = (blob: Blob) => {
+        files.push(blob)
+        return 'blob:history'
+      }
+      URL.revokeObjectURL = vi.fn()
+      const linked = expected().filter((record) => record.violation)
+      signInAs('admin@jrb.gov.ng')
+      renderApp('/history?violation=linked')
+      await card('History register')
+      const hero = screen.getByRole('region', { name: 'Verification history' })
+      await userEvent.click(within(hero).getByRole('button', { name: 'Export records' }))
+
+      expect(files).toHaveLength(1)
+      const text = await files[0]!.text()
+      const header = text.replace(/^\uFEFF/, '').split('\r\n')[0]
+      expect(header).toBe(historyCsvRows([])[0]!.join(','))
+      expect(text.split('\r\n')).toHaveLength(linked.length + 1)
+      expect(
+        await screen.findByText(`${linked.length} verification attempts saved as a CSV file.`),
+      ).toBeInTheDocument()
+    })
   })
 })

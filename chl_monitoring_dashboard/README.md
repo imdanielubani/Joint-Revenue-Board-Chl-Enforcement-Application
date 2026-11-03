@@ -328,6 +328,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification history "Export records": the attempts the register shows,
+  with completion status, action taken, linked violation and case status,
+  payment request and pending actions, as
+  `verification-history-{from}-to-{to}.csv`.
 - History register row actions open what an attempt led to: its vehicle's
   verifications, trip, case, evidence, demand notice, agent and location (the
   same related records as the audit trail, each only where the user may open
