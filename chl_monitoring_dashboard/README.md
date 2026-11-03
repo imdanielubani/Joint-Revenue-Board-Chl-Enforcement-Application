@@ -277,7 +277,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
   "No access". The complete audit trail is for authorized administrators; a
   supervisor's access to it follows the backend's permissions (the sample
   supervisor has none). No audit record is edited or deleted in the
-  dashboard. **Areas:** the user's areas (`user.scopes`) come from CHL;
+  dashboard. **Verification history** (administrators and supervisors) is
+  not limited to the last 30 days: the SRD's "last 30 days" default and
+  "view all" belong to an agent's own history in the mobile app, so any
+  period can be chosen, including a custom range. **Areas:** the user's areas (`user.scopes`) come from CHL;
   the backend filters the data to them.
 - Pending with the backend: the auth paths in `features/auth/auth.api.ts`
   are provisional. Tokens are kept in browser storage for now; if the
@@ -328,6 +331,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- README access notes: who opens the verification history, and that it has
+  no 30-day limit for administrators.
 - The Agent details popup links to the agent's verification history
   ("Verification history"), over the page's area and period, for users who
   may open it.
