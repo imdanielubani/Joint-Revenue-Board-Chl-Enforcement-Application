@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification history data: the recorded verification attempts in an area
+  and period, newest first, from `/api/v1/verification-history` (path
+  provisional), with sample data drawn from the sample verifications.
 - Sidebar menu items are 36px high and 2px apart (were 40px and 3px), so all
   sixteen modules, Log out and the user fit a 1024px-high screen without the
   menu scrolling.
