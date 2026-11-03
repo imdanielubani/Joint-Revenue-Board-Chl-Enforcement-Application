@@ -35,7 +35,8 @@ function isKnown<K extends string>(table: Record<K, unknown>, value: string): va
   return Object.hasOwn(table, value)
 }
 
-const pillFor = <K extends string>(table: Record<K, Pill>, value: Open<K> | null): Pill =>
+/** The pill for a value: its own, "Not supplied" for null, or the value in words. */
+export const pillFor = <K extends string>(table: Record<K, Pill>, value: Open<K> | null): Pill =>
   value === null
     ? NOT_SUPPLIED
     : isKnown(table, value)

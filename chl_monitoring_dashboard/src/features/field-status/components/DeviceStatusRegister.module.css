@@ -1,0 +1,17 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.selects {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10.4px;
+}
+
+@media (max-width: 700px) {
+  .selects {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

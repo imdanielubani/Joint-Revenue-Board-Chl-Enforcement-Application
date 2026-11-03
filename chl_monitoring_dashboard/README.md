@@ -331,6 +331,15 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Field operational status page: banner (Monitoring, its own icon) with
+  Refresh, the area, period and people filters, headline figures (agents
+  reporting; RFID reader disconnected, internet disconnected and GPS
+  disabled as last reported, each opening the register filtered), the device
+  status register (agent, organization, last reported with where, RFID reader,
+  internet, GPS, received by CHL; filtered by each status; rows lead to the
+  agent and their verification history), "Not supplied" for a status CHL does
+  not give, a page for when CHL supplies none, and a note that it is last
+  reported, not current.
 - Field operational status data: each agent's last-reported RFID reader,
   internet and GPS status in an area and period, with when it was reported and
   received, each null when CHL does not supply it, and whether CHL supplies
