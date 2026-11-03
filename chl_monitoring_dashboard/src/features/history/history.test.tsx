@@ -283,4 +283,13 @@ describe('verification history page', () => {
       ).toBeInTheDocument()
     })
   })
+
+  it('says the 30-day default is an agent’s, not a limit on administrator access', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/history')
+    const note = (await screen.findByText('Not limited to the last 30 days.')).closest('aside')!
+    expect(note).toHaveTextContent('apply to an agent’s personal history')
+    expect(note).toHaveTextContent('not a 30-day limit on administrator access')
+    expect(note).toHaveTextContent('No record is edited here.')
+  })
 })

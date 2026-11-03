@@ -9,6 +9,8 @@ import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
+import cards from '@/features/payments/components/PaymentCards.module.css'
+import { assetUrl } from '@/shared/lib/asset-url'
 import { downloadCsv } from '@/shared/lib/csv'
 import { HeroButton, PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { useToast } from '@/shared/ui/toast/toast-context'
@@ -214,6 +216,18 @@ function HistoryContent({
               Choose another area or a longer period to find it.
             </p>
           )}
+
+          <aside className={cards.pageNote}>
+            <img src={assetUrl('verifications/note-info.svg')} alt="" width={16} height={16} />
+            <div>
+              <p className={cards.pageNoteTitle}>Not limited to the last 30 days.</p>
+              <p className={cards.pageNoteText}>
+                The SRD’s “last 30 days” default and “view all” apply to an agent’s personal
+                history; they are not a 30-day limit on administrator access. Choose any period,
+                including a custom range. No record is edited here.
+              </p>
+            </div>
+          </aside>
         </>
       )}
     </div>

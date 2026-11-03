@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification history page note: the SRD's "last 30 days" default and
+  "view all" apply to an agent's personal history, not as a 30-day limit on
+  administrator access; any period can be chosen; no record is edited here.
 - Verification history "Export records": the attempts the register shows,
   with completion status, action taken, linked violation and case status,
   payment request and pending actions, as
