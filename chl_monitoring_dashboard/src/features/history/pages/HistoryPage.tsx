@@ -187,6 +187,7 @@ function HistoryContent({
                 page.openRecord(null)
                 setRelated(next)
               }}
+              {...(filters.agentId ? {} : { onAgent: filter.setAgent })}
               subtitle={`Recorded verification attempts, newest first · ${scope.name} · ${periodLabel(filters.range, filters)}`}
             />
           )}

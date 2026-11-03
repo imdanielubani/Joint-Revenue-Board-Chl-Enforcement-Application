@@ -380,4 +380,29 @@ describe('verification history page', () => {
     expect(router.state.location.pathname).toBe('/history')
     expect(router.state.location.search).toBe('?scope=la&range=30d&agent=JRB-AG-0142')
   })
+
+  it('narrows the history to an attempt’s agent from its row', async () => {
+    const record = expected()[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/history?scope=ng')
+    let register = await card('History register')
+    await userEvent.click(
+      within(register).getByRole('button', { name: `Actions for ${record.reference}` }),
+    )
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Show this agent’s attempts' }),
+    )
+    expect(new URLSearchParams(router.state.location.search).get('agent')).toBe(record.agent.id)
+    expect(await screen.findByRole('combobox', { name: 'Agent' })).toHaveValue(record.agent.id)
+    register = await card('History register')
+    const table = within(register).getByRole('table', { name: 'Verification history' })
+    for (const row of bodyRows(table)) expect(row).toHaveTextContent(record.agent.id)
+
+    await userEvent.click(
+      within(register).getByRole('button', { name: `Actions for ${record.reference}` }),
+    )
+    expect(
+      screen.queryByRole('menuitem', { name: 'Show this agent’s attempts' }),
+    ).not.toBeInTheDocument()
+  })
 })

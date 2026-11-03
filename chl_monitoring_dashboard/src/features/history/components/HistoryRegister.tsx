@@ -47,6 +47,7 @@ export function HistoryRegister({
   onFilterChange,
   onOpen,
   onRelated,
+  onAgent,
 }: {
   records: readonly VerificationEntry[]
   /** The area and period: "Lagos · Last 14 days". */
@@ -58,6 +59,8 @@ export function HistoryRegister({
   onOpen(record: VerificationEntry): void
   /** Opens a record the attempt leads to in its own popup on the page. */
   onRelated(related: TripRelated): void
+  /** Narrows the history to the attempt's agent; absent when it is narrowed to them already. */
+  onAgent?(agentId: string): void
 }) {
   const relatedOf = useAuditRelated()
   const columns = useMemo<Column<VerificationEntry>[]>(
@@ -157,6 +160,9 @@ export function HistoryRegister({
             label={`Actions for ${row.reference}`}
             actions={[
               { label: 'Open record details', onSelect: () => onOpen(row) },
+              ...(onAgent
+                ? [{ label: 'Show this agent’s attempts', onSelect: () => onAgent(row.agent.id) }]
+                : []),
               // The verification's own details are the record details above.
               ...relatedOf(row)
                 .filter((item) => item.label !== 'Verification details')
@@ -170,7 +176,7 @@ export function HistoryRegister({
         ),
       },
     ],
-    [onOpen, onRelated, relatedOf],
+    [onOpen, onRelated, onAgent, relatedOf],
   )
   const rows = useMemo(() => applyHistoryFilters(records, filters), [records, filters])
   const select = (key: HistoryFilterKey, label: string) => (

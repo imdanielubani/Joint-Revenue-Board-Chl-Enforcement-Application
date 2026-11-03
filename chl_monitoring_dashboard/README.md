@@ -331,6 +331,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- History register rows narrow the history to the attempt's agent ("Show
+  this agent's attempts"), through the agent filter; not offered once it is
+  narrowed to an agent.
 - README access notes: who opens the verification history, and that it has
   no 30-day limit for administrators.
 - The Agent details popup links to the agent's verification history
