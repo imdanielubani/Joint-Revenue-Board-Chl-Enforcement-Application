@@ -161,4 +161,20 @@ describe('verification history page', () => {
     const unlinked = records.filter((record) => !record.violation)
     expect(bodyRows(table)).toHaveLength(Math.min(10, unlinked.length))
   })
+
+  it('lists what a headline figure counts, keeping the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/history?scope=la&range=30d')
+    await userEvent.click((await figure('Payment requests')).querySelector('a')!)
+    expect(router.state.location.search).toBe('?scope=la&range=30d&payment=any')
+    const register = await card('History register')
+    expect(within(register).getByRole('combobox', { name: 'Payment request' })).toHaveValue('any')
+    const table = within(register).getByRole('table', { name: 'Verification history' })
+    for (const row of bodyRows(table)) {
+      expect(within(row).getAllByRole('cell')[7]).not.toHaveTextContent('None')
+    }
+
+    await userEvent.click((await figure('Verification attempts')).querySelector('a')!)
+    expect(router.state.location.search).toBe('?scope=la&range=30d&completion=unsuccessful')
+  })
 })

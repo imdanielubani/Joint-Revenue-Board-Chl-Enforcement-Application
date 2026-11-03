@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification history figures open the register filtered to what they
+  count (not completed, linked violations, any payment request, pending
+  actions), keeping the area and period.
 - History register filters, kept in the address: completion status, action
   taken, linked violation, payment request (pending, received, none) and
   pending actions.

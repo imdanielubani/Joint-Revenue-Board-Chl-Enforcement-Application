@@ -31,6 +31,7 @@ export const FILTER_OPTIONS = {
     { value: 'none', label: 'No violation' },
   ],
   payment: [
+    { value: 'any', label: 'Any payment request' },
     { value: 'pending', label: 'Payment pending' },
     { value: 'received', label: 'Payment received' },
     { value: 'none', label: 'No payment request' },
@@ -47,12 +48,14 @@ export function applyHistoryFilters(
   filters: HistoryRegisterFilters,
 ): VerificationEntry[] {
   const is = (wanted: string | null, value: string) => wanted === null || wanted === value
+  const payment = (wanted: string | null, record: VerificationEntry) =>
+    wanted === 'any' ? record.payment !== null : is(wanted, record.payment?.status ?? 'none')
   return records.filter(
     (record) =>
       is(filters.completion, record.attempt ?? NOT_SUPPLIED) &&
       is(filters.action, record.actionTaken ?? NOT_SUPPLIED) &&
       is(filters.violation, record.violation ? 'linked' : 'none') &&
-      is(filters.payment, record.payment?.status ?? 'none') &&
+      payment(filters.payment, record) &&
       is(filters.pending, pendingActions(record).length > 0 ? 'yes' : 'no'),
   )
 }

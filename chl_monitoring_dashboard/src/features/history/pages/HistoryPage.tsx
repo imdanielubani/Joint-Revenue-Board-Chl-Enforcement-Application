@@ -112,24 +112,28 @@ function HistoryContent({
                 value: records.length,
                 icon: 'overview/kpi-scan.svg',
                 note: `${counts.completed} completed · ${counts.notCompleted} not completed`,
+                to: page.linkTo({ completion: 'unsuccessful' }),
               },
               {
                 label: 'Linked violations',
                 value: counts.violations,
                 icon: 'overview/kpi-violation.svg',
                 note: 'Violations issued from these verifications',
+                to: page.linkTo({ violation: 'linked' }),
               },
               {
                 label: 'Payment requests',
                 value: counts.payments,
                 icon: 'overview/kpi-doc.svg',
                 note: 'Demand notices generated from the violations',
+                to: page.linkTo({ payment: 'any' }),
               },
               {
                 label: 'Pending actions',
                 value: counts.pending,
                 icon: 'verifications/kpi-pending.svg',
                 note: 'Open cases or evidence still uploading',
+                to: page.linkTo({ pending: 'yes' }),
               },
             ]}
           />
