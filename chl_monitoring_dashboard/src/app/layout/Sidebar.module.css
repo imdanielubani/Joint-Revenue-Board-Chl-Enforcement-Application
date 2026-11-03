@@ -134,7 +134,7 @@
 }
 
 .section + .section {
-  padding-top: 18px;
+  padding-top: 14px;
 }
 
 .sectionTitle {
@@ -156,7 +156,7 @@
   list-style: none;
 }
 
-/* 36px items 2px apart, so all sixteen modules fit a 1024px-high screen without scrolling. */
+/* 34px items 2px apart, so all seventeen modules fit a 1024px-high screen without scrolling. */
 .list li {
   padding-top: 2px;
 }
@@ -170,8 +170,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 36px;
-  padding: 10px;
+  min-height: 34px;
+  padding: 9px 10px;
   border-radius: 7px;
   color: var(--sidebar-text);
   font-size: var(--font-size-xs);

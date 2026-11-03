@@ -336,6 +336,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Sidebar: items 34px high and sections 14px apart, so all seventeen
+  modules (with Field operational status) fit a 1024px-high screen.
 - README: the sync and field-status folders, and that Field operational
   status is its own module key (`field-status`) the backend must grant.
 - Field operational status page: banner (Monitoring, its own icon) with
