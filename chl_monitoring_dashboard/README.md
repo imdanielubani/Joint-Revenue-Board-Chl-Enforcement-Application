@@ -328,6 +328,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- History register: every recorded attempt, newest first, with its agent,
+  vehicle, result, completion status, action taken, linked violation (and its
+  case status), payment request and pending actions; searchable and sortable.
 - Verification history headline figures: attempts (completed and not
   completed), linked violations, payment requests and pending actions.
 - Verification history page: banner (Monitoring, history icon) with Refresh,

@@ -1,0 +1,25 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* The plate over CHL's vehicle ID. */
+.vehicle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* The violation's reference and category over its case status. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.pending {
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+}

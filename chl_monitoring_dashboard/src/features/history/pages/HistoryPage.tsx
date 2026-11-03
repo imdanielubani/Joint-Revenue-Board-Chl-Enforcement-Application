@@ -4,10 +4,12 @@ import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
+import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { HistoryRegister } from '../components/HistoryRegister'
 import { historyCounts } from '../history-display'
 import { useVerificationHistory } from '../history.queries'
 import styles from './HistoryPage.module.css'
@@ -129,10 +131,15 @@ function HistoryContent({
               },
             ]}
           />
-          {records.length === 0 && (
+          {records.length === 0 ? (
             <StatePanel
               kind="empty"
               message={`No verification attempts were recorded in ${scope.name} in this period.`}
+            />
+          ) : (
+            <HistoryRegister
+              records={records}
+              subtitle={`Recorded verification attempts, newest first · ${scope.name} · ${periodLabel(filters.range, filters)}`}
             />
           )}
         </>
