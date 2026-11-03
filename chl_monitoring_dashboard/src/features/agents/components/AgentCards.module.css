@@ -190,6 +190,13 @@
   background: var(--card-bg);
 }
 
+/* A link drawn as a footer button. */
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .primaryButton {
   border: 0.8px solid var(--color-primary);
   background: var(--color-primary);

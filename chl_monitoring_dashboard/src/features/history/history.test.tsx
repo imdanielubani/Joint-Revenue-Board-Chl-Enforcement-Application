@@ -366,4 +366,18 @@ describe('verification history page', () => {
     const table = within(register).getByRole('table', { name: 'Verification history' })
     for (const row of bodyRows(table)) expect(row).toHaveTextContent('JRB-AG-0142')
   })
+
+  it('lists an agent’s attempts from their details popup, over the same area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/agents?scope=la&range=30d')
+    const register = await card('Agent register')
+    await userEvent.click(
+      within(register).getByRole('button', { name: 'Actions for Tunde Okafor' }),
+    )
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
+    const dialog = screen.getByRole('dialog', { name: 'Agent details' })
+    await userEvent.click(within(dialog).getByRole('link', { name: 'Verification history' }))
+    expect(router.state.location.pathname).toBe('/history')
+    expect(router.state.location.search).toBe('?scope=la&range=30d&agent=JRB-AG-0142')
+  })
 })

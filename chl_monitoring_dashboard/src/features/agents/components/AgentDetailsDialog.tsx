@@ -1,4 +1,8 @@
 import { useId } from 'react'
+import { Link, useSearchParams } from 'react-router'
+import { paths } from '@/config/paths'
+import { useModuleLink } from '@/features/auth/use-module-link'
+import { FILTER_PARAMS } from '@/features/overview/use-overview-filters'
 import { outcomeLabel, outcomeStyle } from '@/features/overview/overview-display'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { formatNumber } from '@/shared/lib/format'
@@ -10,7 +14,8 @@ import styles from './AgentCards.module.css'
 /**
  * "Agent details": the popup the register's "View details" opens — the agent's
  * identity and assigned scope, their documented metrics and verification
- * results for the period, and a way to their full activity on the page.
+ * results for the period, and ways to their full activity on the page and to
+ * their recorded verification attempts in the verification history.
  */
 export function AgentDetailsDialog({
   agent,
@@ -28,6 +33,20 @@ export function AgentDetailsDialog({
   const metricsId = useId()
   const resultsId = useId()
   const results = agent.metrics.outcomes.filter((entry) => entry.count > 0)
+  const [params] = useSearchParams()
+  // The agent's attempts over the page's area and period, where the user may open the history.
+  const history = new URLSearchParams()
+  for (const key of [
+    FILTER_PARAMS.scope,
+    FILTER_PARAMS.range,
+    FILTER_PARAMS.from,
+    FILTER_PARAMS.to,
+  ]) {
+    const value = params.get(key)
+    if (value) history.set(key, value)
+  }
+  history.set(FILTER_PARAMS.agent, agent.id)
+  const historyLink = useModuleLink()('history', `${paths.history}?${history}`)
   return (
     <Dialog
       title="Agent details"
@@ -38,6 +57,11 @@ export function AgentDetailsDialog({
           <button type="button" className={styles.secondaryButton} onClick={onClose}>
             Close
           </button>
+          {historyLink && (
+            <Link className={`${styles.secondaryButton} ${styles.linkButton}`} to={historyLink}>
+              Verification history
+            </Link>
+          )}
           <button type="button" className={styles.primaryButton} onClick={onShowActivity}>
             Show full activity
           </button>
