@@ -328,6 +328,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification history: a record link outside the chosen area and period
+  says so, and suggests another area or a longer period.
 - History register rows open the attempt's record details ("Open record
   details": method, outcome, vehicle, trip, action, violation, payment request,
   pending actions, synchronization), kept in the address as `?record=`.

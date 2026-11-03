@@ -205,4 +205,15 @@ describe('verification history page', () => {
     const details = await screen.findByRole('dialog', { name: 'Verification details' })
     expect(details).toHaveTextContent(record.plate)
   })
+
+  it('says when an opened record is outside the area and period', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/history?record=VR-00001')
+    expect(
+      await screen.findByText(
+        'VR-00001 is not in the verification history for this area and period. Choose another area or a longer period to find it.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Verification details' })).not.toBeInTheDocument()
+  })
 })

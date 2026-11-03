@@ -179,6 +179,12 @@ function HistoryContent({
               onClose={() => setRelated(null)}
             />
           )}
+          {page.recordReference && !open && (
+            <p className={styles.stale} role="status">
+              {page.recordReference} is not in the verification history for this area and period.
+              Choose another area or a longer period to find it.
+            </p>
+          )}
         </>
       )}
     </div>
