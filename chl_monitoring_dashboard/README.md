@@ -331,6 +331,14 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Synchronization page: banner (Monitoring, sync icon) with Refresh, the
+  area, period and people filters with "Field data received" and "Last
+  checked", headline figures (records received, offline-origin, received
+  late, evidence uploading; each opens the register filtered), the
+  synchronization register (recorded time, agent, vehicle, recorded source,
+  received by CHL with the delay, synchronization; filtered by source and
+  synchronization), record details and related records from each row, and a
+  note that it shows received data only.
 - Synchronization data: the records CHL received in an area and period, with
   the synchronization status stored with each, where it came from, its
   evidence upload and when CHL received it, from `/api/v1/synchronization`
