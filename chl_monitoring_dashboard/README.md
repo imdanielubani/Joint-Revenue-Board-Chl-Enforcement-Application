@@ -132,6 +132,7 @@ src/
     audit/                 The complete audit trail (administrators)
     sync/                  Synchronization: received records' status, offline origin
     field-status/          Field operational status: last-reported device status
+    search/                Search results: vehicles, agents, records by reference
   shared/                  Used by every feature; imports no feature
     api/                   HTTP client, ApiError, query cache settings, auth bridge
     lib/                   Lagos-time dates and formatting, chart scales, CSV export,
@@ -224,7 +225,14 @@ onSelect }` (no `to`) is a button acting on the current page. Either
     serves the active, inactive and top-bar colours.
   - The counts come from `features/notifications` and `features/violations`
     (sample data until the backend is connected), refreshed every minute.
-  - Settings and search results are placeholders until they are designed.
+  - **Search results** (`/search?q=`, `features/search`): the query is
+    searched in the user's own widest area, ignoring case, spaces, dashes,
+    dots and slashes, from two characters. Results are grouped: Vehicles (by
+    plate or CHL vehicle ID, to Vehicle identity), Agents (by name or ID, to
+    the agent's page), and Verifications, Violations, Payment requests and
+    Trips by reference, each to its record over a period from the record's
+    day to today. A result whose module the user may not open is shown
+    without a link. Read-only.
 - **Images** from the design live in `public/assets/` (`brand/` for the
   JRB logo, `auth/` for the sign-in pages, `support/` for the support form,
   `toast/` for notifications, `shell/` for the top bar and sidebar, `nav/`
@@ -336,6 +344,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- README: the search folder and how search works (area, matching, result
+  groups, where each leads, access).
 - Top bar search: on the results page the box keeps the query, to change it
   and search again; it stays empty on other pages.
 - Search results: links to a verification, violation, payment request or trip
