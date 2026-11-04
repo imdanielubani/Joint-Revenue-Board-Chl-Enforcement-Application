@@ -116,6 +116,8 @@
   font-family: var(--font-ui);
   text-align: left;
   cursor: pointer;
+  /* The border turns green on hover: a fade, not a snap. */
+  transition: border-color var(--duration-hover) ease;
 }
 
 .tile:hover {

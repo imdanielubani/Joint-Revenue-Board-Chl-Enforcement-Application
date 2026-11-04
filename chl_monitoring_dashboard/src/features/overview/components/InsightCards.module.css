@@ -137,6 +137,8 @@
   border: 0.8px solid var(--card-line);
   border-radius: 10px;
   background: var(--color-surface);
+  /* A linked tile's border darkens on hover: a fade, not a snap. */
+  transition: border-color var(--duration-hover) ease;
 }
 
 .tile.linked:hover {

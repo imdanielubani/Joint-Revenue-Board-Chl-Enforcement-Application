@@ -348,6 +348,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Hover fades (150ms) on the cards the shared rule does not reach: the
+  Overview's insight tiles and the Verifications tiles (border) and the
+  Geographical monitoring place list (background).
 - Hover and selection colours fade (150ms) on links, buttons, fields, tabs and
   menu items, and on the menu icons with them: colour, background, border and
   shadow only, kept with reduced motion; focus outlines stay instant.
