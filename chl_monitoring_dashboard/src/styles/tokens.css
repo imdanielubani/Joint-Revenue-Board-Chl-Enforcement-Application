@@ -163,3 +163,19 @@
   --sidebar-width-collapsed: 80px;
   --topbar-height: 64px;
 }
+
+/*
+ * Motion. Every animation on the dashboard uses these: quick and quiet, as
+ * the dashboard is open all day. Entering and leaving use --ease-out; moving
+ * on screen uses --ease-in-out; colour changes on hover use plain ease.
+ */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  /* Hover and colour changes: barely there, as they happen many times a day. */
+  --duration-hover: 150ms;
+  /* Menus and small popovers. */
+  --duration-menu: 180ms;
+  /* Popups and toasts. */
+  --duration-popup: 220ms;
+}

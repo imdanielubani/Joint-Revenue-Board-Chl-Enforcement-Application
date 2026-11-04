@@ -10,7 +10,8 @@
   border-radius: 20px;
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
-  transition: width 200ms ease;
+  /* Widening and narrowing on screen. */
+  transition: width 200ms var(--ease-in-out);
 }
 
 /* Brand */
@@ -419,7 +420,7 @@
     left: 15px;
     z-index: 40;
     transform: translateX(calc(-100% - 24px));
-    transition: transform 200ms ease;
+    transition: transform var(--duration-popup) var(--ease-out);
   }
 
   .overlayOpen {

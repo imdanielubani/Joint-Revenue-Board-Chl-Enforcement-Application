@@ -348,6 +348,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Motion settings: shared curves (`--ease-out`, `--ease-in-out`) and
+  durations (hover 150ms, menus 180ms, popups 220ms) in `tokens.css`, and
+  `motionAllowed()` for the reduce-motion setting; the sidebar uses them.
 - API_ENDPOINTS.md: every backend endpoint the dashboard calls (27), each
   with its method, path, query or body, response fields (type, required,
   nullable), an example from the sample data and its errors; plus the shared
