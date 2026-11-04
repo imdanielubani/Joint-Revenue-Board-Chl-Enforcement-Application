@@ -336,6 +336,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Search matching: a query matches a plate, reference or name ignoring case,
+  spaces, dashes, dots and slashes ("kja 482xy" finds KJA-482-XY); fewer than
+  two characters search nothing.
 - Sidebar: items 34px high and sections 14px apart, so all seventeen
   modules (with Field operational status) fit a 1024px-high screen.
 - README: the sync and field-status folders, and that Field operational
