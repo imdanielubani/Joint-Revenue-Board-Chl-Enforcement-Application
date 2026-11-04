@@ -49,3 +49,86 @@
   color: var(--color-primary);
   font-weight: var(--font-weight-semibold);
 }
+
+/*
+ * Where the browser lets a page style a dropdown's list (the customizable
+ * select: Chrome and Edge), the list matches the dashboard's menus and opens
+ * from its field with a short fade, closing the same way. Other browsers skip
+ * this block and keep their own list, unchanged.
+ */
+@supports (appearance: base-select) {
+  .box select,
+  .box select::picker(select) {
+    appearance: base-select;
+  }
+
+  /* The field draws its own arrow. */
+  .box select::picker-icon {
+    display: none;
+  }
+
+  .box select::picker(select) {
+    margin-top: 6px;
+    padding: 6px;
+    border: 0.8px solid var(--card-line);
+    border-radius: 10px;
+    background: var(--color-surface);
+    box-shadow: var(--menu-shadow);
+    opacity: 0;
+    transform: scale(0.95);
+    transform-origin: top;
+    transition:
+      opacity var(--duration-menu) var(--ease-out),
+      transform var(--duration-menu) var(--ease-out),
+      overlay var(--duration-menu) allow-discrete,
+      display var(--duration-menu) allow-discrete;
+  }
+
+  .box select:open::picker(select) {
+    opacity: 1;
+    transform: none;
+  }
+
+  @starting-style {
+    .box select:open::picker(select) {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+
+  .box select option {
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: var(--card-title);
+    font-size: 12px;
+  }
+
+  .box select option:hover,
+  .box select option:focus-visible {
+    background: var(--card-bg);
+  }
+
+  .box select option:checked {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .box select option::checkmark {
+    display: none;
+  }
+}
+
+/* Reduced motion: the list fades without growing. */
+@media (prefers-reduced-motion: reduce) {
+  @supports (appearance: base-select) {
+    .box select::picker(select) {
+      transform: none;
+    }
+
+    @starting-style {
+      .box select:open::picker(select) {
+        transform: none;
+      }
+    }
+  }
+}

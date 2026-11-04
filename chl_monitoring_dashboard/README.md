@@ -348,6 +348,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Dropdowns (the filter bar's and the registers' filters): where the browser
+  supports the customizable select (Chrome, Edge), the list is styled like the
+  dashboard's menus and opens from its field with a short fade (180ms),
+  closing the same way; other browsers keep their own list unchanged. With
+  reduced motion it fades without growing.
 - Register tables: the row under the pointer is shaded (the header's colour),
   fading in and out (150ms); mouse only, never on touch, and never the "nothing
   to show" row.
