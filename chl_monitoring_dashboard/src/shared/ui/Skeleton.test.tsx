@@ -2,6 +2,7 @@ import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { describe, expect, it } from 'vitest'
 import {
+  RegisterSkeleton,
   Skeleton,
   SkeletonColumns,
   SkeletonFacts,
@@ -37,5 +38,14 @@ describe('skeleton pieces', () => {
       </SkeletonColumns>,
     ).firstElementChild as HTMLElement
     expect(columns.style.getPropertyValue('--columns')).toBe('1fr 1fr')
+  })
+
+  it('draws a register page: figures, tabs or filters, then the table', () => {
+    const { container, getByText } = render(
+      <RegisterSkeleton message="Loading the register…" tabs={3} filters={2} />,
+    )
+    expect(getByText('Loading the register…')).toBeInTheDocument()
+    const sections = container.querySelector('[aria-hidden="true"]')!.children
+    expect(sections).toHaveLength(3)
   })
 })

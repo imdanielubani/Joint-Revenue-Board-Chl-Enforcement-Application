@@ -188,3 +188,36 @@ export function SkeletonColumns({
     </div>
   )
 }
+
+/**
+ * A register page while it loads: its headline figures, then its tabs or the
+ * register's filters, then the register's table.
+ */
+export function RegisterSkeleton({
+  message,
+  figures = 4,
+  tabs = 0,
+  filters = 0,
+  columns = 7,
+  rows = 6,
+}: {
+  message: string
+  figures?: number
+  /** Tabs above the register, as on Verifications; 0 for none. */
+  tabs?: number
+  /** Filter fields inside the register, as on Verification history; 0 for none. */
+  filters?: number
+  columns?: number
+  rows?: number
+}) {
+  return (
+    <Skeleton message={message}>
+      {figures > 0 && <SkeletonFigures count={figures} />}
+      {tabs > 0 && <SkeletonTabs count={tabs} />}
+      <SkeletonCard>
+        {filters > 0 && <SkeletonFilters count={filters} />}
+        <SkeletonTable rows={rows} columns={columns} />
+      </SkeletonCard>
+    </Skeleton>
+  )
+}

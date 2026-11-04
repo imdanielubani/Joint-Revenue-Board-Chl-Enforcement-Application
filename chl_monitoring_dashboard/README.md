@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- `RegisterSkeleton`: a register page's shape while it loads, its headline
+  figures, then its tabs or the register's filters, then the table.
 - Skeleton pieces: a popup's facts (`SkeletonFacts`) and sections side by side
   (`SkeletonColumns`, one column on narrow screens).
 - Skeleton piece: a list of entries (`SkeletonList`: icon, two lines, a time),
