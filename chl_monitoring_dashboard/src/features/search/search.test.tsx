@@ -125,4 +125,16 @@ describe('search results page', () => {
       payment!.status === 'received' ? 'Payment received' : 'Payment pending',
     )
   })
+
+  it('lists CHL trips by transaction reference, leading to the trip', async () => {
+    const reference = summarizeSearch({ query: 'VR-', scope: 'ng' }).verifications.find(
+      (record) => record.tripId,
+    )!.tripId!
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/search?q=${encodeURIComponent(reference)}`)
+    const list = await screen.findByRole('list', { name: 'Trips' })
+    const link = within(list).getByRole('link', { name: new RegExp(reference) })
+    expect(link.getAttribute('href')).toContain(`trip=${encodeURIComponent(reference)}`)
+    expect(link).toHaveTextContent('Found by a verification on')
+  })
 })

@@ -336,6 +336,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Search results: Trips by CHL transaction reference (plate, the verification
+  that found it) lead to the trip's details.
 - Search results: Violations by reference (plate, category, case status) lead
   to the case; Payment requests by reference (plate, the violation, pending or
   received) lead to the demand notice.

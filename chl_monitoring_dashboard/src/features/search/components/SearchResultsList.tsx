@@ -91,6 +91,18 @@ export function SearchResultsList({ results }: { results: SearchResults }) {
           to: link('payments', `${paths.payments}?notice=${payment.id}`),
         }))}
       />
+      <ResultGroup
+        title="Trips"
+        icon="overview/card-activity.svg"
+        items={results.trips.map((trip) => ({
+          key: trip.reference,
+          main: trip.reference,
+          sub: `${trip.plate} · CHL trip`,
+          meta: `Found by a verification on ${formatShortDateTime(trip.recordedAt)}`,
+          // The trip's details on Trip monitoring.
+          to: link('trips', `${paths.trips}?trip=${encodeURIComponent(trip.reference)}`),
+        }))}
+      />
     </div>
   )
 }
