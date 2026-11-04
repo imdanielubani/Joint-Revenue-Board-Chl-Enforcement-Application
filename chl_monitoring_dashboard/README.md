@@ -336,6 +336,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Search results: Verifications by reference (plate, agent, location, result
+  and recorded time) lead to the verification's details.
 - Search results: Vehicles (plate, CHL vehicle ID and type, verification
   count and latest) lead to Vehicle identity; Agents (name, ID, organization)
   lead to the agent's page. A result is shown without a link where the user

@@ -1,6 +1,7 @@
 import { paths } from '@/config/paths'
 import { organizationLabel } from '@/features/agents/agents-display'
 import { useModuleLink } from '@/features/auth/use-module-link'
+import { outcomeLabel, outcomeStyle } from '@/features/overview/overview-display'
 import { formatShortDateTime } from '@/shared/lib/format'
 import type { SearchResults } from '../search.schemas'
 import { ResultGroup } from './ResultGroup'
@@ -36,6 +37,21 @@ export function SearchResultsList({ results }: { results: SearchResults }) {
           main: agent.name,
           sub: `${agent.id} · ${organizationLabel(agent.organization)}`,
           to: link('agents', paths.agent(agent.id)),
+        }))}
+      />
+      <ResultGroup
+        title="Verifications"
+        icon="overview/kpi-scan.svg"
+        items={results.verifications.map((record) => ({
+          key: record.reference,
+          main: record.reference,
+          sub: `${record.plate} · ${record.agent.name} · ${record.location.name}, ${record.location.area}`,
+          ...(record.result
+            ? { pill: { ...outcomeStyle(record.result), label: outcomeLabel(record.result) } }
+            : {}),
+          meta: formatShortDateTime(record.recordedAt),
+          // Its details popup on Verifications & E-Tags.
+          to: link('verifications', `${paths.verifications}?ref=${record.reference}`),
         }))}
       />
     </div>

@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { mockSearchApi } from '@/mocks/mock-search-api'
+import { mockSearchApi, summarizeSearch } from '@/mocks/mock-search-api'
 import { renderApp, signInAs } from '@/test/render-app'
 
 afterEach(() => vi.restoreAllMocks())
@@ -91,5 +91,16 @@ describe('search results page', () => {
     const agents = await screen.findByRole('list', { name: 'Agents' })
     expect(within(agents).getByText('Tunde Okafor')).toBeInTheDocument()
     expect(within(agents).queryByRole('link')).not.toBeInTheDocument()
+  })
+
+  it('lists verifications by reference, leading to their details', async () => {
+    const [record] = summarizeSearch({ query: 'VR-', scope: 'ng' }).verifications
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/search?q=${record!.reference}`)
+    const list = await screen.findByRole('list', { name: 'Verifications' })
+    const link = within(list).getByRole('link', { name: new RegExp(record!.reference) })
+    expect(link.getAttribute('href')).toContain(`ref=${record!.reference}`)
+    expect(link).toHaveTextContent(record!.plate)
+    expect(link).toHaveTextContent(record!.agent.name)
   })
 })
