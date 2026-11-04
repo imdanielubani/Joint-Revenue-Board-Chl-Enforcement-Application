@@ -7,6 +7,7 @@
   place-items: center;
   padding: 24px 16px;
   background: rgb(19 44 29 / 0.35);
+  transition: opacity var(--duration-popup) var(--ease-out);
 }
 
 .panel {
@@ -19,6 +20,10 @@
   background: var(--color-surface);
   box-shadow: var(--shadow-toast);
   outline: none;
+  /* Centred, not anchored to what opened it, so it grows from its middle. */
+  transition:
+    opacity var(--duration-popup) var(--ease-out),
+    transform var(--duration-popup) var(--ease-out);
 }
 
 .wide {
@@ -85,4 +90,25 @@
   gap: 8px;
   padding: 12px 20px 16px;
   border-top: 0.8px solid var(--card-line);
+}
+
+/* Opening: the page dims as the popup rises into place, as one surface. */
+@starting-style {
+  .backdrop {
+    opacity: 0;
+  }
+
+  .panel {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+/* Reduced motion: it fades in without growing. */
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .panel {
+      transform: none;
+    }
+  }
 }

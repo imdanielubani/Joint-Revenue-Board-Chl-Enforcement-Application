@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Popups open with the page dimming as the popup rises from 96% into place
+  (220ms, ease-out); with reduced motion they only fade in.
 - Motion settings: shared curves (`--ease-out`, `--ease-in-out`) and
   durations (hover 150ms, menus 180ms, popups 220ms) in `tokens.css`, and
   `motionAllowed()` for the reduce-motion setting; the sidebar uses them.
