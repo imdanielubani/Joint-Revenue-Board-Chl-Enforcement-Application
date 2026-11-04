@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Moving to another page, it fades in (180ms, no movement); changing a filter
+  or the period keeps the page as it is, without fading.
 - Menus close back into the button that opened them (to 95%, 160ms): the
   account menu, the notifications menu and each row's actions menu, however
   they are closed. The exit now hangs on the element (`useExitRef`), so it

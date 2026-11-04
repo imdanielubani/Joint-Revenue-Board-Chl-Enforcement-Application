@@ -47,12 +47,23 @@
   outline: none;
 }
 
+/* Moving to another page: it fades in, without moving, so the change is calm and quick. */
+.page {
+  transition: opacity var(--duration-menu) var(--ease-out);
+}
+
+@starting-style {
+  .page {
+    opacity: 0;
+  }
+}
+
 /*
  * While a page still shows its old figures as new ones load, everything under
  * its banner and filters dims, after a short pause so a quick answer never
  * flickers. The new figures appear at full strength at once.
  */
-.main[data-refreshing] > * > :not(:first-child) {
+.main[data-refreshing] > .page > * > :not(:first-child) {
   opacity: 0.55;
   transition: opacity var(--duration-popup) var(--ease-out) 150ms;
 }

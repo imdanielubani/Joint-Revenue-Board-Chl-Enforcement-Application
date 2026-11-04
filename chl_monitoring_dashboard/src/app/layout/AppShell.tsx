@@ -87,7 +87,10 @@ export function AppShell() {
           aria-busy={showingOldData || undefined}
           data-refreshing={showingOldData ? '' : undefined}
         >
-          <Outlet />
+          {/* A new page fades in; a filter or period change keeps the page as it is. */}
+          <div key={pathname} className={styles.page}>
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
