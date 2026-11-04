@@ -336,6 +336,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Search results: Violations by reference (plate, category, case status) lead
+  to the case; Payment requests by reference (plate, the violation, pending or
+  received) lead to the demand notice.
 - Search results: Verifications by reference (plate, agent, location, result
   and recorded time) lead to the verification's details.
 - Search results: Vehicles (plate, CHL vehicle ID and type, verification

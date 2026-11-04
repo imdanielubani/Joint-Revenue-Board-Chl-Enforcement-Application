@@ -1,7 +1,12 @@
 import { paths } from '@/config/paths'
 import { organizationLabel } from '@/features/agents/agents-display'
 import { useModuleLink } from '@/features/auth/use-module-link'
-import { outcomeLabel, outcomeStyle } from '@/features/overview/overview-display'
+import {
+  actionStatusLabel,
+  actionStatusTone,
+  outcomeLabel,
+  outcomeStyle,
+} from '@/features/overview/overview-display'
 import { formatShortDateTime } from '@/shared/lib/format'
 import type { SearchResults } from '../search.schemas'
 import { ResultGroup } from './ResultGroup'
@@ -52,6 +57,38 @@ export function SearchResultsList({ results }: { results: SearchResults }) {
           meta: formatShortDateTime(record.recordedAt),
           // Its details popup on Verifications & E-Tags.
           to: link('verifications', `${paths.verifications}?ref=${record.reference}`),
+        }))}
+      />
+      <ResultGroup
+        title="Violations"
+        icon="overview/kpi-violation.svg"
+        items={results.violations.map((violation) => ({
+          key: violation.id,
+          main: violation.id,
+          sub: `${violation.plate} · ${violation.category}`,
+          pill: {
+            tone: actionStatusTone(violation.status),
+            label: actionStatusLabel(violation.status),
+          },
+          meta: formatShortDateTime(violation.recordedAt),
+          // The case on Violations & cases.
+          to: link('violations', `${paths.violations}?case=${violation.id}`),
+        }))}
+      />
+      <ResultGroup
+        title="Payment requests"
+        icon="overview/kpi-doc.svg"
+        items={results.payments.map((payment) => ({
+          key: payment.id,
+          main: payment.id,
+          sub: `${payment.plate} · from ${payment.violationId}`,
+          pill:
+            payment.status === 'received'
+              ? { tone: 'success', label: 'Payment received' }
+              : { tone: 'warning', label: 'Payment pending' },
+          meta: formatShortDateTime(payment.recordedAt),
+          // The demand notice on Payments & compliance.
+          to: link('payments', `${paths.payments}?notice=${payment.id}`),
         }))}
       />
     </div>

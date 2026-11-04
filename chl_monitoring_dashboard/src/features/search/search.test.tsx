@@ -103,4 +103,26 @@ describe('search results page', () => {
     expect(link).toHaveTextContent(record!.plate)
     expect(link).toHaveTextContent(record!.agent.name)
   })
+
+  it('lists violations by reference, with their case status, leading to the case', async () => {
+    const [violation] = summarizeSearch({ query: 'VIO-', scope: 'ng' }).violations
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/search?q=${violation!.id}`)
+    const list = await screen.findByRole('list', { name: 'Violations' })
+    const link = within(list).getByRole('link', { name: new RegExp(violation!.id) })
+    expect(link.getAttribute('href')).toContain(`case=${violation!.id}`)
+    expect(link).toHaveTextContent(`${violation!.plate} · ${violation!.category}`)
+  })
+
+  it('lists payment requests by reference, pending or received, leading to the notice', async () => {
+    const [payment] = summarizeSearch({ query: 'DN-', scope: 'ng' }).payments
+    signInAs('admin@jrb.gov.ng')
+    renderApp(`/search?q=${payment!.id}`)
+    const list = await screen.findByRole('list', { name: 'Payment requests' })
+    const link = within(list).getByRole('link', { name: new RegExp(payment!.id) })
+    expect(link.getAttribute('href')).toContain(`notice=${payment!.id}`)
+    expect(link).toHaveTextContent(
+      payment!.status === 'received' ? 'Payment received' : 'Payment pending',
+    )
+  })
 })
