@@ -80,3 +80,18 @@
   text-align: center;
   white-space: normal;
 }
+
+/*
+ * A row under the pointer is shaded, so the eye keeps its place across the
+ * wide registers; the shade fades in and out. Mouse only: on a touch screen a
+ * tap would leave a row shaded. The "nothing to show" row is never shaded.
+ */
+.table tbody tr {
+  transition: background-color var(--duration-hover) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .table tbody tr:hover:not(:has(td.empty)) {
+    background: var(--card-bg);
+  }
+}

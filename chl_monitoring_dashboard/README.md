@@ -348,6 +348,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Register tables: the row under the pointer is shaded (the header's colour),
+  fading in and out (150ms); mouse only, never on touch, and never the "nothing
+  to show" row.
 - Link underlines fade in on hover (150ms) instead of appearing at once,
   wherever a link, button or card name underlines on hover; the underline is
   there but transparent until then, so nothing on the page moves.
