@@ -106,6 +106,9 @@
   display: block;
   height: 100%;
   border-radius: 999px;
+  /* Grows from its start when the chart first appears (later updates do not replay it). */
+  transform-origin: left center;
+  transition: transform 300ms var(--ease-out);
 }
 
 .statusTileNote {
@@ -227,5 +230,20 @@
 @media (max-width: 900px) {
   .selects {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@starting-style {
+  .statusFill {
+    transform: scaleX(0);
+  }
+}
+
+/* Reduced motion: the bars are simply there. */
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .statusFill {
+      transform: none;
+    }
   }
 }

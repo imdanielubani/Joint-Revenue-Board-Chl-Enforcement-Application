@@ -348,6 +348,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Charts: bars grow from their start when a chart first appears (300ms;
+  Command centre, Overview, Payments, Field reports and Verifications), and
+  the Overview's verification activity line and its shading draw in from left
+  to right; later updates do not replay it. A headline figure fades to a new
+  value when it changes; numbers never count up through values that are not
+  real. With reduced motion bars and lines are simply there.
 - Moving to another page, it fades in (180ms, no movement); changing a filter
   or the period keeps the page as it is, without fading.
 - Menus close back into the button that opened them (to 95%, 160ms): the

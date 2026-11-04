@@ -219,14 +219,14 @@ export function VerificationActivityCard({ daily, previous, total, attempts }: P
                 />
               )}
               {count > 0 && (
-                <>
+                <g className={styles.reveal}>
                   <path d={area} fill={`url(#${gradientId})`} />
                   <path
                     className={styles.line}
                     d={line(values)}
                     vectorEffect="non-scaling-stroke"
                   />
-                </>
+                </g>
               )}
             </svg>
 

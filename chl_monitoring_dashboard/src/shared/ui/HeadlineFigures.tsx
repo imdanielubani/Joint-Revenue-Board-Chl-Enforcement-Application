@@ -27,7 +27,9 @@ export function HeadlineFigures({ items }: { items: readonly HeadlineFigure[] })
                 <img src={assetUrl(kpi.icon)} alt="" width={16} height={16} />
               </span>
             </div>
-            <p className={styles.value}>{formatNumber(kpi.value)}</p>
+            <p key={kpi.value} className={styles.value}>
+              {formatNumber(kpi.value)}
+            </p>
           </div>
           {kpi.to ? (
             <Link className={`${styles.note} ${styles.noteLink}`} to={kpi.to}>
