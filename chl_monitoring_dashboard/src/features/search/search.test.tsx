@@ -159,4 +159,26 @@ describe('search results page', () => {
     const details = await screen.findByRole('dialog', { name: 'Verification details' })
     expect(details).toHaveTextContent(old.reference)
   })
+
+  it('keeps the query in the top bar’s search box, to change it and search again', async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/search?q=tunde')
+    const box = await screen.findByRole('searchbox', { name: 'Search all records' })
+    expect(box).toHaveValue('tunde')
+
+    const user = userEvent.setup()
+    await screen.findByRole('list', { name: 'Agents' })
+    await user.clear(box)
+    await user.type(box, 'grace{Enter}')
+    await waitFor(() => expect(router.state.location.search).toBe('?q=grace'))
+    const agents = await screen.findByRole('list', { name: 'Agents' })
+    expect(within(agents).getByText('Grace Bello')).toBeInTheDocument()
+    expect(screen.getByRole('searchbox', { name: 'Search all records' })).toHaveValue('grace')
+  })
+
+  it('leaves the search box empty on other pages', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/overview?q=tunde')
+    expect(await screen.findByRole('searchbox', { name: 'Search all records' })).toHaveValue('')
+  })
 })

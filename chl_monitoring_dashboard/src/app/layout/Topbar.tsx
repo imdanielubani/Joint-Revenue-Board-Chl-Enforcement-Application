@@ -1,5 +1,5 @@
 import { useCallback, useId, useRef, useState, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { paths } from '@/config/paths'
 import { ROLE_LABELS } from '@/features/auth/auth.schemas'
 import { useCurrentUser } from '@/features/auth/session-context'
@@ -22,6 +22,9 @@ interface TopbarProps {
 export function Topbar({ sidebarOpen, toggleLabel, onToggleSidebar }: TopbarProps) {
   const user = useCurrentUser()
   const { pathname } = useLocation()
+  // On the results page the box keeps the query, to change it and search again.
+  const searched = useSearchParams()[0].get('q')
+  const currentQuery = pathname === paths.search ? (searched ?? '') : ''
   const navigate = useNavigate()
   const meta = pageMeta(pathname)
   const menuId = useId()
@@ -88,6 +91,8 @@ export function Topbar({ sidebarOpen, toggleLabel, onToggleSidebar }: TopbarProp
         <form className={styles.search} role="search" onSubmit={onSearch}>
           <img src={assetUrl('shell/search.svg')} width={19} height={19} alt="" />
           <input
+            key={currentQuery}
+            defaultValue={currentQuery}
             className={styles.searchInput}
             name="q"
             type="search"

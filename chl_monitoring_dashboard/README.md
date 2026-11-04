@@ -336,6 +336,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Top bar search: on the results page the box keeps the query, to change it
+  and search again; it stays empty on other pages.
 - Search results: links to a verification, violation, payment request or trip
   carry the period from the record's day to today, so a record older than the
   page's default period opens at once.
