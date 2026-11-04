@@ -336,6 +336,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Search results page (`/search?q=`): banner (Workspace, search icon) naming
+  the query and the user's own widest area, with Refresh; asks for a query
+  when there is none or it is under two characters, shows searching, error
+  (with retry) and "Nothing matches" states, and says what was found.
 - Search data: vehicles (by plate or CHL vehicle ID, with their verification
   count), agents (by name or ID), and verifications, violations, payment
   requests and trips by reference, in an area, from `/api/v1/search` (path

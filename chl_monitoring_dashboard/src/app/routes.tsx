@@ -125,7 +125,10 @@ export const routes: RouteObject[] = [
               },
               {
                 path: paths.search,
-                lazy: () => import('./pages/SearchPage').then((m) => ({ Component: m.SearchPage })),
+                lazy: () =>
+                  import('@/features/search/pages/SearchPage').then((m) => ({
+                    Component: m.SearchPage,
+                  })),
               },
               ...MODULES.map<RouteObject>((module) => ({
                 path: module.path,
