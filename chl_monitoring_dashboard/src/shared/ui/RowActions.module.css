@@ -24,6 +24,11 @@
   border-radius: 10px;
   background: var(--color-surface);
   box-shadow: var(--menu-shadow);
+  /* Placed under the "⋮" button, right edges in line: it grows from that corner. */
+  transform-origin: top right;
+  transition:
+    opacity var(--duration-menu) var(--ease-out),
+    transform var(--duration-menu) var(--ease-out);
 }
 
 .item {
@@ -44,4 +49,21 @@
 .item:focus-visible {
   background: var(--card-bg);
   outline: none;
+}
+
+/* Opening: out of the "⋮" button. Closing is instant, so dismissing never waits. */
+@starting-style {
+  .menu {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Reduced motion: it fades in without growing. */
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .menu {
+      transform: none;
+    }
+  }
 }

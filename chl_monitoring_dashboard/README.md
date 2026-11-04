@@ -348,6 +348,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- A row's actions menu ("⋮") opens out of its button (from 95%, 180ms,
+  ease-out, from the top right); it closes at once. With reduced motion it
+  only fades in.
 - The account menu and the notifications menu open out of the button that
   opened them (from 95%, 180ms, ease-out: top right under the top bar, bottom
   left above the sidebar's user button); they close at once. With reduced
