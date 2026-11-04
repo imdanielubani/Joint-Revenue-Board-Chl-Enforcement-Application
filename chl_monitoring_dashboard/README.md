@@ -336,6 +336,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Search results: Vehicles (plate, CHL vehicle ID and type, verification
+  count and latest) lead to Vehicle identity; Agents (name, ID, organization)
+  lead to the agent's page. A result is shown without a link where the user
+  may not open that module.
 - Search results page (`/search?q=`): banner (Workspace, search icon) naming
   the query and the user's own widest area, with Refresh; asks for a query
   when there is none or it is under two characters, shows searching, error

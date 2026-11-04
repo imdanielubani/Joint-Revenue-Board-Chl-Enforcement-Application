@@ -66,4 +66,30 @@ describe('search results page', () => {
     renderApp('/search?q=KJA-482-XY')
     expect(await screen.findByRole('button', { name: /try again|retry/i })).toBeInTheDocument()
   })
+
+  it('lists matching vehicles, leading to their vehicle identity', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/search?q=kja 482')
+    const vehicles = await screen.findByRole('list', { name: 'Vehicles' })
+    const link = within(vehicles).getByRole('link', { name: /KJA-482-XY/ })
+    expect(link).toHaveAttribute('href', '/verifications?plate=KJA-482-XY')
+    expect(link).toHaveTextContent(/\d+ verifications · last/)
+  })
+
+  it('lists matching agents, leading to their page', async () => {
+    signInAs('admin@jrb.gov.ng')
+    renderApp('/search?q=tunde')
+    const agents = await screen.findByRole('list', { name: 'Agents' })
+    const link = within(agents).getByRole('link', { name: /Tunde Okafor/ })
+    expect(link).toHaveAttribute('href', '/agents/JRB-AG-0142')
+    expect(link).toHaveTextContent('JRB-AG-0142 · Zone 1')
+  })
+
+  it('shows results without a link where the user may not open that module', async () => {
+    signInAs('po@jrb.gov.ng')
+    renderApp('/search?q=tunde')
+    const agents = await screen.findByRole('list', { name: 'Agents' })
+    expect(within(agents).getByText('Tunde Okafor')).toBeInTheDocument()
+    expect(within(agents).queryByRole('link')).not.toBeInTheDocument()
+  })
 })

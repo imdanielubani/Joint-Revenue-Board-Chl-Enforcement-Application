@@ -6,6 +6,7 @@ import { scopeOptions, type ScopeOption } from '@/features/geography/scope-optio
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
 import { MIN_QUERY_LENGTH, isSearchable } from '../search-match'
+import { SearchResultsList } from '../components/SearchResultsList'
 import { resultsSummary, totalResults } from '../search-display'
 import { useSearch } from '../search.queries'
 import styles from './SearchPage.module.css'
@@ -85,6 +86,7 @@ function SearchContent({ query, scope }: { query: string; scope: ScopeOption }) 
           <p className={styles.summary} role="status">
             {resultsSummary(data)}
           </p>
+          <SearchResultsList results={data} />
         </>
       )}
     </div>
