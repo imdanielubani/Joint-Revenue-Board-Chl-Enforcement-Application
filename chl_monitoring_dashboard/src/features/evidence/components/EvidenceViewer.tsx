@@ -1,8 +1,9 @@
 import { useId, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { Link } from 'react-router'
 import { paths } from '@/config/paths'
 import { useModuleLink } from '@/features/auth/use-module-link'
+import { Link } from 'react-router'
 import { gpsText } from '@/features/geography/record-details'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { formatDateTime } from '@/shared/lib/format'
 import { Dialog } from '@/shared/ui/Dialog'
 import {
@@ -51,11 +52,17 @@ export function EvidenceViewer({
   entry,
   startGroup,
   onClose,
+  onRelated,
 }: {
   entry: EvidenceEntry
   /** The kind of evidence to show first, as the tab it was opened from. */
   startGroup: EvidenceGroup | null
   onClose(): void
+  /**
+   * Opens a related record in a popup on the page, in place of the evidence.
+   * Without it, related records link to their modules.
+   */
+  onRelated?: ((related: TripRelated) => void) | undefined
 }) {
   const link = useModuleLink()
   // In the order shown: vehicle evidence, then E-Tag evidence, then any other kind.
@@ -96,26 +103,32 @@ export function EvidenceViewer({
     },
   ].filter((group) => group.items.length > 0)
 
-  const related = [
+  // Each opens in a popup on the page (or, without onRelated, links to its module),
+  // where the user may open that module.
+  const related: { term: string; label: string; to: string | undefined; open: TripRelated }[] = [
     {
       term: 'Vehicle',
       label: entry.vehicleId ? `${entry.plate} · ${entry.vehicleId}` : entry.plate,
       to: link('verifications', `${paths.verifications}?plate=${entry.plate}`),
+      open: { kind: 'vehicle', plate: entry.plate },
     },
     {
       term: 'Verification',
       label: entry.verificationReference,
       to: link('verifications', `${paths.verifications}?ref=${entry.verificationReference}`),
+      open: { kind: 'verification', reference: entry.verificationReference },
     },
     {
       term: 'Violation',
       label: `${entry.violation.id} · ${entry.violation.category}`,
       to: link('violations', `${paths.violations}?case=${entry.violation.id}`),
+      open: { kind: 'case', violationId: entry.violation.id },
     },
     {
       term: 'Enforcement location',
       label: `${placeText(entry.location)} · ${entry.location.code}`,
       to: link('geography', `${paths.geography}?scope=${entry.location.id}`),
+      open: { kind: 'locationId', location: { id: entry.location.id, name: entry.location.name } },
     },
   ]
 
@@ -245,7 +258,15 @@ export function EvidenceViewer({
             <dl className={styles.facts}>
               {related.map((item) => (
                 <Fact key={item.term} term={item.term}>
-                  {item.to ? (
+                  {item.to && onRelated ? (
+                    <button
+                      type="button"
+                      className={`${styles.relatedLink} ${styles.relatedButton}`}
+                      onClick={() => onRelated(item.open)}
+                    >
+                      {item.label}
+                    </button>
+                  ) : item.to ? (
                     <Link className={styles.relatedLink} to={item.to}>
                       {item.label}
                     </Link>

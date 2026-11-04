@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 import { useAgents } from '@/features/agents/agents.queries'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useAreas } from '@/features/geography/areas.queries'
@@ -6,6 +6,7 @@ import { scopeOptions, type ScopeOption } from '@/features/geography/scope-optio
 import { OverviewFilterBar } from '@/features/overview/components/OverviewHeader'
 import { periodLabel } from '@/features/overview/overview-period'
 import { useOverviewFilters } from '@/features/overview/use-overview-filters'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { assetUrl } from '@/shared/lib/asset-url'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
@@ -75,6 +76,15 @@ function EvidenceContent({
 
   const { openRecord } = page
   const onOpen = useCallback((entry: EvidenceEntry) => openRecord(entry.violation.id), [openRecord])
+  // A case, verification, agent, vehicle or location, open in a popup on the page.
+  const [related, setRelated] = useState<TripRelated | null>(null)
+  const onRelated = useCallback(
+    (next: TripRelated) => {
+      openRecord(null)
+      setRelated(next)
+    },
+    [openRecord],
+  )
 
   const counts = useMemo(() => {
     const photos = (group: EvidenceGroup) =>
@@ -193,6 +203,7 @@ function EvidenceContent({
                   title="Evidence records"
                   subtitle={`Photographs captured with each violation · ${subtitle}`}
                   onOpen={onOpen}
+                  onRelated={onRelated}
                 />
               )}
               {page.view === 'vehicle' && (
@@ -202,6 +213,7 @@ function EvidenceContent({
                   title="Vehicle Evidence"
                   subtitle={`Front, rear, side and haulage-bay photographs · ${subtitle}`}
                   onOpen={onOpen}
+                  onRelated={onRelated}
                 />
               )}
               {page.view === 'etag' && (
@@ -211,6 +223,7 @@ function EvidenceContent({
                   title="E-Tag Evidence"
                   subtitle={`Missing-tag, fake/invalid-tag and other relevant photographs · ${subtitle}`}
                   onOpen={onOpen}
+                  onRelated={onRelated}
                 />
               )}
               {page.view === 'notes' && (
@@ -218,6 +231,7 @@ function EvidenceContent({
                   records={records}
                   subtitle={`Agents’ submitted notes · ${subtitle}`}
                   onOpen={onOpen}
+                  onRelated={onRelated}
                 />
               )}
             </div>
@@ -229,6 +243,16 @@ function EvidenceContent({
               entry={open}
               startGroup={GROUP_FOR[page.view]}
               onClose={() => page.openRecord(null)}
+              onRelated={onRelated}
+            />
+          )}
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={filters}
+              periodText={periodLabel(filters.range, filters)}
+              onClose={() => setRelated(null)}
             />
           )}
           {page.record && !open && (

@@ -238,6 +238,16 @@
   text-decoration-color: currentColor;
 }
 
+/* A related record opens in a popup on the page: a button that reads as the link it was. */
+.relatedButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 .notes {
   display: flex;
   flex-direction: column;

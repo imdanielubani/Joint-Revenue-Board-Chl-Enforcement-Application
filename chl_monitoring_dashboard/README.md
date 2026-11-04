@@ -348,6 +348,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Evidence records: a row's "Open the case", "View verification" and "View
+  agent", and the evidence viewer's related records (vehicle, verification,
+  violation, enforcement location), open in popups on the page, over its area
+  and period, instead of leaving for another module; each only for users who
+  may open that module. The location shows its own figures, looked up in the
+  area and period, or says none were recorded there.
 - Agents & organizations: a row's "View verifications" and "View violations"
   open in popups on the page (the agent's verifications, each opening its
   details; the agent's violations issued), over the page's area and period,

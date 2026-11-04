@@ -7,7 +7,8 @@ import { formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import { RowActions, type RowCommand } from '@/shared/ui/RowActions'
 import {
   GROUP_LABELS,
   photographsText,
@@ -22,18 +23,31 @@ import styles from './EvidenceCards.module.css'
 
 type ModuleLink = ReturnType<typeof useModuleLink>
 
-const linksFor = (link: ModuleLink, entry: EvidenceEntry): RowAction[] =>
+/** The records a row leads to, each opening in a popup on the page, where the user may open its module. */
+const relatedFor = (
+  link: ModuleLink,
+  entry: EvidenceEntry,
+  onRelated: (related: TripRelated) => void,
+): RowCommand[] =>
   [
     {
       label: 'Open the case',
-      to: link('violations', `${paths.violations}?case=${entry.violation.id}`),
+      module: link('violations', paths.violations),
+      related: { kind: 'case', violationId: entry.violation.id } as const,
     },
     {
       label: 'View verification',
-      to: link('verifications', `${paths.verifications}?ref=${entry.verificationReference}`),
+      module: link('verifications', paths.verifications),
+      related: { kind: 'verification', reference: entry.verificationReference } as const,
     },
-    { label: 'View agent', to: link('agents', paths.agent(entry.agent.id)) },
-  ].filter((action): action is RowAction => action.to !== undefined)
+    {
+      label: 'View agent',
+      module: link('agents', paths.agents),
+      related: { kind: 'agent', agent: entry.agent } as const,
+    },
+  ].flatMap((item) =>
+    item.module ? [{ label: item.label, onSelect: () => onRelated(item.related) }] : [],
+  )
 
 /**
  * A register of evidence records: all of them, or those holding vehicle or
@@ -46,6 +60,7 @@ export function EvidencePanel({
   title,
   subtitle,
   onOpen,
+  onRelated,
 }: {
   records: readonly EvidenceEntry[]
   /** The kind of evidence listed; null for every record and photograph. */
@@ -53,6 +68,8 @@ export function EvidencePanel({
   title: string
   subtitle: string
   onOpen(entry: EvidenceEntry): void
+  /** Opens the record's case, verification or agent in a popup on the page. */
+  onRelated(related: TripRelated): void
 }) {
   const link = useModuleLink()
   const rows = useMemo(
@@ -124,12 +141,15 @@ export function EvidencePanel({
         render: (row) => {
           const view: RowCommand = { label: 'View evidence', onSelect: () => onOpen(row) }
           return (
-            <RowActions label={`Actions for ${row.id}`} actions={[view, ...linksFor(link, row)]} />
+            <RowActions
+              label={`Actions for ${row.id}`}
+              actions={[view, ...relatedFor(link, row, onRelated)]}
+            />
           )
         },
       },
     ]
-  }, [group, link, onOpen])
+  }, [group, link, onOpen, onRelated])
 
   return (
     <DashboardCard
@@ -161,10 +181,13 @@ export function NotesPanel({
   records,
   subtitle,
   onOpen,
+  onRelated,
 }: {
   records: readonly EvidenceEntry[]
   subtitle: string
   onOpen(entry: EvidenceEntry): void
+  /** Opens the note's case, verification or agent in a popup on the page. */
+  onRelated(related: TripRelated): void
 }) {
   const link = useModuleLink()
   const rows = useMemo(
@@ -216,13 +239,13 @@ export function NotesPanel({
           return (
             <RowActions
               label={`Actions for the note on ${row.entry.violation.id}`}
-              actions={[view, ...linksFor(link, row.entry)]}
+              actions={[view, ...relatedFor(link, row.entry, onRelated)]}
             />
           )
         },
       },
     ],
-    [link, onOpen],
+    [link, onOpen, onRelated],
   )
   return (
     <DashboardCard

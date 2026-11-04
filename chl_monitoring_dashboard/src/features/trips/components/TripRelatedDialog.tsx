@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { LocationMapDialog } from '@/features/geography/components/LocationMapDialog'
 import { useGeography } from '@/features/geography/geography.queries'
+import { useOverview } from '@/features/overview/overview.queries'
 import type {
   LocationRow,
   OverviewFilters,
@@ -39,6 +40,8 @@ export type TripRelated =
   | { kind: 'agentViolations'; agent: { id: string; name: string; organization: string } }
   | { kind: 'agentVerifications'; agent: { id: string; name: string; organization: string } }
   | { kind: 'location'; location: LocationRow }
+  /** A location known only by its id: its figures are looked up in the area and period. */
+  | { kind: 'locationId'; location: { id: string; name: string } }
   | { kind: 'vehicleReports'; vehicle: RepeatVehicle }
   | { kind: 'evidence'; violationId: string }
 
@@ -137,6 +140,34 @@ function VehiclePopup({
       title="Vehicle verifications"
       loading={query.isPending}
       message={`No verifications of ${plate} were found in this area and period.`}
+      onClose={onClose}
+    />
+  )
+}
+
+function LocationByIdPopup({
+  location,
+  filters,
+  periodText,
+  onClose,
+}: {
+  location: { id: string; name: string }
+  filters: OverviewFilters
+  periodText: string
+  onClose(): void
+}) {
+  const query = useOverview(filters)
+  const row = query.data?.locations.find((entry) => entry.id === location.id)
+  if (row) {
+    return (
+      <LocationPopup location={row} filters={filters} periodText={periodText} onClose={onClose} />
+    )
+  }
+  return (
+    <Placeholder
+      title="Enforcement location"
+      loading={query.isPending}
+      message={`No activity was recorded at ${location.name} in this area and period.`}
       onClose={onClose}
     />
   )
@@ -372,6 +403,16 @@ export function TripRelatedDialog({
         onOpen={(item, kind) =>
           kind ? setFromCase({ kind, item }) : setCurrent({ kind: 'case', violationId: item.id })
         }
+      />
+    )
+  }
+  if (current.kind === 'locationId') {
+    return (
+      <LocationByIdPopup
+        location={current.location}
+        filters={all}
+        periodText={periodText}
+        onClose={onClose}
       />
     )
   }

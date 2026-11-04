@@ -88,10 +88,11 @@ describe('evidence records page', () => {
     ]) {
       expect(within(dialog).getByText(term)).toBeInTheDocument()
     }
-    expect(within(dialog).getByRole('link', { name: entry.verificationReference })).toHaveAttribute(
-      'href',
-      `/verifications?ref=${entry.verificationReference}`,
-    )
+    // Related records open on the page, not in another module.
+    expect(within(dialog).queryByRole('link', { name: entry.verificationReference })).toBeNull()
+    expect(
+      within(dialog).getByRole('button', { name: entry.verificationReference }),
+    ).toBeInTheDocument()
 
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
@@ -173,5 +174,71 @@ describe('evidence records page', () => {
       }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('opens a related record from the evidence in a popup on the page', async () => {
+    const entry = expected()[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/evidence?range=30d&record=${entry.violation.id}`)
+    const dialog = await screen.findByRole('dialog', { name: `Evidence ${entry.id}` })
+
+    await userEvent.click(within(dialog).getByRole('button', { name: entry.verificationReference }))
+    const details = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(details).toHaveTextContent(entry.verificationReference)
+    expect(router.state.location.pathname).toBe('/evidence')
+  })
+
+  it('opens the enforcement location with its figures, on the page', async () => {
+    const entry = expected()[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/evidence?range=30d&record=${entry.violation.id}`)
+    const dialog = await screen.findByRole('dialog', { name: `Evidence ${entry.id}` })
+
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: new RegExp(entry.location.code) }),
+    )
+    // Once its figures are in, the location's popup names it.
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent(entry.location.name))
+    // Its own figures for the area and period, as the Overview counts them.
+    expect(screen.getByRole('dialog')).toHaveTextContent(`Code${entry.location.code}`)
+    expect(screen.getByRole('dialog')).toHaveTextContent('Violations issued')
+    expect(router.state.location.pathname).toBe('/evidence')
+  })
+
+  it('opens a row’s case, verification and agent in popups on the page', async () => {
+    const entry = expected()[0]!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/evidence?range=30d')
+    const table = await screen.findByRole('table', { name: 'Evidence records' })
+    const actions = () => within(table).getByRole('button', { name: `Actions for ${entry.id}` })
+
+    await userEvent.click(actions())
+    expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+      'View evidence',
+      'Open the case',
+      'View verification',
+      'View agent',
+    ])
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Open the case' }))
+    const caseDialog = await screen.findByRole('dialog', { name: /Case|Violation/ })
+    expect(caseDialog).toHaveTextContent(entry.violation.id)
+    expect(router.state.location.pathname).toBe('/evidence')
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    await userEvent.click(actions())
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View verification' }))
+    expect(await screen.findByRole('dialog', { name: 'Verification details' })).toHaveTextContent(
+      entry.verificationReference,
+    )
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+
+    await userEvent.click(actions())
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View agent' }))
+    expect(await screen.findByRole('dialog', { name: 'Agent details' })).toHaveTextContent(
+      entry.agent.name,
+    )
+    expect(router.state.location.pathname).toBe('/evidence')
   })
 })
