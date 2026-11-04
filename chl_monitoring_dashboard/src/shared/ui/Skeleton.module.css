@@ -1,0 +1,166 @@
+/*
+ * The shapes stack as a page's sections do (24px apart), so each sits where its
+ * section will be. A real box, not display: contents, so screen readers keep
+ * its status role in every browser.
+ */
+.skeleton,
+.shapes {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/*
+ * A grey bar with a soft light sweeping across it, moved with a transform so
+ * it stays smooth while the page loads. With reduced motion it stays still.
+ */
+.bone {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--color-surface-muted);
+}
+
+.bone::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.65) 50%, transparent 100%);
+  content: '';
+  transform: translateX(-100%);
+  animation: shimmer 1.4s linear infinite;
+}
+
+.round {
+  border-radius: 999px;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Headline figures: as HeadlineFigures draws them. */
+.figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  min-height: 148px;
+  padding: 6px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 16px;
+  background: var(--card-bg);
+}
+
+.figurePanel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.figureTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.figureNote {
+  padding: 12px 8px 6px;
+}
+
+/* A card: as DashboardCard draws one. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 16px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-height: 80px;
+  padding: 18px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.cardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+/* A table: its header band, then its rows. */
+.table {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 0.8px solid var(--card-line);
+  border-radius: 10px;
+}
+
+.tableHead,
+.tableRow {
+  display: grid;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.tableHead {
+  height: 40px;
+  background: var(--card-bg);
+}
+
+.tableRow {
+  height: 56px;
+  border-top: 0.8px solid var(--card-line);
+}
+
+@media (max-width: 1180px) {
+  .figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .figures {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

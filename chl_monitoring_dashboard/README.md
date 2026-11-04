@@ -348,6 +348,12 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Skeleton loading: while a page loads, grey placeholders in its own layout
+  (shared `Skeleton`, `SkeletonFigures`, `SkeletonCard`, `SkeletonTable`,
+  `SkeletonChart`) with a soft shimmer, still with reduced motion; screen
+  readers hear the loading message. The Overview uses it first: eight figures,
+  the activity chart and outcomes, the performance table, two rows of cards and
+  the recent activity table.
 - Evidence records: a row's "Open the case", "View verification" and "View
   agent", and the evidence viewer's related records (vehicle, verification,
   violation, enforcement location), open in popups on the page, over its area

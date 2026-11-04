@@ -7,6 +7,7 @@ import { TripRelatedDialog, type TripRelated } from '@/features/trips/components
 import { downloadCsv } from '@/shared/lib/csv'
 import { formatDateTime } from '@/shared/lib/format'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { OverviewSkeleton } from '../components/OverviewSkeleton'
 import { useToast } from '@/shared/ui/toast/toast-context'
 import { AttentionCardsRow, InsightCardsRow } from '../components/CardRows'
 import { KpiGrid } from '../components/KpiGrid'
@@ -165,7 +166,7 @@ function OverviewContent({
       </div>
 
       {query.isPending ? (
-        <StatePanel kind="loading" message="Loading the overview…" />
+        <OverviewSkeleton />
       ) : !overview ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
