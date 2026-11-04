@@ -40,6 +40,25 @@ textarea {
   font: inherit;
 }
 
+/*
+ * Hover and selection: colours fade rather than snap, so quickly it is barely
+ * seen (these change many times a day). Colour only, never position, so it
+ * stays with reduced motion too; focus outlines stay instant. A component's
+ * own transition takes over from this one.
+ */
+a,
+button,
+input,
+select,
+textarea,
+summary,
+[role='tab'],
+[role='menuitem'] {
+  transition-property: color, background-color, border-color, box-shadow, text-decoration-color;
+  transition-duration: var(--duration-hover);
+  transition-timing-function: ease;
+}
+
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;

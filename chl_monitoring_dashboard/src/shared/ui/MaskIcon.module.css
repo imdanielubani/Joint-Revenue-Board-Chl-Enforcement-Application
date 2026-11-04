@@ -3,4 +3,6 @@
   flex-shrink: 0;
   background-color: currentColor;
   mask: var(--icon-url) center / contain no-repeat;
+  /* Its colour fades with the link or button it sits in. */
+  transition: background-color var(--duration-hover) ease;
 }

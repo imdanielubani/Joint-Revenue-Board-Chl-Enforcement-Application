@@ -348,6 +348,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Hover and selection colours fade (150ms) on links, buttons, fields, tabs and
+  menu items, and on the menu icons with them: colour, background, border and
+  shadow only, kept with reduced motion; focus outlines stay instant.
 - A row's actions menu ("⋮") opens out of its button (from 95%, 180ms,
   ease-out, from the top right); it closes at once. With reduced motion it
   only fades in.
