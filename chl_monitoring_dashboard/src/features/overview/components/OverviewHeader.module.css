@@ -30,6 +30,26 @@
   margin-left: 6px;
   color: #94a0ad;
   font-size: 10px;
+  /* Choosing "Custom range" brings the date fields in beside the list. */
+  transition:
+    opacity var(--duration-menu) var(--ease-out),
+    transform var(--duration-menu) var(--ease-out);
+}
+
+@starting-style {
+  .customRange {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+}
+
+/* Reduced motion: the fields fade in without moving. */
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .customRange {
+      transform: none;
+    }
+  }
 }
 
 .dateInput {

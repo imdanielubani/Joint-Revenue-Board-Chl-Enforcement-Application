@@ -348,6 +348,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- On a phone, the page behind the sidebar dims in as the sidebar slides over
+  it (220ms); choosing "Custom range" brings the from and to dates in beside
+  the period list (180ms; with reduced motion they only fade in).
 - Tabs: a pill behind the selected tab slides to the one chosen (250ms,
   ease-in-out); it is placed without sliding on load, hidden from screen
   readers, and the tab keeps its own highlight until it is measured. With

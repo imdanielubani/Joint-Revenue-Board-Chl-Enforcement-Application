@@ -66,6 +66,14 @@
   inset: 0;
   z-index: 30;
   background: rgb(19 44 29 / 0.35);
+  /* The page dims as the sidebar slides over it, in step with it. */
+  transition: opacity var(--duration-popup) var(--ease-out);
+}
+
+@starting-style {
+  .backdrop {
+    opacity: 0;
+  }
 }
 
 @media (max-width: 768px) {
