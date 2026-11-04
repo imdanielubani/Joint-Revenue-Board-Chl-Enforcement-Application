@@ -336,6 +336,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Search data: vehicles (by plate or CHL vehicle ID, with their verification
+  count), agents (by name or ID), and verifications, violations, payment
+  requests and trips by reference, in an area, from `/api/v1/search` (path
+  provisional); sample data from the sample verifications and agents.
 - Search matching: a query matches a plate, reference or name ignoring case,
   spaces, dashes, dots and slashes ("kja 482xy" finds KJA-482-XY); fewer than
   two characters search nothing.
