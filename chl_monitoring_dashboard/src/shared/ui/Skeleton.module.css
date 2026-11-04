@@ -164,3 +164,50 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* A tab strip: as SegmentedTabs. */
+.tabs {
+  display: flex;
+  gap: 4px;
+  height: 57px;
+  padding: 6.4px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 12.8px;
+  background: var(--color-surface);
+}
+
+.tab {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.tab:first-child {
+  background: var(--card-bg);
+}
+
+/* Filter fields: as LabeledSelect, side by side. */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(var(--filters, 4), minmax(0, 1fr));
+  gap: 10.4px;
+}
+
+.filter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 12px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 8px;
+}
+
+@media (max-width: 700px) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

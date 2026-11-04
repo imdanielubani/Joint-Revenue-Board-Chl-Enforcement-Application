@@ -113,3 +113,30 @@ export function SkeletonTable({ rows = 5, columns = 6 }: { rows?: number; column
 export function SkeletonChart({ height = 220 }: { height?: number }) {
   return <Bone height={height} />
 }
+
+/** A tab strip, as SegmentedTabs draws one. */
+export function SkeletonTabs({ count }: { count: number }) {
+  return (
+    <div className={styles.tabs}>
+      {Array.from({ length: count }, (_, index) => (
+        <span key={index} className={styles.tab}>
+          <Bone width="60%" height={9} />
+        </span>
+      ))}
+    </div>
+  )
+}
+
+/** A row of filter fields, as a register's filters sit above its table. */
+export function SkeletonFilters({ count }: { count: number }) {
+  return (
+    <div className={styles.filters} style={{ '--filters': count } as CSSProperties}>
+      {Array.from({ length: count }, (_, index) => (
+        <span key={index} className={styles.filter}>
+          <Bone width="40%" height={7} />
+          <Bone width="70%" height={10} />
+        </span>
+      ))}
+    </div>
+  )
+}
