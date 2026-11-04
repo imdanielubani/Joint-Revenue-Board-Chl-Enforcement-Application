@@ -158,3 +158,33 @@ export function SkeletonList({ rows = 5 }: { rows?: number }) {
     </div>
   )
 }
+
+/** A popup's facts: term and value, side by side. */
+export function SkeletonFacts({ rows = 5 }: { rows?: number }) {
+  return (
+    <div className={styles.facts}>
+      {Array.from({ length: rows }, (_, index) => (
+        <div key={index} className={styles.fact}>
+          <Bone width="45%" height={9} />
+          <Bone width={index % 2 ? '55%' : '75%'} height={10} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Sections side by side, as a page's rows of cards (one column on narrow screens). */
+export function SkeletonColumns({
+  children,
+  columns = 'minmax(0, 2fr) minmax(0, 1fr)',
+}: {
+  children: ReactNode
+  /** The grid's columns, as `grid-template-columns`. */
+  columns?: string
+}) {
+  return (
+    <div className={styles.columns} style={{ '--columns': columns } as CSSProperties}>
+      {children}
+    </div>
+  )
+}

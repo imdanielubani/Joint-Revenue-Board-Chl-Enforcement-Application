@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Skeleton pieces: a popup's facts (`SkeletonFacts`) and sections side by side
+  (`SkeletonColumns`, one column on narrow screens).
 - Skeleton piece: a list of entries (`SkeletonList`: icon, two lines, a time),
   for feeds and notification lists.
 - Skeleton pieces: a tab strip (`SkeletonTabs`) and a row of filter fields

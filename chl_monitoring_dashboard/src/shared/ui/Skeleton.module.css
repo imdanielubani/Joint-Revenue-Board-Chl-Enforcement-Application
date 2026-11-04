@@ -236,3 +236,34 @@
   gap: 8px;
   min-width: 0;
 }
+
+/* A popup's facts: term and value. */
+.facts {
+  display: flex;
+  flex-direction: column;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+.fact + .fact {
+  border-top: 0.8px solid var(--card-line);
+}
+
+/* Sections side by side. */
+.columns {
+  display: grid;
+  grid-template-columns: var(--columns);
+  gap: 14px;
+}
+
+@media (max-width: 1180px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
