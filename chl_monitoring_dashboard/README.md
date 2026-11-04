@@ -336,6 +336,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Search results: links to a verification, violation, payment request or trip
+  carry the period from the record's day to today, so a record older than the
+  page's default period opens at once.
 - Search results: Trips by CHL transaction reference (plate, the verification
   that found it) lead to the trip's details.
 - Search results: Violations by reference (plate, category, case status) lead

@@ -1,7 +1,10 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mockSearchApi, summarizeSearch } from '@/mocks/mock-search-api'
+import { addDays, lagosDay } from '@/shared/lib/dates'
 import { renderApp, signInAs } from '@/test/render-app'
+import { withPeriod } from './search-display'
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -136,5 +139,24 @@ describe('search results page', () => {
     const link = within(list).getByRole('link', { name: new RegExp(reference) })
     expect(link.getAttribute('href')).toContain(`trip=${encodeURIComponent(reference)}`)
     expect(link).toHaveTextContent('Found by a verification on')
+  })
+
+  it('dates a record’s link from its day to today', () => {
+    expect(withPeriod('/violations?case=VIO-1', '2026-09-01T10:00:00+01:00', '2026-11-04')).toBe(
+      '/violations?case=VIO-1&range=custom&from=2026-09-01&to=2026-11-04',
+    )
+  })
+
+  it('opens a verification older than the default period in its details', async () => {
+    const old = summarizeSearch({ query: 'VR-', scope: 'ng' }).verifications.find(
+      (record) => lagosDay(new Date(record.recordedAt)) < addDays(lagosDay(), -30),
+    )!
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp(`/search?q=${old.reference}`)
+    const list = await screen.findByRole('list', { name: 'Verifications' })
+    await userEvent.click(within(list).getByRole('link', { name: new RegExp(old.reference) }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/verifications'))
+    const details = await screen.findByRole('dialog', { name: 'Verification details' })
+    expect(details).toHaveTextContent(old.reference)
   })
 })

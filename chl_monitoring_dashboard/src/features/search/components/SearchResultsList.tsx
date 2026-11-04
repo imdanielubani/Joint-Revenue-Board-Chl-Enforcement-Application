@@ -8,6 +8,7 @@ import {
   outcomeStyle,
 } from '@/features/overview/overview-display'
 import { formatShortDateTime } from '@/shared/lib/format'
+import { withPeriod } from '../search-display'
 import type { SearchResults } from '../search.schemas'
 import { ResultGroup } from './ResultGroup'
 import styles from './SearchResultsList.module.css'
@@ -56,7 +57,10 @@ export function SearchResultsList({ results }: { results: SearchResults }) {
             : {}),
           meta: formatShortDateTime(record.recordedAt),
           // Its details popup on Verifications & E-Tags.
-          to: link('verifications', `${paths.verifications}?ref=${record.reference}`),
+          to: link(
+            'verifications',
+            withPeriod(`${paths.verifications}?ref=${record.reference}`, record.recordedAt),
+          ),
         }))}
       />
       <ResultGroup
@@ -72,7 +76,10 @@ export function SearchResultsList({ results }: { results: SearchResults }) {
           },
           meta: formatShortDateTime(violation.recordedAt),
           // The case on Violations & cases.
-          to: link('violations', `${paths.violations}?case=${violation.id}`),
+          to: link(
+            'violations',
+            withPeriod(`${paths.violations}?case=${violation.id}`, violation.recordedAt),
+          ),
         }))}
       />
       <ResultGroup
@@ -88,7 +95,10 @@ export function SearchResultsList({ results }: { results: SearchResults }) {
               : { tone: 'warning', label: 'Payment pending' },
           meta: formatShortDateTime(payment.recordedAt),
           // The demand notice on Payments & compliance.
-          to: link('payments', `${paths.payments}?notice=${payment.id}`),
+          to: link(
+            'payments',
+            withPeriod(`${paths.payments}?notice=${payment.id}`, payment.recordedAt),
+          ),
         }))}
       />
       <ResultGroup
@@ -100,7 +110,13 @@ export function SearchResultsList({ results }: { results: SearchResults }) {
           sub: `${trip.plate} · CHL trip`,
           meta: `Found by a verification on ${formatShortDateTime(trip.recordedAt)}`,
           // The trip's details on Trip monitoring.
-          to: link('trips', `${paths.trips}?trip=${encodeURIComponent(trip.reference)}`),
+          to: link(
+            'trips',
+            withPeriod(
+              `${paths.trips}?trip=${encodeURIComponent(trip.reference)}`,
+              trip.recordedAt,
+            ),
+          ),
         }))}
       />
     </div>
