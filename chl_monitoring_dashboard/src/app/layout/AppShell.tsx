@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { storage } from '@/shared/lib/storage'
+import { useShowingOldData } from '@/shared/lib/use-showing-old-data'
 import { useMediaQuery } from '@/shared/lib/use-media-query'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
@@ -14,6 +15,7 @@ const TOAST_TOP_SIGNED_IN = '92px'
 
 /** The signed-in frame: sidebar, top bar and the current page. */
 export function AppShell() {
+  const showingOldData = useShowingOldData()
   const narrow = useMediaQuery('(max-width: 768px)')
   const [collapsed, setCollapsed] = useState(() => storage.get(SIDEBAR_COLLAPSED_KEY) === 'true')
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -78,7 +80,13 @@ export function AppShell() {
             onToggleSidebar={toggleSidebar}
           />
         </div>
-        <main id="main" className={styles.main} tabIndex={-1}>
+        <main
+          id="main"
+          className={styles.main}
+          tabIndex={-1}
+          aria-busy={showingOldData || undefined}
+          data-refreshing={showingOldData ? '' : undefined}
+        >
           <Outlet />
         </main>
       </div>

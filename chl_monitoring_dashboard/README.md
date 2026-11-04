@@ -348,6 +348,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- While a page still shows its old figures after the area, period or a filter
+  changed, the page under its banner and filters dims (to 55%, after 150ms so
+  quick answers never flicker) and is marked busy for screen readers; the new
+  figures appear at full strength. The once-a-minute refreshes never dim.
 - On a phone, the page behind the sidebar dims in as the sidebar slides over
   it (220ms); choosing "Custom range" brings the from and to dates in beside
   the period list (180ms; with reduced motion they only fade in).

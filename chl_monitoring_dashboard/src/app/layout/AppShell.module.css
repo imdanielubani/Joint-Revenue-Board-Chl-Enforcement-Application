@@ -47,6 +47,16 @@
   outline: none;
 }
 
+/*
+ * While a page still shows its old figures as new ones load, everything under
+ * its banner and filters dims, after a short pause so a quick answer never
+ * flickers. The new figures appear at full strength at once.
+ */
+.main[data-refreshing] > * > :not(:first-child) {
+  opacity: 0.55;
+  transition: opacity var(--duration-popup) var(--ease-out) 150ms;
+}
+
 .skipLink {
   position: absolute;
   top: var(--space-2);
