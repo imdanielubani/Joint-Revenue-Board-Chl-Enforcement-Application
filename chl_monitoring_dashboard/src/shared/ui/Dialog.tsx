@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { useExitAnimation } from '@/shared/lib/use-exit-animation'
 import styles from './Dialog.module.css'
 
 interface DialogProps {
@@ -26,6 +27,9 @@ export function Dialog({ title, subtitle, onClose, children, footer, wide = fals
   const titleId = useId()
   const subtitleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
+  // However it closes, it sinks back and the page brightens as it goes.
+  useExitAnimation(backdropRef, styles.leaving ?? '')
   const closeRef = useRef(onClose)
   useEffect(() => {
     closeRef.current = onClose
@@ -69,6 +73,7 @@ export function Dialog({ title, subtitle, onClose, children, footer, wide = fals
 
   return createPortal(
     <div
+      ref={backdropRef}
       className={styles.backdrop}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) closeRef.current()

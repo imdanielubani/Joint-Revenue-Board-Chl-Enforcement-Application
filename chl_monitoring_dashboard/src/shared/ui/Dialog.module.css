@@ -104,6 +104,18 @@
   }
 }
 
+/* Closing: the popup sinks back as the page brightens, a little quicker than it came. */
+.leaving {
+  opacity: 0;
+  transition-duration: 160ms;
+}
+
+.leaving .panel {
+  opacity: 0;
+  transform: scale(0.96);
+  transition-duration: 160ms;
+}
+
 /* Reduced motion: it fades in without growing. */
 @media (prefers-reduced-motion: reduce) {
   @starting-style {

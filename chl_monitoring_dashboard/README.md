@@ -348,6 +348,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Popups close the way they open: the popup sinks back to 96% as the page
+  brightens (160ms), however they are closed (Close, ×, Escape, a click
+  outside, or leaving the page). `useExitAnimation` leaves a still copy, which
+  cannot be clicked, focused or read, to animate out while the real popup is
+  removed at once; where motion is reduced it goes at once.
 - While a page still shows its old figures after the area, period or a filter
   changed, the page under its banner and filters dims (to 55%, after 150ms so
   quick answers never flicker) and is marked busy for screen readers; the new
