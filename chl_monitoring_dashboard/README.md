@@ -59,6 +59,10 @@ on sample data. Sign in with any sample account; the password is
 Settings are read from `VITE_` variables and checked at start-up in
 `src/config/env.ts`. Copy `.env.example` to `.env.local` (ignored by git).
 
+The backend endpoints the dashboard calls, with their parameters, response
+fields, examples and error format, are in
+[API_ENDPOINTS.md](API_ENDPOINTS.md), for the backend developer.
+
 | Setting                | Default         | Meaning                                                 |
 | ---------------------- | --------------- | ------------------------------------------------------- |
 | `VITE_APP_ENV`         | `development`   | `development`, `staging` or `production`                |
@@ -344,6 +348,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- API_ENDPOINTS.md: every backend endpoint the dashboard calls (27), each
+  with its method, path, query or body, response fields (type, required,
+  nullable), an example from the sample data and its errors; plus the shared
+  conventions, error body and coded values. Linked from Configuration.
 - README: the search folder and how search works (area, matching, result
   groups, where each leads, access).
 - Top bar search: on the results page the box keeps the query, to change it
