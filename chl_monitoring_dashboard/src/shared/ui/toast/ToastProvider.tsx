@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { assetUrl } from '@/shared/lib/asset-url'
+import { EXIT_MS, motionAllowed } from '@/shared/lib/motion'
 import {
   ToastContext,
   type ToastAction,
@@ -115,14 +116,30 @@ interface ToastProps {
 
 function Toast({ toast, onDismiss }: ToastProps) {
   const { id, variant = 'success' } = toast
+  const [leaving, setLeaving] = useState(false)
+  const leaveTimer = useRef<number | undefined>(undefined)
+
+  /** It leaves the way it came in, then goes; at once where motion is reduced. */
+  const leave = useCallback(() => {
+    if (!motionAllowed()) {
+      onDismiss(id)
+      return
+    }
+    setLeaving(true)
+    window.clearTimeout(leaveTimer.current)
+    leaveTimer.current = window.setTimeout(() => onDismiss(id), EXIT_MS)
+  }, [id, onDismiss])
+
+  useEffect(() => () => window.clearTimeout(leaveTimer.current), [])
+
   useEffect(() => {
     if (variant !== 'success') return
-    const timer = window.setTimeout(() => onDismiss(id), TOAST_DURATION_MS)
+    const timer = window.setTimeout(leave, TOAST_DURATION_MS)
     return () => window.clearTimeout(timer)
-  }, [id, variant, onDismiss])
+  }, [variant, leave])
 
   return (
-    <div className={`${styles.toast} ${styles[variant]}`}>
+    <div className={`${styles.toast} ${styles[variant]} ${leaving ? styles.leaving : ''}`}>
       <img
         className={styles.icon}
         src={assetUrl(ICON_FILES[toast.icon ?? DEFAULT_ICONS[variant]])}
@@ -137,12 +154,12 @@ function Toast({ toast, onDismiss }: ToastProps) {
             {line}
           </p>
         ))}
-        {toast.action && <ToastActionControl action={toast.action} onDone={() => onDismiss(id)} />}
+        {toast.action && <ToastActionControl action={toast.action} onDone={leave} />}
       </div>
       <button
         type="button"
         className={styles.dismiss}
-        onClick={() => onDismiss(id)}
+        onClick={leave}
         aria-label="Dismiss notification"
       >
         <img src={assetUrl('toast/close.svg')} width={18} height={18} alt="" />

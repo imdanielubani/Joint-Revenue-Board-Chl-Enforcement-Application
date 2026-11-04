@@ -30,7 +30,17 @@
   background: var(--color-surface);
   box-shadow: var(--shadow-toast);
   pointer-events: auto;
-  animation: enter 200ms ease-out;
+  /* Transitions, not keyframes: dismissed while still arriving, it turns back smoothly. */
+  transition:
+    opacity var(--duration-popup) var(--ease-out),
+    transform var(--duration-popup) var(--ease-out);
+}
+
+/* Leaving: back up the way it came, a little quicker (EXIT_MS in motion.ts). */
+.leaving {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition-duration: 160ms;
 }
 
 .success {
@@ -132,16 +142,24 @@
   background: var(--color-surface-muted);
 }
 
-@keyframes enter {
-  from {
+/* Arriving: down into place from just above. */
+@starting-style {
+  .toast {
     opacity: 0;
     transform: translateY(-8px);
   }
 }
 
+/* Reduced motion: it fades in and out without moving. */
 @media (prefers-reduced-motion: reduce) {
-  .toast {
-    animation: none;
+  .leaving {
+    transform: none;
+  }
+
+  @starting-style {
+    .toast {
+      transform: none;
+    }
   }
 }
 

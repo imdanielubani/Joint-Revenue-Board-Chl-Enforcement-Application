@@ -348,6 +348,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Toasts leave the way they came in (back up and fading, 160ms) when they
+  time out or are dismissed, then go; they arrive with a transition rather
+  than keyframes, so one dismissed while arriving turns back smoothly. With
+  reduced motion they fade without moving; where the setting is unknown they
+  go at once.
 - Popups open with the page dimming as the popup rises from 96% into place
   (220ms, ease-out); with reduced motion they only fade in.
 - Motion settings: shared curves (`--ease-out`, `--ease-in-out`) and

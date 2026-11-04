@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useToast, type ToastInput } from './toast-context'
+import { EXIT_MS } from '@/shared/lib/motion'
 import { TOAST_DURATION_MS, ToastProvider } from './ToastProvider'
 
 function Trigger({ label, toast }: { label: string; toast: ToastInput }) {
@@ -121,5 +122,24 @@ describe('ToastProvider', () => {
 
     expect(onSelect).toHaveBeenCalledOnce()
     expect(screen.queryByText('Later')).not.toBeInTheDocument()
+  })
+
+  it('lets a dismissed notification leave the way it came in, where motion is allowed', () => {
+    vi.useFakeTimers()
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({ matches: true, media: query }),
+    })
+    try {
+      renderToasts({ label: 'Show saved', toast: { title: 'Saved' } })
+      click('Show saved')
+      click('Dismiss notification')
+      expect(screen.getByText('Saved')).toBeInTheDocument()
+      act(() => vi.advanceTimersByTime(EXIT_MS))
+      expect(screen.queryByText('Saved')).not.toBeInTheDocument()
+    } finally {
+      Reflect.deleteProperty(window, 'matchMedia')
+      vi.useRealTimers()
+    }
   })
 })
