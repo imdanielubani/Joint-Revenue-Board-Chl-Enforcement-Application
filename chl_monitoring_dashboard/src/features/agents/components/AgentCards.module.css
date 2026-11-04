@@ -56,7 +56,7 @@
 }
 
 .open:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .selectedChip {
@@ -389,4 +389,13 @@
   .tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.open {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

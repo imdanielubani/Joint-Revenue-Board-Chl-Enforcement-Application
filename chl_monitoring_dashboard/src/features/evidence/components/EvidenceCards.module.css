@@ -235,7 +235,7 @@
 }
 
 .relatedLink:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .notes {
@@ -316,4 +316,13 @@
   .viewer {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.relatedLink {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

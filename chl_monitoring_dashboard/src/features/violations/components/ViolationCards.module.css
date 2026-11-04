@@ -81,7 +81,7 @@
 
 .legendItem:hover:not(:disabled) {
   color: var(--color-primary);
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .legendItem:disabled {
@@ -391,4 +391,13 @@
   .selects {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.legendItem:not(:disabled) {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

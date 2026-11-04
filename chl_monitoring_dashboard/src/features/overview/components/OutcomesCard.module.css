@@ -23,7 +23,7 @@
 }
 
 .rowLink:hover .name {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .name {
@@ -52,4 +52,13 @@
   color: var(--card-muted);
   font-size: 12px;
   text-align: center;
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.rowLink .name {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

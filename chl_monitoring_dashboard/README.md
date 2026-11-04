@@ -348,6 +348,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Link underlines fade in on hover (150ms) instead of appearing at once,
+  wherever a link, button or card name underlines on hover; the underline is
+  there but transparent until then, so nothing on the page moves.
 - Charts: bars grow from their start when a chart first appears (300ms;
   Command centre, Overview, Payments, Field reports and Verifications), and
   the Overview's verification activity line and its shading draw in from left

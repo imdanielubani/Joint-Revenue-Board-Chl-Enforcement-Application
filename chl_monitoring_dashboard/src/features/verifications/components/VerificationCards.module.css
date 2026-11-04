@@ -326,7 +326,7 @@
 }
 
 .clearButton:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 /* Table cells. The reference opens the verification's details. */
@@ -344,7 +344,7 @@
 
 .reference:hover {
   color: var(--color-primary);
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .muted {
@@ -638,4 +638,21 @@
       transform: none;
     }
   }
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.clearButton {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
+}
+
+.reference {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

@@ -135,7 +135,7 @@
 }
 
 .textLink:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .submit {
@@ -202,7 +202,7 @@
 }
 
 .helpButton:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .helpText {
@@ -227,7 +227,7 @@
 }
 
 .backLink:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .backLink img {
@@ -282,4 +282,29 @@
 
 .supportButton img {
   flex-shrink: 0;
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.textLink {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
+}
+
+.helpButton {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
+}
+
+.backLink {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

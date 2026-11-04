@@ -104,5 +104,14 @@
 }
 
 .popup a.popupLink:hover {
+  text-decoration-color: currentColor;
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.popup a.popupLink {
   text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

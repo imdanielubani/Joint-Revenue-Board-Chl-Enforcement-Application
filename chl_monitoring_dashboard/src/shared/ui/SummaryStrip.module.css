@@ -56,7 +56,7 @@
 }
 
 .stripLink:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .stripGrid {
@@ -81,4 +81,13 @@
   .strip {
     flex-wrap: wrap;
   }
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.stripLink {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

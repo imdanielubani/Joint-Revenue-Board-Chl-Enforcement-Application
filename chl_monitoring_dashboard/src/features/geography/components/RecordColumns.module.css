@@ -36,7 +36,7 @@
 }
 
 .open:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 /* The verification method, as the Overview's register shows it. */
@@ -56,4 +56,13 @@
 .missing {
   color: var(--color-text-subtle);
   font-size: 12px;
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.open {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

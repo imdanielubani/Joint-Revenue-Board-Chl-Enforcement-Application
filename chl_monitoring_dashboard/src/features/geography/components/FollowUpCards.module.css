@@ -181,7 +181,7 @@
 }
 
 .inlineLink:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .callout {
@@ -224,4 +224,13 @@
 
 .notices + .inlineLink {
   margin-top: 8px;
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.inlineLink {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

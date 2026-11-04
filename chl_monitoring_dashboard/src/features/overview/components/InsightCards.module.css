@@ -262,7 +262,7 @@
 }
 
 .category.linked:hover .categoryHead span {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .violationFill {
@@ -500,7 +500,7 @@
 
 .etagItem.linked:hover .etagName {
   color: var(--card-title);
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .etagDot {
@@ -543,4 +543,21 @@
       transform: none;
     }
   }
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.category.linked .categoryHead span {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
+}
+
+.etagItem.linked .etagName {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

@@ -121,7 +121,7 @@
 }
 
 .inlineLink:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .empty {
@@ -191,4 +191,13 @@
 .allowed {
   border-color: #cfe3d5;
   background: #f3f9f5;
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.inlineLink {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

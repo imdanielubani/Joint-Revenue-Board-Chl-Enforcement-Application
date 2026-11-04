@@ -183,7 +183,7 @@
 }
 
 .report:hover .reportType {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .reportHead {
@@ -287,4 +287,13 @@
       transform: none;
     }
   }
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.report .reportType {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }

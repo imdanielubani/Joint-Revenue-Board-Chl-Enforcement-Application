@@ -133,7 +133,7 @@
 }
 
 .location.linked:hover .locationName {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .locationFigure {
@@ -261,7 +261,7 @@
 }
 
 .repeat.linked:hover .plate {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .followUp {
@@ -291,4 +291,21 @@
       transform: none;
     }
   }
+}
+
+/* On hover the underline fades in, rather than appearing at once. */
+.location.linked .locationName {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
+}
+
+.repeat.linked .plate {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition:
+    color var(--duration-hover) ease,
+    text-decoration-color var(--duration-hover) ease;
 }
