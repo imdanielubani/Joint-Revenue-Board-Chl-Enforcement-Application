@@ -2,17 +2,22 @@ import { render } from '@testing-library/react'
 import { useRef } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { EXIT_MS } from './motion'
-import { useExitAnimation } from './use-exit-animation'
+import { useExitRef } from './use-exit-animation'
 
-function Box() {
+/** A box that comes and goes while its owner stays, as a menu does. */
+function Owner({ open }: { open: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
-  useExitAnimation(ref, 'leaving')
+  const exitRef = useExitRef('leaving', ref)
   return (
-    <div ref={ref} id="box" className="box">
-      <button type="button" id="inside">
-        Inside
-      </button>
-    </div>
+    <section>
+      {open && (
+        <div ref={exitRef} id="box" className="box">
+          <button type="button" id="inside">
+            Inside
+          </button>
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -27,12 +32,12 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('useExitAnimation', () => {
+describe('useExitRef', () => {
   it('leaves a still, unreachable copy that animates out, then goes', () => {
     vi.useFakeTimers()
     allowMotion(true)
-    const { rerender, container } = render(<Box />)
-    rerender(<></>)
+    const { rerender, container } = render(<Owner open />)
+    rerender(<Owner open={false} />)
 
     const copy = container.querySelector('.box')
     expect(copy).not.toBeNull()
@@ -48,13 +53,13 @@ describe('useExitAnimation', () => {
 
   it('goes at once where motion is reduced or the setting is unknown', () => {
     allowMotion(false)
-    const first = render(<Box />)
-    first.rerender(<></>)
+    const first = render(<Owner open />)
+    first.rerender(<Owner open={false} />)
     expect(first.container.querySelector('.box')).toBeNull()
 
     Reflect.deleteProperty(window, 'matchMedia')
-    const second = render(<Box />)
-    second.rerender(<></>)
+    const second = render(<Owner open />)
+    second.rerender(<Owner open={false} />)
     expect(second.container.querySelector('.box')).toBeNull()
   })
 })

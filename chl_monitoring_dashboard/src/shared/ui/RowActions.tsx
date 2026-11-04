@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { Link } from 'react-router'
 import { assetUrl } from '@/shared/lib/asset-url'
+import { useExitRef } from '@/shared/lib/use-exit-animation'
 import styles from './RowActions.module.css'
 
 /** A menu item opening another page. */
@@ -31,6 +32,8 @@ export function RowActions({ label, actions }: RowActionsProps) {
   const menuId = useId()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  // It shrinks back into the "⋮" button as it closes.
+  const exitRef = useExitRef(styles.leaving ?? '', menuRef)
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
 
   const close = useCallback((returnFocus: boolean) => {
@@ -101,7 +104,7 @@ export function RowActions({ label, actions }: RowActionsProps) {
       </button>
       {position && (
         <div
-          ref={menuRef}
+          ref={exitRef}
           id={menuId}
           role="menu"
           aria-label={label}

@@ -4,6 +4,7 @@ import { paths } from '@/config/paths'
 import { ROLE_LABELS } from '@/features/auth/auth.schemas'
 import { useCurrentUser } from '@/features/auth/session-context'
 import { useSignOut } from '@/features/auth/use-sign-out'
+import { useExitRef } from '@/shared/lib/use-exit-animation'
 import { MaskIcon } from '@/shared/ui/MaskIcon'
 import styles from './AccountMenu.module.css'
 import { useMenu } from './use-menu'
@@ -22,10 +23,12 @@ export function AccountMenu({ id, placement, triggerRef, onClose }: AccountMenuP
   const user = useCurrentUser()
   const signOut = useSignOut()
   const { menuRef, onKeyDown } = useMenu(triggerRef, onClose)
+  // It shrinks back into its button as it closes.
+  const exitRef = useExitRef(styles.leaving ?? '', menuRef)
 
   return (
     <div
-      ref={menuRef}
+      ref={exitRef}
       id={id}
       className={`${styles.menu} ${styles[placement]}`}
       role="menu"

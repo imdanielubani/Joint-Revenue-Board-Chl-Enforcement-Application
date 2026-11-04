@@ -4,6 +4,7 @@ import { paths } from '@/config/paths'
 import { isSos, sosTypeText, typeLabel } from '@/features/notifications/notifications-display'
 import type { Notification } from '@/features/notifications/notifications.schemas'
 import { formatShortDateTime } from '@/shared/lib/format'
+import { useExitRef } from '@/shared/lib/use-exit-animation'
 import menu from './AccountMenu.module.css'
 import styles from './NotificationsMenu.module.css'
 import { useMenu } from './use-menu'
@@ -37,10 +38,12 @@ export function NotificationsMenu({
   onClose,
 }: NotificationsMenuProps) {
   const { menuRef, onKeyDown } = useMenu(triggerRef, onClose)
+  // It shrinks back into the bell as it closes.
+  const exitRef = useExitRef(menu.leaving ?? '', menuRef)
 
   return (
     <div
-      ref={menuRef}
+      ref={exitRef}
       id={id}
       className={`${menu.menu} ${styles.menu}`}
       role="menu"

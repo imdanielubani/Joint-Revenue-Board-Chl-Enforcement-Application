@@ -348,6 +348,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Menus close back into the button that opened them (to 95%, 160ms): the
+  account menu, the notifications menu and each row's actions menu, however
+  they are closed. The exit now hangs on the element (`useExitRef`), so it
+  works for a menu whose row stays on screen; popups use it too.
 - Popups close the way they open: the popup sinks back to 96% as the page
   brightens (160ms), however they are closed (Close, ×, Escape, a click
   outside, or leaving the page). `useExitAnimation` leaves a still copy, which
