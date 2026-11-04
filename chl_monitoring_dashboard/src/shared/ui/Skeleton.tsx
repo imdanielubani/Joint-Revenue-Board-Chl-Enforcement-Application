@@ -140,3 +140,21 @@ export function SkeletonFilters({ count }: { count: number }) {
     </div>
   )
 }
+
+/** A list of entries, as a feed or notifications list: an icon, two lines and a time. */
+export function SkeletonList({ rows = 5 }: { rows?: number }) {
+  return (
+    <div className={styles.list}>
+      {Array.from({ length: rows }, (_, index) => (
+        <div key={index} className={styles.listRow}>
+          <Bone width={32} height={32} round />
+          <span className={styles.listText}>
+            <Bone width="55%" height={10} />
+            <Bone width="85%" height={8} />
+          </span>
+          <Bone width={56} height={8} />
+        </div>
+      ))}
+    </div>
+  )
+}

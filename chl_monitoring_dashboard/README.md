@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Skeleton piece: a list of entries (`SkeletonList`: icon, two lines, a time),
+  for feeds and notification lists.
 - Skeleton pieces: a tab strip (`SkeletonTabs`) and a row of filter fields
   (`SkeletonFilters`), in the shapes of the dashboard's own tabs and filters.
 - Skeleton loading: while a page loads, grey placeholders in its own layout

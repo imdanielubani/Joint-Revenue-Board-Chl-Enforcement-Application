@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { describe, expect, it } from 'vitest'
-import { Skeleton, SkeletonFilters, SkeletonTabs } from './Skeleton'
+import { Skeleton, SkeletonFilters, SkeletonList, SkeletonTabs } from './Skeleton'
 
 const shapes = (ui: ReactElement) =>
   render(<Skeleton message="Loading…">{ui}</Skeleton>).container.querySelector(
@@ -15,5 +15,9 @@ describe('skeleton pieces', () => {
 
   it('draws one placeholder per filter field', () => {
     expect(shapes(<SkeletonFilters count={5} />).firstElementChild!.childElementCount).toBe(5)
+  })
+
+  it('draws a list with the rows asked for', () => {
+    expect(shapes(<SkeletonList rows={3} />).firstElementChild!.childElementCount).toBe(3)
   })
 })

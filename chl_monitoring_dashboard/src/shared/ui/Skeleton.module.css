@@ -211,3 +211,28 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* A list of entries: icon, two lines, time. */
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.listRow {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+}
+
+.listRow + .listRow {
+  border-top: 0.8px solid var(--card-line);
+}
+
+.listText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
