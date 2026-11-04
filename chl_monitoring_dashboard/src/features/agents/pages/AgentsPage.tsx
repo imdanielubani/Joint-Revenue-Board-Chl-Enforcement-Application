@@ -15,6 +15,7 @@ import { totalsOf } from '../agents-display'
 import { agentPageLink } from '../agents-links'
 import { useAgents, useAgentsMonitoring } from '../agents.queries'
 import type { AgentsFilters } from '../agents.schemas'
+import { TripRelatedDialog, type TripRelated } from '@/features/trips/components/TripRelatedDialog'
 import { AgentDetailsDialog } from '../components/AgentDetailsDialog'
 import { AgentRegisterCard } from '../components/AgentRegisterCard'
 import { OrganizationsCard } from '../components/OrganizationsCard'
@@ -95,6 +96,12 @@ function AgentsContent({
   const [detailsFor, setDetailsFor] = useState<string | null>(null)
   const detailsAgent = detailsFor ? (inView.find((agent) => agent.id === detailsFor) ?? null) : null
   const agentLink = useCallback((agentId: string) => agentPageLink(agentId, search), [search])
+  // An agent's verifications or violations, open in a popup from the register's actions.
+  const [related, setRelated] = useState<TripRelated | null>(null)
+  const openRelated = useCallback((next: TripRelated) => {
+    setDetailsFor(null)
+    setRelated(next)
+  }, [])
 
   const scoped = (to: string) =>
     `${to}${to.includes('?') ? '&' : '?'}scope=${encodeURIComponent(scope.value)}`
@@ -183,11 +190,21 @@ function AgentsContent({
 
           <AgentRegisterCard
             agents={inView}
-            scope={scope.value}
             scopeName={scope.name}
             agentLink={agentLink}
             onViewDetails={setDetailsFor}
+            onRelated={openRelated}
           />
+
+          {related && (
+            <TripRelatedDialog
+              key={JSON.stringify(related)}
+              related={related}
+              filters={period}
+              periodText={periodText}
+              onClose={() => setRelated(null)}
+            />
+          )}
 
           {detailsAgent && (
             <AgentDetailsDialog

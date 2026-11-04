@@ -6,22 +6,19 @@ import { formatNumber, formatShortDateTime } from '@/shared/lib/format'
 import { DashboardCard } from '@/shared/ui/DashboardCard'
 import type { Column } from '@/shared/ui/DataTable'
 import { RegisterTable } from '@/shared/ui/RegisterTable'
-import { RowActions, type RowAction, type RowCommand } from '@/shared/ui/RowActions'
+import type { TripRelated } from '@/features/trips/components/TripRelatedDialog'
+import { RowActions, type RowCommand } from '@/shared/ui/RowActions'
 import { assignedScopeText, organizationLabel, SCOPE_NOT_EXPOSED } from '../agents-display'
 import type { AgentMetrics, AgentSummary } from '../agents.schemas'
 import styles from './AgentCards.module.css'
 
 type ModuleLink = ReturnType<typeof useModuleLink>
 
-/** Adds the page's area to a module link. */
-const withScope = (to: string, scope: string) =>
-  `${to}${to.includes('?') ? '&' : '?'}scope=${encodeURIComponent(scope)}`
-
 function columns(
   link: ModuleLink,
-  scope: string,
   agentLink: (agentId: string) => string,
   onViewDetails: (agentId: string) => void,
+  onRelated: (related: TripRelated) => void,
 ): Column<AgentSummary>[] {
   // The figures cannot be sorted: ordering agents by them would rank agents, which
   // this module does not do (agent scoring is a future extension).
@@ -78,19 +75,32 @@ function columns(
       header: 'Actions',
       align: 'end',
       render: (row) => {
-        const agent = `agent=${encodeURIComponent(row.id)}`
-        const links = [
-          {
-            label: 'View verifications',
-            to: link('verifications', withScope(`${paths.verifications}?${agent}`, scope)),
-          },
-          {
-            label: 'View violations',
-            to: link('violations', withScope(`${paths.violations}?${agent}`, scope)),
-          },
-        ].filter((action): action is RowAction => action.to !== undefined)
-        const details: RowCommand = { label: 'View details', onSelect: () => onViewDetails(row.id) }
-        return <RowActions label={`Actions for ${row.name}`} actions={[details, ...links]} />
+        // Each opens in a popup on this page, for users who may open that module.
+        const agent = {
+          id: row.id,
+          name: row.name,
+          organization: organizationLabel(row.organization),
+        }
+        const actions: RowCommand[] = [
+          { label: 'View details', onSelect: () => onViewDetails(row.id) },
+          ...(link('verifications', paths.verifications)
+            ? [
+                {
+                  label: 'View verifications',
+                  onSelect: () => onRelated({ kind: 'agentVerifications', agent }),
+                },
+              ]
+            : []),
+          ...(link('violations', paths.violations)
+            ? [
+                {
+                  label: 'View violations',
+                  onSelect: () => onRelated({ kind: 'agentViolations', agent }),
+                },
+              ]
+            : []),
+        ]
+        return <RowActions label={`Actions for ${row.name}`} actions={actions} />
       },
     },
   ]
@@ -102,29 +112,30 @@ const searchText = (row: AgentSummary) =>
 /**
  * "Agent register": every agent in view — identity, the scope CHL assigns
  * them and what they recorded in the period. Listed by agent ID, never ranked;
- * a name opens the agent's own page, and "View details" a popup.
+ * a name opens the agent's own page; "View details", "View verifications" and
+ * "View violations" open popups on the page.
  */
 export function AgentRegisterCard({
   agents,
-  scope,
   scopeName,
   agentLink,
   onViewDetails,
+  onRelated,
 }: {
   agents: readonly AgentSummary[]
-  /** The area's id, for links into the modules. */
-  scope: string
   /** "National", "Lagos state". */
   scopeName: string
   /** The agent's own page. */
   agentLink(agentId: string): string
   /** Opens the agent's details in a popup. */
   onViewDetails(agentId: string): void
+  /** Opens the agent's verifications or violations in a popup on the page. */
+  onRelated(related: TripRelated): void
 }) {
   const link = useModuleLink()
   const tableColumns = useMemo(
-    () => columns(link, scope, agentLink, onViewDetails),
-    [link, scope, agentLink, onViewDetails],
+    () => columns(link, agentLink, onViewDetails, onRelated),
+    [link, agentLink, onViewDetails, onRelated],
   )
 
   return (

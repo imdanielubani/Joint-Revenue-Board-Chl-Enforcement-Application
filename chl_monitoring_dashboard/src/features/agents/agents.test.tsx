@@ -371,4 +371,48 @@ describe('an agent’s page', () => {
     expect(await screen.findByText(/Your account can.t open this page/)).toBeVisible()
     expect(screen.queryByRole('region', { name: 'Agent identity' })).not.toBeInTheDocument()
   })
+
+  it(
+    'opens an agent’s verifications in a popup on the page, then one in its details',
+    NAVIGATES,
+    async () => {
+      signInAs('admin@jrb.gov.ng')
+      const { router } = renderApp('/agents?scope=la&range=30d')
+      const register = await card('Agent register')
+      await userEvent.click(
+        within(register).getByRole('button', { name: 'Actions for Tunde Okafor' }),
+      )
+      await userEvent.click(screen.getByRole('menuitem', { name: 'View verifications' }))
+
+      const dialog = await screen.findByRole('dialog', { name: 'Verifications' })
+      expect(router.state.location.pathname).toBe('/agents')
+      expect(dialog).toHaveTextContent('Tunde Okafor · JRB-AG-0142')
+      expect(dialog).toHaveTextContent('Agent IDJRB-AG-0142')
+      const table = within(dialog).getByRole('table', { name: 'Verifications by Tunde Okafor' })
+      const [first] = within(table).getAllByRole('row').slice(1)
+      const reference = first!.textContent!.match(/VR-\d+/)![0]
+
+      await userEvent.click(
+        within(first!).getByRole('button', { name: `Actions for ${reference}` }),
+      )
+      await userEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
+      const details = await screen.findByRole('dialog', { name: 'Verification details' })
+      expect(details).toHaveTextContent(reference)
+      expect(router.state.location.pathname).toBe('/agents')
+    },
+  )
+
+  it('opens an agent’s violations in a popup on the page', NAVIGATES, async () => {
+    signInAs('admin@jrb.gov.ng')
+    const { router } = renderApp('/agents?scope=la&range=30d')
+    const register = await card('Agent register')
+    await userEvent.click(
+      within(register).getByRole('button', { name: 'Actions for Tunde Okafor' }),
+    )
+    await userEvent.click(screen.getByRole('menuitem', { name: 'View violations' }))
+
+    const dialog = await screen.findByRole('dialog', { name: 'Violations issued' })
+    expect(router.state.location.pathname).toBe('/agents')
+    expect(dialog).toHaveTextContent('Tunde Okafor · JRB-AG-0142')
+  })
 })

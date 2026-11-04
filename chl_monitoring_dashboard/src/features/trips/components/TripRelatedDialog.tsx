@@ -7,6 +7,7 @@ import type {
   RepeatVehicle,
 } from '@/features/overview/overview.schemas'
 import { NoticePopup } from '@/features/payments/components/NoticePopup'
+import { AgentVerificationsDialog } from '@/features/verifications/components/AgentVerificationsDialog'
 import { VehicleVerificationsDialog } from '@/features/verifications/components/VehicleVerificationsDialog'
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
 import { vehiclesOf } from '@/features/verifications/verifications-display'
@@ -36,6 +37,7 @@ export type TripRelated =
   | { kind: 'payment'; noticeId: string }
   | { kind: 'agent'; agent: { id: string; name: string } }
   | { kind: 'agentViolations'; agent: { id: string; name: string; organization: string } }
+  | { kind: 'agentVerifications'; agent: { id: string; name: string; organization: string } }
   | { kind: 'location'; location: LocationRow }
   | { kind: 'vehicleReports'; vehicle: RepeatVehicle }
   | { kind: 'evidence'; violationId: string }
@@ -135,6 +137,42 @@ function VehiclePopup({
       title="Vehicle verifications"
       loading={query.isPending}
       message={`No verifications of ${plate} were found in this area and period.`}
+      onClose={onClose}
+    />
+  )
+}
+
+function AgentVerificationsPopup({
+  agent,
+  filters,
+  periodText,
+  onClose,
+  onOpen,
+}: {
+  agent: { id: string; name: string; organization: string }
+  filters: OverviewFilters
+  periodText: string
+  onClose(): void
+  /** Opens one of the verifications in place of the list. */
+  onOpen(reference: string): void
+}) {
+  const query = useVerificationsMonitoring({ ...filters, agentId: agent.id })
+  if (query.data) {
+    return (
+      <AgentVerificationsDialog
+        agent={agent}
+        records={query.data.records}
+        periodText={periodText}
+        onClose={onClose}
+        onOpen={(entry) => onOpen(entry.reference)}
+      />
+    )
+  }
+  return (
+    <Placeholder
+      title="Verifications"
+      loading={query.isPending}
+      message={`The verifications recorded by ${agent.name} could not be loaded.`}
       onClose={onClose}
     />
   )
@@ -344,6 +382,17 @@ export function TripRelatedDialog({
         filters={all}
         periodText={periodText}
         onClose={onClose}
+      />
+    )
+  }
+  if (current.kind === 'agentVerifications') {
+    return (
+      <AgentVerificationsPopup
+        agent={current.agent}
+        filters={all}
+        periodText={periodText}
+        onClose={onClose}
+        onOpen={(reference) => setCurrent({ kind: 'verification', reference })}
       />
     )
   }

@@ -348,6 +348,11 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agents & organizations: a row's "View verifications" and "View violations"
+  open in popups on the page (the agent's verifications, each opening its
+  details; the agent's violations issued), over the page's area and period,
+  instead of leaving for another module; each only for users who may open
+  that module.
 - Headline figures count up to their value when the figures first appear
   (500ms, easing as they land); a later change only fades in, never counting
   through values mid-session. Screen readers get the real value throughout;
