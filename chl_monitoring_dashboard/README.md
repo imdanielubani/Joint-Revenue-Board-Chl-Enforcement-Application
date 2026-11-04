@@ -348,6 +348,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Headline figures count up to their value when the figures first appear
+  (500ms, easing as they land); a later change only fades in, never counting
+  through values mid-session. Screen readers get the real value throughout;
+  with reduced motion the figure is simply there.
 - Dropdowns (the filter bar's and the registers' filters): where the browser
   supports the customizable select (Chrome, Edge), the list is styled like the
   dashboard's menus and opens from its field with a short fade (180ms),
