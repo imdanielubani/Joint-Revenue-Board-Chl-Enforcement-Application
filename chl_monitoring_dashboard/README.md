@@ -348,6 +348,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The account menu and the notifications menu open out of the button that
+  opened them (from 95%, 180ms, ease-out: top right under the top bar, bottom
+  left above the sidebar's user button); they close at once. With reduced
+  motion they only fade in.
 - Toasts leave the way they came in (back up and fading, 160ms) when they
   time out or are dismissed, then go; they arrive with a transition rather
   than keyframes, so one dismissed while arriving turns back smoothly. With

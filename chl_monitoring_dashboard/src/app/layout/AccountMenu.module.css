@@ -9,6 +9,11 @@
   border-radius: 12px;
   background: var(--color-surface);
   box-shadow: var(--menu-shadow);
+  /* It grows out of the button that opened it (the bell's menu uses this too). */
+  transform-origin: top right;
+  transition:
+    opacity var(--duration-menu) var(--ease-out),
+    transform var(--duration-menu) var(--ease-out);
 }
 
 /* Under the top bar's profile button: 7px below the bar, 22px in from its right edge. */
@@ -21,6 +26,7 @@
 .above {
   bottom: calc(100% + 8px);
   left: 0;
+  transform-origin: bottom left;
 }
 
 .header {
@@ -91,4 +97,21 @@
 
 .logout {
   color: var(--color-danger-strong);
+}
+
+/* Opening: out of its button. Closing is instant, so dismissing never waits. */
+@starting-style {
+  .menu {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Reduced motion: it fades in without growing. */
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .menu {
+      transform: none;
+    }
+  }
 }
