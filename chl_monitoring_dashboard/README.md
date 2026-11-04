@@ -348,6 +348,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Tabs: a pill behind the selected tab slides to the one chosen (250ms,
+  ease-in-out); it is placed without sliding on load, hidden from screen
+  readers, and the tab keeps its own highlight until it is measured. With
+  reduced motion it moves at once.
 - Hover fades (150ms) on the cards the shared rule does not reach: the
   Overview's insight tiles and the Verifications tiles (border) and the
   Geographical monitoring place list (background).

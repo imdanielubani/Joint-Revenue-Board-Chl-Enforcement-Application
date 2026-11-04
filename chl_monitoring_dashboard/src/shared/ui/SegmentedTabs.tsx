@@ -1,4 +1,4 @@
-import { useEffect, useRef, type KeyboardEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { panelId, tabId } from './tab-ids'
 import styles from './SegmentedTabs.module.css'
 
@@ -33,6 +33,42 @@ export function SegmentedTabs<T extends string>({
   className,
 }: SegmentedTabsProps<T>) {
   const listRef = useRef<HTMLDivElement>(null)
+  // The pill behind the selected tab: where it sits, once measured.
+  const [pill, setPill] = useState<{ left: number; width: number } | null>(null)
+  // It slides only after it has first been placed, never in from the side on load.
+  const [pillReady, setPillReady] = useState(false)
+
+  // What the tabs say, so a parent passing a new but equal list does not re-measure.
+  const tabsKey = tabs.map((tab) => `${tab.id}:${tab.label}:${tab.count ?? ''}`).join('|')
+
+  useLayoutEffect(() => {
+    const list = listRef.current
+    if (!list) return
+    const place = () => {
+      const tab = list.querySelector<HTMLElement>('[aria-selected="true"]')
+      // Unmeasured (hidden, or no layout): keep the tab's own highlight.
+      const next =
+        tab && tab.offsetWidth > 0 ? { left: tab.offsetLeft, width: tab.offsetWidth } : null
+      // Unchanged: keep the same value, so nothing renders again.
+      setPill((current) =>
+        current === next ||
+        (current && next && current.left === next.left && current.width === next.width)
+          ? current
+          : next,
+      )
+    }
+    place()
+    // Tabs change width when the web font loads or the window resizes.
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(place)
+    observer?.observe(list)
+    return () => observer?.disconnect()
+  }, [value, tabsKey])
+
+  useEffect(() => {
+    if (!pill || pillReady) return
+    const frame = requestAnimationFrame(() => setPillReady(true))
+    return () => cancelAnimationFrame(frame)
+  }, [pill, pillReady])
 
   // Where the strip scrolls, keep the selected tab in view. Only the strip
   // moves, never the page, so the page does not jump on load.
@@ -90,8 +126,16 @@ export function SegmentedTabs<T extends string>({
       role="tablist"
       aria-label={label}
       className={className ? `${styles.tabs} ${className}` : styles.tabs}
+      data-pill={pill ? '' : undefined}
       onKeyDown={onKeyDown}
     >
+      {pill && (
+        <span
+          aria-hidden="true"
+          className={pillReady ? `${styles.pill} ${styles.pillReady}` : styles.pill}
+          style={{ width: pill.width, transform: `translateX(${pill.left}px)` }}
+        />
+      )}
       {tabs.map((tab) => {
         const selected = tab.id === value
         return (
