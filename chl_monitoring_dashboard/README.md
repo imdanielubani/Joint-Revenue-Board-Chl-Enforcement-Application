@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- An agent's page loads as its own shape: identity beside metrics, their
+  activity, and where they recorded it.
 - Agents & organizations loads as its own shape: figures, the agent register
   and the organizations card.
 - Field operational status loads as its own shape: figures, the three filters and the register.

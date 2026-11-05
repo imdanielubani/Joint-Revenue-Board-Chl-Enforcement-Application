@@ -14,6 +14,7 @@ import { isApiError } from '@/shared/api/api-error'
 import { MaskIcon } from '@/shared/ui/MaskIcon'
 import { HeroLink, PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { AgentSkeleton } from '../components/AgentSkeleton'
 import { organizationLabel } from '../agents-display'
 import { agentsListLink } from '../agents-links'
 import { useAgentActivity, useAgents } from '../agents.queries'
@@ -145,7 +146,7 @@ function AgentContent({
       </div>
 
       {filter.waiting || activity.isPending ? (
-        <StatePanel kind="loading" message={`Loading ${name}’s activity…`} />
+        <AgentSkeleton message={`Loading ${name}’s activity…`} />
       ) : notFound ? (
         <StatePanel
           kind="empty"

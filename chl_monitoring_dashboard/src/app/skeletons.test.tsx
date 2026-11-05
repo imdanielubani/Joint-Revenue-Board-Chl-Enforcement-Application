@@ -97,6 +97,11 @@ const CASES: [string, string | RegExp, () => unknown][] = [
     'Loading agents…',
     () => vi.spyOn(mockAgentsApi, 'getMonitoring').mockReturnValue(new Promise(() => {})),
   ],
+  [
+    '/agents/JRB-AG-0142',
+    /^Loading .*’s activity…$/,
+    () => vi.spyOn(mockAgentsApi, 'getActivity').mockReturnValue(new Promise(() => {})),
+  ],
   // (cases)
 ]
 
