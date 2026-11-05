@@ -13,6 +13,7 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { NoticeDialog } from '../components/NoticeDialog'
 import cards from '../components/PaymentCards.module.css'
@@ -155,7 +156,7 @@ function PaymentsContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading demand notices…" />
+        <RegisterSkeleton message="Loading demand notices…" tabs={3} />
       ) : !monitoring ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (

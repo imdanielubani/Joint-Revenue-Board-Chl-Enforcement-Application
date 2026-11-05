@@ -348,6 +348,7 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Payments & compliance loads as its own shape: figures, tabs and the register.
 - Field reports load as their own shape: figures, tabs and the reports table.
 - Evidence records load as their own shape: figures, tabs and the register.
 - Violations & cases loads as its own shape: figures, tabs and the register.
