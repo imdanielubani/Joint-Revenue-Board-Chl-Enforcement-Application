@@ -355,6 +355,10 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- API_ENDPOINTS.md: a "Shared IDs" rule under Conventions. A location's `id`,
+  an agent's `agentId` and a record's reference must match across endpoints,
+  since the dashboard joins records by them (the Evidence location popup looks
+  the location up in the Overview).
 - README: how pages show their shape while they load, and the shared skeleton
   pieces.
 - The first load of the app shows the dashboard's frame (sidebar, top bar and a

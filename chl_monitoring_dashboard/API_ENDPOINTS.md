@@ -44,6 +44,7 @@ The paths, field names and shapes are what the dashboard sends and checks today,
 - **Checked answers:** the dashboard checks every answer against the fields in these documents. A missing required field, or a wrong type, shows "The server sent an answer we could not read" instead of the page — so send every required field, using `null` where a document says it can be null.
 - **Access:** filter all data to the user's areas (`user.scopes`) and modules (`user.modules`). A `scope` outside the user's areas, or a module they may not open, answers `403`.
 - **Period:** list endpoints take `scope`, `range`, `from` and `to`; `from` and `to` are always sent, so they can be used as they are. Most also take `agent` and `organization`.
+- **Shared IDs:** a location's `id`, an agent's `agentId` and a record's reference must be the same in every endpoint that returns them. The dashboard joins records across endpoints by these IDs: for example, the location popup on Evidence records finds `records[].location.id` in the Overview's `locations[]`.
 - **Timeout:** the dashboard gives up after 20 seconds.
 - **Never send** raw RFID tag values, and never present a last-reported state (device status, GPS) as current.
 
