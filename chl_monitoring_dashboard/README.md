@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Agents & organizations loads as its own shape: figures, the agent register
+  and the organizations card.
 - Field operational status loads as its own shape: figures, the three filters and the register.
 - Synchronization loads as its own shape: figures, the two filters and the register.
 - The audit trail loads as its own shape: figures, the five filters and the register.

@@ -14,6 +14,7 @@ import { mockHistoryApi } from '@/mocks/mock-history-api'
 import { mockAuditApi } from '@/mocks/mock-audit-api'
 import { mockSyncApi } from '@/mocks/mock-sync-api'
 import { mockFieldStatusApi } from '@/mocks/mock-field-status-api'
+import { mockAgentsApi } from '@/mocks/mock-agents-api'
 // (stubs)
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -90,6 +91,11 @@ const CASES: [string, string | RegExp, () => unknown][] = [
     '/field-status',
     'Loading the reported device status…',
     () => vi.spyOn(mockFieldStatusApi, 'getFieldStatus').mockReturnValue(new Promise(() => {})),
+  ],
+  [
+    '/agents',
+    'Loading agents…',
+    () => vi.spyOn(mockAgentsApi, 'getMonitoring').mockReturnValue(new Promise(() => {})),
   ],
   // (cases)
 ]

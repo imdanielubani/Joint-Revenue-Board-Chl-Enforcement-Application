@@ -11,6 +11,7 @@ import { FILTER_PARAMS, useOverviewFilters } from '@/features/overview/use-overv
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { AgentsSkeleton } from '../components/AgentsSkeleton'
 import { totalsOf } from '../agents-display'
 import { agentPageLink } from '../agents-links'
 import { useAgents, useAgentsMonitoring } from '../agents.queries'
@@ -146,7 +147,7 @@ function AgentsContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading agents…" />
+        <AgentsSkeleton />
       ) : !monitoring ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
