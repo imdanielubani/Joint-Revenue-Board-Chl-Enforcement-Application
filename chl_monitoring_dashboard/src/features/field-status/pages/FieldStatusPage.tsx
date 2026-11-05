@@ -11,6 +11,7 @@ import { assetUrl } from '@/shared/lib/asset-url'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { DeviceStatusRegister } from '../components/DeviceStatusRegister'
 import { fieldStatusCounts } from '../field-status-display'
 import { useFieldStatus } from '../field-status.queries'
@@ -96,7 +97,7 @@ function FieldStatusContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading the reported device status…" />
+        <RegisterSkeleton message="Loading the reported device status…" filters={3} />
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : !data.provided ? (
