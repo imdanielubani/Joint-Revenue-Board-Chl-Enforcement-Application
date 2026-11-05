@@ -15,6 +15,7 @@ import { mockAuditApi } from '@/mocks/mock-audit-api'
 import { mockSyncApi } from '@/mocks/mock-sync-api'
 import { mockFieldStatusApi } from '@/mocks/mock-field-status-api'
 import { mockAgentsApi } from '@/mocks/mock-agents-api'
+import { mockSearchApi } from '@/mocks/mock-search-api'
 // (stubs)
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -101,6 +102,11 @@ const CASES: [string, string | RegExp, () => unknown][] = [
     '/agents/JRB-AG-0142',
     /^Loading .*’s activity…$/,
     () => vi.spyOn(mockAgentsApi, 'getActivity').mockReturnValue(new Promise(() => {})),
+  ],
+  [
+    '/search?q=tunde',
+    'Searching National…',
+    () => vi.spyOn(mockSearchApi, 'search').mockReturnValue(new Promise(() => {})),
   ],
   // (cases)
 ]

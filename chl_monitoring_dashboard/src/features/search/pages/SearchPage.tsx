@@ -5,6 +5,7 @@ import { useAreas } from '@/features/geography/areas.queries'
 import { scopeOptions, type ScopeOption } from '@/features/geography/scope-options'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { SearchSkeleton } from '../components/SearchSkeleton'
 import { MIN_QUERY_LENGTH, isSearchable } from '../search-match'
 import { SearchResultsList } from '../components/SearchResultsList'
 import { resultsSummary, totalResults } from '../search-display'
@@ -68,7 +69,7 @@ function SearchContent({ query, scope }: { query: string; scope: ScopeOption }) 
           message={`Type at least ${MIN_QUERY_LENGTH} characters of a plate, agent or reference.`}
         />
       ) : search.isPending ? (
-        <StatePanel kind="loading" message={`Searching ${scope.name}…`} />
+        <SearchSkeleton message={`Searching ${scope.name}…`} />
       ) : !data ? (
         <StatePanel kind="error" error={search.error} onRetry={() => void search.refetch()} />
       ) : totalResults(data) === 0 ? (
