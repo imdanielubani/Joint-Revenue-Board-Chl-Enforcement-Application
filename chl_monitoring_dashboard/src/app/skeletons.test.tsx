@@ -12,6 +12,7 @@ import { mockNotificationsApi } from '@/mocks/mock-notifications-api'
 import { mockRepeatAlertsApi } from '@/mocks/mock-repeat-alerts-api'
 import { mockHistoryApi } from '@/mocks/mock-history-api'
 import { mockAuditApi } from '@/mocks/mock-audit-api'
+import { mockSyncApi } from '@/mocks/mock-sync-api'
 // (stubs)
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -78,6 +79,11 @@ const CASES: [string, string | RegExp, () => unknown][] = [
     '/audit',
     'Loading the audit trail…',
     () => vi.spyOn(mockAuditApi, 'getAuditTrail').mockReturnValue(new Promise(() => {})),
+  ],
+  [
+    '/sync',
+    'Loading the received records…',
+    () => vi.spyOn(mockSyncApi, 'getSynchronization').mockReturnValue(new Promise(() => {})),
   ],
   // (cases)
 ]

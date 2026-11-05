@@ -13,6 +13,7 @@ import { assetUrl } from '@/shared/lib/asset-url'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { SyncRegister } from '../components/SyncRegister'
 import { syncCounts } from '../sync-display'
 import { useSynchronization } from '../sync.queries'
@@ -101,7 +102,7 @@ function SyncContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading the received records…" />
+        <RegisterSkeleton message="Loading the received records…" filters={2} />
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
