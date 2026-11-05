@@ -1,0 +1,40 @@
+/* As the signed-in frame: sidebar on the left, the top bar and page on the right. */
+.app {
+  display: flex;
+  gap: 16px;
+  min-height: 100vh;
+  padding: 16px;
+  background: var(--color-bg);
+}
+
+.sidebar {
+  flex-shrink: 0;
+  width: 254px;
+  border-radius: 16px;
+  background: var(--gradient-brand);
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 20px;
+  border: 0.8px solid var(--card-line);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

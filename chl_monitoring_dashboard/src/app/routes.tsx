@@ -4,6 +4,7 @@ import type { ModuleKey } from '@/features/auth/auth.schemas'
 import { RedirectIfSignedIn, RequireAuth, RequireModule } from '@/features/auth/guards'
 import { ToastProvider } from '@/shared/ui/toast/ToastProvider'
 import { AppShell } from './layout/AppShell'
+import { AppSkeleton } from './layout/AppSkeleton'
 import { MODULES } from './modules'
 import { HomeRedirect } from './pages/HomeRedirect'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -76,6 +77,8 @@ export const routes: RouteObject[] = [
       </ToastProvider>
     ),
     errorElement: <RouteErrorPage />,
+    // The first load, while the page's own code arrives: the frame's shape, not a blank screen.
+    hydrateFallbackElement: <AppSkeleton />,
     children: [
       {
         element: <RedirectIfSignedIn />,

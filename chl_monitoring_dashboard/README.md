@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The first load of the app shows the dashboard's frame (sidebar, top bar and a
+  page's shape) while the page's code arrives, instead of a blank screen.
 - The bell's menu shows three notification-shaped placeholders while its list
   loads.
 - Geographical monitoring's map loads as a map-sized placeholder.
