@@ -15,6 +15,7 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { BreakdownCard } from '../components/BreakdownCard'
 import { FieldRecordDialog } from '../components/FieldRecordDialog'
@@ -146,7 +147,7 @@ function FieldReportsContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading field reports…" />
+        <RegisterSkeleton message="Loading field reports…" tabs={2} />
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
