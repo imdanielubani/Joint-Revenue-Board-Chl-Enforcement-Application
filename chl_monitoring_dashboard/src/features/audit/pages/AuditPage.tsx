@@ -15,6 +15,7 @@ import { downloadCsv } from '@/shared/lib/csv'
 import { HeroButton, PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { useToast } from '@/shared/ui/toast/toast-context'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { applyAuditFilters } from '../audit-display'
 import { auditCsvRows } from '../audit-export'
 import { useAuditTrail } from '../audit.queries'
@@ -136,7 +137,7 @@ function AuditContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading the audit trail…" />
+        <RegisterSkeleton message="Loading the audit trail…" filters={5} />
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
