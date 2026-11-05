@@ -10,6 +10,7 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { TripDetailsDialog } from '../components/TripDetailsDialog'
 import { TripRelatedDialog, type TripRelated } from '../components/TripRelatedDialog'
@@ -167,7 +168,7 @@ function TripsContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading trips…" />
+        <RegisterSkeleton message="Loading trips…" tabs={6} />
       ) : !monitoring ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (

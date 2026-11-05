@@ -348,6 +348,7 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Trip monitoring loads as its own shape: figures, tabs and the trips table.
 - Verifications & E-Tags loads as its own shape: figures, tabs and the register.
 - Geographical monitoring loads as its own shape: figures, the map, and the
   places beside the records.
