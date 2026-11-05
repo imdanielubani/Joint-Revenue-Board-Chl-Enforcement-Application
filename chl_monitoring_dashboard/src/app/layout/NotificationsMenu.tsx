@@ -4,6 +4,7 @@ import { paths } from '@/config/paths'
 import { isSos, sosTypeText, typeLabel } from '@/features/notifications/notifications-display'
 import type { Notification } from '@/features/notifications/notifications.schemas'
 import { formatShortDateTime } from '@/shared/lib/format'
+import { Skeleton, SkeletonList } from '@/shared/ui/Skeleton'
 import { useExitRef } from '@/shared/lib/use-exit-animation'
 import menu from './AccountMenu.module.css'
 import styles from './NotificationsMenu.module.css'
@@ -58,9 +59,9 @@ export function NotificationsMenu({
       </div>
       <div className={menu.items} role="presentation">
         {latest === undefined ? (
-          <p className={styles.note} role="presentation">
-            Loading notifications…
-          </p>
+          <Skeleton message="Loading notifications…">
+            <SkeletonList rows={3} />
+          </Skeleton>
         ) : latest.length === 0 ? (
           <p className={styles.note} role="presentation">
             No notifications yet.

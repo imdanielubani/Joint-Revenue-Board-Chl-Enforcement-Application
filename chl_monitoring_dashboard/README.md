@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The bell's menu shows three notification-shaped placeholders while its list
+  loads.
 - Geographical monitoring's map loads as a map-sized placeholder.
 - The Command centre's map loads as a map-sized placeholder.
 - The demand notice popup loads as its own shape: facts and a short table.
