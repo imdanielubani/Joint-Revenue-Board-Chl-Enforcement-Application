@@ -12,6 +12,7 @@ import { StatusLabel } from '@/shared/ui/StatusLabel'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { fieldReportLabel, loadLabel } from '../command-centre-display'
 import type { CommandCentre, FeedItem, LocationActivity } from '../command-centre.schemas'
+import { Skeleton, SkeletonChart } from '@/shared/ui/Skeleton'
 import styles from './FieldCards.module.css'
 
 /** How many entries each card lists. */
@@ -265,7 +266,13 @@ export function RecordedLocationsCard({
             aria-labelledby={mapAvailable ? tabId(idBase, view) : undefined}
           >
             {mapAvailable && view === 'map' ? (
-              <Suspense fallback={<p className={styles.empty}>Loading the map…</p>}>
+              <Suspense
+                fallback={
+                  <Skeleton message="Loading the map…">
+                    <SkeletonChart height={300} />
+                  </Skeleton>
+                }
+              >
                 <EnforcementMap
                   points={points}
                   countText={(count) =>
