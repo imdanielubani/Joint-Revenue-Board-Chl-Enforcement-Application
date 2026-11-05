@@ -12,6 +12,7 @@ import { outcomeLabel } from '@/features/overview/overview-display'
 import { formatShortDateTime } from '@/shared/lib/format'
 import type { EnforcementPoint, VerificationRecord } from '../geography.schemas'
 import type { MapEvent, MapPoint } from './EnforcementMap'
+import { Skeleton, SkeletonChart } from '@/shared/ui/Skeleton'
 import styles from './GeographyCards.module.css'
 
 /** Loaded only when the map is shown, with Leaflet. */
@@ -160,7 +161,13 @@ export function EnforcementFootprintCard({
       {points.length === 0 ? (
         <p className={styles.empty}>{emptyText}</p>
       ) : mapAvailable ? (
-        <Suspense fallback={<p className={styles.empty}>Loading the map…</p>}>
+        <Suspense
+          fallback={
+            <Skeleton message="Loading the map…">
+              <SkeletonChart height={300} />
+            </Skeleton>
+          }
+        >
           <EnforcementMap
             points={mapPoints}
             selectedId={selectedId}
