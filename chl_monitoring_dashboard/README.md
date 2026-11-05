@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- The violations page's related-record popup loads as its own shape: facts and
+  a short table.
 - Related-record popups (verification, vehicle, case, agent, an agent's
   verifications or violations, location, evidence) load as their own shape:
   facts and a short table.

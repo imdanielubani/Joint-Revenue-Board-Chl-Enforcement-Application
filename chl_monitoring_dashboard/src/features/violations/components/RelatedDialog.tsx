@@ -10,7 +10,7 @@ import { NoticePopup } from '@/features/payments/components/NoticePopup'
 import { VerificationDetailsDialog } from '@/features/verifications/components/VerificationDetailsDialog'
 import { useVerificationsMonitoring } from '@/features/verifications/verifications.queries'
 import { Dialog } from '@/shared/ui/Dialog'
-import { StatePanel } from '@/shared/ui/StatePanel'
+import { Skeleton, SkeletonFacts, SkeletonTable } from '@/shared/ui/Skeleton'
 import type { ViolationCase } from '../violations.schemas'
 import type { RelatedKind } from '../related-records'
 import styles from './ViolationCards.module.css'
@@ -52,7 +52,10 @@ function Placeholder({
       }
     >
       {loading ? (
-        <StatePanel kind="loading" message="Loading…" />
+        <Skeleton message="Loading…">
+          <SkeletonFacts rows={5} />
+          <SkeletonTable rows={3} columns={4} />
+        </Skeleton>
       ) : (
         <p className={styles.small}>{message}</p>
       )}
