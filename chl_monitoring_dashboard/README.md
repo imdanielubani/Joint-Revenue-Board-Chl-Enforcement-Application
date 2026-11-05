@@ -348,6 +348,7 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Verification history loads as its own shape: figures, the five filters and the register.
 - Repeat vehicle alerts load as their own shape: figures, tabs and the register.
 - Notifications load as their own shape: figures, the category tabs and the
   list of notifications.

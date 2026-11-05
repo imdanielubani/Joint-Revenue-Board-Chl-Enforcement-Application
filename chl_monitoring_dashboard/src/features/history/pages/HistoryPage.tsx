@@ -15,6 +15,7 @@ import { downloadCsv } from '@/shared/lib/csv'
 import { HeroButton, PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { useToast } from '@/shared/ui/toast/toast-context'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { HistoryRegister } from '../components/HistoryRegister'
 import { applyHistoryFilters, historyCounts } from '../history-display'
 import { historyCsvRows } from '../history-export'
@@ -126,7 +127,7 @@ function HistoryContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading the verification history…" />
+        <RegisterSkeleton message="Loading the verification history…" filters={5} />
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (

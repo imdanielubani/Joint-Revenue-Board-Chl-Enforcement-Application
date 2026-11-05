@@ -10,6 +10,7 @@ import { mockFieldReportsApi } from '@/mocks/mock-field-reports-api'
 import { mockPaymentsApi } from '@/mocks/mock-payments-api'
 import { mockNotificationsApi } from '@/mocks/mock-notifications-api'
 import { mockRepeatAlertsApi } from '@/mocks/mock-repeat-alerts-api'
+import { mockHistoryApi } from '@/mocks/mock-history-api'
 // (stubs)
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -66,6 +67,11 @@ const CASES: [string, string | RegExp, () => unknown][] = [
     '/repeat-alerts',
     'Loading repeat-vehicle alerts…',
     () => vi.spyOn(mockRepeatAlertsApi, 'getRepeatAlerts').mockReturnValue(new Promise(() => {})),
+  ],
+  [
+    '/history',
+    'Loading the verification history…',
+    () => vi.spyOn(mockHistoryApi, 'getHistory').mockReturnValue(new Promise(() => {})),
   ],
   // (cases)
 ]
