@@ -5,6 +5,7 @@ import { mockGeographyApi } from '@/mocks/mock-geography-api'
 import { mockVerificationsApi } from '@/mocks/mock-verifications-api'
 import { mockTripsApi } from '@/mocks/mock-trips-api'
 import { mockViolationsApi } from '@/mocks/mock-violations-api'
+import { mockEvidenceApi } from '@/mocks/mock-evidence-api'
 // (stubs)
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -36,6 +37,11 @@ const CASES: [string, string | RegExp, () => unknown][] = [
     '/violations',
     'Loading violations…',
     () => vi.spyOn(mockViolationsApi, 'getMonitoring').mockReturnValue(new Promise(() => {})),
+  ],
+  [
+    '/evidence',
+    'Loading evidence…',
+    () => vi.spyOn(mockEvidenceApi, 'getMonitoring').mockReturnValue(new Promise(() => {})),
   ],
   // (cases)
 ]

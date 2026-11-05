@@ -12,6 +12,7 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import cards from '../components/EvidenceCards.module.css'
 import { EvidencePanel, NotesPanel } from '../components/EvidencePanels'
@@ -139,7 +140,7 @@ function EvidenceContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading evidence…" />
+        <RegisterSkeleton message="Loading evidence…" tabs={4} />
       ) : !monitoring ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (

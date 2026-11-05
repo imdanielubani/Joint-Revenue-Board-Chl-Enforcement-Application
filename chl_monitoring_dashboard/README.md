@@ -348,6 +348,7 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Evidence records load as their own shape: figures, tabs and the register.
 - Violations & cases loads as its own shape: figures, tabs and the register.
 - Trip monitoring loads as its own shape: figures, tabs and the trips table.
 - Verifications & E-Tags loads as its own shape: figures, tabs and the register.
