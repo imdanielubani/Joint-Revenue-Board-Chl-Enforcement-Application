@@ -26,7 +26,7 @@ import type { RelatedKind } from '@/features/violations/related-records'
 import { useViolationsMonitoring } from '@/features/violations/violations.queries'
 import type { ViolationCase } from '@/features/violations/violations.schemas'
 import { Dialog } from '@/shared/ui/Dialog'
-import { StatePanel } from '@/shared/ui/StatePanel'
+import { Skeleton, SkeletonFacts, SkeletonTable } from '@/shared/ui/Skeleton'
 import type { TripsFilters } from '../trips.schemas'
 import styles from './TripCards.module.css'
 
@@ -68,7 +68,10 @@ function Placeholder({
       }
     >
       {loading ? (
-        <StatePanel kind="loading" message="Loading…" />
+        <Skeleton message="Loading…">
+          <SkeletonFacts rows={5} />
+          <SkeletonTable rows={3} columns={4} />
+        </Skeleton>
       ) : (
         <p className={styles.small}>{message}</p>
       )}

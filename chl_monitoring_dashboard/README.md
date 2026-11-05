@@ -348,6 +348,9 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Related-record popups (verification, vehicle, case, agent, an agent's
+  verifications or violations, location, evidence) load as their own shape:
+  facts and a short table.
 - Search results load as their own shape: the summary line and groups of
   results.
 - An agent's page loads as its own shape: identity beside metrics, their
