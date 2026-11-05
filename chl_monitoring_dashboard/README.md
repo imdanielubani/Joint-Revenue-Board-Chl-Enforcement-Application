@@ -237,6 +237,13 @@ onSelect }` (no `to`) is a button acting on the current page. Either
     Trips by reference, each to its record over a period from the record's
     day to today. A result whose module the user may not open is shown
     without a link. Read-only.
+- **Loading:** every page shows its own shape while its data loads: grey
+  placeholders where its figures, tabs, filters, cards, tables, lists, charts
+  and maps will be, with a soft shimmer (still with reduced motion), so
+  nothing jumps when the data arrives. Built from the shared pieces in
+  `shared/ui/Skeleton.tsx` (`RegisterSkeleton` for register pages); screen
+  readers hear the loading message only. Popups, the maps, the bell's list and
+  the app's first load do the same.
 - **Images** from the design live in `public/assets/` (`brand/` for the
   JRB logo, `auth/` for the sign-in pages, `support/` for the support form,
   `toast/` for notifications, `shell/` for the top bar and sidebar, `nav/`
@@ -348,6 +355,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- README: how pages show their shape while they load, and the shared skeleton
+  pieces.
 - The first load of the app shows the dashboard's frame (sidebar, top bar and a
   page's shape) while the page's code arrives, instead of a blank screen.
 - The bell's menu shows three notification-shaped placeholders while its list
