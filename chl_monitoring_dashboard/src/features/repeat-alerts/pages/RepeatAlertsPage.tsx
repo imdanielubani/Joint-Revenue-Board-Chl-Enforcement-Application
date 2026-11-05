@@ -13,6 +13,7 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { AlertDialog } from '../components/AlertDialog'
 import { AlertRegister } from '../components/AlertRegister'
@@ -132,7 +133,7 @@ function RepeatAlertsContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading repeat-vehicle alerts…" />
+        <RegisterSkeleton message="Loading repeat-vehicle alerts…" tabs={2} />
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
