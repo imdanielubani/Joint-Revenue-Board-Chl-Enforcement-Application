@@ -1,6 +1,6 @@
 import type { OverviewFilters } from '@/features/overview/overview.schemas'
 import { Dialog } from '@/shared/ui/Dialog'
-import { StatePanel } from '@/shared/ui/StatePanel'
+import { Skeleton, SkeletonFacts, SkeletonTable } from '@/shared/ui/Skeleton'
 import { usePaymentsMonitoring } from '../payments.queries'
 import { NoticeDialog } from './NoticeDialog'
 import styles from './PaymentCards.module.css'
@@ -32,7 +32,10 @@ export function NoticePopup({
       }
     >
       {query.isPending ? (
-        <StatePanel kind="loading" message="Loading…" />
+        <Skeleton message="Loading…">
+          <SkeletonFacts rows={5} />
+          <SkeletonTable rows={3} columns={4} />
+        </Skeleton>
       ) : (
         <p className={styles.small}>
           Demand notice {noticeId} was not found in this area and period.
