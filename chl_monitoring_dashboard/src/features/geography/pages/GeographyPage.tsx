@@ -12,6 +12,7 @@ import { FreshnessLine } from '@/shared/ui/FreshnessLine'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { GeographySkeleton } from '../components/GeographySkeleton'
 import { useAreas } from '../areas.queries'
 import {
   EnforcementFollowUpCard,
@@ -123,7 +124,7 @@ function GeographyContent({
       </div>
 
       {queries.some((query) => query.isPending) ? (
-        <StatePanel kind="loading" message="Loading geographical monitoring…" />
+        <GeographySkeleton />
       ) : !overview || !geography || !permitted || !pointsInView ? (
         <StatePanel
           kind="error"

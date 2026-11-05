@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Geographical monitoring loads as its own shape: figures, the map, and the
+  places beside the records.
 - Command centre loads as its own shape: figures, the activity feed beside the
   cases needing attention, the SOS and field cards, and the map.
 - `RegisterSkeleton`: a register page's shape while it loads, its headline
