@@ -13,6 +13,7 @@ import { FreshnessLine } from '@/shared/ui/FreshnessLine'
 import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { CommandCentreSkeleton } from '../components/CommandCentreSkeleton'
 import { SummaryStrip } from '@/shared/ui/SummaryStrip'
 import { ActivityFeedCard } from '../components/ActivityFeedCard'
 import { inView, placeKey, type FeedView } from '../command-centre-display'
@@ -113,7 +114,7 @@ function CommandCentreContent({
       </div>
 
       {query.isPending ? (
-        <StatePanel kind="loading" message="Loading the command centre…" />
+        <CommandCentreSkeleton />
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (

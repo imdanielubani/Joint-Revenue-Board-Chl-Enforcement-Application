@@ -348,6 +348,8 @@ onSelect }` (no `to`) is a button acting on the current page. Either
 
 Newest first. Add a line for every change.
 
+- Command centre loads as its own shape: figures, the activity feed beside the
+  cases needing attention, the SOS and field cards, and the map.
 - `RegisterSkeleton`: a register page's shape while it loads, its headline
   figures, then its tabs or the register's filters, then the table.
 - Skeleton pieces: a popup's facts (`SkeletonFacts`) and sections side by side
