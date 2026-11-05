@@ -11,6 +11,7 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { RegisterSkeleton } from '@/shared/ui/Skeleton'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { RecordsPanel } from '../components/RecordsPanel'
 import { EtagResultsCard, MethodsCard, ProvenanceCard } from '../components/SummaryCards'
@@ -133,7 +134,7 @@ function VerificationsContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading verifications…" />
+        <RegisterSkeleton message="Loading verifications…" tabs={4} />
       ) : !monitoring ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (

@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mockCommandCentreApi } from '@/mocks/mock-command-centre-api'
 import { mockGeographyApi } from '@/mocks/mock-geography-api'
+import { mockVerificationsApi } from '@/mocks/mock-verifications-api'
 // (stubs)
 import { renderApp, signInAs } from '@/test/render-app'
 
@@ -18,6 +19,11 @@ const CASES: [string, string | RegExp, () => unknown][] = [
     '/geography',
     'Loading geographical monitoring…',
     () => vi.spyOn(mockGeographyApi, 'getGeography').mockReturnValue(new Promise(() => {})),
+  ],
+  [
+    '/verifications',
+    'Loading verifications…',
+    () => vi.spyOn(mockVerificationsApi, 'getMonitoring').mockReturnValue(new Promise(() => {})),
   ],
   // (cases)
 ]
