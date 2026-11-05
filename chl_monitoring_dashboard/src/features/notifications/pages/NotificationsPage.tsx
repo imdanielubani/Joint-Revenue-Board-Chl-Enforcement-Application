@@ -14,6 +14,7 @@ import { HeadlineFigures } from '@/shared/ui/HeadlineFigures'
 import { PageHero, RefreshButton } from '@/shared/ui/PageHero'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatePanel } from '@/shared/ui/StatePanel'
+import { NotificationsSkeleton } from '../components/NotificationsSkeleton'
 import { panelId, tabId } from '@/shared/ui/tab-ids'
 import { NotificationDialog } from '../components/NotificationDialog'
 import { NotificationRegister } from '../components/NotificationRegister'
@@ -165,7 +166,7 @@ function NotificationsContent({
       </div>
 
       {filter.waiting || query.isPending ? (
-        <StatePanel kind="loading" message="Loading notifications…" />
+        <NotificationsSkeleton />
       ) : !data ? (
         <StatePanel kind="error" error={query.error} onRetry={() => void query.refetch()} />
       ) : (
