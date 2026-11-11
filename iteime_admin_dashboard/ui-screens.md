@@ -70,12 +70,13 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Filters – State open (search, several states, selected pinned) | ✅ |
 | Filters – Party open (all eight parties, several at once) | ✅ |
 | Filters – applied (values in the filters, Reset filters, figures updated) | ✅ |
-| Overview – loading and empty (no activity in the period) | ⬜ |
-| Overview – one card failed to load (rest of the page still works) | ⬜ |
-| Chart – hover tooltip on a stage | ⬜ |
-| Map – pin selected (side panel with the action, plate, officer, evidence) | ⬜ |
-| Needs your decision – accept or reject a transfer (with reason) | ⬜ |
-| Export – menu (CSV, PDF) and export in progress | ⬜ |
+| Overview – loading | ✅ |
+| Overview – no activity in the period | ✅ |
+| Overview – map failed to load (rest of the page still works) | ✅ |
+| Chart – hover tooltip on a stage | ✅ |
+| Map – pin selected (details: amount, plate, place, officer, team, case, evidence) | ✅ |
+| Needs your decision – review transfer (reject with a required reason) | ✅ |
+| Export – menu (PDF, CSV) and export in progress | ✅ |
 | Overview – State IRS | ⬜ |
 | Overview – Law Enforcement | ⬜ |
 | Overview – Central Enforcement | ⬜ |
