@@ -221,6 +221,13 @@ The Super Admin gives access to everyone else, based on role and permission.
   role's permissions changes it for everyone who holds that role.
 - **Sees everything.** All modules, all parties and all states, so the
   Super Admin can check what any role sees.
+- **Sees every Overview.** The Super Admin Overview has a party tab bar:
+  All parties · Control Center · State IRS · Law Enforcement · Central
+  Enforcement · Command & Control · Legal. All parties is the national view;
+  each other tab shows exactly what that party sees, inside the Super Admin
+  sidebar, with a note naming the party. State IRS and Law Enforcement add a
+  State filter to choose which state. Each tab shows how many items need that
+  party's attention.
 - **Manages the rules.** Routing permissions and other settings stored as
   data.
 - **Is accountable.** Every access change (user added, role or permission
