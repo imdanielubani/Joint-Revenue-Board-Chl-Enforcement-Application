@@ -45,7 +45,7 @@ only; no code is written yet.
 | 7 | Documents (EDMS) | No | To be confirmed |
 | 8 | Messages | Yes | Every role |
 | 9 | Notifications | No | Every role |
-| 10 | Administration | Yes | Designated admins (and the Agency Head for teams) |
+| 10 | Administration | Yes | Super Admin (and the Agency Head for teams) |
 | — | Account | Yes | Every role (top-bar menu, not the sidebar) |
 
 Sidebar groups, top to bottom:
@@ -176,11 +176,37 @@ notifications are sent by the system and are not pages.
 
 ## 10. Administration — has sub-modules
 
-- **Users and roles**: users, their party, role and jurisdiction.
+Managed by the [Super Admin](#super-admin).
+
+- **Users and roles**: the people who use ITEIME and what each may do. For
+  every user: their party, role and jurisdiction (state, and agency where
+  relevant). For every role: its permissions, meaning which modules it can
+  open and which actions it can take in them. Access is given only through a
+  role; nobody is given a module directly.
 - **Routing permissions**: the table of which party may route to which.
   Stored as data, editable without a redeploy.
 - **Audit log**: every recorded action, with who, what, before and after,
   when, and from which IP / device. Read-only.
+
+## Super Admin
+
+Added by the product owner; the specification does not name this role.
+
+The Super Admin gives access to everyone else, based on role and permission.
+
+- **Grants access.** Creates users, assigns each one a party, role and
+  jurisdiction, and sets what each role is permitted to see and do. Changing a
+  role's permissions changes it for everyone who holds that role.
+- **Sees everything.** All modules, all parties and all states, so the
+  Super Admin can check what any role sees.
+- **Manages the rules.** Routing permissions and other settings stored as
+  data.
+- **Is accountable.** Every access change (user added, role or permission
+  changed, access removed) is written to the audit log with who made it and
+  the before and after.
+- **Workspace.** Shown as "Super Admin · All parties · All states" in the
+  workspace switcher. A Super Admin who also holds a party role can switch to
+  it to see the dashboard exactly as that role does.
 
 ## Account — has sub-modules
 
@@ -195,15 +221,18 @@ From the top-bar menu, not the sidebar.
 ✓ sees it · ◐ part of it · — does not. Rows marked † are not stated in the
 specification and need confirming.
 
-| Module | Control Center | State IRS | Law Enforcement | Central Enforcement | Command & Control | Legal | Finance / Treasury | Intelligence Officer | Agency Head | Admin |
+This is the starting point for each role's permissions. The Super Admin sets
+the final permissions in Administration › Users and roles.
+
+| Module | Control Center | State IRS | Law Enforcement | Central Enforcement | Command & Control | Legal | Finance / Treasury | Intelligence Officer | Agency Head | Super Admin |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Overview | † | ✓ | ✓ | ✓ | ✓ | ✓ | † | † | ✓ | † |
-| Intake | ✓ | — | — | — | † | — | — | — | — | — |
-| Cases | ✓ | ✓ | ✓ | ✓ | ✓ | ◐ Legal review | ◐ refund cases | † | ◐ linked cases | † |
-| Field Operations | — | ✓ | ✓ | † | † | — | — | † | ✓ | — |
-| Payments | — | ◐ | ◐ | † | † | — | ◐ Refunds | — | ◐ read-only | — |
-| Intelligence | — | — | — | † | † | — | — | ✓ | — | — |
-| Documents | † | † | † | † | † | † | † | † | † | † |
+| Overview | † | ✓ | ✓ | ✓ | ✓ | ✓ | † | † | ✓ | ✓ |
+| Intake | ✓ | — | — | — | † | — | — | — | — | ✓ |
+| Cases | ✓ | ✓ | ✓ | ✓ | ✓ | ◐ Legal review | ◐ refund cases | † | ◐ linked cases | ✓ |
+| Field Operations | — | ✓ | ✓ | † | † | — | — | † | ✓ | ✓ |
+| Payments | — | ◐ | ◐ | † | † | — | ◐ Refunds | — | ◐ read-only | ✓ |
+| Intelligence | — | — | — | † | † | — | — | ✓ | — | ✓ |
+| Documents | † | † | † | † | † | † | † | † | † | ✓ |
 | Messages | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Notifications | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Administration | — | — | — | — | — | — | — | — | ◐ Teams | ✓ |
@@ -235,7 +264,7 @@ specification and need confirming.
 | M20 EDMS | Documents |
 | Notifications (shared) | Notifications (in-app); SMS and email in the background |
 | Communication (shared) | Messages; Case page › Thread |
-| RBAC, audit log, identity (shared) | Administration; Account |
+| RBAC, audit log, identity (shared) | Administration (run by the Super Admin); Account |
 | Taxpayer status lookup | Intake › Status lookup |
 
 ## Suggested design order
@@ -270,3 +299,5 @@ depends on:
 - Penalty / payment source of truth (CHL Systems): webhook or polling.
 - Data protection compliance (NDPA).
 - The access marked † in [Who sees what](#who-sees-what).
+- How many Super Admins there are and who appoints them, and whether a
+  second person must approve access changes.
