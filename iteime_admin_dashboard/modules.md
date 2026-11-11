@@ -70,6 +70,7 @@ user's role and jurisdiction. Each view shows that party's **Cases** and
 | State IRS overview | State IRS | Its state's cases; its own agents' actions |
 | Law Enforcement overview | Law Enforcement | Cases received; its own officers' actions |
 | Central Enforcement overview | Central Enforcement | Escalations, SLA breaches, cross-state cases |
+| Control Center overview | Control Center | The intake queue, cases created, intake time, routing, SMS confirmations and status lookups |
 | Command & Control overview | Command & Control | Oversight and prioritisation across all parties |
 | Legal overview | Legal | Escalated cases awaiting review, cases marked for prosecution |
 | Agency overview | Agency Head | The agency's teams, officers, actions, trip statuses, penalties, transaction validation status and linked cases |
@@ -84,6 +85,7 @@ the modules the role may open (see [Who sees what](#who-sees-what)).
 | Party | Scope | Alert line | Filters | Headline figures | Cards |
 |---|---|---|---|---|---|
 | **Super Admin** | All parties, all states | Transfers waiting | Period, State, Party | Open cases, Escalated, Penalties raised (₦), Penalties paid (₦) | Cases by stage; Needs your decision; Live activity with map; Penalties and payments (₦) with payment validation; Cases by source; Recent cases |
+| **Control Center** | All channels | Reports waiting in the intake queue | Period (default Today), Channel, Agent | In the intake queue, Cases created today, Average intake time (target 2 minutes), Waiting to be routed | Queue by channel; Next in the queue (triage, route); Cases created (last 7 days); Routed today by party; SMS confirmations; Status lookups; Recently created cases (with SMS status) |
 | **State IRS** | Its state | Transfers waiting | Period, LGA, Team | Open cases in the state, Transfers to decide, Penalties raised by its agents (₦), Penalties paid (₦) | Cases by stage; Needs your decision (transfers, SLA at risk, out-of-zone actions); Its agents in the field (map, agents on duty, most active); Penalties and payments (₦); Payment validation; Recent cases in the state |
 | **Law Enforcement** | Its command | Transfers waiting | Period, LGA, Team | Cases assigned to it, In investigation, Transfers to decide, Penalties by its officers (₦) | Its cases by stage; Needs your decision; Its officers in the field (map, officers on duty, recent actions); Recent cases assigned to it |
 | **Central Enforcement** | All states | Escalations with no team assigned | Period, State, Reason | Escalated cases, SLA breaches, Multiple actors, Cross-state cases | Escalations by reason; Escalation queue (assign a team); Escalations by state; Cross-state cases; Recent escalations |
