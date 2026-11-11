@@ -65,7 +65,17 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Screen | Status |
 |---|---|
 | Overview – Super Admin (headline figures, cases by stage, needs your decision, live activity with map, penalties and payments in naira, cases by source, recent cases) | ✅ |
+| Filters – Period open (single choice) | ✅ |
+| Filters – Custom period (calendar, from and to) | ✅ |
+| Filters – State open (search, several states, selected pinned) | ✅ |
+| Filters – Party open (all eight parties, several at once) | ✅ |
+| Filters – applied (values in the filters, Reset filters, figures updated) | ✅ |
 | Overview – loading and empty (no activity in the period) | ⬜ |
+| Overview – one card failed to load (rest of the page still works) | ⬜ |
+| Chart – hover tooltip on a stage | ⬜ |
+| Map – pin selected (side panel with the action, plate, officer, evidence) | ⬜ |
+| Needs your decision – accept or reject a transfer (with reason) | ⬜ |
+| Export – menu (CSV, PDF) and export in progress | ⬜ |
 | Overview – State IRS | ⬜ |
 | Overview – Law Enforcement | ⬜ |
 | Overview – Central Enforcement | ⬜ |
