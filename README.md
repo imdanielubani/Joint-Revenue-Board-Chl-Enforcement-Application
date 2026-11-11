@@ -4,7 +4,7 @@
 |---|---|
 | [`jbr_chl_enforcement/`](jbr_chl_enforcement/) | The mobile enforcement app for Android and iPhone (Flutter). [Developer guide](jbr_chl_enforcement/README.md) |
 | [`iteime_backend/`](iteime_backend/) | The ITEIME Enforcement Engine backend (Node.js, Express, TypeScript, PostgreSQL). It connects to the existing CHL backend and serves the mobile app. [Developer guide](iteime_backend/README.md) |
-| [`iteime_admin_dashboard/`](iteime_admin_dashboard/) | The ITEIME Admin Dashboard. The UI is being designed first; no code yet. [Modules](iteime_admin_dashboard/modules.md) |
+| [`iteime_admin_dashboard/`](iteime_admin_dashboard/) | The ITEIME Admin Dashboard. The UI is being designed first; no code yet. [Modules](iteime_admin_dashboard/modules.md) · [UI screens](iteime_admin_dashboard/ui-screens.md) |
 
 Mobile app:
 
