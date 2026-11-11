@@ -74,6 +74,26 @@ user's role and jurisdiction. Each view shows that party's **Cases** and
 | Legal overview | Legal | Escalated cases awaiting review, cases marked for prosecution |
 | Agency overview | Agency Head | The agency's teams, officers, actions, trip statuses, penalties, transaction validation status and linked cases |
 
+### What each party sees on its Overview
+
+Every view keeps the same header (greeting, the one alert that needs action,
+filters, Export). Only the Control Center creates cases, so **New case**
+appears only for the Control Center and the Super Admin. Sidebars show only
+the modules the role may open (see [Who sees what](#who-sees-what)).
+
+| Party | Scope | Alert line | Filters | Headline figures | Cards |
+|---|---|---|---|---|---|
+| **Super Admin** | All parties, all states | Transfers waiting | Period, State, Party | Open cases, Escalated, Penalties raised (₦), Penalties paid (₦) | Cases by stage; Needs your decision; Live activity with map; Penalties and payments (₦) with payment validation; Cases by source; Recent cases |
+| **State IRS** | Its state | Transfers waiting | Period, LGA, Team | Open cases in the state, Transfers to decide, Penalties raised by its agents (₦), Penalties paid (₦) | Cases by stage; Needs your decision (transfers, SLA at risk, out-of-zone actions); Its agents in the field (map, agents on duty, most active); Penalties and payments (₦); Payment validation; Recent cases in the state |
+| **Law Enforcement** | Its command | Transfers waiting | Period, LGA, Team | Cases assigned to it, In investigation, Transfers to decide, Penalties by its officers (₦) | Its cases by stage; Needs your decision; Its officers in the field (map, officers on duty, recent actions); Recent cases assigned to it |
+| **Central Enforcement** | All states | Escalations with no team assigned | Period, State, Reason | Escalated cases, SLA breaches, Multiple actors, Cross-state cases | Escalations by reason; Escalation queue (assign a team); Escalations by state; Cross-state cases; Recent escalations |
+| **Command & Control** | All parties, all states | Cases waiting for a priority | Period, State, Party | Open cases (all parties), Escalated, SLA met (%), Waiting for a priority | Open cases by party; Waiting for a priority; SLA performance by party; Activity by state; Recently escalated (with priority) |
+| **Legal** | Cases sent for legal review | Cases waiting for legal review | Period, Reason, From party | Waiting for review, Under review, Marked for prosecution, Reviewed | Legal review queue; Recently marked for prosecution; Cases in review by escalation reason |
+
+To confirm: Central Enforcement and Command & Control duties (the
+specification leaves them open), the priority levels Command & Control sets,
+and whether Legal sees cases that were not escalated.
+
 ## 2. Intake — has sub-modules
 
 Where taxpayer grievances arrive and become cases. Used by the Control

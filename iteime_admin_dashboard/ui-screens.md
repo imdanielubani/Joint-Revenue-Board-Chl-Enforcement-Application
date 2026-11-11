@@ -77,11 +77,11 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Map – pin selected (details: amount, plate, place, officer, team, case, evidence) | ✅ |
 | Needs your decision – review transfer (reject with a required reason) | ✅ |
 | Export – menu (PDF, CSV) and export in progress | ✅ |
-| Overview – State IRS | ⬜ |
-| Overview – Law Enforcement | ⬜ |
-| Overview – Central Enforcement | ⬜ |
-| Overview – Command & Control | ⬜ |
-| Overview – Legal | ⬜ |
+| Overview – State IRS | ✅ |
+| Overview – Law Enforcement | ✅ |
+| Overview – Central Enforcement | ✅ |
+| Overview – Command & Control | ✅ |
+| Overview – Legal | ✅ |
 | Overview – Agency Head | ⬜ |
 | Overview – tablet and phone | ⬜ |
 
