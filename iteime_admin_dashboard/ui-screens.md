@@ -100,7 +100,8 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | New case – form (reporter, incident, location, actors; intake timer; what happens on create; SMS preview) | ✅ |
 | New case – validation errors | ✅ |
 | New case – created (case ID, SLA started, SMS delivered, escalated for multiple actors) | ✅ |
-| Route – choose party or parties (only those the routing permissions allow; suggested from the actors; reason) | ✅ |
+| Route – progress steps, recommended parties from the actors (receiving office or command), other parties, message with quick-add, route summary with what happens next | ✅ |
+| Route – case routed (each party waiting to accept, escalation notice) | ✅ |
 | Status lookup – by phone or plate, results and no results | ✅ |
 | Intake queue – filtered to one channel (WhatsApp) | ✅ |
 | Intake queue – row actions (⋯ menu: open in triage, assign to me, start a new case, add to an existing case, copy reference, not a case) | ✅ |
