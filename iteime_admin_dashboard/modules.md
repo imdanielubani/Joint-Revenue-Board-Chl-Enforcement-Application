@@ -254,7 +254,9 @@ The Super Admin gives access to everyone else, based on role and permission.
 From the top-bar menu, not the sidebar.
 
 - **Sign in**
-- **Profile**: the user's party, role and jurisdiction.
+- **Profile**: the user's details, and their party, role and jurisdiction
+  (read-only; managed in Administration). A **Password and sign-in** tab
+  changes the password.
 - **Sign out**
 
 ## Who sees what

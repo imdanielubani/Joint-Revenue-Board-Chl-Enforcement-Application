@@ -222,8 +222,11 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Profile | ⬜ |
-| Change password | ⬜ |
+| Profile – personal details, your access (role, party, jurisdiction, modules, permissions), sign-in, your activity, appearance | ✅ |
+| Profile – editing (unsaved changes) and saved (toast) | ✅ |
+| Sign out – confirm dialog | ✅ |
+| Password and sign-in – change password (current, new, confirm; password rules) | ✅ |
+| Password and sign-in – typing (rule not met, passwords do not match), wrong current password, password updated | ✅ |
 
 ## Prototyping
 
