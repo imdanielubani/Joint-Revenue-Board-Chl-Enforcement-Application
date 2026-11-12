@@ -94,30 +94,32 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 
 | Screen | Status |
 |---|---|
-| Intake queue – all channels, with channel tabs and counts, coloured channels and statuses, pagination | ✅ |
+The sidebar shows two sub-modules: Intake queue and Triage. New case and
+Status lookup open as popups from the header buttons. Cases to route opens from
+the Intake queue header.
+
+| Screen | Status |
+|---|---|
+| Intake queue – all channels, with channel tabs and counts, coloured channels and statuses, pagination; header: Cases to route, Status lookup, New case | ✅ |
 | Intake queue – queue clear | ✅ |
-| Triage – review a report (live call timer, notes, picked-out details, possible duplicate; create case, add to existing case, not a case) | ✅ |
-| New case – form (reporter, incident, location, actors; intake timer; what happens on create; SMS preview) | ✅ |
-| New case – validation errors | ✅ |
-| New case – created (case ID, SLA started, SMS delivered, escalated for multiple actors) | ✅ |
-| Route – progress steps, recommended parties from the actors (receiving office or command), other parties, message with quick-add, route summary with what happens next | ✅ |
-| Route – case routed (each party waiting to accept, escalation notice) | ✅ |
-| Route – cases to route, All tab (search; Status, Party, Case type and Created filters; Status column: Not routed, Escalated, Returned, Waiting to accept, Accepted; Party column; ⋯ actions; pagination) | ✅ |
-| Route – cases to route, Waiting to route, Returned and Routed today tabs | ✅ |
-| Route – cases to route, Status filter open (several statuses, counts, Clear, Show cases) | ✅ |
-| Route – cases to route, row actions (route case, open case, assign to me, copy case ID, copy link, mark as duplicate) | ✅ |
-| Route – no party chosen (inline error) | ✅ |
-| Route – receiving office open (state where the case happened first, other states after) | ✅ |
-| Route – routing in progress | ✅ |
-| Route – couldn't route (nothing sent, choices kept, try again) | ✅ |
-| Route – returned by a party (reason, rejecting party marked, route again) | ✅ |
-| Status lookup – by phone or plate, results and no results | ✅ |
 | Intake queue – filtered to one channel (WhatsApp) | ✅ |
 | Intake queue – row actions (⋯ menu: open in triage, assign to me, start a new case, add to an existing case, copy reference, not a case) | ✅ |
+| Triage – review a report (live call timer, notes, picked-out details, possible duplicate; create case, add to existing case, not a case) | ✅ |
 | Triage – WhatsApp (thread, photo, reply), SMS (reply, 160 characters), USSD (menu answers, call back), web form (fields, attachments) | ✅ |
 | Triage – "Not a case" dialog (reason, note, SMS the reporter) | ✅ |
 | Triage – "Add to an existing case" dialog (search, choose, notify owner) | ✅ |
-| Status lookup – row actions (⋯) on each case found | ✅ |
+| New case popup – steps Reporter, Incident, Location, People involved (intake timer, step progress, Back and Continue) | ✅ |
+| New case popup – Reporter with a validation error | ✅ |
+| New case popup – Review (summary with Edit per step, possible duplicate, SMS preview, escalation notice; Create case) | ✅ |
+| New case popup – Route (case created, recommended parties, other parties, message; Route later) | ✅ |
+| New case popup – Route: no party chosen, receiving office open, routing, couldn't route | ✅ |
+| New case popup – done (created and routed, who has the case now) | ✅ |
+| Cases to route – All tab (search; Status, Party, Case type and Created filters; Status column: Not routed, Escalated, Returned, Waiting to accept, Accepted; Party column; ⋯ actions; pagination) | ✅ |
+| Cases to route – Waiting to route, Returned and Routed today tabs | ✅ |
+| Cases to route – Status filter open (several statuses, counts, Clear, Show cases) | ✅ |
+| Cases to route – row actions (route case, open case, assign to me, copy case ID, copy link, mark as duplicate) | ✅ |
+| Route case popup – returned case (reason, rejecting party marked, route again) | ✅ |
+| Status lookup popup – before a search, results (⋯ on each case), no results | ✅ |
 
 ## 5. Cases
 

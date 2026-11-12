@@ -101,17 +101,29 @@ and whether Legal sees cases that were not escalated.
 Where taxpayer grievances arrive and become cases. Used by the Control
 Center.
 
+Two sub-modules in the sidebar:
+
 - **Intake queue**: grievances from every channel in one queue, filterable by
-  channel (call, SMS, USSD, WhatsApp, web / app).
+  channel (call, SMS, USSD, WhatsApp, web / app). **Cases to route** opens
+  from the queue header: cases not routed yet, cases a party returned, and
+  cases routed today.
 - **Triage**: review an item and decide what it becomes.
-- **New case**: name, phone, plate, location (State, LGA, Area, Bus Stop),
-  case type (mandatory), actors with descriptions, date/time, reporter type.
-  On saving: a unique case ID (e.g. `JRB/CHL/KEB/001`), the call log saved,
-  the SLA timer started, an SMS confirmation sent.
-- **Route**: send the new case to the relevant party, or to every relevant
-  party when several actors are involved.
-- **Status lookup**: find a case by the taxpayer's phone number or plate
-  number, to answer a status call.
+
+New case and Status lookup are popups, not sub-modules. They open from the
+header buttons on every Intake screen.
+
+- **New case** (popup, in steps): Reporter → Incident → Location → People
+  involved → Review → Route. The fields are name, phone, plate, location
+  (State, LGA, Area, Bus Stop), case type (mandatory), actors with
+  descriptions, date/time and reporter type. **Create case** at Review gives
+  a unique case ID (e.g. `JRB/CHL/KEB/001`), saves the call log, starts the
+  SLA timer and sends an SMS confirmation. The last step routes the case to
+  the relevant party, or to every relevant party when several actors are
+  involved. **Route later** leaves it in Cases to route.
+- **Route case** (popup): routes a case from Cases to route, including one a
+  party returned.
+- **Status lookup** (popup): find a case by the taxpayer's phone number or
+  plate number, to answer a status call.
 
 ## 3. Cases — has sub-modules
 
@@ -271,7 +283,7 @@ the final permissions in Administration › Users and roles.
 | Specification | Now |
 |---|---|
 | M1 Multi-Channel Intake | Intake › Intake queue |
-| M2 Control Center Console | Intake › Triage, New case, Route |
+| M2 Control Center Console | Intake › Triage; New case popup (ends with Route); Cases to route |
 | M3 Case Management Engine | Cases › Case page (Summary, History, Actions) |
 | M4 Routing & Transfer | Cases › Transfers; Case page › Actions; Administration › Routing permissions |
 | M5 Multi-Actor Accountability | Background rule; seen in Cases › Escalations and Case page › Actors |
@@ -294,7 +306,7 @@ the final permissions in Administration › Users and roles.
 | Notifications (shared) | Notifications (in-app); SMS and email in the background |
 | Communication (shared) | Messages; Case page › Thread |
 | RBAC, audit log, identity (shared) | Administration (run by the Super Admin); Account |
-| Taxpayer status lookup | Intake › Status lookup |
+| Taxpayer status lookup | Intake › Status lookup popup |
 
 ## Suggested design order
 
