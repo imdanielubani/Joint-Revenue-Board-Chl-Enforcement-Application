@@ -208,7 +208,11 @@ the Intake queue header.
 | Files – list (type, shared in, shared by, date; filters; pagination) | ✅ |
 | Voice calls – history (outgoing, incoming, missed, group; call back) | ✅ |
 | Voice call – calling, in call (mute, chat, add people, end call), in call muted, ended | ✅ |
+| Chats – search in this chat (matches highlighted, 2 of 3, previous and next) | ✅ |
+| Voice calls – group call (participants, who is speaking, who is muted, leave) | ✅ |
 | Communication – loading; chats empty; files empty | ✅ |
+| Communication – errors: message not sent (try again), upload failed, call couldn't connect, microphone blocked | ✅ |
+| Communication – couldn't load: chats, case threads, files, voice calls (try again, reference) | ✅ |
 
 ## 11. Notifications
 
