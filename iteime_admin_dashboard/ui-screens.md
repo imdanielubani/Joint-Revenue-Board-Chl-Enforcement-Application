@@ -212,7 +212,7 @@ the Intake queue header.
 | Users – list (search; Role, Party, State and Status filters; status: Active, Invited, Locked, Deactivated; pagination) | ✅ |
 | Users – row actions (view user, change role, unlock account, send password reset, copy email, deactivate user) | ✅ |
 | User – invite (name, email, role, party set by the role, jurisdiction; what the role can open) | ✅ |
-| User – details panel (access, modules it can open, recent activity; send password reset, deactivate) | ✅ |
+| User – details popup (access, modules it can open, recent activity; send password reset, deactivate) | ✅ |
 | User – change role (new role and agency, before and after, reason for the audit log) | ✅ |
 | User – deactivate (reason; cases and history kept) | ✅ |
 | Roles – list (what each role is for, users, modules it can open, last changed) | ✅ |
@@ -220,7 +220,7 @@ the Intake queue header.
 | Routing permissions – From / To matrix from the specification's draft (allowed, to confirm, not applicable; last change) | ✅ |
 | Routing permissions – editing (allowed / not allowed per pair, unsaved changes bar) | ✅ |
 | Audit log – list (search; Who, Action, Record and When filters; time, who, action and record, IP address and device) | ✅ |
-| Audit entry – detail (who, when, record, IP address, device; before and after; permanent) | ✅ |
+| Audit entry – detail popup (who, when, record, IP address, device; before and after; permanent) | ✅ |
 
 ## 13. Account
 
