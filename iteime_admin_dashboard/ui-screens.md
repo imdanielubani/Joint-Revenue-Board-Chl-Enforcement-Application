@@ -219,9 +219,15 @@ the Intake queue header.
 | Role – permissions (scope; modules × view, create, edit, route or transfer, export; "to confirm" where the specification is open; unsaved changes bar) | ✅ |
 | Routing permissions – From / To matrix from the specification's draft (allowed, to confirm, not applicable; last change) | ✅ |
 | Routing permissions – editing (allowed / not allowed per pair, unsaved changes bar) | ✅ |
+| Routing permissions – "routes still need a decision" banner for the pairs left open in the specification | ✅ |
+| Routing permissions – save with a reason, turn off a route (cases still waiting; reason), leave without saving | ✅ |
+| Routing permissions – saved (toast, last change updated), couldn't save (edits kept, try again) | ✅ |
+| Routing permissions – change history popup | ✅ |
+| Routing permissions – loading and empty (no routes set up yet) | ✅ |
 | Audit log – list (search; Users, Action, Record and When filters; time, user, action and record, IP address and device) | ✅ |
 | Audit log – filter dropdowns open: Users (search people), Action (types with counts), Record (types with counts), When (today, yesterday, last 7 or 30 days, custom range) | ✅ |
 | Audit log – filters applied (Access changes, Reset filters) | ✅ |
+| Audit log – loading and empty (no entries match the filters) | ✅ |
 | Audit log – row actions (view entry, show this person's activity, show this record's history, copy entry ID) | ✅ |
 | Audit log – person's activity popup (entries by one person; today, last 7 or 30 days; open in audit log) | ✅ |
 | Audit log – record history popup (every change to one record with before and after, newest first; open the record) | ✅ |
