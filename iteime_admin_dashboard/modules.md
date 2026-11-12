@@ -238,7 +238,8 @@ The Super Admin gives access to everyone else, based on role and permission.
   jurisdiction, and sets what each role is permitted to see and do. Changing a
   role's permissions changes it for everyone who holds that role.
 - **Sees everything.** All modules, all parties and all states, so the
-  Super Admin can check what any role sees.
+  Super Admin can check what any role sees. The Super Admin role always has
+  full access: its permissions are locked, and it can't be edited or deleted.
 - **Sees every Overview.** The Super Admin Overview has a party tab bar:
   All parties · Control Center · State IRS · Law Enforcement · Central
   Enforcement · Command & Control · Legal. All parties is the national view;
