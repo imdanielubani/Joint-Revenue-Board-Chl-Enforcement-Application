@@ -215,9 +215,11 @@ the Intake queue header.
 | User – details popup (access, modules it can open, recent activity; send password reset, deactivate) | ✅ |
 | User – change role (new role and agency, before and after, reason for the audit log) | ✅ |
 | User – deactivate (reason; cases and history kept) | ✅ |
+| User – unlock account (also send a password reset; reason), send password reset, email copied (toast) | ✅ |
 | Users – loading and empty (no other users yet) | ✅ |
 | Roles – list (what each role is for, users, modules it can open, last changed) | ✅ |
 | Roles – row actions (view permissions, edit permissions, see users with this role, show change history, duplicate role, delete role) | ✅ |
+| Roles – row action popups: users with this role, change history, duplicate role, delete role (blocked while users hold it) | ✅ |
 | Roles – loading and empty (no roles yet) | ✅ |
 | Role – permissions for every role: Super Admin, Control Center, State IRS, Agency Head, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence Officer, Field Officer | ✅ |
 | Role – permissions (scope; modules × view, create, edit, route or transfer, export; "to confirm" where the specification is open; unsaved changes bar) | ✅ |
