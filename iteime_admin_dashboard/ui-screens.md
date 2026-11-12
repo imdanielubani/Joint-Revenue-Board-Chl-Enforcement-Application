@@ -102,6 +102,12 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | New case – created (case ID, SLA started, SMS delivered, escalated for multiple actors) | ✅ |
 | Route – progress steps, recommended parties from the actors (receiving office or command), other parties, message with quick-add, route summary with what happens next | ✅ |
 | Route – case routed (each party waiting to accept, escalation notice) | ✅ |
+| Route – cases to route (waiting, returned and routed today tabs; recommended parties; Route and ⋯ on each row; pagination) | ✅ |
+| Route – no party chosen (inline error) | ✅ |
+| Route – receiving office open (state where the case happened first, other states after) | ✅ |
+| Route – routing in progress | ✅ |
+| Route – couldn't route (nothing sent, choices kept, try again) | ✅ |
+| Route – returned by a party (reason, rejecting party marked, route again) | ✅ |
 | Status lookup – by phone or plate, results and no results | ✅ |
 | Intake queue – filtered to one channel (WhatsApp) | ✅ |
 | Intake queue – row actions (⋯ menu: open in triage, assign to me, start a new case, add to an existing case, copy reference, not a case) | ✅ |
