@@ -196,6 +196,12 @@ the Intake queue header.
 | Chats – list (search; All, Unread, Groups) and one-to-one conversation (case link, shared file, read receipt, composer) | ✅ |
 | Chats – conversation menu (view profile, search in this chat, mute notifications, mark as unread, copy chat link, delete chat) | ✅ |
 | Chats – New chat popup (choose people; several people make a group) | ✅ |
+| Chats – plus menu (upload a file, link a case, share from Documents, record a voice note) | ✅ |
+| Chats – uploading a file (progress, cancel), recording a voice note (timer, waveform, discard, send) | ✅ |
+| Chats – link a case popup | ✅ |
+| Chats – view profile popup, delete chat confirm, notifications muted (toast) | ✅ |
+| Chats – Unread tab, search with no results | ✅ |
+| Group chat – members popup (admin, add people, leave group) | ✅ |
 | Group chat (members, sender names and parties) | ✅ |
 | Case threads – list by case and thread with case events (created, routed, escalated, accepted) | ✅ |
 | Files – list (type, shared in, shared by, date; filters; pagination) | ✅ |
