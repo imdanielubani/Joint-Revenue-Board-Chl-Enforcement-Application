@@ -203,8 +203,11 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Notifications – full page (all, unread) | ⬜ |
-| Notifications – empty | ⬜ |
+| Notifications – All, Unread and Mentions tabs (grouped by day, coloured by type, unread highlighted; search; Type and When filters; pagination; mark all as read) | ✅ |
+| Notifications – row actions (open case, mark as read, copy link, turn off this type, remove) | ✅ |
+| Notifications – Type filter open (types with counts) | ✅ |
+| Notifications – all marked as read (toast) | ✅ |
+| Notifications – loading, empty (no notifications yet), unread empty (you're all caught up) | ✅ |
 
 ## 12. Administration (Super Admin)
 
