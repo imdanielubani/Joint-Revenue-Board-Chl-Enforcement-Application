@@ -163,6 +163,48 @@ In short: the main link is **Field Operations and Payments**, and **Cases**
 bridge the two — a penalty raised in the field becomes a case the parties
 handle in the dashboard.
 
+### 4.2 Does the ITEIME Admin Dashboard update the CHL Monitoring Dashboard?
+
+**Not directly.** Neither dashboard updates the other, and the mobile app does
+not update the dashboards either. All three write to and read from the one
+backend; each dashboard shows what the backend holds.
+
+```
+Mobile app ──► Backend ◄──► ITEIME Admin Dashboard
+                  │
+                  └──► CHL Monitoring Dashboard (reads only)
+```
+
+When an agent's trip check reaches the backend, **both dashboards show it at
+the same time**, each in its own way. The ITEIME Admin Dashboard is not a step
+in between.
+
+The two dashboards cover different work:
+
+- **CHL Monitoring Dashboard:** field enforcement (verifications, trips,
+  violations, evidence, payments, field reports, alerts, sync, audit). Its
+  data comes from the **mobile app and CHL**.
+- **ITEIME Admin Dashboard:** case management (intake, routing, transfers,
+  escalations, legal, refunds, teams).
+
+**What the ITEIME Admin Dashboard does that may also show in the CHL
+Monitoring Dashboard** (shared records, to confirm):
+
+| Done in the ITEIME Admin Dashboard | May show in the CHL Monitoring Dashboard | Status |
+|---|---|---|
+| A penalty marked **disputed** or **waived** | The violation's status on Violations & cases and Payments & compliance | To confirm: who owns violations is undecided (Q-CHL-7) |
+| A case **escalated**, **resolved** or **closed**, where it came from a field penalty | The violation shows **Escalated** or **Resolved** (statuses the Monitoring Dashboard already uses) | To confirm |
+| Any ITEIME action | Audit trail, for the System Administrator | To decide: include ITEIME case actions, or keep the monitoring audit trail field-only |
+
+**Never shown in the CHL Monitoring Dashboard:** intake and taxpayer
+complaints; transfers, routing, legal notes and prosecution; refunds (the
+Monitoring Dashboard's rules exclude them); teams and Super Admin access
+changes.
+
+In short: what the **mobile app** sends appears in **both** dashboards
+through the backend; what the **ITEIME Admin Dashboard** does stays there,
+except possibly a penalty or violation's **status** and the **audit trail**.
+
 **Live updates.** The ITEIME specification asks for real-time dashboards and a
 live feed (`/feed` over WebSocket or Server-Sent Events). The Monitoring
 Dashboard currently polls (the bell and the "needs attention" dot every
@@ -338,3 +380,6 @@ raises:
 | D8: final routes for "mark notifications read" and the support request | Backend developer |
 | Are ITEIME-only users (IRS, Legal, Finance, Central) held in CHL or in ITEIME? — Q-ROL-1 | Project owner |
 | Does the transaction-validation status appear in the Monitoring Dashboard? | Project owner |
+| 4.2: Does a penalty marked disputed or waived in the ITEIME Admin Dashboard change the violation's status in the Monitoring Dashboard? | Project owner and backend developer |
+| 4.2: Does an ITEIME case escalated, resolved or closed change the linked violation's status in the Monitoring Dashboard? | Project owner and backend developer |
+| 4.2: Does the Monitoring Dashboard's audit trail include ITEIME case actions, or only field actions? | Project owner |
