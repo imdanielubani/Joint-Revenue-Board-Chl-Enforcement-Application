@@ -226,6 +226,7 @@ the Intake queue header.
 | Routing permissions – To Control Center column; Legal, Finance / Treasury and Intelligence Officer noted as not routing | ✅ |
 | Routing permissions – choose which states State IRS can route to (any other state, or chosen states) | ✅ |
 | Routing permissions – loading and empty (no routes set up yet) | ✅ |
+| Routing permissions – set up routes flow: choose where to start (draft matrix or from scratch), draft loaded for review, save routes (totals and reason), routes set up | ✅ |
 | Audit log – list (search; Users, Action, Record and When filters; time, user, action and record, IP address and device) | ✅ |
 | Audit log – filter dropdowns open: Users (search people), Action (types with counts), Record (types with counts), When (today, yesterday, last 7 or 30 days, custom range) | ✅ |
 | Audit log – filters applied (Access changes, Reset filters) | ✅ |
