@@ -155,7 +155,7 @@ Always through the backend; the two never talk directly. Module names follow
 
 **Not connected to the mobile app** (dashboard only): Intake (taxpayer
 complaints come by call, SMS, USSD, WhatsApp or web), Cases › Transfers and
-Legal review, Payments › Refunds, Documents, Messages, the dashboard's own
+Legal review, Payments › Refunds, Documents, Communication, the dashboard's own
 Notifications, and Administration (users, roles, routing permissions, audit
 log).
 

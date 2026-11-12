@@ -43,7 +43,7 @@ only; no code is written yet.
 | 5 | Payments | Yes | Parties with field agents, Agency Head, Finance / Treasury |
 | 6 | Intelligence | Yes | Intelligence Officer, Command & Control |
 | 7 | Documents (EDMS) | No | To be confirmed |
-| 8 | Messages | Yes | Every role |
+| 8 | Communication | Yes | Every role |
 | 9 | Notifications | No | Every role |
 | 10 | Administration | Yes | Super Admin (and the Agency Head for teams) |
 | — | Account | Yes | Every role (top-bar menu, not the sidebar) |
