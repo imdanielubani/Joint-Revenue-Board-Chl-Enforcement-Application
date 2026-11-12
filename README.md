@@ -1,5 +1,7 @@
 # Joint Revenue Board – CHL Enforcement
 
+How the mobile app, the ITEIME Admin Dashboard and the CHL Monitoring Dashboard communicate through the backend: [SYSTEM_INTEGRATION.md](SYSTEM_INTEGRATION.md).
+
 | Folder | What it is |
 |---|---|
 | [`jbr_chl_enforcement/`](jbr_chl_enforcement/) | The mobile enforcement app for Android and iPhone (Flutter). [Developer guide](jbr_chl_enforcement/README.md) |
