@@ -209,7 +209,8 @@ the Intake queue header.
 | Case threads – thread menu (open case, view parties, search in this thread, mute thread, copy thread link) and parties popup | ✅ |
 | Case threads – plus menu (upload evidence, link a related case, share from Documents, record a voice note), uploading evidence, recording, link a related case popup, share from Documents popup | ✅ |
 | Case threads – mention a party or person (@) | ✅ |
-| Case threads – errors: message not sent; thread on a closed case (read only) | ✅ |
+| Case threads – errors: message not sent; upload failed; file type not supported; voice note too short; thread on a closed case (read only) | ✅ |
+| Uploads – success toast and the file in the conversation: chats (file uploaded) and case threads (evidence uploaded) | ✅ |
 | Files – list (type, shared in, shared by, date; filters; pagination) | ✅ |
 | Voice calls – history (outgoing, incoming, missed, group; call back) | ✅ |
 | Voice call – calling, in call (mute, chat, add people, end call), in call muted, ended | ✅ |
