@@ -102,7 +102,10 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | New case – created (case ID, SLA started, SMS delivered, escalated for multiple actors) | ✅ |
 | Route – progress steps, recommended parties from the actors (receiving office or command), other parties, message with quick-add, route summary with what happens next | ✅ |
 | Route – case routed (each party waiting to accept, escalation notice) | ✅ |
-| Route – cases to route (waiting, returned and routed today tabs; recommended parties; Route and ⋯ on each row; pagination) | ✅ |
+| Route – cases to route, All tab (search; Status, Party, Case type and Created filters; Status column: Not routed, Escalated, Returned, Waiting to accept, Accepted; Party column; ⋯ actions; pagination) | ✅ |
+| Route – cases to route, Waiting to route, Returned and Routed today tabs | ✅ |
+| Route – cases to route, Status filter open (several statuses, counts, Clear, Show cases) | ✅ |
+| Route – cases to route, row actions (route case, open case, assign to me, copy case ID, copy link, mark as duplicate) | ✅ |
 | Route – no party chosen (inline error) | ✅ |
 | Route – receiving office open (state where the case happened first, other states after) | ✅ |
 | Route – routing in progress | ✅ |
