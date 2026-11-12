@@ -19,7 +19,7 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Logo (horizontal and shield, light and dark) | ✅ |
 | Colour tokens (Light and Dark modes), spacing, radius | ✅ |
 | Type styles (Geist), shadows, focus rings | ✅ |
-| Components: Button, Input Field, Alert, Password Requirement, Theme Toggle, Nav Item, Sub Nav Item, Icon Button, Avatar, Top Search, Filter Select, Workspace Switcher, Menu Item, Notification Item, Tooltip, Toast, Skeleton, Status Badge, Stat Card, Checkbox, Segmented Tab, Row Actions (⋯), Pagination, Map Base, icons | ✅ |
+| Components: Button, Input Field, Alert, Password Requirement, Theme Toggle, Nav Item, Sub Nav Item, Icon Button, Avatar, Top Search, Filter Select, Workspace Switcher, Menu Item, Notification Item, Tooltip, Toast, Skeleton, Status Badge, Stat Card, Checkbox, Segmented Tab, Row Actions (⋯), Pagination, Map Base, icons (including Mic and Mic Off) | ✅ |
 | Components still needed as modules are designed: table, tabs, drawer, form fields (select, date, textarea, file upload), pagination, timeline, map | ⬜ |
 
 ## 1. Authentication
@@ -200,7 +200,7 @@ the Intake queue header.
 | Case threads – list by case and thread with case events (created, routed, escalated, accepted) | ✅ |
 | Files – list (type, shared in, shared by, date; filters; pagination) | ✅ |
 | Voice calls – history (outgoing, incoming, missed, group; call back) | ✅ |
-| Voice call – calling, in call, ended | ✅ |
+| Voice call – calling, in call (mute, chat, add people, end call), in call muted, ended | ✅ |
 | Communication – loading; chats empty; files empty | ✅ |
 
 ## 11. Notifications
