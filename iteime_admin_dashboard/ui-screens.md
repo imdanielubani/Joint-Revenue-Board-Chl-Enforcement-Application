@@ -212,6 +212,10 @@ the Intake queue header.
 | Case threads – errors: message not sent; upload failed; file type not supported; voice note too short; thread on a closed case (read only) | ✅ |
 | Uploads – success toast and the file in the conversation: chats (file uploaded) and case threads (evidence uploaded) | ✅ |
 | Files – list (type, shared in, shared by, date; filters; pagination) | ✅ |
+| Files – Images, Documents and Audio tabs; search with no results; Shared in filter open | ✅ |
+| Files – row actions (preview, download, show in conversation, copy link, remove) | ✅ |
+| Files – preview popups (image, document), downloaded (toast), remove file confirm, file removed (toast) | ✅ |
+| Files – errors: download failed, preview couldn't load, file no longer available | ✅ |
 | Voice calls – history (outgoing, incoming, missed, group; call back) | ✅ |
 | Voice call – calling, in call (mute, chat, add people, end call), in call muted, ended | ✅ |
 | Chats – search in this chat (matches highlighted, 2 of 3, previous and next) | ✅ |
