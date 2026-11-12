@@ -220,6 +220,9 @@ the Intake queue header.
 | Routing permissions – From / To matrix from the specification's draft (allowed, to confirm, not applicable; last change) | ✅ |
 | Routing permissions – editing (allowed / not allowed per pair, unsaved changes bar) | ✅ |
 | Audit log – list (search; Who, Action, Record and When filters; time, who, action and record, IP address and device) | ✅ |
+| Audit log – filter dropdowns open: Who (search people), Action (types with counts), Record (types with counts), When (today, yesterday, last 7 or 30 days, custom range) | ✅ |
+| Audit log – filters applied (Access changes, Reset filters) | ✅ |
+| Audit log – row actions (view entry, open record, show this person's activity, show this record's history, copy entry ID) | ✅ |
 | Audit entry – detail popup (who, when, record, IP address, device; before and after; permanent) | ✅ |
 
 ## 13. Account
