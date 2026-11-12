@@ -214,9 +214,12 @@ the Intake queue header.
 | Files – list (type, shared in, shared by, date; filters; pagination) | ✅ |
 | Files – Images, Documents and Audio tabs; search with no results; Shared in filter open | ✅ |
 | Files – row actions (preview, download, show in conversation, copy link, remove) | ✅ |
-| Files – preview popups (image, document), downloaded (toast), remove file confirm, file removed (toast) | ✅ |
+| Files – preview popups (image, document), downloading (progress, cancel), downloaded (toast), remove file confirm, file removed (toast) | ✅ |
 | Files – errors: download failed, preview couldn't load, file no longer available | ✅ |
 | Voice calls – history (outgoing, incoming, missed, group; call back) | ✅ |
+| Voice calls – Missed tab, Type filter open, search with no results | ✅ |
+| Voice calls – row actions (call back, send a message, call details, view profile, remove from history), call details popup, removed from history (toast) | ✅ |
+| Voice calls – new call popup, incoming call (decline, accept), no answer | ✅ |
 | Voice call – calling, in call (mute, chat, add people, end call), in call muted, ended | ✅ |
 | Chats – search in this chat (matches highlighted, 2 of 3, previous and next) | ✅ |
 | Voice calls – group call (participants, who is speaking, who is muted, leave) | ✅ |
