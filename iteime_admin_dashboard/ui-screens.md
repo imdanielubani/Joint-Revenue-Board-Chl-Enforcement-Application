@@ -93,13 +93,16 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 
 | Screen | Status |
 |---|---|
-| Intake queue – all channels, filtered by channel | ⬜ |
-| Triage – review an item | ⬜ |
-| New case – form (name, phone, plate, location, case type, actors, date/time, reporter type) | ⬜ |
-| New case – validation errors | ⬜ |
-| New case – created (case ID, SLA started, SMS sent) | ⬜ |
-| Route – choose party or parties | ⬜ |
-| Status lookup – by phone or plate, results and no results | ⬜ |
+| Intake queue – all channels, with channel tabs and counts | ✅ |
+| Intake queue – queue clear | ✅ |
+| Triage – review a report (live call timer, notes, picked-out details, possible duplicate; create case, add to existing case, not a case) | ✅ |
+| New case – form (reporter, incident, location, actors; intake timer; what happens on create; SMS preview) | ✅ |
+| New case – validation errors | ✅ |
+| New case – created (case ID, SLA started, SMS delivered, escalated for multiple actors) | ✅ |
+| Route – choose party or parties (only those the routing permissions allow; suggested from the actors; reason) | ✅ |
+| Status lookup – by phone or plate, results and no results | ✅ |
+| Intake queue – filtered to one channel, and an item opened from WhatsApp, SMS, USSD and web | ⬜ |
+| Triage – "Not a case" reason, and "Add to existing case" | ⬜ |
 
 ## 5. Cases
 
