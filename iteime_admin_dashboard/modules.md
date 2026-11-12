@@ -55,7 +55,7 @@ WORK          Overview · Intake · Cases
 OPERATIONS    Field Operations · Payments
 INSIGHT       Intelligence · Documents
               ─────────────
-              Messages · Notifications
+              Communication · Notifications
 ADMIN         Administration
 ```
 
@@ -195,13 +195,19 @@ officers.
 The electronic document management system. Named in the specification
 without further detail.
 
-## 8. Messages — has sub-modules
+## 8. Communication — has sub-modules
 
-- **Chats**: one-to-one and group chats.
-- **Case threads**: conversations linked to a case (also shown on the case
-  page).
-- **Files**: files shared in conversations.
-- **Voice calls**
+Called Communication, as in the specification ("chat, group chat,
+case-linked threads, files, WebRTC voice").
+
+- **Chats**: one-to-one and group chats, with a New chat popup that becomes a
+  group when several people are chosen.
+- **Case threads**: conversations linked to a case, shared by every party on
+  it, with case events (created, routed, escalated, accepted) in line. Also
+  shown on the case page.
+- **Files**: files shared in chats and case threads.
+- **Voice calls**: call history, and calls made in the browser (calling, in
+  call, ended).
 
 ## 9. Notifications — no sub-modules
 
@@ -283,7 +289,7 @@ the final permissions in Administration › Users and roles.
 | Payments | — | ◐ | ◐ | † | † | — | ◐ Refunds | — | ◐ read-only | ✓ |
 | Intelligence | — | — | — | † | † | — | — | ✓ | — | ✓ |
 | Documents | † | † | † | † | † | † | † | † | † | ✓ |
-| Messages | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Communication | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Notifications | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Administration | — | — | — | — | — | — | — | — | ◐ Teams | ✓ |
 
@@ -313,7 +319,7 @@ the final permissions in Administration › Users and roles.
 | M19 Financial Adjustment | Payments › Refunds |
 | M20 EDMS | Documents |
 | Notifications (shared) | Notifications (in-app); SMS and email in the background |
-| Communication (shared) | Messages; Case page › Thread |
+| Communication (shared) | Communication; Case page › Thread |
 | RBAC, audit log, identity (shared) | Administration (run by the Super Admin); Account |
 | Taxpayer status lookup | Intake › Status lookup popup |
 
@@ -334,7 +340,7 @@ depends on:
    overviews
 9. Case page › Linked cases
 10. Legal review, Intelligence › Tags, Payments › Refunds
-11. Messages
+11. Communication
 12. Intelligence › Patterns and Suspect register; Documents
 
 ## Open items (as the specification leaves them)

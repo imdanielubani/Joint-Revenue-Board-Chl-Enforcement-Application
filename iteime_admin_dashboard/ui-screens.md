@@ -189,15 +189,19 @@ the Intake queue header.
 | Document – preview | ⬜ |
 | Documents – upload | ⬜ |
 
-## 10. Messages
+## 10. Communication
 
 | Screen | Status |
 |---|---|
-| Chats – list and conversation | ⬜ |
-| Group chat | ⬜ |
-| Case threads | ⬜ |
-| Files | ⬜ |
-| Voice call – calling, in call, ended | ⬜ |
+| Chats – list (search; All, Unread, Groups) and one-to-one conversation (case link, shared file, read receipt, composer) | ✅ |
+| Chats – conversation menu (view profile, search in this chat, mute notifications, mark as unread, copy chat link, delete chat) | ✅ |
+| Chats – New chat popup (choose people; several people make a group) | ✅ |
+| Group chat (members, sender names and parties) | ✅ |
+| Case threads – list by case and thread with case events (created, routed, escalated, accepted) | ✅ |
+| Files – list (type, shared in, shared by, date; filters; pagination) | ✅ |
+| Voice calls – history (outgoing, incoming, missed, group; call back) | ✅ |
+| Voice call – calling, in call, ended | ✅ |
+| Communication – loading; chats empty; files empty | ✅ |
 
 ## 11. Notifications
 
