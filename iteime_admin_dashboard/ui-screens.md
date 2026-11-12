@@ -223,6 +223,8 @@ the Intake queue header.
 | Audit log – filter dropdowns open: Who (search people), Action (types with counts), Record (types with counts), When (today, yesterday, last 7 or 30 days, custom range) | ✅ |
 | Audit log – filters applied (Access changes, Reset filters) | ✅ |
 | Audit log – row actions (view entry, open record, show this person's activity, show this record's history, copy entry ID) | ✅ |
+| Audit log – person's activity popup (entries by one person; today, last 7 or 30 days; open in audit log) | ✅ |
+| Audit log – record history popup (every change to one record with before and after, newest first; open the record) | ✅ |
 | Audit entry – detail popup (who, when, record, IP address, device; before and after; permanent) | ✅ |
 
 ## 13. Account
