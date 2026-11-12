@@ -210,7 +210,7 @@ the Intake queue header.
 | Voice call – calling, in call (mute, chat, add people, end call), in call muted, ended | ✅ |
 | Chats – search in this chat (matches highlighted, 2 of 3, previous and next) | ✅ |
 | Voice calls – group call (participants, who is speaking, who is muted, leave) | ✅ |
-| Communication – loading; chats empty; files empty | ✅ |
+| Communication – loading and empty for every sub-module: chats, case threads, files, voice calls | ✅ |
 | Communication – errors: message not sent (try again), upload failed, call couldn't connect, microphone blocked | ✅ |
 | Chats – error messages: file type not supported, voice note too short, group name missing, chat with a deactivated user (read only) | ✅ |
 | Communication – couldn't load: chats, case threads, files, voice calls (try again, reference) | ✅ |
