@@ -212,6 +212,7 @@ the Intake queue header.
 | Voice calls – group call (participants, who is speaking, who is muted, leave) | ✅ |
 | Communication – loading; chats empty; files empty | ✅ |
 | Communication – errors: message not sent (try again), upload failed, call couldn't connect, microphone blocked | ✅ |
+| Chats – error messages: file type not supported, voice note too short, group name missing, chat with a deactivated user (read only) | ✅ |
 | Communication – couldn't load: chats, case threads, files, voice calls (try again, reference) | ✅ |
 
 ## 11. Notifications
