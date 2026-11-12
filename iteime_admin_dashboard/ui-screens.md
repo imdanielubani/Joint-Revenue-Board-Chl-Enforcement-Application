@@ -31,10 +31,11 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Sign in – signing in | ✅ |
 | Sign in – temporarily locked | ✅ |
 | Sign in – signed out | ✅ |
-| Forgot password – enter email | ✅ |
-| Forgot password – check your email | ✅ |
+| Forgot password – enter email (send a 6-digit verification code) | ✅ |
+| Forgot password – enter verification code (resend code, use a different email) | ✅ |
+| Forgot password – wrong code | ✅ |
+| Reset password – code expired (send a new code) | ✅ |
 | Reset password – set new password | ✅ |
-| Reset password – link expired | ✅ |
 | Reset password – password updated | ✅ |
 | Session – signed out after inactivity | ✅ |
 | Access – no access to ITEIME | ✅ |
@@ -210,12 +211,12 @@ the Intake queue header.
 | Screen | Status |
 |---|---|
 | Users – list (search; Role, Party, State and Status filters; status: Active, Invited, Locked, Deactivated; pagination) | ✅ |
-| Users – row actions (view user, change role, unlock account, send password reset, copy email, deactivate user) | ✅ |
+| Users – row actions (view user, change role, unlock account, copy email, deactivate user) | ✅ |
 | User – invite (name, email, role, party set by the role, jurisdiction; what the role can open) | ✅ |
-| User – details popup (access, modules it can open, recent activity; send password reset, deactivate) | ✅ |
+| User – details popup (access, modules it can open, recent activity; open audit log, deactivate) | ✅ |
 | User – change role (new role and agency, before and after, reason for the audit log) | ✅ |
 | User – deactivate (reason; cases and history kept) | ✅ |
-| User – unlock account (also send a password reset; reason), send password reset, email copied (toast) | ✅ |
+| User – unlock account (reason), email copied (toast). Passwords are reset by the user with a verification code, not by an administrator. | ✅ |
 | Users – loading and empty (no other users yet) | ✅ |
 | Roles – list (what each role is for, users, modules it can open, last changed) | ✅ |
 | Roles – row actions (view permissions, edit permissions, see users with this role, show change history, duplicate role, delete role) | ✅ |
