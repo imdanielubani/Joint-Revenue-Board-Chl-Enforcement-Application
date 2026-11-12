@@ -19,7 +19,7 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Logo (horizontal and shield, light and dark) | ✅ |
 | Colour tokens (Light and Dark modes), spacing, radius | ✅ |
 | Type styles (Geist), shadows, focus rings | ✅ |
-| Components: Button, Input Field, Alert, Password Requirement, Theme Toggle, Nav Item, Sub Nav Item, Icon Button, Avatar, Top Search, Filter Select, Workspace Switcher, Menu Item, Notification Item, Tooltip, Toast, Skeleton, Status Badge, Stat Card, Checkbox, Segmented Tab, Row Actions (⋯), Map Base, icons | ✅ |
+| Components: Button, Input Field, Alert, Password Requirement, Theme Toggle, Nav Item, Sub Nav Item, Icon Button, Avatar, Top Search, Filter Select, Workspace Switcher, Menu Item, Notification Item, Tooltip, Toast, Skeleton, Status Badge, Stat Card, Checkbox, Segmented Tab, Row Actions (⋯), Pagination, Map Base, icons | ✅ |
 | Components still needed as modules are designed: table, tabs, drawer, form fields (select, date, textarea, file upload), pagination, timeline, map | ⬜ |
 
 ## 1. Authentication
@@ -94,7 +94,7 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 
 | Screen | Status |
 |---|---|
-| Intake queue – all channels, with channel tabs and counts | ✅ |
+| Intake queue – all channels, with channel tabs and counts, coloured channels and statuses, pagination | ✅ |
 | Intake queue – queue clear | ✅ |
 | Triage – review a report (live call timer, notes, picked-out details, possible duplicate; create case, add to existing case, not a case) | ✅ |
 | New case – form (reporter, incident, location, actors; intake timer; what happens on create; SMS preview) | ✅ |
