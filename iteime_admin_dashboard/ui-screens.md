@@ -19,7 +19,7 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Logo (horizontal and shield, light and dark) | ✅ |
 | Colour tokens (Light and Dark modes), spacing, radius | ✅ |
 | Type styles (Geist), shadows, focus rings | ✅ |
-| Components: Button, Input Field, Alert, Password Requirement, Theme Toggle, Nav Item, Sub Nav Item, Icon Button, Avatar, Top Search, Filter Select, Workspace Switcher, Menu Item, Notification Item, Tooltip, Toast, Skeleton, Status Badge, Stat Card, icons | ✅ |
+| Components: Button, Input Field, Alert, Password Requirement, Theme Toggle, Nav Item, Sub Nav Item, Icon Button, Avatar, Top Search, Filter Select, Workspace Switcher, Menu Item, Notification Item, Tooltip, Toast, Skeleton, Status Badge, Stat Card, Checkbox, Segmented Tab, Row Actions (⋯), Map Base, icons | ✅ |
 | Components still needed as modules are designed: table, tabs, drawer, form fields (select, date, textarea, file upload), pagination, timeline, map | ⬜ |
 
 ## 1. Authentication
@@ -77,6 +77,7 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Map – pin selected (details: amount, plate, place, officer, team, case, evidence) | ✅ |
 | Needs your decision – review transfer (reject with a required reason) | ✅ |
 | Export – menu (PDF, CSV) and export in progress | ✅ |
+| Case tables – Action column with ⋯ on every Overview, and the row-actions menu open | ✅ |
 | Super Admin – party tabs on every Overview screen | ✅ |
 | Super Admin – All parties shows every party (attention figures, every party at a glance, escalations, SLA by party) | ✅ |
 | Super Admin – each party tab (Control Center, State IRS, Law Enforcement, Central Enforcement, Command & Control, Legal) | ✅ |
@@ -101,8 +102,12 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | New case – created (case ID, SLA started, SMS delivered, escalated for multiple actors) | ✅ |
 | Route – choose party or parties (only those the routing permissions allow; suggested from the actors; reason) | ✅ |
 | Status lookup – by phone or plate, results and no results | ✅ |
-| Intake queue – filtered to one channel, and an item opened from WhatsApp, SMS, USSD and web | ⬜ |
-| Triage – "Not a case" reason, and "Add to existing case" | ⬜ |
+| Intake queue – filtered to one channel (WhatsApp) | ✅ |
+| Intake queue – row actions (⋯ menu: open in triage, assign to me, start a new case, add to an existing case, copy reference, not a case) | ✅ |
+| Triage – WhatsApp (thread, photo, reply), SMS (reply, 160 characters), USSD (menu answers, call back), web form (fields, attachments) | ✅ |
+| Triage – "Not a case" dialog (reason, note, SMS the reporter) | ✅ |
+| Triage – "Add to an existing case" dialog (search, choose, notify owner) | ✅ |
+| Status lookup – row actions (⋯) on each case found | ✅ |
 
 ## 5. Cases
 
