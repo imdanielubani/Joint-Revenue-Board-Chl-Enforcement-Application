@@ -17,6 +17,26 @@ boundary). No enforcement workflow, monitoring read endpoint (other than the
 audit trail) or ITEIME Admin endpoint is implemented yet. CHL is simulated:
 its API contract has not been received.
 
+## In short
+
+**Mobile app → Backend → ITEIME Admin Dashboard and CHL Monitoring Dashboard.**
+
+1. The **mobile app** sends what agents do in the field (trip checks, GPS,
+   penalties, evidence, field reports, SOS, offline actions) to the
+   **backend**.
+2. The **backend** stores it and, where needed, checks with **CHL** (trips,
+   vehicles, payments). It is the only part that talks to CHL.
+3. Both dashboards get that data **from the backend**:
+   - the **ITEIME Admin Dashboard** shows it as enforcement actions,
+     penalties, cases and the live feed, and **sends back** its own work
+     (cases, transfers, legal decisions, teams);
+   - the **CHL Monitoring Dashboard** shows it as verifications, trips,
+     violations, evidence and payments, and **only reads**.
+
+The dashboards ask the backend for data (page loads, a refresh every minute,
+and later a live feed); the backend does not push into them. The apps never
+talk to each other directly.
+
 ## Contents
 
 1. [The systems](#1-the-systems)
