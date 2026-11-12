@@ -78,6 +78,7 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Needs your decision – review transfer (reject with a required reason) | ✅ |
 | Export – menu (PDF, CSV) and export in progress | ✅ |
 | Super Admin – party tabs on every Overview screen | ✅ |
+| Super Admin – All parties shows every party (attention figures, every party at a glance, escalations, SLA by party) | ✅ |
 | Super Admin – each party tab (Control Center, State IRS, Law Enforcement, Central Enforcement, Command & Control, Legal) | ✅ |
 | Overview – Control Center | ✅ |
 | Overview – State IRS | ✅ |
