@@ -222,6 +222,7 @@ the Intake queue header.
 | Roles – row actions (view permissions, edit permissions, see users with this role, show change history, duplicate role, delete role) | ✅ |
 | Roles – row action popups: users with this role, change history, duplicate role, delete role (blocked while users hold it) | ✅ |
 | Roles – loading and empty (no roles yet) | ✅ |
+| Role – Super Admin: full access, permissions locked (cannot be edited or deleted) | ✅ |
 | Role – permissions for every role: Super Admin, Control Center, State IRS, Agency Head, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence Officer, Field Officer | ✅ |
 | Role – permissions (scope; modules × view, create, edit, route or transfer, export; "to confirm" where the specification is open; unsaved changes bar) | ✅ |
 | Routing permissions – From / To matrix from the specification's draft (allowed, to confirm, not applicable; last change) | ✅ |
