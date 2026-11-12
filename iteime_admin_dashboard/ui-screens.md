@@ -244,6 +244,8 @@ the Intake queue header.
 | Sign out – confirm dialog | ✅ |
 | Password and sign-in – change password (current, new, confirm; password rules) | ✅ |
 | Password and sign-in – typing (rule not met, passwords do not match), wrong current password, password updated | ✅ |
+| Account – loading (Profile and Password and sign-in) | ✅ |
+| Account – empty: new account (optional details not added, no activity yet) | ✅ |
 
 ## Prototyping
 
