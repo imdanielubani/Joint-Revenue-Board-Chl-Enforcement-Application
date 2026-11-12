@@ -199,6 +199,7 @@ the Intake queue header.
 | Chats – plus menu (upload a file, link a case, share from Documents, record a voice note) | ✅ |
 | Chats – uploading a file (progress, cancel), recording a voice note (timer, waveform, discard, send) | ✅ |
 | Chats – link a case popup | ✅ |
+| Chats – share from Documents popup (search; All, Case files, Policies and guides; choose several; share) | ✅ |
 | Chats – view profile popup, delete chat confirm, notifications muted (toast) | ✅ |
 | Chats – Unread tab, search with no results | ✅ |
 | Group chat – members popup (admin, add people, leave group) | ✅ |
