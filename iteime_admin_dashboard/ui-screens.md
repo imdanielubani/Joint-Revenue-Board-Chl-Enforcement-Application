@@ -119,7 +119,8 @@ the Intake queue header.
 | Cases to route – Status filter open (several statuses, counts, Clear, Show cases) | ✅ |
 | Cases to route – row actions (route case, open case, assign to me, copy case ID, copy link, mark as duplicate) | ✅ |
 | Route case popup – returned case (reason, rejecting party marked, route again) | ✅ |
-| Status lookup popup – before a search, results (⋯ on each case), no results | ✅ |
+| Status lookup popup – by phone number: before a search, results (⋯ on each case), no results | ✅ |
+| Status lookup popup – by plate number: before a search, results (⋯ on each case), no results | ✅ |
 
 ## 5. Cases
 
