@@ -209,14 +209,18 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Users – list | ⬜ |
-| User – invite or create (party, role, jurisdiction) | ⬜ |
-| User – detail, change role, deactivate | ⬜ |
-| Roles and permissions – list of roles | ⬜ |
-| Role – permissions (modules and actions) | ⬜ |
-| Routing permissions – From / To table | ⬜ |
-| Audit log – list with filters | ⬜ |
-| Audit entry – detail (before and after) | ⬜ |
+| Users – list (search; Role, Party, State and Status filters; status: Active, Invited, Locked, Deactivated; pagination) | ✅ |
+| Users – row actions (view user, change role, unlock account, send password reset, copy email, deactivate user) | ✅ |
+| User – invite (name, email, role, party set by the role, jurisdiction; what the role can open) | ✅ |
+| User – details panel (access, modules it can open, recent activity; send password reset, deactivate) | ✅ |
+| User – change role (new role and agency, before and after, reason for the audit log) | ✅ |
+| User – deactivate (reason; cases and history kept) | ✅ |
+| Roles – list (what each role is for, users, modules it can open, last changed) | ✅ |
+| Role – permissions (scope; modules × view, create, edit, route or transfer, export; "to confirm" where the specification is open; unsaved changes bar) | ✅ |
+| Routing permissions – From / To matrix from the specification's draft (allowed, to confirm, not applicable; last change) | ✅ |
+| Routing permissions – editing (allowed / not allowed per pair, unsaved changes bar) | ✅ |
+| Audit log – list (search; Who, Action, Record and When filters; time, who, action and record, IP address and device) | ✅ |
+| Audit entry – detail (who, when, record, IP address, device; before and after; permanent) | ✅ |
 
 ## 13. Account
 
