@@ -127,6 +127,42 @@ Each flow: who sends, what the backend does, and where it then appears.
 | F11 | **Repeat-vehicle alert** | Backend, after three qualifying reports → notification | Monitoring (repeat alerts) · Admin · Mobile (supervisor notification, if agreed) |
 | F12 | **Access changes** | Super Admin in the Admin Dashboard → backend → audit log | Admin (Administration). CHL-held roles stay in CHL |
 
+### 4.1 Which parts of the ITEIME Admin Dashboard connect to the mobile app
+
+Always through the backend; the two never talk directly. Module names follow
+[`iteime_admin_dashboard/modules.md`](iteime_admin_dashboard/modules.md).
+
+**From the mobile app to the ITEIME Admin Dashboard**
+
+| ITEIME Admin Dashboard part | What comes from the mobile app |
+|---|---|
+| **Overview** | Live activity map and feed, agents and officers on duty, penalties raised, payment validation status |
+| **Field Operations › Live activity feed** | Every trip check, penalty and payment as it happens, with GPS; out-of-zone actions flagged |
+| **Field Operations › Enforcement actions** | The full log of trip checks, penalties and inspections: compliant or not, GPS, evidence, team |
+| **Cases** (enforcer-detected) | A **non-compliant** check raises a penalty and **creates a case** automatically, owned by the agent's agency and team; the case page's Enforcement and Evidence tabs show what the agent captured |
+| **Cases › Escalations** | An agent can **escalate** from the app (M8), flagging the case for Central Enforcement |
+| **Payments › Penalties** | Penalties raised by agents |
+| **Payments › Transactions** | **Validation status**: payments arrive from the payment system as *pending*; the **field officer validates them in the app** with GPS (ITEIME addendum); the dashboard shows pending, validated or flagged |
+| **Intelligence** | Patterns and tag flags built from field actions (repeat plates, zones) |
+
+**From the ITEIME Admin Dashboard to the mobile app**
+
+| ITEIME Admin Dashboard part | What the mobile app receives |
+|---|---|
+| **Field Operations › Agents** | Onboarding, the agent's **agency**, **zones** and **device binding**: who may use the app and where |
+| **Field Operations › Teams** | The agent's **team**; every action in the app is stamped with team and agency, and a later team move does not rewrite past records |
+| **Payments › Transactions** | The payments **waiting for the officer to validate** |
+
+**Not connected to the mobile app** (dashboard only): Intake (taxpayer
+complaints come by call, SMS, USSD, WhatsApp or web), Cases › Transfers and
+Legal review, Payments › Refunds, Documents, Messages, the dashboard's own
+Notifications, and Administration (users, roles, routing permissions, audit
+log).
+
+In short: the main link is **Field Operations and Payments**, and **Cases**
+bridge the two — a penalty raised in the field becomes a case the parties
+handle in the dashboard.
+
 **Live updates.** The ITEIME specification asks for real-time dashboards and a
 live feed (`/feed` over WebSocket or Server-Sent Events). The Monitoring
 Dashboard currently polls (the bell and the "needs attention" dot every
