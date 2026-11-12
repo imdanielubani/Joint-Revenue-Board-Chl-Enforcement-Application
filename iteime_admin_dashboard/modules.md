@@ -218,7 +218,13 @@ Managed by the [Super Admin](#super-admin).
   open and which actions it can take in them. Access is given only through a
   role; nobody is given a module directly.
 - **Routing permissions**: the table of which party may route to which.
-  Stored as data, editable without a redeploy.
+  Stored as data, editable without a redeploy. Decided by the product owner
+  (not in the specification):
+  - Control Center can also receive routed cases (a "To Control Center"
+    column), not only rejected ones.
+  - State IRS to State IRS covers other states only, and the Super Admin
+    chooses which states (or any other state).
+  - Legal, Finance / Treasury and Intelligence Officer do not route cases.
 - **Audit log**: every recorded action, with who, what, before and after,
   when, and from which IP / device. Read-only.
 
