@@ -185,9 +185,14 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Documents – library | ⬜ |
-| Document – preview | ⬜ |
-| Documents – upload | ⬜ |
+| Documents – library (folders, filters, documents table, pagination), folder view, Type filter open, search with no results | ✅ |
+| Documents – row actions (preview, download, copy link, move to folder, share in a chat, delete), preview popup | ✅ |
+| Documents – link copied and couldn't copy link (toasts) | ✅ |
+| Documents – upload popup, uploading (progress), uploaded (toast) | ✅ |
+| Documents – new folder popup, move to folder popup, moved (toast), delete confirm, document deleted (toast) | ✅ |
+| Documents – downloading (progress, cancel), downloaded (toast) | ✅ |
+| Documents – loading, empty, couldn't load | ✅ |
+| Documents – errors: upload failed, file too large, file type not supported, folder name taken, download failed, preview couldn't load, couldn't delete | ✅ |
 
 ## 10. Communication
 
