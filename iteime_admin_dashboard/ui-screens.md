@@ -175,11 +175,20 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Patterns | ⬜ |
-| Suspect register – list | ⬜ |
-| Suspect – detail | ⬜ |
-| Tags – list with status and flags | ⬜ |
-| Tag – detail | ⬜ |
+| Patterns – summary cards, places with the most cases, patterns found by week, type tabs, filters, patterns table | ✅ |
+| Patterns – Repeat plates tab, Strength filter open, search with no results, row actions, pattern details popup | ✅ |
+| Patterns – add to suspect register popup, added (toast), already on the register, dismiss pattern confirm, dismissed (toast) | ✅ |
+| Patterns – link copied, export ready (toasts) and their errors | ✅ |
+| Patterns – loading, empty, couldn't load; errors: couldn't add to register, couldn't dismiss, couldn't copy link, couldn't export | ✅ |
+| Suspect register – status tabs, filters, suspects table, Under investigation tab, Actor type filter open, no results, row actions | ✅ |
+| Suspect – details popup (facts, linked cases, pattern, analyst notes) | ✅ |
+| Suspect – add, edit, change status, remove from register popups and their success toasts | ✅ |
+| Suspect register – link copied, export ready (toasts) and their errors | ✅ |
+| Suspect register – loading, empty, couldn't load; errors: missing details, case not found, couldn't save, couldn't change status, couldn't remove | ✅ |
+| Tags – summary cards, status tabs, flag column, Not picked tab, Flag filter open, no results, row actions | ✅ |
+| Tag – details popup (flag reason, status history), change status popup (damage reported), status changed (toast) | ✅ |
+| Tags – plate copied, export ready (toasts) and their errors | ✅ |
+| Tags – loading, empty, couldn't load; error: couldn't change status | ✅ |
 
 ## 9. Documents (EDMS)
 

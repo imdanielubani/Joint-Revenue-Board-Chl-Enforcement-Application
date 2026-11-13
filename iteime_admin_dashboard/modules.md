@@ -185,10 +185,20 @@ officers.
 
 ## 6. Intelligence — has sub-modules
 
-- **Patterns**: pattern analysis across cases and actions.
-- **Suspect register**: suspects and their analysis.
+- **Patterns**: pattern analysis across cases and actions. The system lists
+  the patterns it finds, of four types: repeat plates, hotspots, repeat
+  actors and time spikes. Each has a strength (High, Medium, Low) and its
+  linked cases. A pattern can be added to the suspect register or dismissed
+  with a reason.
+- **Suspect register**: suspects and their analysis. A suspect record holds
+  only what the cases already capture: actor type (IRS, Police, Enforcement
+  Agent, Civilian/Unknown), description, plates, phone numbers, linked cases
+  (at least one), where and when they were seen, the linked pattern, and
+  analyst notes. Status is Watching, Under investigation or Cleared.
 - **Tags**: tags by plate, with status and flags (tampering for unreported
-  damage, offense for not picked).
+  damage, offense for not picked). Tag statuses (user decision): Issued,
+  Picked, Not picked, Damaged, Replaced. Not picked sets the Offense flag;
+  Damaged without a damage report sets the Tampering flag.
 
 ## 7. Documents (EDMS) — no sub-modules
 
@@ -350,7 +360,8 @@ depends on:
 - The routing permission rows for Law Enforcement, Central Enforcement and
   Command & Control.
 - Whether only non-compliant actions create cases (an assumption to confirm).
-- The tag lifecycle states.
+- The tag lifecycle states. (Decided for the design: Issued, Picked, Not
+  picked, Damaged, Replaced. Confirm with the specification owner.)
 - What Documents (EDMS) holds and who uses it.
 - Penalty / payment source of truth (CHL Systems): webhook or polling.
 - Data protection compliance (NDPA).
