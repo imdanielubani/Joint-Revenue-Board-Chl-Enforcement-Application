@@ -174,6 +174,10 @@ the Intake queue header.
 | Transactions – loading, empty, couldn't load | ✅ |
 | Refunds – view-only note, status summary, tabs, filters, refunds table, Requested tab, Remittance filter open, no results, row actions | ✅ |
 | Refund – details popups: deducted (calculation, deduction reference, history), requested, rejected | ✅ |
+| Refunds – row actions on a request (approve, reject) and on an approved refund (record deduction) | ✅ |
+| Refund – approve popup, approved (toast); reject popup, reason missing, rejected (toast) | ✅ |
+| Refund – record deduction popup (remittance deduction reference, date), reference missing, deduction recorded (toast) | ✅ |
+| Refunds – errors: couldn't approve, couldn't reject, couldn't record deduction | ✅ |
 | Refunds – refund ID and deduction reference copied, export ready (toasts) and their errors | ✅ |
 | Refunds – loading, empty, couldn't load | ✅ |
 

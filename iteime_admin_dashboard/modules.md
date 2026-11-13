@@ -183,8 +183,11 @@ officers.
   amount is calculated by the system and deducted from the enforcement budget
   (non-IGR component) of the IRS remittance. Processed by Finance / Treasury.
   Refund statuses (user decision): Requested, Approved, Deducted, or
-  Rejected. Deducted stores the remittance deduction reference. Super Admin
-  sees refunds view-only; Finance / Treasury approves or rejects.
+  Rejected. Deducted stores the remittance deduction reference. Finance /
+  Treasury and Super Admin approve or reject a requested refund (a reason is
+  required to reject) and record the deduction (reference and date) once
+  it is taken. Super Admin has access to everything and can give this
+  module to any role.
 
 ## 6. Intelligence — has sub-modules
 
