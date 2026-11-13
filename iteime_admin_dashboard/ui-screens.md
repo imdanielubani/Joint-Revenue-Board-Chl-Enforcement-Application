@@ -164,12 +164,18 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Penalties – list with status | ⬜ |
-| Penalty – detail (dispute opens a linked case) | ⬜ |
-| Transactions – list with validation status | ⬜ |
-| Transaction – detail (validated by, where, when) | ⬜ |
-| Refunds – list | ⬜ |
-| Refund – detail and approval | ⬜ |
+| Penalties – summary (₦ raised, paid, disputed, waived), status tabs, filters, penalties table, Disputed tab, State filter open, no results, row actions | ✅ |
+| Penalty – details popup, record a dispute popup (opens a linked grievance case), dispute recorded (toast), waive popup, waived (toast) | ✅ |
+| Penalties – ID copied, export ready (toasts) and their errors; errors: couldn't record dispute, couldn't waive, can't waive a paid penalty | ✅ |
+| Penalties – loading, empty, couldn't load | ✅ |
+| Transactions – read-only note, validation summary, tabs, filters, transactions table, Flagged tab, Agency filter open, no results, row actions | ✅ |
+| Transaction – details popup (validated by, where with map, when), flagged details | ✅ |
+| Transactions – sync delayed warning, reference copied, export ready (toasts) and their errors | ✅ |
+| Transactions – loading, empty, couldn't load | ✅ |
+| Refunds – view-only note, status summary, tabs, filters, refunds table, Requested tab, Remittance filter open, no results, row actions | ✅ |
+| Refund – details popups: deducted (calculation, deduction reference, history), requested, rejected | ✅ |
+| Refunds – refund ID and deduction reference copied, export ready (toasts) and their errors | ✅ |
+| Refunds – loading, empty, couldn't load | ✅ |
 
 ## 8. Intelligence
 

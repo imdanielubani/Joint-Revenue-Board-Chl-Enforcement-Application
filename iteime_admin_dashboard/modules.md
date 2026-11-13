@@ -182,6 +182,9 @@ officers.
 - **Refunds**: for cases marked "Payment Under Duress – Verified" only. The
   amount is calculated by the system and deducted from the enforcement budget
   (non-IGR component) of the IRS remittance. Processed by Finance / Treasury.
+  Refund statuses (user decision): Requested, Approved, Deducted, or
+  Rejected. Deducted stores the remittance deduction reference. Super Admin
+  sees refunds view-only; Finance / Treasury approves or rejects.
 
 ## 6. Intelligence — has sub-modules
 
