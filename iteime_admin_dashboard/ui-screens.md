@@ -212,6 +212,7 @@ the Intake queue header.
 | Case threads – errors: message not sent; upload failed; file type not supported; voice note too short; thread on a closed case (read only) | ✅ |
 | Uploads – success toast and the file in the conversation: chats (file uploaded) and case threads (evidence uploaded) | ✅ |
 | Copy link – success and error toasts: files, chats, case threads, notifications, cases to route | ✅ |
+| Copy email, entry ID, case ID and reference – success and error toasts (users, audit log, cases to route, intake queue) | ✅ |
 | Files – list (type, shared in, shared by, date; filters; pagination) | ✅ |
 | Files – Images, Documents and Audio tabs; search with no results; Shared in filter open | ✅ |
 | Files – row actions (preview, download, show in conversation, copy link, remove) | ✅ |
