@@ -150,15 +150,20 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Live activity feed – map and list | ⬜ |
-| Enforcement actions – log with filters | ⬜ |
-| Enforcement action – detail (GPS, evidence, team) | ⬜ |
-| Agents – list | ⬜ |
-| Agent – profile and activity | ⬜ |
-| Agents – onboard a new agent | ⬜ |
-| Teams – list | ⬜ |
-| Team – officers and history | ⬜ |
-| Teams – create team, add or move an officer | ⬜ |
+| Live activity feed – summary, filters, live map with pins and legend, latest actions list | ✅ |
+| Live activity feed – action selected (pin card), Type filter open, no results, live updates stopped, loading, empty, couldn't load | ✅ |
+| Enforcement actions – summary, result tabs, filters, actions log; Non-compliant and Out of zone tabs, Team filter open, no results, row actions | ✅ |
+| Enforcement action – details popup (penalty, case, team when logged, GPS, evidence, map), out-of-zone details, evidence viewer, evidence couldn't load | ✅ |
+| Enforcement actions – action ID copied, export ready (toasts) and their errors; loading, empty, couldn't load | ✅ |
+| Agents – summary, status tabs, filters, agents table; Suspended tab, Zone filter open, no results, row actions (active and suspended agent) | ✅ |
+| Agent – profile popup (zones, areas, device, today's activity, team history) | ✅ |
+| Agents – onboard popup (team, zones), missing details, phone already used, onboarded (toast), couldn't onboard | ✅ |
+| Agents – edit zones (LGAs and areas), no LGA chosen, move to another team, reset device, suspend, lift suspension, with success toasts and errors | ✅ |
+| Agents – export ready (toast) and its error; loading, empty, couldn't load | ✅ |
+| Teams – summary, agency tabs, teams table, no results, row actions | ✅ |
+| Team – details popup (officers, recent changes), officer actions menu | ✅ |
+| Teams – create (name taken), rename, add or move an officer, remove an officer, deactivate (blocked while it has officers), with success toasts and errors | ✅ |
+| Teams – loading, empty, couldn't load | ✅ |
 
 ## 7. Payments
 

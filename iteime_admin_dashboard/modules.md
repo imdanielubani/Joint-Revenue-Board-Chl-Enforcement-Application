@@ -171,6 +171,13 @@ officers.
 - **Teams**: teams and their officers; moving an officer keeps their history.
   Managed by the Agency Head and designated admins.
 
+Decisions for the design (user, to confirm with the specification owner):
+agent status is On duty, Off duty or Suspended (removing access stays in
+Administration › Users); a zone is one or more LGAs, optionally narrowed to
+areas inside them, and actions outside an agent's zones are flagged as out of
+zone. Team status is shown as Active or Inactive; a team can only be
+deactivated once it has no officers.
+
 ## 5. Payments — has sub-modules
 
 - **Penalties**: raised, paid, disputed or waived. A dispute opens a linked
