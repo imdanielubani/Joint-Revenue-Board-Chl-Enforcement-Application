@@ -227,6 +227,7 @@ the Intake queue header.
 | Voice calls – Missed tab, Type filter open, search with no results | ✅ |
 | Voice calls – row actions (call back, send a message, call details, view profile, remove from history), call details popup, removed from history (toast) | ✅ |
 | Voice calls – new call popup, incoming call (decline, accept), no answer | ✅ |
+| Voice calls – errors: person busy, call dropped, new call no results, couldn't remove from history (toast) | ✅ |
 | Voice call – calling, in call (mute, chat, add people, end call), in call muted, ended | ✅ |
 | Chats – search in this chat (matches highlighted, 2 of 3, previous and next) | ✅ |
 | Voice calls – group call (participants, who is speaking, who is muted, leave) | ✅ |
