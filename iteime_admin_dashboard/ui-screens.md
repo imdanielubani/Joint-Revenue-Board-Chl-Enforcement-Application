@@ -171,6 +171,7 @@ the Intake queue header.
 | Transactions – read-only note, validation summary, tabs, filters, transactions table, Flagged tab, Agency filter open, no results, row actions | ✅ |
 | Transaction – details popup (validated by, where with map, when), flagged details | ✅ |
 | Transactions – open penalty popup (the paid penalty, its payment reference and validation) | ✅ |
+| Transactions – row actions on a waiting and on a flagged payment; waiting details popup | ✅ |
 | Transactions – sync delayed warning, reference copied, export ready (toasts) and their errors | ✅ |
 | Transactions – loading, empty, couldn't load | ✅ |
 | Refunds – view-only note, status summary, tabs, filters, refunds table, Requested tab, Remittance filter open, no results, row actions | ✅ |
