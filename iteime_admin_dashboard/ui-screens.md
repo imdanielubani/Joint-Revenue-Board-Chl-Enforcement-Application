@@ -254,9 +254,10 @@ the Intake queue header.
 | Voice calls – row actions (call back, send a message, call details, view profile, remove from history), call details popup, removed from history (toast) | ✅ |
 | Voice calls – new call popup, incoming call (decline, accept), no answer | ✅ |
 | Voice calls – errors: person busy, call dropped, new call no results, couldn't remove from history (toast) | ✅ |
-| Voice call – calling, in call (mute, chat, add people, end call), in call muted, ended | ✅ |
+| Voice call – calling, in call (mute, add people, end call), in call muted, ended — shown in a floating call panel so the chat stays usable during the call | ✅ |
 | Chats – search in this chat (matches highlighted, 2 of 3, previous and next) | ✅ |
-| Voice calls – group call (participants, who is speaking, who is muted, leave) | ✅ |
+| Voice calls – group call in the floating call panel (participants, who is speaking, who is muted, leave) while the group chat stays usable | ✅ |
+| Voice calls – incoming call, no answer, person busy, call dropped, couldn't connect, microphone blocked — all in the floating call panel, never a blocking popup | ✅ |
 | Communication – loading and empty for every sub-module: chats, case threads, files, voice calls | ✅ |
 | Communication – errors: message not sent (try again), upload failed, call couldn't connect, microphone blocked | ✅ |
 | Chats – error messages: file type not supported, voice note too short, group name missing, chat with a deactivated user (read only) | ✅ |
