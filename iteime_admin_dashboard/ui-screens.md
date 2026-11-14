@@ -282,8 +282,9 @@ Sidebar group **Administration**: IAM (Users & Roles), Permissions (Routing), Au
 |---|---|
 | Sidebar – Administration group with IAM, Permissions and Audit log on every screen (collapsed rail, phone drawer and dropdown examples too; IAM open and Permissions open) | ✅ |
 | Users – list (search; Role, Party, State and Status filters; status: Active, Invited, Locked, Deactivated; pagination) | ✅ |
-| Users – row actions (view user, change role, unlock account, copy email, deactivate user) | ✅ |
-| User – invite (name, email, role, party set by the role, jurisdiction; what the role can open) | ✅ |
+| Users – row actions (view user, change role, edit permissions, unlock account, copy email, deactivate user) | ✅ |
+| User – edit permissions popup (role permissions fixed, extra permissions only for this user, reason), extra given, reason missing, saved (toast, "+1 extra" on the row), couldn't save | ✅ |
+| User – invite (first name, last name, email, phone, role, party set by the role, jurisdiction; what the role can open) | ✅ |
 | User – details popup (access, modules it can open, recent activity; open audit log, deactivate) | ✅ |
 | User – change role (new role and agency, before and after, reason for the audit log) | ✅ |
 | User – deactivate (reason; cases and history kept) | ✅ |

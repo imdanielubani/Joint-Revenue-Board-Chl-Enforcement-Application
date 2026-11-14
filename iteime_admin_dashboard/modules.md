@@ -246,8 +246,10 @@ a group with three items: **IAM** (sub-module Users & Roles), **Permissions**
 - **IAM › Users & Roles**: the people who use ITEIME and what each may do. For
   every user: their party, role and jurisdiction (state, and agency where
   relevant). For every role: its permissions, meaning which modules it can
-  open and which actions it can take in them. Access is given only through a
-  role; nobody is given a module directly.
+  open and which actions it can take in them. Access comes from the user's
+  role, plus any extra permissions given to that one user with **Edit
+  permissions** (user decision). Extras apply to that user only, never to
+  others with the same role, and need a reason, kept in the audit log.
 - **Permissions › Routing**: the table of which party may route to which.
   Stored as data, editable without a redeploy. Decided by the product owner
   (not in the specification):
