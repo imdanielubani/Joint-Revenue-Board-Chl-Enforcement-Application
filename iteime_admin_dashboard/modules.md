@@ -291,8 +291,9 @@ From the top-bar menu, not the sidebar.
 
 - **Sign in**
 - **Profile**: the user's details, and their party, role and jurisdiction
-  (read-only; managed in Administration). A **Password and sign-in** tab
-  changes the password.
+  (read-only; managed in Administration). Name is split into first name and
+  last name. A **Password** tab changes the password; the change needs a
+  6-digit verification code sent to the user's email.
 - **Sign out**
 
 ## Who sees what

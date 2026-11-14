@@ -316,12 +316,12 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Profile – personal details, your access (role, party, jurisdiction, modules, permissions), sign-in, your activity, appearance | ✅ |
+| Profile – personal details (first name, last name, phone, email, job title), your access (role, all parties, jurisdiction, every module, permissions), sign-in, your activity, appearance | ✅ |
 | Profile – editing (unsaved changes) and saved (toast) | ✅ |
 | Sign out – confirm dialog | ✅ |
-| Password and sign-in – change password (current, new, confirm; password rules) | ✅ |
-| Password and sign-in – typing (rule not met, passwords do not match), wrong current password, password updated | ✅ |
-| Account – loading (Profile and Password and sign-in) | ✅ |
+| Password – change password (current, new, confirm, 6-digit verification code; password rules) | ✅ |
+| Password – code sent (toast), typing (rule not met, passwords do not match), wrong current password, wrong verification code, code expired, password updated | ✅ |
+| Account – loading (Profile and Password) | ✅ |
 | Account – empty: new account (optional details not added, no activity yet) | ✅ |
 
 ## Prototyping
