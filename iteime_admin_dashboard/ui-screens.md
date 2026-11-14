@@ -187,6 +187,8 @@ the Intake queue header.
 | Refunds – errors: couldn't approve, couldn't reject, couldn't record deduction | ✅ |
 | Refunds – refund ID and deduction reference copied, export ready (toasts) and their errors | ✅ |
 | Refunds – loading, empty, couldn't load | ✅ |
+| Refunds (manual status, section 4) – same screens with an Update status action in the row menus and details popups | ✅ |
+| Refunds (manual status) – update status popup (Requested, Approved, Deducted with deduction reference, Rejected; note), note missing, status updated (toast), couldn't update status | ✅ |
 
 ## 8. Intelligence
 

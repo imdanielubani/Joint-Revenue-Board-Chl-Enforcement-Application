@@ -194,6 +194,13 @@ deactivated once it has no officers.
   it is taken. Super Admin has access to everything and can give this
   module to any role.
 
+  A second design option (Figma section "4 · Refunds", user decision): the
+  same Refunds screens, but the status is updated by hand. One **Update
+  status** action (row menu and details popup) sets Requested, Approved,
+  Deducted or Rejected with a required note; Deducted also needs the
+  remittance deduction reference. It replaces the approve / reject / record
+  deduction flow. Still the one Refunds sub-module in the sidebar.
+
 ## 6. Intelligence — has sub-modules
 
 - **Patterns**: pattern analysis across cases and actions. The system lists
