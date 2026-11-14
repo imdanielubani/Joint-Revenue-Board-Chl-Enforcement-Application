@@ -51,7 +51,7 @@ only; no code is written yet.
 Sidebar groups, top to bottom:
 
 ```
-WORK          Overview · Intake · Cases
+OVERVIEW      Dashboard · Intake · Cases
 OPERATIONS    Field Operations · Payments
 INSIGHT       Intelligence · Documents
               ─────────────
