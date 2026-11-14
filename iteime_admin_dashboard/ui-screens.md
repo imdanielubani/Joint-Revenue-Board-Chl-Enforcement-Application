@@ -232,6 +232,7 @@ the Intake queue header.
 | Chats – list (search; All, Unread, Groups) and one-to-one conversation (case link, shared file, read receipt, composer) | ✅ |
 | Chats – conversation menu (view profile, search in this chat, mute notifications, mark as unread, copy chat link, delete chat) | ✅ |
 | Chats – New chat popup (choose people; several people make a group) | ✅ |
+| Chats – chat list and New chat search people by state, name, party or role | ✅ |
 | Chats – plus menu (upload a file, link a case, share from Documents, record a voice note) | ✅ |
 | Chats – uploading a file (progress, cancel), recording a voice note (timer, waveform, discard, send) | ✅ |
 | Chats – link a case popup | ✅ |
