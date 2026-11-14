@@ -216,6 +216,9 @@ the Intake queue header.
 | Documents – link copied and couldn't copy link (toasts) | ✅ |
 | Documents – upload popup, uploading (progress), uploaded (toast) | ✅ |
 | Documents – new folder popup, move to folder popup, moved (toast), delete confirm, document deleted (toast) | ✅ |
+| Documents – default folders (every role) and role folders (one per role) on the library | ✅ |
+| Documents – new folder: who can see it (default folder or role folder with chosen roles), no role chosen, folder created (toast) | ✅ |
+| Documents – what State IRS sees (default folders and its own folder; no New folder button) | ✅ |
 | Documents – downloading (progress, cancel), downloaded (toast) | ✅ |
 | Documents – loading, empty, couldn't load | ✅ |
 | Documents – errors: upload failed, file too large, file type not supported, folder name taken, download failed, preview couldn't load, couldn't delete | ✅ |

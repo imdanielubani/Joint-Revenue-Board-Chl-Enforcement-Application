@@ -216,6 +216,16 @@ deactivated once it has no officers.
 The electronic document management system. Named in the specification
 without further detail.
 
+Folders (user decision):
+- **Default folders** (Case files, Policies and guides, Reports, Templates)
+  are seen by every role.
+- **Role folders**: every role has its own folder, seen only by that role.
+- A new folder is either a default folder (every role) or tied to one or
+  more chosen roles.
+- Only the Super Admin can add folders, and the Super Admin sees every
+  folder. Other roles see the default folders and their own role folder;
+  they can upload but can't add folders.
+
 ## 8. Communication — has sub-modules
 
 Called Communication, as in the specification ("chat, group chat,
