@@ -81,8 +81,8 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Case tables – Action column with ⋯ on every Overview, and the row-actions menu open | ✅ |
 | Super Admin – party tabs on every Overview screen | ✅ |
 | Super Admin – All parties shows every party (attention figures, every party at a glance, escalations, SLA by party) | ✅ |
-| Super Admin – each party tab (Control Center, State IRS, Law Enforcement, Central Enforcement, Command & Control, Legal) | ✅ |
-| Overview – Control Center | ✅ |
+| Super Admin – each party tab (State IRS, Law Enforcement, Central Enforcement, Command & Control, Legal) | ✅ |
+| Control Center dashboard – merged into Command & Control (no Control Center party) | ✅ |
 | Overview – State IRS | ✅ |
 | Overview – Law Enforcement | ✅ |
 | Overview – Central Enforcement | ✅ |
@@ -296,7 +296,7 @@ Sidebar group **Administration**: IAM (Users & Roles), Permissions (Routing), Au
 | Roles – row action popups: users with this role, change history, duplicate role, delete role (blocked while users hold it) | ✅ |
 | Roles – loading and empty (no roles yet) | ✅ |
 | Role – Super Admin: full access, permissions locked (cannot be edited or deleted) | ✅ |
-| Role – permissions for every role: Super Admin, Control Center, State IRS, Agency Head, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence Officer, Field Officer | ✅ |
+| Role – permissions for every role: Super Admin, State IRS, Agency Head, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence Officer, Field Officer | ✅ |
 | Role – permissions (scope; modules × view, create, edit, route or transfer, export; "to confirm" where the specification is open; unsaved changes bar) | ✅ |
 | Permissions › Routing – From / To matrix from the specification's draft (allowed, to confirm, not applicable; last change) | ✅ |
 | Permissions › Routing – editing (allowed / not allowed per pair, unsaved changes bar) | ✅ |

@@ -54,7 +54,7 @@ talk to each other directly.
 | System | Folder | Users | Reads | Writes |
 |---|---|---|---|---|
 | **JRB CHL Enforcement app** (Flutter) | `jbr_chl_enforcement/` | Enforcement agents only | Verification results, its own history and notifications, payment status | Verifications, GPS, evidence, violations, demand-notice requests, field reports, SOS, loaded/empty, offline queue; transaction validation (ITEIME addendum) |
-| **ITEIME Admin Dashboard** (React, being designed) | `iteime_admin_dashboard/` | Control Center, State IRS, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence, Agency Head, Super Admin | Cases, actions, penalties, transactions, teams, intelligence, audit | Cases, routing and transfers, notes, legal decisions, refunds, teams, users and permissions (Super Admin) |
+| **ITEIME Admin Dashboard** (React, being designed) | `iteime_admin_dashboard/` | State IRS, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence, Agency Head, Super Admin | Cases, actions, penalties, transactions, teams, intelligence, audit | Cases, routing and transfers, notes, legal decisions, refunds, teams, users and permissions (Super Admin) |
 | **CHL Monitoring Dashboard** (React, built) | `chl_monitoring_dashboard/` | System Administrator, Supervisor, Principal Officer | Verifications, trips, violations, evidence, payments, field reports, alerts, history, audit, sync status | **Nothing** (read-only); only sign-in, sign-out, marking its own notifications read and a sign-in support request |
 | **ITEIME backend** (Node, Express, PostgreSQL) | `../backend/` | The three apps | — | The only backend (ADR-0004) |
 | **Existing JRB CHL platform** | external | — | — | Authoritative for identity, vehicles, tags, trips, tariffs and payments |
@@ -102,7 +102,7 @@ needed, a time-stamped snapshot of what was shown.
 | Violations, evidence, demand notices | Undecided (CHL or ITEIME) | Mobile app | Mobile, Monitoring, Admin (penalties, case evidence) |
 | Field reports, SOS, loaded/empty | ITEIME (proposed) | Mobile app | Monitoring, Admin (live feed) |
 | Repeat-vehicle alerts | ITEIME (proposed) | The backend | Monitoring, Admin |
-| Cases, actors, routing, transfers, linked cases | ITEIME | Admin Dashboard (Control Center; parties) | Admin; Mobile only if a case is linked to an agent's action |
+| Cases, actors, routing, transfers, linked cases | ITEIME | Admin Dashboard (Command & Control; parties) | Admin; Mobile only if a case is linked to an agent's action |
 | Legal notes, prosecution flags, refunds | ITEIME | Admin Dashboard (Legal, Finance) | Admin |
 | Teams and team membership | ITEIME (addendum) | Admin Dashboard (Agency Head, Super Admin) | Admin; stamped on every mobile action |
 | Notifications (inbox) | ITEIME | The backend | Each user, in their own app |
@@ -117,7 +117,7 @@ Each flow: who sends, what the backend does, and where it then appears.
 | F1 | **Sign-in** | App → backend `/auth/login` with its `client` → backend checks the user with CHL → session for that client only | The app that signed in |
 | F2 | **Trip check / verification** | Mobile → backend → CHL (vehicle, E-Tag, trip) → backend records the attempt with GPS and a snapshot of the result | Mobile (result, history) · Monitoring (verifications, trips, history, audit) · Admin (Field Operations › Enforcement actions, live feed) |
 | F3 | **Non-compliant → penalty → case** | Mobile raises a penalty with evidence → backend records it and **creates a case** (origin *enforcer-detected*, stamped with the agent's team and agency) | Monitoring (violations, evidence) · Admin (Cases, Payments › Penalties, Agency Head view) |
-| F4 | **Taxpayer complaint** | Control Center in the Admin Dashboard → backend creates the case, starts the SLA, sends the SMS → routes to a party | Admin only (Cases, Intake). Not in the mobile app or Monitoring |
+| F4 | **Taxpayer complaint** | Command & Control in the Admin Dashboard → backend creates the case, starts the SLA, sends the SMS → routes to a party | Admin only (Cases, Intake). Not in the mobile app or Monitoring |
 | F5 | **Routing and transfer** | Admin (sender) → backend checks the routing-permission table → receiving party accepts or rejects | Admin (Transfers, Needs your decision) |
 | F6 | **Escalation** | Backend raises the flag on SLA breach or multiple actors (or a user raises it) | Admin (Central Enforcement, Command & Control, Legal) |
 | F7 | **Payment** | Taxpayer pays a provider → CHL / provider → backend (event or polling, undecided) → status updated on the penalty | Mobile (payment status) · Monitoring (payments) · Admin (Payments › Transactions) |
@@ -324,7 +324,7 @@ and `ui-screens.md`) settle several questions the backend left open:
 
 | Backend open item | What the Admin Dashboard design says |
 |---|---|
-| Admin client and roles undefined (Q-ROL-1) | A third client, `admin`. Parties: Control Center, State IRS, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence Officer; plus Agency Head and **Super Admin** |
+| Admin client and roles undefined (Q-ROL-1) | A third client, `admin`. Parties: State IRS, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence Officer; plus Agency Head and **Super Admin** |
 | Who grants access | The **Super Admin** gives every user a party, role and jurisdiction, and sets each role's permissions; every change is audit-logged (`modules.md` › Super Admin) |
 | What each party sees | `modules.md` › "Who sees what" and "What each party sees on its Overview" |
 
@@ -334,7 +334,7 @@ groups, extended from ITEIME section 9 and 12.5). Names are proposals to agree:
 | Group | Purpose |
 |---|---|
 | `GET /admin/overview?party=&state=&period=` | Overview figures and cards for the signed-in party, or for any party when the caller is Super Admin |
-| `/admin/intake` (queue, triage), `POST /admin/cases` | Control Center intake and case creation (case ID, SLA, SMS) |
+| `/admin/intake` (queue, triage), `POST /admin/cases` | Command & Control intake and case creation (case ID, SLA, SMS) |
 | `/admin/cases`, `/admin/cases/{id}`, `PATCH /admin/cases/{id}/status`, `POST /admin/cases/{id}/notes`, `/children`, `/actors` | Case register and case page |
 | `POST /admin/cases/{id}/transfers`, `POST /admin/transfers/{id}/accept`, `/reject` (reason required) | Transfers |
 | `/admin/actions`, `/admin/agents`, `/admin/teams` (members, moves) | Field Operations |

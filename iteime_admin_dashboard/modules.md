@@ -37,7 +37,7 @@ only; no code is written yet.
 | # | Module | Sub-modules | Main users |
 |---|---|---|---|
 | 1 | Dashboard | Yes | Every role (content scoped by role) |
-| 2 | Intake | Yes | Control Center |
+| 2 | Intake | Yes | Command & Control |
 | 3 | Cases | Yes | Every party that owns or receives cases |
 | 4 | Field Operations | Yes | State IRS, Law Enforcement, Agency Head |
 | 5 | Payments | Yes | Parties with field agents, Agency Head, Finance / Treasury |
@@ -70,22 +70,20 @@ user's role and jurisdiction. Each view shows that party's **Cases** and
 | State IRS overview | State IRS | Its state's cases; its own agents' actions |
 | Law Enforcement overview | Law Enforcement | Cases received; its own officers' actions |
 | Central Enforcement overview | Central Enforcement | Escalations, SLA breaches, cross-state cases |
-| Control Center overview | Control Center | The intake queue, cases created, intake time, routing, SMS confirmations and status lookups |
-| Command & Control overview | Command & Control | Oversight and prioritisation across all parties |
+| Command & Control overview | Command & Control | Oversight and prioritisation across all parties; it also runs intake |
 | Legal overview | Legal | Escalated cases awaiting review, cases marked for prosecution |
 | Agency overview | Agency Head | The agency's teams, officers, actions, trip statuses, penalties, transaction validation status and linked cases |
 
 ### What each party sees on its Overview
 
 Every view keeps the same header (greeting, the one alert that needs action,
-filters, Export). Only the Control Center creates cases, so **New case**
-appears only for the Control Center and the Super Admin. Sidebars show only
+filters, Export). Only Command & Control creates cases, so **New case**
+appears only for Command & Control and the Super Admin. Sidebars show only
 the modules the role may open (see [Who sees what](#who-sees-what)).
 
 | Party | Scope | Alert line | Filters | Headline figures | Cards |
 |---|---|---|---|---|---|
 | **Super Admin** (All parties tab) | All parties, all states | Transfers waiting | Period, State, Party | Open cases, Escalated, Penalties raised (₦), Penalties paid (₦); then In the intake queue, Waiting for a priority, Waiting for legal review, SLA met | Every party at a glance (one card per party with its key figures, what needs attention and a link to its tab); Cases by stage; Needs your decision; Live activity with map; Penalties and payments (₦) with payment validation; Cases by source; Escalations by reason; SLA performance by party; Recent cases |
-| **Control Center** | All channels | Reports waiting in the intake queue | Period (default Today), Channel, Agent | In the intake queue, Cases created today, Average intake time (target 2 minutes), Waiting to be routed | Queue by channel; Next in the queue (triage, route); Cases created (last 7 days); Routed today by party; SMS confirmations; Status lookups; Recently created cases (with SMS status) |
 | **State IRS** | Its state | Transfers waiting | Period, LGA, Team | Open cases in the state, Transfers to decide, Penalties raised by its agents (₦), Penalties paid (₦) | Cases by stage; Needs your decision (transfers, SLA at risk, out-of-zone actions); Its agents in the field (map, agents on duty, most active); Penalties and payments (₦); Payment validation; Recent cases in the state |
 | **Law Enforcement** | Its command | Transfers waiting | Period, LGA, Team | Cases assigned to it, In investigation, Transfers to decide, Penalties by its officers (₦) | Its cases by stage; Needs your decision; Its officers in the field (map, officers on duty, recent actions); Recent cases assigned to it |
 | **Central Enforcement** | All states | Escalations with no team assigned | Period, State, Reason | Escalated cases, SLA breaches, Multiple actors, Cross-state cases | Escalations by reason; Escalation queue (assign a team); Escalations by state; Cross-state cases; Recent escalations |
@@ -253,8 +251,8 @@ a group with three items: **IAM** (sub-module Users & Roles), **Permissions**
 - **Permissions › Routing**: the table of which party may route to which.
   Stored as data, editable without a redeploy. Decided by the product owner
   (not in the specification):
-  - There is no Control Center party in Routing or Roles: it is Command &
-    Control only (user decision). The routing table has four parties (State
+  - There is no Control Center party anywhere: it is Command & Control
+    only (user decision). Command & Control also runs intake. The routing table has four parties (State
     IRS, Law Enforcement, Central Enforcement, Command & Control), and the
     users who held the Control Center role now hold Command & Control.
   - State IRS to State IRS covers other states only, and the Super Admin
@@ -278,8 +276,8 @@ The Super Admin gives access to everyone else, based on role and permission.
   Super Admin can check what any role sees. The Super Admin role always has
   full access: its permissions are locked, and it can't be edited or deleted.
 - **Sees every Overview.** The Super Admin Overview has a party tab bar:
-  All parties · Control Center · State IRS · Law Enforcement · Central
-  Enforcement · Command & Control · Legal. All parties is the national view;
+  All parties · State IRS · Law Enforcement · Central Enforcement ·
+  Command & Control · Legal. All parties is the national view;
   each other tab shows exactly what that party sees, inside the Super Admin
   sidebar, with a note naming the party. State IRS and Law Enforcement add a
   State filter to choose which state. Each tab shows how many items need that
@@ -312,25 +310,25 @@ specification and need confirming.
 This is the starting point for each role's permissions. The Super Admin sets
 the final permissions in IAM › Users & Roles.
 
-| Module | Control Center | State IRS | Law Enforcement | Central Enforcement | Command & Control | Legal | Finance / Treasury | Intelligence Officer | Agency Head | Super Admin |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Dashboard | † | ✓ | ✓ | ✓ | ✓ | ✓ | † | † | ✓ | ✓ |
-| Intake | ✓ | — | — | — | † | — | — | — | — | ✓ |
-| Cases | ✓ | ✓ | ✓ | ✓ | ✓ | ◐ Legal review | ◐ refund cases | † | ◐ linked cases | ✓ |
-| Field Operations | — | ✓ | ✓ | † | † | — | — | † | ✓ | ✓ |
-| Payments | — | ◐ | ◐ | † | † | — | ◐ Refunds | — | ◐ read-only | ✓ |
-| Intelligence | — | — | — | † | † | — | — | ✓ | — | ✓ |
-| Documents | † | † | † | † | † | † | † | † | † | ✓ |
-| Communication | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Notifications | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Administration | — | — | — | — | — | — | — | — | ◐ Teams | ✓ |
+| Module | State IRS | Law Enforcement | Central Enforcement | Command & Control | Legal | Finance / Treasury | Intelligence Officer | Agency Head | Super Admin |
+|---|---|---|---|---|---|---|---|---|---|
+| Dashboard | ✓ | ✓ | ✓ | ✓ | ✓ | † | † | ✓ | ✓ |
+| Intake | — | — | — | ✓ | — | — | — | — | ✓ |
+| Cases | ✓ | ✓ | ✓ | ✓ | ◐ Legal review | ◐ refund cases | † | ◐ linked cases | ✓ |
+| Field Operations | ✓ | ✓ | † | † | — | — | † | ✓ | ✓ |
+| Payments | ◐ | ◐ | † | † | — | ◐ Refunds | — | ◐ read-only | ✓ |
+| Intelligence | — | — | † | † | — | — | ✓ | — | ✓ |
+| Documents | † | † | † | † | † | † | † | † | ✓ |
+| Communication | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Notifications | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Administration | — | — | — | — | — | — | — | ◐ Teams | ✓ |
 
 ## Where each specification module went
 
 | Specification | Now |
 |---|---|
 | M1 Multi-Channel Intake | Intake › Intake queue |
-| M2 Control Center Console | Intake › Triage; New case popup (ends with Route); Cases to route |
+| M2 Control Center Console (run by Command & Control) | Intake › Triage; New case popup (ends with Route); Cases to route |
 | M3 Case Management Engine | Cases › Case page (Summary, History, Actions) |
 | M4 Routing & Transfer | Cases › Transfers; Case page › Actions; Permissions › Routing |
 | M5 Multi-Actor Accountability | Background rule; seen in Cases › Escalations and Case page › Actors |
