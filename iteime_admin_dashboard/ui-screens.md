@@ -316,7 +316,7 @@ the Intake queue header.
 
 | Screen | Status |
 |---|---|
-| Profile – personal details (first name, last name, phone, email, job title), your access (role, all parties, jurisdiction, every module, permissions), sign-in, your activity, appearance | ✅ |
+| Profile – personal details (first name, last name, phone, email), your access (role, all parties, jurisdiction, every module, permissions), sign-in, your activity, appearance | ✅ |
 | Profile – editing (unsaved changes) and saved (toast) | ✅ |
 | Sign out – confirm dialog | ✅ |
 | Password – change password (current, new, confirm, 6-digit verification code; password rules) | ✅ |
