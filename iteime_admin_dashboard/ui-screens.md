@@ -304,7 +304,7 @@ Sidebar group **Administration**: IAM (Users & Roles), Permissions (Routing), Au
 | Permissions › Routing – save with a reason, turn off a route (cases still waiting; reason), leave without saving | ✅ |
 | Permissions › Routing – saved (toast, last change updated), couldn't save (edits kept, try again) | ✅ |
 | Permissions › Routing – change history popup | ✅ |
-| Permissions › Routing – To Control Center column; Legal, Finance / Treasury and Intelligence Officer noted as not routing | ✅ |
+| Permissions › Routing – four parties (State IRS, Law Enforcement, Central Enforcement, Command & Control; no Control Center); Legal, Finance / Treasury and Intelligence Officer noted as not routing | ✅ |
 | Permissions › Routing – choose which states State IRS can route to (any other state, or chosen states) | ✅ |
 | Permissions › Routing – loading and empty (no routes set up yet) | ✅ |
 | Permissions › Routing – set up routes flow: choose where to start (draft matrix or from scratch), draft loaded for review, save routes (totals and reason), routes set up | ✅ |
@@ -316,6 +316,7 @@ Sidebar group **Administration**: IAM (Users & Roles), Permissions (Routing), Au
 | Audit log – person's activity popup (entries by one person; today, last 7 or 30 days; open in audit log) | ✅ |
 | Audit log – record history popup (every change to one record with before and after, newest first; open the record) | ✅ |
 | Audit entry – detail popup (who, when, record, IP address, device; before and after; permanent) | ✅ |
+| Audit log – user permission change entry ("Changed a user's permissions", counted under Access changes) and its entry popup (field, before, after, reason) | ✅ |
 
 ## 13. Account
 

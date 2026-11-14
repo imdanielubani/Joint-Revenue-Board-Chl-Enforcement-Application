@@ -253,13 +253,17 @@ a group with three items: **IAM** (sub-module Users & Roles), **Permissions**
 - **Permissions › Routing**: the table of which party may route to which.
   Stored as data, editable without a redeploy. Decided by the product owner
   (not in the specification):
-  - Control Center can also receive routed cases (a "To Control Center"
-    column), not only rejected ones.
+  - There is no Control Center party in Routing or Roles: it is Command &
+    Control only (user decision). The routing table has four parties (State
+    IRS, Law Enforcement, Central Enforcement, Command & Control), and the
+    users who held the Control Center role now hold Command & Control.
   - State IRS to State IRS covers other states only, and the Super Admin
     chooses which states (or any other state).
   - Legal, Finance / Treasury and Intelligence Officer do not route cases.
 - **Audit log**: every recorded action, with who, what, before and after,
-  when, and from which IP / device. Read-only.
+  when, and from which IP / device. Read-only. Role permission changes and
+  per-user permission changes (with their reason) are recorded as Access
+  changes.
 
 ## Super Admin
 
