@@ -36,7 +36,7 @@ only; no code is written yet.
 
 | # | Module | Sub-modules | Main users |
 |---|---|---|---|
-| 1 | Overview | Yes | Every role (content scoped by role) |
+| 1 | Dashboard | Yes | Every role (content scoped by role) |
 | 2 | Intake | Yes | Control Center |
 | 3 | Cases | Yes | Every party that owns or receives cases |
 | 4 | Field Operations | Yes | State IRS, Law Enforcement, Agency Head |
@@ -59,7 +59,7 @@ INSIGHT       Intelligence · Documents
 ADMINISTRATION  IAM (Users & Roles) · Permissions (Routing) · Audit log
 ```
 
-## 1. Overview — has sub-modules
+## 1. Dashboard — has sub-modules
 
 The landing page after sign-in. One page, whose content changes with the
 user's role and jurisdiction. Each view shows that party's **Cases** and
@@ -308,7 +308,7 @@ the final permissions in IAM › Users & Roles.
 
 | Module | Control Center | State IRS | Law Enforcement | Central Enforcement | Command & Control | Legal | Finance / Treasury | Intelligence Officer | Agency Head | Super Admin |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Overview | † | ✓ | ✓ | ✓ | ✓ | ✓ | † | † | ✓ | ✓ |
+| Dashboard | † | ✓ | ✓ | ✓ | ✓ | ✓ | † | † | ✓ | ✓ |
 | Intake | ✓ | — | — | — | † | — | — | — | — | ✓ |
 | Cases | ✓ | ✓ | ✓ | ✓ | ✓ | ◐ Legal review | ◐ refund cases | † | ◐ linked cases | ✓ |
 | Field Operations | — | ✓ | ✓ | † | † | — | — | † | ✓ | ✓ |

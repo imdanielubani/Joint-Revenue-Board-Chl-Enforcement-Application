@@ -61,7 +61,7 @@ The sample signed-in user is **Daniel Ubani**, Super Admin.
 | Phone – search, notifications and user menu as full-screen sheets | ⬜ |
 | Keyboard focus states on sidebar and top bar | ⬜ |
 
-## 3. Overview
+## 3. Dashboard
 
 | Screen | Status |
 |---|---|
