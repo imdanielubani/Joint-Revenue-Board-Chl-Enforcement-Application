@@ -219,7 +219,11 @@ without further detail.
 Folders (user decision):
 - **Default folders** (Case files, Policies and guides, Reports, Templates)
   are seen by every role.
-- **Role folders**: every role has its own folder, seen only by that role.
+- **Role folders**: every role has its own folders (one or more, e.g. State
+  IRS has 4), seen only by that role. The library shows one card per role
+  with its folder count; opening it lists that role's folders.
+- Folder actions (Super Admin): open, rename, change who can see it, copy
+  link, delete (only once the folder has no documents).
 - A new folder is either a default folder (every role) or tied to one or
   more chosen roles.
 - Only the Super Admin can add folders, and the Super Admin sees every

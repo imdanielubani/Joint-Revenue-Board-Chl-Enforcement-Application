@@ -218,7 +218,9 @@ the Intake queue header.
 | Documents – new folder popup, move to folder popup, moved (toast), delete confirm, document deleted (toast) | ✅ |
 | Documents – default folders (every role) and role folders (one per role) on the library | ✅ |
 | Documents – new folder: who can see it (default folder or role folder with chosen roles), no role chosen, folder created (toast) | ✅ |
-| Documents – what State IRS sees (default folders and its own folder; no New folder button) | ✅ |
+| Documents – what State IRS sees (default folders and its 4 folders; no New folder button) | ✅ |
+| Documents – role folders show each role's folder count; State IRS folders screen (its 4 folders and their documents) | ✅ |
+| Documents – folder actions menu (open, rename, change who can see it, copy link, delete), rename popup, who can see it popup, delete blocked while it has documents, renamed / access changed / link copied (toasts) and errors | ✅ |
 | Documents – downloading (progress, cancel), downloaded (toast) | ✅ |
 | Documents – loading, empty, couldn't load | ✅ |
 | Documents – errors: upload failed, file too large, file type not supported, folder name taken, download failed, preview couldn't load, couldn't delete | ✅ |
