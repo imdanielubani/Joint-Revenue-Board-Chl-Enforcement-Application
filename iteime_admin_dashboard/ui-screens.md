@@ -276,8 +276,11 @@ the Intake queue header.
 
 ## 12. Administration (Super Admin)
 
+Sidebar group **Administration**: IAM (Users & Roles), Permissions (Routing), Audit log.
+
 | Screen | Status |
 |---|---|
+| Sidebar – Administration group with IAM, Permissions and Audit log on every screen (collapsed rail, phone drawer and dropdown examples too; IAM open and Permissions open) | ✅ |
 | Users – list (search; Role, Party, State and Status filters; status: Active, Invited, Locked, Deactivated; pagination) | ✅ |
 | Users – row actions (view user, change role, unlock account, copy email, deactivate user) | ✅ |
 | User – invite (name, email, role, party set by the role, jurisdiction; what the role can open) | ✅ |
@@ -293,16 +296,16 @@ the Intake queue header.
 | Role – Super Admin: full access, permissions locked (cannot be edited or deleted) | ✅ |
 | Role – permissions for every role: Super Admin, Control Center, State IRS, Agency Head, Law Enforcement, Central Enforcement, Command & Control, Legal, Finance / Treasury, Intelligence Officer, Field Officer | ✅ |
 | Role – permissions (scope; modules × view, create, edit, route or transfer, export; "to confirm" where the specification is open; unsaved changes bar) | ✅ |
-| Routing permissions – From / To matrix from the specification's draft (allowed, to confirm, not applicable; last change) | ✅ |
-| Routing permissions – editing (allowed / not allowed per pair, unsaved changes bar) | ✅ |
-| Routing permissions – "routes still need a decision" banner for the pairs left open in the specification | ✅ |
-| Routing permissions – save with a reason, turn off a route (cases still waiting; reason), leave without saving | ✅ |
-| Routing permissions – saved (toast, last change updated), couldn't save (edits kept, try again) | ✅ |
-| Routing permissions – change history popup | ✅ |
-| Routing permissions – To Control Center column; Legal, Finance / Treasury and Intelligence Officer noted as not routing | ✅ |
-| Routing permissions – choose which states State IRS can route to (any other state, or chosen states) | ✅ |
-| Routing permissions – loading and empty (no routes set up yet) | ✅ |
-| Routing permissions – set up routes flow: choose where to start (draft matrix or from scratch), draft loaded for review, save routes (totals and reason), routes set up | ✅ |
+| Permissions › Routing – From / To matrix from the specification's draft (allowed, to confirm, not applicable; last change) | ✅ |
+| Permissions › Routing – editing (allowed / not allowed per pair, unsaved changes bar) | ✅ |
+| Permissions › Routing – "routes still need a decision" banner for the pairs left open in the specification | ✅ |
+| Permissions › Routing – save with a reason, turn off a route (cases still waiting; reason), leave without saving | ✅ |
+| Permissions › Routing – saved (toast, last change updated), couldn't save (edits kept, try again) | ✅ |
+| Permissions › Routing – change history popup | ✅ |
+| Permissions › Routing – To Control Center column; Legal, Finance / Treasury and Intelligence Officer noted as not routing | ✅ |
+| Permissions › Routing – choose which states State IRS can route to (any other state, or chosen states) | ✅ |
+| Permissions › Routing – loading and empty (no routes set up yet) | ✅ |
+| Permissions › Routing – set up routes flow: choose where to start (draft matrix or from scratch), draft loaded for review, save routes (totals and reason), routes set up | ✅ |
 | Audit log – list (search; Users, Action, Record and When filters; time, user, action and record, IP address and device) | ✅ |
 | Audit log – filter dropdowns open: Users (search people), Action (types with counts), Record (types with counts), When (today, yesterday, last 7 or 30 days, custom range) | ✅ |
 | Audit log – filters applied (Access changes, Reset filters) | ✅ |

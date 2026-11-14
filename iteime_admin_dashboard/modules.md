@@ -56,7 +56,7 @@ OPERATIONS    Field Operations · Payments
 INSIGHT       Intelligence · Documents
               ─────────────
               Communication · Notifications
-ADMIN         Administration
+ADMINISTRATION  IAM (Users & Roles) · Permissions (Routing) · Audit log
 ```
 
 ## 1. Overview — has sub-modules
@@ -239,14 +239,16 @@ notifications are sent by the system and are not pages.
 
 ## 10. Administration — has sub-modules
 
-Managed by the [Super Admin](#super-admin).
+Managed by the [Super Admin](#super-admin). In the sidebar, Administration is
+a group with three items: **IAM** (sub-module Users & Roles), **Permissions**
+(sub-module Routing) and **Audit log** (no sub-modules).
 
-- **Users and roles**: the people who use ITEIME and what each may do. For
+- **IAM › Users & Roles**: the people who use ITEIME and what each may do. For
   every user: their party, role and jurisdiction (state, and agency where
   relevant). For every role: its permissions, meaning which modules it can
   open and which actions it can take in them. Access is given only through a
   role; nobody is given a module directly.
-- **Routing permissions**: the table of which party may route to which.
+- **Permissions › Routing**: the table of which party may route to which.
   Stored as data, editable without a redeploy. Decided by the product owner
   (not in the specification):
   - Control Center can also receive routed cases (a "To Control Center"
@@ -302,7 +304,7 @@ From the top-bar menu, not the sidebar.
 specification and need confirming.
 
 This is the starting point for each role's permissions. The Super Admin sets
-the final permissions in Administration › Users and roles.
+the final permissions in IAM › Users & Roles.
 
 | Module | Control Center | State IRS | Law Enforcement | Central Enforcement | Command & Control | Legal | Finance / Treasury | Intelligence Officer | Agency Head | Super Admin |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -324,7 +326,7 @@ the final permissions in Administration › Users and roles.
 | M1 Multi-Channel Intake | Intake › Intake queue |
 | M2 Control Center Console | Intake › Triage; New case popup (ends with Route); Cases to route |
 | M3 Case Management Engine | Cases › Case page (Summary, History, Actions) |
-| M4 Routing & Transfer | Cases › Transfers; Case page › Actions; Administration › Routing permissions |
+| M4 Routing & Transfer | Cases › Transfers; Case page › Actions; Permissions › Routing |
 | M5 Multi-Actor Accountability | Background rule; seen in Cases › Escalations and Case page › Actors |
 | M6 Linked Cases | Cases › Case page › Linked cases |
 | M7 Field Agent Management | Field Operations › Agents, Teams |
@@ -355,7 +357,7 @@ depends on:
 1. Account (sign in) and the app shell: sidebar, top bar, role scoping
 2. Cases: All cases and the Case page
 3. Intake: queue, triage, new case, route
-4. Cases › Transfers, and Administration › Routing permissions
+4. Cases › Transfers, and Permissions › Routing
 5. Overview: State IRS first, then Law Enforcement
 6. Field Operations: Agents and Teams, then Enforcement actions and the Live
    activity feed
